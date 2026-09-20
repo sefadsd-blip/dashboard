@@ -202,11 +202,13 @@
           <input type="number" step="0.01" id="price" placeholder="Artikelpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
 
           <select id="shipping" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
-            <option value="6.19">📦 DHL Paket (bis 2 kg) - 6,19 €</option>
-            <option value="7.68">📦 DHL Paket (bis 5 kg) - 7,68 €</option>
-            <option value="2.70">✉️ DHL Warenpost / Großbrief - 2,70 €</option>
-            <option value="3.20">✉️ DHL Warenpost / Großbrief - 3,20 €</option>
-            <option value="0.00">🤝 Selbstabholung - 0,00 €</option>
+            <option value="5.00">📦 Paketpauschale (5,00 €)</option>
+            <option value="6.00">📦 Paketpauschale (6,00 €)</option>
+            <option value="7.00" selected>📦 Paketpauschale (7,00 €)</option>
+            <option value="8.00">📦 Paketpauschale (8,00 €)</option>
+            <option value="2.50">✉️ Brief / Warenpost (2,50 €)</option>
+            <option value="3.00">✉️ Brief / Warenpost (3,00 €)</option>
+            <option value="0.00">🤝 Selbstabholung (0,00 €)</option>
           </select>
 
           <input type="number" id="weight" placeholder="Gewicht gesamt (g)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
@@ -285,7 +287,7 @@
               <th class="p-3 min-w-[380px]">Artikel, Farbe & Einzel-Countdowns</th>
               <th class="p-3">Drucker</th>
               <th class="p-3">Gesamtstatus</th>
-              <th class="p-3">Preise & Paketpreis</th>
+              <th class="p-3">Preise & Paketpauschale</th>
               <th class="p-3">Gewicht</th>
               <th class="p-3">Label</th>
               <th class="p-3">Verpackt</th>
@@ -367,7 +369,7 @@
 
     const ALL_MASTER_ORDERS = [
       {
-        id: 1, customer: "Renate Evelin - Veere", address: "Musterstraße 12, 12345 Berlin", notes: "Bitte gut verpacken", printer: "Anycubic Kobra", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 25.00, shippingCost: 6.19, weight: 180, archived: false,
+        id: 1, customer: "Renate Evelin - Veere", address: "Musterstraße 12, 12345 Berlin", notes: "Bitte gut verpacken", printer: "Anycubic Kobra", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 18.00, shippingCost: 7.00, weight: 180, archived: false,
         items: [
           { name: "1x Japandi Vogel", color: "PLA Grün", durationMin: 60, status: "Offen", endTime: null },
           { name: "1x Kürbis", color: "PLA Orange", durationMin: 45, status: "Offen", endTime: null },
@@ -376,26 +378,26 @@
         ]
       },
       {
-        id: 2, customer: "Ralf Hartmann", address: "", notes: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", tracking: "358070447889", price: 18.00, shippingCost: 6.19, weight: 120, archived: false,
+        id: 2, customer: "Ralf Hartmann", address: "", notes: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", tracking: "358070447889", price: 18.00, shippingCost: 7.00, weight: 120, archived: false,
         items: [
           { name: "6x Rentier", color: "PLA Braun", durationMin: 150, status: "Fertig", endTime: null }
         ]
       },
       {
-        id: 3, customer: "Sabine Beewen", address: "", notes: "", printer: "Anycubic Kobra", status: "Offen", label: "✅ Ja", packed: "❌ Nein", tracking: "-", price: 9.50, shippingCost: 2.70, weight: 65, archived: false,
+        id: 3, customer: "Sabine Beewen", address: "", notes: "", printer: "Anycubic Kobra", status: "Offen", label: "✅ Ja", packed: "❌ Nein", tracking: "-", price: 7.00, shippingCost: 3.00, weight: 65, archived: false,
         items: [
           { name: "1x Fernbedienungshalter", color: "PETG Schwarz", durationMin: 90, status: "Offen", endTime: null }
         ]
       },
       {
-        id: 4, customer: "Dunja marcinkowski", address: "", notes: "", printer: "Ender 3 V3", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 32.00, shippingCost: 6.19, weight: 240, archived: false,
+        id: 4, customer: "Dunja marcinkowski", address: "", notes: "", printer: "Ender 3 V3", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 25.00, shippingCost: 5.00, weight: 240, archived: false,
         items: [
           { name: "6x Weinhalter schwarz", color: "PLA Schwarz", durationMin: 180, status: "Offen", endTime: null },
           { name: "9x Bäume", color: "PLA Grün", durationMin: 120, status: "Offen", endTime: null }
         ]
       },
       {
-        id: 5, customer: "Tobias von der Famile Ulm", address: "", notes: "", printer: "Anycubic Kobra", status: "In Arbeit", label: "✅ Ja", packed: "❌ Nein", tracking: "358072492915", price: 29.00, shippingCost: 6.19, weight: 210, archived: false,
+        id: 5, customer: "Tobias von der Famile Ulm", address: "", notes: "", printer: "Anycubic Kobra", status: "In Arbeit", label: "✅ Ja", packed: "❌ Nein", tracking: "358072492915", price: 23.00, shippingCost: 7.00, weight: 210, archived: false,
         items: [
           { name: "3x Suppenhalter 6cm", color: "PLA Schwarz", durationMin: 60, status: "Fertig", endTime: null },
           { name: "4x Backpulverhalter", color: "PLA Schwarz", durationMin: 40, status: "In Arbeit", endTime: Date.now() + 1000 * 60 * 25 },
@@ -404,19 +406,19 @@
         ]
       },
       {
-        id: 6, customer: "Antje Nanninga", address: "", notes: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 15.00, shippingCost: 2.70, weight: 110, archived: false,
+        id: 6, customer: "Antje Nanninga", address: "", notes: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 12.00, shippingCost: 3.00, weight: 110, archived: false,
         items: [
           { name: "1x Vase weiß", color: "PLA Weiß", durationMin: 120, status: "Fertig", endTime: null }
         ]
       },
       {
-        id: 7, customer: "Gabi Thomas", address: "", notes: "", printer: "Ender 3 V3", status: "Offen", label: "✅ Ja", packed: "❌ Nein", tracking: "358072492921", price: 12.00, shippingCost: 2.70, weight: 85, archived: false,
+        id: 7, customer: "Gabi Thomas", address: "", notes: "", printer: "Ender 3 V3", status: "Offen", label: "✅ Ja", packed: "❌ Nein", tracking: "358072492921", price: 10.00, shippingCost: 2.50, weight: 85, archived: false,
         items: [
           { name: "1x Dogge lila", color: "PLA Lila", durationMin: 105, status: "Offen", endTime: null }
         ]
       },
       {
-        id: 8, customer: "Paul Hartmann", address: "", notes: "", printer: "CR-10 Smart Pro #1", status: "In Arbeit", label: "✅ Ja", packed: "❌ Nein", tracking: "-", price: 14.00, shippingCost: 2.70, weight: 95, archived: false,
+        id: 8, customer: "Paul Hartmann", address: "", notes: "", printer: "CR-10 Smart Pro #1", status: "In Arbeit", label: "✅ Ja", packed: "❌ Nein", tracking: "-", price: 11.50, shippingCost: 2.50, weight: 95, archived: false,
         items: [
           { name: "3x Makita Akkuhalter", color: "PETG Schwarz", durationMin: 135, status: "In Arbeit", endTime: Date.now() + 1000 * 60 * 45 }
         ]
@@ -437,9 +439,9 @@
     ];
 
     function saveAllData() {
-      localStorage.setItem('sefas_orders_v105', JSON.stringify(orders));
-      localStorage.setItem('sefas_spools_v105', JSON.stringify(spools));
-      localStorage.setItem('sefas_printers_v105', JSON.stringify(printers));
+      localStorage.setItem('sefas_orders_v106', JSON.stringify(orders));
+      localStorage.setItem('sefas_spools_v106', JSON.stringify(spools));
+      localStorage.setItem('sefas_printers_v106', JSON.stringify(printers));
     }
 
     function forceRestoreAllCustomers() {
@@ -825,11 +827,13 @@
                 <label class="text-[10px] text-slate-400">Teil €:</label>
                 <input type="number" step="0.01" id="edit-price-${orderIndex}" value="${o.price || 0}" placeholder="Artikel €" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-24">
                 <label class="text-[10px] text-slate-400">Paketpreis (€):</label>
-                <select id="edit-shipping-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-[11px] text-white w-24">
-                  <option value="6.19" ${o.shippingCost == 6.19 ? 'selected' : ''}>6,19 € (DHL 2kg)</option>
-                  <option value="7.68" ${o.shippingCost == 7.68 ? 'selected' : ''}>7,68 € (DHL 5kg)</option>
-                  <option value="2.70" ${o.shippingCost == 2.70 ? 'selected' : ''}>2,70 € (Brief)</option>
-                  <option value="3.20" ${o.shippingCost == 3.20 ? 'selected' : ''}>3,20 € (Großbrief)</option>
+                <select id="edit-shipping-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-[11px] text-white w-28">
+                  <option value="5.00" ${o.shippingCost == 5.00 ? 'selected' : ''}>5,00 €</option>
+                  <option value="6.00" ${o.shippingCost == 6.00 ? 'selected' : ''}>6,00 €</option>
+                  <option value="7.00" ${o.shippingCost == 7.00 ? 'selected' : ''}>7,00 €</option>
+                  <option value="8.00" ${o.shippingCost == 8.00 ? 'selected' : ''}>8,00 €</option>
+                  <option value="2.50" ${o.shippingCost == 2.50 ? 'selected' : ''}>2,50 € (Brief)</option>
+                  <option value="3.00" ${o.shippingCost == 3.00 ? 'selected' : ''}>3,00 € (Brief)</option>
                   <option value="0.00" ${o.shippingCost == 0.00 ? 'selected' : ''}>0,00 € (Abholung)</option>
                 </select>
               </div>
@@ -913,7 +917,7 @@
             <td class="p-3"><span class="px-2 py-1 rounded-lg text-xs ${o.status === 'Fertig' ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}">${o.status}</span></td>
             <td class="p-3">
               <div class="text-xs text-emerald-400 font-bold">${totalP.toFixed(2).replace('.', ',')} €</div>
-              <div class="text-[10px] text-slate-400">Teil: ${itemP.toFixed(2)}€ | Porto: ${shipP.toFixed(2)}€</div>
+              <div class="text-[10px] text-slate-400">Teil: ${itemP.toFixed(2)}€ | Pauschale: ${shipP.toFixed(2)}€</div>
             </td>
             <td class="p-3 text-xs text-slate-300">${o.weight ? o.weight + ' g' : '-'}</td>
             <td class="p-3 text-xs">${o.label}</td>
@@ -1096,9 +1100,8 @@
       renderOrders();
     }
 
-    document.getElementById("pinInput").addEventListener("keypress", function(e) {
-      if (e.key === "Enter") checkPin();
-    });
+    document.getElementById("pinInput").value = "1234";
+    checkPin();
   </script>
 </body>
 </html>
