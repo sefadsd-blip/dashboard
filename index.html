@@ -127,30 +127,44 @@
       </div>
     </section>
 
-    <!-- SCHNELL-NACHRICHTEN VORLAGEN -->
+    <!-- SCHNELL-NACHRICHTEN VORLAGEN MIT KUNDENAUSWAHL -->
     <section class="card p-5 rounded-2xl space-y-3">
       <h2 class="text-md font-semibold text-slate-300 flex items-center">
         <i class="fa-solid fa-comment-dots mr-2 text-blue-400"></i> Kleinanzeigen Antwort-Vorlagen
       </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/60 flex justify-between items-center">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- VORLAGE 1: DRUCK GESTARTET -->
+        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 flex flex-col justify-between space-y-3">
           <div>
-            <h4 class="font-medium text-sm text-white">Druck gestartet</h4>
-            <p class="text-xs text-slate-400">"Hallo! Dein Auftrag befindet sich jetzt auf dem Drucker..."</p>
+            <h4 class="font-medium text-sm text-white flex items-center">
+              <i class="fa-solid fa-play text-blue-400 mr-2"></i> Druck gestartet
+            </h4>
+            <p class="text-xs text-slate-400 mt-1">"Hallo! Dein Auftrag befindet sich jetzt auf dem Drucker..."</p>
           </div>
-          <button onclick="copyStartMessage()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs border border-slate-600 flex items-center">
-            <i class="fa-solid fa-copy mr-1.5"></i> Kopieren
+          <button onclick="copyStartMessage()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl text-xs border border-slate-600 flex items-center justify-center w-full transition">
+            <i class="fa-solid fa-copy mr-1.5"></i> Vorlage Kopieren
           </button>
         </div>
 
-        <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/60 flex justify-between items-center">
+        <!-- VORLAGE 2: VERSENDET + KUNDEN-TRACKING -->
+        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 flex flex-col justify-between space-y-3">
           <div>
-            <h4 class="font-medium text-sm text-white">Versendet + Auto-Tracking</h4>
-            <p class="text-xs text-slate-400">Fügt automatisch die Tracking-Nummer des fertigen Auftrags an.</p>
+            <h4 class="font-medium text-sm text-white flex items-center">
+              <i class="fa-solid fa-paper-plane text-green-400 mr-2"></i> Versendet (Kunde auswählen)
+            </h4>
+            <p class="text-xs text-slate-400 mt-1">Wähle den Kunden aus, um seine individuelle Tracking-Nummer einzufügen:</p>
           </div>
-          <button onclick="copyTrackingMessage()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center transition">
-            <i class="fa-solid fa-paper-plane mr-1.5"></i> Mit Tracking Kopieren
-          </button>
+
+          <div class="flex flex-col sm:flex-row gap-2">
+            <select id="customerSelect" class="bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white focus:outline-none focus:border-blue-500 flex-1">
+              <!-- Dynamisch gefüllt mit Kunden -->
+            </select>
+
+            <button onclick="copyTrackingForSelectedCustomer()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center justify-center transition whitespace-nowrap">
+              <i class="fa-solid fa-copy mr-1.5"></i> Mit Tracking Kopieren
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -168,10 +182,14 @@
     ];
 
     let orders = JSON.parse(localStorage.getItem('sefas_orders')) || [
-      { id: 1, customer: "Max M.", item: "2x Einkaufswagenlöser (Schwarz PLA)", printer: "Ender 3 V3", status: "Offen", label: "✅ Ja", packed: "❌ Nein", tracking: "-" },
-      { id: 2, customer: "Lisa K.", item: "1x Schlüsselanhänger (Rot PLA+)", printer: "Anycubic Kobra", status: "In Arbeit", label: "✅ Ja", packed: "❌ Nein", tracking: "-" },
-      { id: 3, customer: "David S.", item: "1x Wandhalterung (PETG)", printer: "CR-10 Smart Pro #1", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-" },
-      { id: 4, customer: "Peter M.", item: "1x Kabelabdeckung (Grau ASA)", printer: "CR-10 Smart Pro #2", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", tracking: "DHL123456" }
+      { id: 1, customer: "Renate Evelin - Veere", item: "1 japandi vogel grün 1 kürbis orange 1 modernes eichhörnchen farbe wie auf dem Foto 4 Zapfenhäuschen 2xgrün, 2x beige", printer: "Anycubic Kobra", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-" },
+      { id: 2, customer: "Ralf Hartmann", item: "6x renntier", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", tracking: "358070447889" },
+      { id: 3, customer: "Sabine Beewen", item: "fernbedienungshalter", printer: "Anycubic Kobra", status: "Offen", label: "✅ Ja", packed: "❌ Nein", tracking: "-" },
+      { id: 4, customer: "Dunja marcinkowski", item: "6x weinhalter schwarz ,9 bäume", printer: "Ender 3 V3", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-" },
+      { id: 5, customer: "Tobias von der Famile Ulm", item: "3x suppenhalter 6cm,4x backpulver halter ,4xbackpulverhalter 6cm,abroller alufolie", printer: "Anycubic Kobra", status: "In Arbeit", label: "✅ Ja", packed: "❌ Nein", tracking: "358072492915" },
+      { id: 6, customer: "Antje Nanninga", item: "Vase weiß", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-" },
+      { id: 7, customer: "Gabi Thomas", item: "Bulldoge lila", printer: "Ender 3 V3", status: "Offen", label: "✅ Ja", packed: "❌ Nein", tracking: "358072492921" },
+      { id: 8, customer: "Paul Hartmann", item: "3x Makitaakkuhalter", printer: "CR-10 Smart Pro #1", status: "In Arbeit", label: "✅ Ja", packed: "❌ Nein", tracking: "-" }
     ];
 
     function checkPin() {
@@ -289,11 +307,33 @@
       });
 
       localStorage.setItem('sefas_orders', JSON.stringify(orders));
+      updateCustomerDropdown();
+    }
+
+    function updateCustomerDropdown() {
+      const select = document.getElementById('customerSelect');
+      select.innerHTML = '';
+
+      if (orders.length === 0) {
+        select.innerHTML = '<option value="">Keine Aufträge vorhanden</option>';
+        return;
+      }
+
+      orders.forEach((o, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        const trackingText = (o.tracking && o.tracking !== '-') ? `(Tracking: ${o.tracking})` : '(Keine Tracking-Nr.)';
+        option.textContent = `${o.customer} ${trackingText}`;
+        select.appendChild(option);
+      });
     }
 
     function updateField(index, field, value) {
       orders[index][field] = value;
       localStorage.setItem('sefas_orders', JSON.stringify(orders));
+      if (field === 'tracking' || field === 'customer') {
+        updateCustomerDropdown();
+      }
     }
 
     function addOrder(e) {
@@ -325,18 +365,22 @@
       alert("Vorlage 'Druck gestartet' kopiert!");
     }
 
-    function copyTrackingMessage() {
-      const orderWithTracking = orders.find(o => o.tracking && o.tracking !== '-' && o.tracking.trim() !== '');
+    function copyTrackingForSelectedCustomer() {
+      const select = document.getElementById('customerSelect');
+      const selectedIndex = select.value;
 
-      if (orderWithTracking) {
-        const msg = `Hallo ${orderWithTracking.customer || ''}! Dein Paket wurde soeben fertig verpackt und verschickt. Hier ist deine Sendungsnummer zur Nachverfolgung: ${orderWithTracking.tracking}`;
-        navigator.clipboard.writeText(msg);
-        alert(`Nachricht mit Sendungsnummer (${orderWithTracking.tracking}) für ${orderWithTracking.customer} kopiert!`);
-      } else {
-        const msg = "Hallo! Dein Paket wurde soeben fertig verpackt und verschickt. Hier ist deine Sendungsnummer zur Nachverfolgung: ";
-        navigator.clipboard.writeText(msg);
-        alert("Keine fertige Sendungsnummer in den Aufträgen gefunden. Basis-Text wurde kopiert.");
+      if (selectedIndex === "" || !orders[selectedIndex]) {
+        alert("Bitte wähle zuerst einen Kunden aus!");
+        return;
       }
+
+      const selectedOrder = orders[selectedIndex];
+      const trackingNr = (selectedOrder.tracking && selectedOrder.tracking !== '-') ? selectedOrder.tracking : '[KEINE TRACKING-NUMMER VORHANDEN]';
+
+      const msg = `Hallo ${selectedOrder.customer}! Dein Paket wurde soeben fertig verpackt und verschickt. Hier ist deine Sendungsnummer zur Nachverfolgung: ${trackingNr}`;
+      
+      navigator.clipboard.writeText(msg);
+      alert(`Versandnachricht für ${selectedOrder.customer} in die Zwischenablage kopiert!`);
     }
 
     document.getElementById("pinInput").addEventListener("keypress", function(e) {
