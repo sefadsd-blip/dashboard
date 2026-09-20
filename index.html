@@ -16,7 +16,6 @@
     }
     .pulse-low-spool { animation: pulse-red 2s infinite; }
     
-    /* DRUCK-EINSTELLUNGEN: Exakt 1 Seite ohne Leerseiten */
     @media print {
       body * { visibility: hidden !important; }
       #printSection, #printSection * { visibility: visible !important; }
@@ -69,11 +68,14 @@
           <h1 class="text-xl font-bold text-white">Sefas3DShop Live-Cloud Dashboard</h1>
           <p class="text-slate-400 text-xs flex items-center gap-1.5">
             <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span> 
-            <span>Echtzeit-Cloud Sync & Push aktiv (Auto-Sync)</span>
+            <span>Echtzeit-Verbindung aktiv</span>
           </p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
+        <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center">
+          <i class="fa-solid fa-rotate mr-1"></i> 🔄 Cloud laden
+        </button>
         <button onclick="requestNotificationPermission()" class="bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center">
           <i class="fa-solid fa-bell mr-1"></i> 🔔 Push aktiv
         </button>
@@ -231,8 +233,7 @@
       { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Bereit" }
     ];
 
-    // Daten aus der Cloud laden (mit Fehlerprüfung)
-    async function loadCloudData(silent = false) {
+    async function loadCloudData() {
       try {
         const res = await fetch(`${BIN_URL}/latest`, {
           headers: { 'X-Master-Key': MASTER_KEY }
@@ -244,16 +245,16 @@
             if (json.record.spools) spools = json.record.spools;
             localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
             localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
-            if (!silent) {
-              renderOrders();
-              renderSpools();
-            }
+            renderOrders();
+            renderSpools();
+            alert("Cloud-Daten erfolgreich geladen!");
           }
         }
-      } catch(e) {}
+      } catch(e) {
+        alert("Fehler beim Laden aus der Cloud.");
+      }
     }
 
-    // Daten in die Cloud & lokal speichern
     async function saveAllData() {
       localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
       localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
@@ -268,16 +269,6 @@
         });
       } catch(e) {}
     }
-
-    // Auto-Sync alle 5 Sekunden im Hintergrund, damit Änderungen auf dem anderen Gerät sofort sichtbar werden
-    setInterval(() => {
-      if (!document.getElementById('mainApp').classList.contains('hidden')) {
-        loadCloudData(true);
-        // UI aktualisieren falls sich Daten im Hintergrund geändert haben
-        renderOrders();
-        renderSpools();
-      }
-    }, 5000);
 
     function requestNotificationPermission() {
       if ("Notification" in window) Notification.requestPermission();
@@ -315,7 +306,8 @@
         document.getElementById("loginModal").classList.add("hidden");
         document.getElementById("mainApp").classList.remove("hidden");
         renderPrinters();
-        loadCloudData();
+        renderOrders();
+        renderSpools();
       } else {
         document.getElementById("loginError").classList.remove("hidden");
       }
