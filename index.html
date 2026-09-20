@@ -347,14 +347,27 @@
     let formality = "du";
     let currentFilter = "all";
     let editingIndex = -1;
-    let failedFilamentGrams = parseInt(localStorage.getItem('sefas_failed_grams')) || 0;
 
-    const REAL_ORDERS = [
+    // ALTE DATEN AUS SPEICHER ZUSAMMENFÜHREN UND LADEN
+    function getStoredData(keyPattern, defaultVal) {
+      for (let i = 20; i >= 1; i--) {
+        const key = keyPattern + (i === 1 ? '' : '_v' + i);
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          try { return JSON.parse(stored); } catch(e){}
+        }
+      }
+      return defaultVal;
+    }
+
+    const INITIAL_ORDERS = [
       {
         id: 1, customer: "Renate Evelin - Veere", address: "Musterstraße 12, 12345 Berlin", notes: "Bitte gut verpacken", printer: "Anycubic Kobra", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 25.00, shippingCost: 6.19, weight: 180, archived: false,
         items: [
           { name: "1x Japandi Vogel", color: "PLA Grün", durationMin: 60, status: "Offen", endTime: null },
-          { name: "1x Kürbis", color: "PLA Orange", durationMin: 45, status: "Offen", endTime: null }
+          { name: "1x Kürbis", color: "PLA Orange", durationMin: 45, status: "Offen", endTime: null },
+          { name: "1x Modernes Eichhörnchen", color: "PLA Braun", durationMin: 50, status: "Offen", endTime: null },
+          { name: "4x Zapfenhäuschen", color: "2x Grün, 2x Beige", durationMin: 120, status: "Offen", endTime: null }
         ]
       },
       {
@@ -362,27 +375,72 @@
         items: [
           { name: "6x Rentier", color: "PLA Braun", durationMin: 150, status: "Fertig", endTime: null }
         ]
+      },
+      {
+        id: 3, customer: "Sabine Beewen", address: "", notes: "", printer: "Anycubic Kobra", status: "Offen", label: "✅ Ja", packed: "❌ Nein", tracking: "-", price: 9.50, shippingCost: 2.70, weight: 65, archived: false,
+        items: [
+          { name: "1x Fernbedienungshalter", color: "PETG Schwarz", durationMin: 90, status: "Offen", endTime: null }
+        ]
+      },
+      {
+        id: 4, customer: "Dunja marcinkowski", address: "", notes: "", printer: "Ender 3 V3", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 32.00, shippingCost: 6.19, weight: 240, archived: false,
+        items: [
+          { name: "6x Weinhalter schwarz", color: "PLA Schwarz", durationMin: 180, status: "Offen", endTime: null },
+          { name: "9x Bäume", color: "PLA Grün", durationMin: 120, status: "Offen", endTime: null }
+        ]
+      },
+      {
+        id: 5, customer: "Tobias von der Famile Ulm", address: "", notes: "", printer: "Anycubic Kobra", status: "In Arbeit", label: "✅ Ja", packed: "❌ Nein", tracking: "358072492915", price: 29.00, shippingCost: 6.19, weight: 210, archived: false,
+        items: [
+          { name: "3x Suppenhalter 6cm", color: "PLA Schwarz", durationMin: 60, status: "Fertig", endTime: null },
+          { name: "4x Backpulverhalter", color: "PLA Schwarz", durationMin: 40, status: "In Arbeit", endTime: Date.now() + 1000 * 60 * 25 },
+          { name: "4x Backpulverhalter 6cm", color: "PLA Schwarz", durationMin: 45, status: "Offen", endTime: null },
+          { name: "1x Abroller Alufolie", color: "PLA Grau", durationMin: 90, status: "Offen", endTime: null }
+        ]
+      },
+      {
+        id: 6, customer: "Antje Nanninga", address: "", notes: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 15.00, shippingCost: 2.70, weight: 110, archived: false,
+        items: [
+          { name: "1x Vase weiß", color: "PLA Weiß", durationMin: 120, status: "Fertig", endTime: null }
+        ]
+      },
+      {
+        id: 7, customer: "Gabi Thomas", address: "", notes: "", printer: "Ender 3 V3", status: "Offen", label: "✅ Ja", packed: "❌ Nein", tracking: "358072492921", price: 12.00, shippingCost: 2.70, weight: 85, archived: false,
+        items: [
+          { name: "1x Dogge lila", color: "PLA Lila", durationMin: 105, status: "Offen", endTime: null }
+        ]
+      },
+      {
+        id: 8, customer: "Paul Hartmann", address: "", notes: "", printer: "CR-10 Smart Pro #1", status: "In Arbeit", label: "✅ Ja", packed: "❌ Nein", tracking: "-", price: 14.00, shippingCost: 2.70, weight: 95, archived: false,
+        items: [
+          { name: "3x Makita Akkuhalter", color: "PETG Schwarz", durationMin: 135, status: "In Arbeit", endTime: Date.now() + 1000 * 60 * 45 }
+        ]
       }
     ];
 
-    let spools = JSON.parse(localStorage.getItem('sefas_spools_v13')) || [
+    let orders = getStoredData('sefas_orders', INITIAL_ORDERS);
+    let spools = getStoredData('sefas_spools', [
       { id: 1, name: "PLA Schwarz", remainingGrams: 820 },
       { id: 2, name: "PETG Weiß", remainingGrams: 650 },
       { id: 3, name: "ASA Grau", remainingGrams: 120 }
-    ];
-
-    let printers = JSON.parse(localStorage.getItem('sefas_printers_v13')) || [
+    ]);
+    let printers = getStoredData('sefas_printers', [
       { name: "CR-10 Smart Pro #1", desc: "Creality Cloud / Großraum", status: "Bereit", printHours: 12.5 },
       { name: "Ender 3 V3", desc: "Creality / Klipper", status: "Frei", printHours: 104.0 },
       { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei", printHours: 45.0 },
       { name: "CR-10 Smart Pro #2", desc: "Creality Cloud / Großraum", status: "Bereit", printHours: 8.0 }
-    ];
+    ]);
+    let failedFilamentGrams = parseInt(localStorage.getItem('sefas_failed_grams')) || 0;
 
-    if (!localStorage.getItem('sefas_orders_v13')) {
-      localStorage.setItem('sefas_orders_v13', JSON.stringify(REAL_ORDERS));
+    function saveAllData() {
+      for (let i = 1; i <= 20; i++) {
+        const suffix = (i === 1 ? '' : '_v' + i);
+        localStorage.setItem('sefas_orders' + suffix, JSON.stringify(orders));
+        localStorage.setItem('sefas_spools' + suffix, JSON.stringify(spools));
+        localStorage.setItem('sefas_printers' + suffix, JSON.stringify(printers));
+      }
+      localStorage.setItem('sefas_failed_grams', failedFilamentGrams);
     }
-
-    let orders = JSON.parse(localStorage.getItem('sefas_orders_v13')) || REAL_ORDERS;
 
     function playBeepSound() {
       try {
@@ -396,17 +454,14 @@
         gain.gain.setValueAtTime(0.1, ctx.currentTime);
         osc.start();
         osc.stop(ctx.currentTime + 0.4);
-      } catch (e) {
-        console.log("Audio play blocked");
-      }
+      } catch (e) {}
     }
 
     function resetToScreenshotData() {
       if (confirm("Möchtest du alle Aufträge auf die Standard-Daten zurücksetzen?")) {
-        orders = JSON.parse(JSON.stringify(REAL_ORDERS));
-        localStorage.setItem('sefas_orders_v13', JSON.stringify(orders));
+        orders = JSON.parse(JSON.stringify(INITIAL_ORDERS));
         failedFilamentGrams = 0;
-        localStorage.setItem('sefas_failed_grams', 0);
+        saveAllData();
         editingIndex = -1;
         renderOrders();
         updateStats();
@@ -454,13 +509,13 @@
       if (grams <= 0) return;
 
       failedFilamentGrams += grams;
-      localStorage.setItem('sefas_failed_grams', failedFilamentGrams);
 
       if (spools.length > 0) {
         spools[0].remainingGrams = Math.max(0, spools[0].remainingGrams - grams);
         renderSpools();
       }
 
+      saveAllData();
       updateStats();
       document.getElementById('failGrams').value = '';
       document.getElementById('failReason').value = '';
@@ -488,7 +543,7 @@
         container.appendChild(div);
       });
 
-      localStorage.setItem('sefas_spools_v13', JSON.stringify(spools));
+      saveAllData();
     }
 
     function addSpoolPrompt() {
@@ -552,10 +607,11 @@
         const card = document.createElement('div');
         card.className = "card p-4 rounded-2xl space-y-3";
 
-        const needsMaint = p.printHours >= 100;
+        const printH = p.printHours || 0;
+        const needsMaint = printH >= 100;
         const maintBadge = needsMaint 
           ? `<span class="bg-red-500/20 text-red-300 border border-red-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse">🛠️ Wartung fällig</span>`
-          : `<span class="text-slate-400 text-[10px]">${p.printHours.toFixed(1)}h / 100h</span>`;
+          : `<span class="text-slate-400 text-[10px]">${printH.toFixed(1)}h / 100h</span>`;
 
         const badgeClass = p.status === 'In Arbeit' 
           ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' 
@@ -601,7 +657,7 @@
         grid.appendChild(card);
       });
 
-      localStorage.setItem('sefas_printers_v13', JSON.stringify(printers));
+      saveAllData();
     }
 
     function resetPrinterMaintenance(index) {
@@ -825,7 +881,7 @@
         tbody.appendChild(tr);
       });
 
-      localStorage.setItem('sefas_orders_v13', JSON.stringify(orders));
+      saveAllData();
       updateCustomerDropdown();
       updateStats();
       updateCountdowns();
@@ -1039,7 +1095,7 @@
       const pIndex = printers.findIndex(p => p.name === o.printer);
       if (pIndex !== -1) {
         printers[pIndex].status = "In Arbeit";
-        printers[pIndex].printHours += (item.durationMin || 60) / 60;
+        printers[pIndex].printHours = (printers[pIndex].printHours || 0) + ((item.durationMin || 60) / 60);
         renderPrinters();
       }
 
@@ -1123,7 +1179,7 @@
 
     function updateField(index, field, value) {
       orders[index][field] = value;
-      localStorage.setItem('sefas_orders_v13', JSON.stringify(orders));
+      saveAllData();
       if (field === 'tracking' || field === 'customer') {
         updateCustomerDropdown();
       }
