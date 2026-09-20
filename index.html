@@ -10,16 +10,13 @@
   <style>
     body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
     .card { background-color: #1e293b; border: 1px solid #334155; }
-    @keyframes pulse-green {
-      0%, 100% { background-color: rgba(34, 197, 94, 0.15); }
-      50% { background-color: rgba(34, 197, 94, 0.35); }
-    }
-    .pulse-done { animation: pulse-green 2s infinite; }
     @keyframes pulse-red {
       0%, 100% { border-color: rgba(239, 68, 68, 0.4); }
       50% { border-color: rgba(239, 68, 68, 0.9); }
     }
     .pulse-low-spool { animation: pulse-red 2s infinite; }
+    
+    /* DRUCK-EINSTELLUNGEN: Exakt 1 Seite ohne Leerseiten */
     @media print {
       body * { visibility: hidden !important; }
       #printSection, #printSection * { visibility: visible !important; }
@@ -56,6 +53,7 @@
     </div>
   </div>
 
+  <!-- DRUCK-BEREICH FÜR QR-ETIKETTEN -->
   <div id="printSection" class="hidden"></div>
 
   <!-- MAIN APP -->
@@ -70,12 +68,15 @@
         <div>
           <h1 class="text-xl font-bold text-white">Sefas3DShop Live-Cloud Dashboard</h1>
           <p class="text-slate-400 text-xs flex items-center gap-1.5">
-            <span id="cloudIndicator" class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span> 
-            <span>Echtzeit-Verbindung aktiv</span>
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span> 
+            <span>Echtzeit-Verbindung & Push aktiv</span>
           </p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
+        <button onclick="requestNotificationPermission()" class="bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center">
+          <i class="fa-solid fa-bell mr-1"></i> 🔔 Push aktiv
+        </button>
         <button onclick="downloadBackup()" class="bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition">
           <i class="fa-solid fa-download mr-1"></i> Backup
         </button>
@@ -128,6 +129,7 @@
           <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-layer-group mr-2 text-purple-400"></i> Filament-Lager</h2>
           <button onclick="addSpoolPrompt()" class="bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs px-2.5 py-1 rounded-lg border border-purple-500/30">+ Spule</button>
         </div>
+        <div id="spoolWarningBanner" class="hidden bg-red-500/10 border border-red-500/40 p-3 rounded-xl text-xs flex items-start gap-2.5 text-red-300"></div>
         <div id="spoolsList" class="space-y-2 max-h-[220px] overflow-y-auto pr-1"></div>
       </section>
     </div>
@@ -196,7 +198,7 @@
           <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
             <tr>
               <th class="p-3">Kunde</th>
-              <th class="p-3">Artikel & Farbe</th>
+              <th class="p-3">Artikel, Farbe & Zeit</th>
               <th class="p-3">Drucker</th>
               <th class="p-3">Status</th>
               <th class="p-3">Preis</th>
@@ -215,6 +217,7 @@
 
   <script>
     const DEFAULT_PIN = "1234";
+    let editingIndex = -1;
     let orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
     let spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [
       { id: 1, name: "PLA Schwarz", remainingGrams: 820 },
@@ -259,6 +262,16 @@
       } catch(e) {}
     }
 
+    function requestNotificationPermission() {
+      if ("Notification" in window) Notification.requestPermission();
+    }
+
+    function sendBrowserNotification(spoolName, grams) {
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("⚠️ Filament-Alarm!", { body: `Spule "${spoolName}" ist unter 250g (${grams}g)!` });
+      }
+    }
+
     function uploadBackup(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -299,17 +312,32 @@
 
     function renderSpools() {
       const container = document.getElementById('spoolsList');
+      const banner = document.getElementById('spoolWarningBanner');
       container.innerHTML = '';
+      let lowSpools = [];
+
       spools.forEach((s, idx) => {
+        const isLow = s.remainingGrams < 250;
+        if (isLow) {
+          lowSpools.push(s);
+          if (!s.notified) { sendBrowserNotification(s.name, s.remainingGrams); s.notified = true; }
+        } else { s.notified = false; }
+
         container.innerHTML += `
-          <div class="p-2.5 rounded-xl border text-xs flex justify-between items-center bg-slate-900 border-slate-700/60">
+          <div class="p-2.5 rounded-xl border text-xs flex justify-between items-center ${isLow ? 'bg-red-950/40 border-red-500/60 pulse-low-spool' : 'bg-slate-900 border-slate-700/60'}">
             <span class="font-semibold text-white">${s.name}</span>
             <div class="flex items-center space-x-2">
-              <span class="text-slate-400">${s.remainingGrams}g</span>
-              <button onclick="deleteSpool(${idx})" class="text-red-400"><i class="fa-solid fa-xmark"></i></button>
+              <span class="${isLow ? 'text-red-400 font-bold' : 'text-slate-400'}">${s.remainingGrams}g</span>
+              <button onclick="editSpoolGrams(${idx})" class="text-slate-500 hover:text-white px-1"><i class="fa-solid fa-pen text-[10px]"></i></button>
+              <button onclick="deleteSpool(${idx})" class="text-red-400 px-1"><i class="fa-solid fa-xmark"></i></button>
             </div>
           </div>`;
       });
+
+      if (lowSpools.length > 0) {
+        banner.classList.remove('hidden');
+        banner.innerHTML = `<i class="fa-solid fa-bell text-red-400"></i> Spulen-Alarm: ${lowSpools.map(s => `${s.name} (${s.remainingGrams}g)`).join(', ')} unter 250g!`;
+      } else { banner.classList.add('hidden'); }
       updateSpoolDropdowns();
     }
 
@@ -320,6 +348,16 @@
       spools.push({ id: Date.now(), name, remainingGrams: grams });
       saveAllData();
       renderSpools();
+    }
+
+    function editSpoolGrams(idx) {
+      const current = spools[idx];
+      const newGrams = prompt(`Neues Gewicht für "${current.name}" in g:`, current.remainingGrams);
+      if (newGrams !== null && !isNaN(parseInt(newGrams))) {
+        spools[idx].remainingGrams = parseInt(newGrams);
+        saveAllData();
+        renderSpools();
+      }
     }
 
     function deleteSpool(idx) {
@@ -363,7 +401,7 @@
       nameInputs.forEach((inp, idx) => {
         const val = inp.value.trim();
         if (val) {
-          itemsList.push({ name: val, color: colorInputs[idx].value, durationMin: (parseInt(hrsInputs[idx].value) || 0) * 60 + (parseInt(minsInputs[idx].value) || 0) || 60, status: "Offen" });
+          itemsList.push({ name: val, color: colorInputs[idx].value, durationMin: (parseInt(hrsInputs[idx].value) || 0) * 60 + (parseInt(minsInputs[idx].value) || 0) || 60 });
         }
       });
       if (itemsList.length === 0) return alert("Bitte Artikel eintragen!");
@@ -388,10 +426,58 @@
       document.getElementById('orderForm').reset();
     }
 
+    function startEdit(idx) { editingIndex = idx; renderOrders(); }
+    function cancelEdit() { editingIndex = -1; renderOrders(); }
+
+    function saveEdit(idx) {
+      orders[idx].customer = document.getElementById(`edit-cust-${idx}`).value;
+      orders[idx].printer = document.getElementById(`edit-print-${idx}`).value;
+      orders[idx].status = document.getElementById(`edit-stat-${idx}`).value;
+      orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
+      orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value || '-';
+      editingIndex = -1;
+      saveAllData();
+      renderOrders();
+    }
+
     function deleteOrder(idx) {
       orders.splice(idx, 1);
       saveAllData();
       renderOrders();
+    }
+
+    function printBoxLabel(idx) {
+      const o = orders[idx];
+      const printSec = document.getElementById('printSection');
+      let itemsSummary = o.items.map(i => `${i.name} (${i.color || 'Standard'})`).join("<br>• ");
+      const trackingUrl = (o.tracking && o.tracking !== '-') ? `https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=${o.tracking}` : `Sefas3DShop - ${o.customer}`;
+
+      printSec.innerHTML = `
+        <div style="font-family: Arial, sans-serif; border: 3px solid #000; padding: 15px; width: 360px; background: #fff; border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 8px;">
+            <strong>Sefas3DShop</strong>
+            <span style="font-size: 10px; background: #000; color: #fff; padding: 2px 6px;">KARTON-ETIKETT</span>
+          </div>
+          <div style="margin-top: 10px; font-size: 12px;">
+            <p style="margin: 2px 0;"><strong>Empfänger:</strong> ${o.customer}</p>
+            <p style="margin: 2px 0; font-size: 11px; color: #444;">${o.address || ''}</p>
+          </div>
+          <div style="margin-top: 10px; border-top: 1px dashed #666; padding-top: 6px; font-size: 11px;">
+            <strong>Inhalt:</strong><br>• ${itemsSummary}
+          </div>
+          <div style="margin-top: 10px; border-top: 1px dashed #666; padding-top: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+            <div><strong>Tracking:</strong> ${o.tracking}</div>
+            <div id="qrcodeContainer"></div>
+          </div>
+        </div>`;
+      printSec.classList.remove('hidden');
+      setTimeout(() => {
+        const qrContainer = document.getElementById('qrcodeContainer');
+        qrContainer.innerHTML = '';
+        new QRCode(qrContainer, { text: trackingUrl, width: 70, height: 70 });
+        window.print();
+        printSec.classList.add('hidden');
+      }, 300);
     }
 
     function renderOrders() {
@@ -401,25 +487,49 @@
 
       orders.forEach((o, idx) => {
         if (query && !o.customer.toLowerCase().includes(query) && !o.tracking.toLowerCase().includes(query)) return;
-        let itemsHtml = '<div class="space-y-1">';
-        o.items.forEach(i => { itemsHtml += `<div class="text-xs text-white">• ${i.name} <span class="text-purple-300">(${i.color || 'Std'})</span></div>`; });
-        itemsHtml += '</div>';
 
-        tbody.innerHTML += `
-          <tr class="hover:bg-slate-800/40 border-b border-slate-800">
-            <td class="p-3 font-medium text-white">${o.customer}</td>
-            <td class="p-3">${itemsHtml}</td>
-            <td class="p-3 text-slate-400 text-xs">${o.printer}</td>
-            <td class="p-3"><span class="px-2 py-1 rounded-lg text-xs bg-yellow-500/20 text-yellow-300">${o.status}</span></td>
-            <td class="p-3 text-xs text-emerald-400 font-bold">${(o.price + o.shippingCost).toFixed(2).replace('.', ',')} €</td>
-            <td class="p-3 text-xs text-slate-300">${o.weight ? o.weight + ' g' : '-'}</td>
-            <td class="p-3 text-xs">${o.label}</td>
-            <td class="p-3 text-xs">${o.packed}</td>
-            <td class="p-3 text-xs font-mono text-blue-400">${o.tracking}</td>
-            <td class="p-3 text-right">
-              <button onclick="deleteOrder(${idx})" class="text-red-400 text-xs px-2 py-1 bg-red-500/10 rounded-lg"><i class="fa-solid fa-trash"></i></button>
-            </td>
-          </tr>`;
+        if (editingIndex === idx) {
+          tbody.innerHTML += `
+            <tr class="border-b border-slate-800 bg-slate-900/80">
+              <td class="p-3"><input type="text" id="edit-cust-${idx}" value="${o.customer}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-full"></td>
+              <td class="p-3 text-xs text-slate-400">Artikel über Neuanlage</td>
+              <td class="p-3"><select id="edit-print-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white"><option>${o.printer}</option></select></td>
+              <td class="p-3"><select id="edit-stat-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white"><option>Offen</option><option>In Arbeit</option><option>Fertig</option></select></td>
+              <td class="p-3"><input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-20"></td>
+              <td class="p-3">-</td><td class="p-3">-</td><td class="p-3">-</td>
+              <td class="p-3"><input type="text" id="edit-track-${idx}" value="${o.tracking}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-20"></td>
+              <td class="p-3 text-right">
+                <button onclick="saveEdit(${idx})" class="bg-green-600 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-check"></i></button>
+                <button onclick="cancelEdit()" class="bg-slate-700 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-xmark"></i></button>
+              </td>
+            </tr>`;
+        } else {
+          let itemsHtml = '<div class="space-y-1">';
+          o.items.forEach(i => {
+            const h = Math.floor((i.durationMin || 60) / 60);
+            const m = (i.durationMin || 60) % 60;
+            itemsHtml += `<div class="text-xs text-white">• ${i.name} <span class="text-purple-300">(${i.color || 'Std'})</span> [${h}h ${m}m]</div>`;
+          });
+          itemsHtml += '</div>';
+
+          tbody.innerHTML += `
+            <tr class="hover:bg-slate-800/40 border-b border-slate-800">
+              <td class="p-3 font-medium text-white">${o.customer}<div class="text-[10px] text-slate-400">${o.address || ''}</div></td>
+              <td class="p-3">${itemsHtml}</td>
+              <td class="p-3 text-slate-400 text-xs">${o.printer}</td>
+              <td class="p-3"><span class="px-2 py-1 rounded-lg text-xs bg-yellow-500/20 text-yellow-300">${o.status}</span></td>
+              <td class="p-3 text-xs text-emerald-400 font-bold">${(o.price + o.shippingCost).toFixed(2).replace('.', ',')} €</td>
+              <td class="p-3 text-xs text-slate-300">${o.weight ? o.weight + ' g' : '-'}</td>
+              <td class="p-3 text-xs">${o.label}</td>
+              <td class="p-3 text-xs">${o.packed}</td>
+              <td class="p-3 text-xs font-mono text-blue-400">${o.tracking}</td>
+              <td class="p-3 text-right space-x-1">
+                <button onclick="printBoxLabel(${idx})" title="QR Etikett drucken" class="text-amber-300 bg-amber-500/10 px-2 py-1 rounded text-xs">🏷️ QR</button>
+                <button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-2 py-1 rounded text-xs">✏️</button>
+                <button onclick="deleteOrder(${idx})" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
+              </td>
+            </tr>`;
+        }
       });
       updateStats();
     }
