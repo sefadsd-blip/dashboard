@@ -72,7 +72,6 @@
         <button onclick="downloadBackup()" class="bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition">
           <i class="fa-solid fa-download mr-1"></i> Backup
         </button>
-        <!-- WIEDER DA: Import Button -->
         <input type="file" id="backupFileinput" accept=".json" onchange="uploadBackup(event)" class="hidden">
         <button onclick="document.getElementById('backupFileinput').click()" class="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition">
           <i class="fa-solid fa-upload mr-1"></i> Import
@@ -548,6 +547,35 @@
       renderOrders();
     }
 
+    function startEdit(index) {
+      editingIndex = index;
+      renderOrders();
+    }
+
+    function cancelEdit() {
+      editingIndex = -1;
+      renderOrders();
+    }
+
+    function saveEdit(index) {
+      orders[index] = {
+        ...orders[index],
+        customer: document.getElementById(`edit-customer-${index}`).value,
+        address: document.getElementById(`edit-address-${index}`).value || '',
+        printer: document.getElementById(`edit-printer-${index}`).value,
+        status: document.getElementById(`edit-status-${index}`).value,
+        price: parseFloat(document.getElementById(`edit-price-${index}`).value) || 0,
+        shippingCost: parseFloat(document.getElementById(`edit-shipping-${index}`).value) || 0,
+        weight: parseInt(document.getElementById(`edit-weight-${index}`).value) || 0,
+        label: document.getElementById(`edit-label-${index}`).value,
+        packed: document.getElementById(`edit-packed-${index}`).value,
+        tracking: document.getElementById(`edit-tracking-${index}`).value || '-'
+      };
+      editingIndex = -1;
+      saveAllData();
+      renderOrders();
+    }
+
     function deleteOrder(index) {
       orders.splice(index, 1);
       saveAllData();
@@ -568,34 +596,85 @@
 
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-800/40 border-b border-slate-800";
-        
-        let itemsHtml = '<div class="space-y-1">';
-        o.items.forEach((item) => {
-          const h = Math.floor((item.durationMin || 0) / 60);
-          const m = (item.durationMin || 0) % 60;
-          itemsHtml += `<div class="text-xs text-white">• ${item.name} <span class="text-purple-300">(${item.color || 'Std'})</span> [${h}h ${m}m]</div>`;
-        });
-        itemsHtml += '</div>';
 
-        const totalP = parseFloat(o.price || 0) + parseFloat(o.shippingCost || 0);
+        if (editingIndex === orderIndex) {
+          tr.innerHTML = `
+            <td class="p-2 space-y-1">
+              <input type="text" id="edit-customer-${orderIndex}" value="${o.customer}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-full">
+              <input type="text" id="edit-address-${orderIndex}" value="${o.address || ''}" placeholder="Adresse..." class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-[11px] text-white w-full">
+            </td>
+            <td class="p-2 text-xs text-slate-400">Artikel-Bearbeitung über neuen Auftrag</td>
+            <td class="p-2">
+              <select id="edit-printer-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white">
+                <option value="CR-10 Smart Pro #1" ${o.printer === 'CR-10 Smart Pro #1' ? 'selected' : ''}>CR-10 Smart Pro #1</option>
+                <option value="Ender 3 V3" ${o.printer === 'Ender 3 V3' ? 'selected' : ''}>Ender 3 V3</option>
+                <option value="Anycubic Kobra" ${o.printer === 'Anycubic Kobra' ? 'selected' : ''}>Anycubic Kobra</option>
+                <option value="CR-10 Smart Pro #2" ${o.printer === 'CR-10 Smart Pro #2' ? 'selected' : ''}>CR-10 Smart Pro #2</option>
+              </select>
+            </td>
+            <td class="p-2">
+              <select id="edit-status-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white">
+                <option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option>
+                <option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option>
+                <option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option>
+              </select>
+            </td>
+            <td class="p-2">
+              <input type="number" step="0.01" id="edit-price-${orderIndex}" value="${o.price || 0}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-20">
+              <input type="number" step="0.01" id="edit-shipping-${orderIndex}" value="${o.shippingCost || 0}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-20 mt-1">
+            </td>
+            <td class="p-2"><input type="number" id="edit-weight-${orderIndex}" value="${o.weight || 0}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-14"></td>
+            <td class="p-2">
+              <select id="edit-label-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white">
+                <option value="✅ Ja" ${o.label.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
+                <option value="❌ Nein" ${o.label.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
+                <option value="🟡 Wartet auf Zahlung" ${o.label.includes('Zahlung') ? 'selected' : ''}>🟡 Zahl.</option>
+              </select>
+            </td>
+            <td class="p-2">
+              <select id="edit-packed-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white">
+                <option value="❌ Nein" ${o.packed.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
+                <option value="✅ Ja" ${o.packed.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
+              </select>
+            </td>
+            <td class="p-2"><input type="text" id="edit-tracking-${orderIndex}" value="${o.tracking === '-' ? '' : o.tracking}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-24"></td>
+            <td class="p-2 text-right">
+              <div class="flex justify-end space-x-1">
+                <button onclick="saveEdit(${orderIndex})" class="bg-green-600 hover:bg-green-500 text-white px-2 py-1 rounded-lg text-xs"><i class="fa-solid fa-check"></i></button>
+                <button onclick="cancelEdit()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-2 py-1 rounded-lg text-xs"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+            </td>
+          `;
+        } else {
+          let itemsHtml = '<div class="space-y-1">';
+          o.items.forEach((item) => {
+            const h = Math.floor((item.durationMin || 0) / 60);
+            const m = (item.durationMin || 0) % 60;
+            itemsHtml += `<div class="text-xs text-white">• ${item.name} <span class="text-purple-300">(${item.color || 'Std'})</span> [${h}h ${m}m]</div>`;
+          });
+          itemsHtml += '</div>';
 
-        tr.innerHTML = `
-          <td class="p-3"><div class="font-medium text-white">${o.customer}</div><div class="text-[10px] text-slate-400">${o.address || ''}</div></td>
-          <td class="p-3">${itemsHtml}</td>
-          <td class="p-3 text-slate-400 text-xs">${o.printer}</td>
-          <td class="p-3"><span class="px-2 py-1 rounded-lg text-xs ${o.status === 'Fertig' ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}">${o.status}</span></td>
-          <td class="p-3 text-xs text-emerald-400 font-bold">${totalP.toFixed(2).replace('.', ',')} €</td>
-          <td class="p-3 text-xs text-slate-300">${o.weight ? o.weight + ' g' : '-'}</td>
-          <td class="p-3 text-xs">${o.label}</td>
-          <td class="p-3 text-xs">${o.packed}</td>
-          <td class="p-3 text-xs font-mono text-blue-400">${o.tracking}</td>
-          <td class="p-3 text-right">
-            <div class="flex justify-end items-center space-x-1">
-              <button onclick="toggleArchiveOrder(${orderIndex})" class="text-purple-300 text-xs px-2 py-1 bg-purple-500/10 rounded-lg">📦</button>
-              <button onclick="deleteOrder(${orderIndex})" class="text-red-400 text-xs px-2 py-1 bg-red-500/10 rounded-lg"><i class="fa-solid fa-trash"></i></button>
-            </div>
-          </td>
-        `;
+          const totalP = parseFloat(o.price || 0) + parseFloat(o.shippingCost || 0);
+
+          tr.innerHTML = `
+            <td class="p-3"><div class="font-medium text-white">${o.customer}</div><div class="text-[10px] text-slate-400">${o.address || ''}</div></td>
+            <td class="p-3">${itemsHtml}</td>
+            <td class="p-3 text-slate-400 text-xs">${o.printer}</td>
+            <td class="p-3"><span class="px-2 py-1 rounded-lg text-xs ${o.status === 'Fertig' ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}">${o.status}</span></td>
+            <td class="p-3 text-xs text-emerald-400 font-bold">${totalP.toFixed(2).replace('.', ',')} €</td>
+            <td class="p-3 text-xs text-slate-300">${o.weight ? o.weight + ' g' : '-'}</td>
+            <td class="p-3 text-xs">${o.label}</td>
+            <td class="p-3 text-xs">${o.packed}</td>
+            <td class="p-3 text-xs font-mono text-blue-400">${o.tracking}</td>
+            <td class="p-3 text-right">
+              <div class="flex justify-end items-center space-x-1">
+                <button onclick="toggleArchiveOrder(${orderIndex})" class="text-purple-300 text-xs px-2 py-1 bg-purple-500/10 rounded-lg">📦</button>
+                <button onclick="startEdit(${orderIndex})" class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-blue-500/10 rounded-lg">✏️</button>
+                <button onclick="deleteOrder(${orderIndex})" class="text-red-400 text-xs px-2 py-1 bg-red-500/10 rounded-lg"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          `;
+        }
         tbody.appendChild(tr);
       });
       updateStats();
