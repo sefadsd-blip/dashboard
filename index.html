@@ -73,16 +73,15 @@
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <!-- NEUER MANUELLER SYNC BUTTON -->
-        <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center">
-          <i class="fa-solid fa-rotate mr-2"></i> 🔄 Von Cloud abrufen
+        <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center">
+          <i class="fa-solid fa-rotate mr-1.5"></i> 🔄 Cloud abrufen
         </button>
-        <button onclick="pushToCloudManual()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center">
-          <i class="fa-solid fa-cloud-arrow-up mr-2"></i> 📤 In Cloud speichern
+        <button onclick="pushToCloudManual()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center">
+          <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> 📤 In Cloud speichern
         </button>
         
         <button onclick="requestNotificationPermission()" class="bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-3 py-2 rounded-xl text-xs font-medium transition flex items-center">
-          <i class="fa-solid fa-bell mr-1"></i> Push aktiv
+          <i class="fa-solid fa-bell mr-1"></i> Push
         </button>
         <button onclick="lockApp()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 rounded-xl text-xs font-medium">
           <i class="fa-solid fa-right-from-bracket mr-1"></i> Sperren
@@ -217,7 +216,6 @@
     const DEFAULT_PIN = "1234";
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
 
-    // Feste Backup-Daten - UNLÖSCHBAR
     const BACKUP_ORDERS = [
       {"id":1789933732086,"customer":"Silke Schwarzer","address":"Gartenweg 10d 04862 Mockrehna","notes":"","printer":"Ender 3 V3","status":"Offen","label":"🟡 Wartet auf Zahlung","packed":"❌ Nein","price":20,"shippingCost":5,"weight":0,"tracking":"-","archived":false,"items":[{"name":"2x Tannenzapfen","color":"","durationMin":60,"status":"Offen","endTime":null},{"name":"2x Tannenzapfen","color":"","durationMin":60,"status":"Offen","endTime":null}]},
       {"id":1789933658205,"customer":"Familie Tchoffo","address":"Prämienstraße 62 52428 Jülich","notes":"","printer":"CR-10 Smart Pro #1","status":"Offen","label":"✅ Ja","packed":"❌ Nein","price":10,"shippingCost":5,"weight":460,"tracking":"-","archived":false,"items":[{"name":"Küchenrollnhalter 2X","color":"","durationMin":60,"status":"Offen","endTime":null}]},
@@ -254,18 +252,17 @@
       {"id":1789935882064,"name":"PLA Olivgrün","remainingGrams":560,"notified":false}
     ];
 
-    let printers = [
-      { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Bereit" },
+    let printers = JSON.parse(localStorage.getItem('sefas_shop_printers')) || [
+      { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
       { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
       { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
-      { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Bereit" }
+      { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
     ];
 
     let editingIndex = -1;
     let orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
     let spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
 
-    // LADE BACKUP WENN NICHTS DA IST
     if (orders.length === 0) {
       orders = BACKUP_ORDERS;
       spools = BACKUP_SPOOLS;
@@ -275,6 +272,7 @@
     function saveLocalOnly() {
       localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
       localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
+      localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
     }
 
     async function loadCloudData() {
@@ -282,16 +280,17 @@
         const res = await fetch(NPOINT_URL, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
-          // LÄDT NUR WENN AUCH WIRKLICH DATEN IN DER CLOUD SIND!
           if (json && Array.isArray(json.orders) && json.orders.length > 0) {
             orders = json.orders;
             if (Array.isArray(json.spools)) spools = json.spools;
+            if (Array.isArray(json.printers)) printers = json.printers;
             saveLocalOnly();
             renderOrders();
             renderSpools();
+            renderPrinters();
             alert("✅ Daten erfolgreich von der Cloud abgerufen!");
           } else {
-            alert("Die Cloud ist leer. Es wurden keine lokalen Daten überschrieben.");
+            alert("Die Cloud ist leer.");
           }
         }
       } catch(e) {
@@ -305,7 +304,7 @@
         await fetch(NPOINT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orders, spools })
+          body: JSON.stringify({ orders, spools, printers })
         });
         alert("✅ Daten erfolgreich in der Cloud gespeichert!");
       } catch(e) {
@@ -317,15 +316,19 @@
       saveLocalOnly();
       renderOrders();
       renderSpools();
+      renderPrinters();
       
-      // Speichert im Hintergrund, ohne die UI zu blockieren
       fetch(NPOINT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orders, spools })
+        body: JSON.stringify({ orders, spools, printers })
       }).catch(e => console.log("Hintergrund-Speichern fehlgeschlagen", e));
     }
 
+    function updatePrinterStatus(index, newStatus) {
+      printers[index].status = newStatus;
+      saveAllData();
+    }
 
     function requestNotificationPermission() {
       if ("Notification" in window) Notification.requestPermission();
@@ -656,8 +659,23 @@
     function renderPrinters() {
       const grid = document.getElementById('printersGrid');
       grid.innerHTML = '';
-      printers.forEach(p => {
-        grid.innerHTML += `<div class="card p-4 rounded-2xl space-y-2"><div class="flex justify-between"><h3 class="font-bold text-white">${p.name}</h3><span class="text-xs text-blue-400">${p.status}</span></div><p class="text-xs text-slate-400">${p.desc}</p></div>`;
+      printers.forEach((p, idx) => {
+        let statusColor = 'text-blue-400';
+        if (p.status === 'In Arbeit') statusColor = 'text-yellow-400 font-bold';
+        if (p.status === 'Außer Betrieb') statusColor = 'text-red-400 font-bold';
+
+        grid.innerHTML += `
+          <div class="card p-4 rounded-2xl space-y-3">
+            <div class="flex justify-between items-center">
+              <h3 class="font-bold text-white text-sm">${p.name}</h3>
+              <select onchange="updatePrinterStatus(${idx}, this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs ${statusColor} focus:outline-none">
+                <option value="Frei" ${p.status === 'Frei' ? 'selected' : ''}>🟢 Frei</option>
+                <option value="In Arbeit" ${p.status === 'In Arbeit' ? 'selected' : ''}>🟡 In Arbeit</option>
+                <option value="Außer Betrieb" ${p.status === 'Außer Betrieb' ? 'selected' : ''}>🔴 Außer Betrieb</option>
+              </select>
+            </div>
+            <p class="text-xs text-slate-400">${p.desc}</p>
+          </div>`;
       });
     }
 
