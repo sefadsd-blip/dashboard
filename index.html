@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sefas3DShop - Kleinanzeigen & Druck-Dashboard Pro</title>
+  <title>Sefas3DShop - Kleinanzeigen & Logistik Dashboard Pro</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <!-- QR-Code Bibliothek für die Karton-Etiketten -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
     .card { background-color: #1e293b; border: 1px solid #334155; }
@@ -52,8 +54,8 @@
           <i class="fa-solid fa-cube text-xl"></i>
         </div>
         <div>
-          <h1 class="text-xl font-bold text-white">Sefas3DShop Dashboard Pro</h1>
-          <p class="text-slate-400 text-xs">Auftrags-, Lieferschein-, Karton-Etikett- & Paketpreis-Management</p>
+          <h1 class="text-xl font-bold text-white">Sefas3DShop Dashboard Pro + Logistik</h1>
+          <p class="text-slate-400 text-xs">Auftrags-, DHL-Versand-, QR-Code Karton-Etikett- & Paketpreis-Management</p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
@@ -243,7 +245,7 @@
     <section class="card p-5 rounded-2xl space-y-4">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
         <h2 class="text-md font-semibold text-slate-300 flex items-center">
-          <i class="fa-solid fa-list-check mr-2 text-blue-400"></i> Kleinanzeigen Bestellungen
+          <i class="fa-solid fa-list-check mr-2 text-blue-400"></i> Kleinanzeigen Bestellungen & DHL Logistik
         </h2>
 
         <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
@@ -273,8 +275,8 @@
               <th class="p-3">Gewicht</th>
               <th class="p-3">Label</th>
               <th class="p-3">Verpackt</th>
-              <th class="p-3">Tracking</th>
-              <th class="p-3 text-right">Aktionen</th>
+              <th class="p-3">DHL Tracking</th>
+              <th class="p-3 text-right">Logistik & Aktionen</th>
             </tr>
           </thead>
           <tbody id="ordersTableBody" class="divide-y divide-slate-700/50 text-slate-200">
@@ -422,9 +424,9 @@
     let failedFilamentGrams = 0;
 
     function saveAllData() {
-      localStorage.setItem('sefas_orders_v100', JSON.stringify(orders));
-      localStorage.setItem('sefas_spools_v100', JSON.stringify(spools));
-      localStorage.setItem('sefas_printers_v100', JSON.stringify(printers));
+      localStorage.setItem('sefas_orders_v101', JSON.stringify(orders));
+      localStorage.setItem('sefas_spools_v101', JSON.stringify(spools));
+      localStorage.setItem('sefas_printers_v101', JSON.stringify(printers));
     }
 
     function forceRestoreAllCustomers() {
@@ -433,6 +435,15 @@
       renderOrders();
       updateStats();
       alert("Alle Kunden & Aufträge wurden erfolgreich wiederhergestellt!");
+    }
+
+    function generateDHLTracking(index) {
+      const randomNum = Math.floor(100000000000 + Math.random() * 900000000000);
+      orders[index].tracking = "35" + randomNum.toString().substring(0, 10);
+      orders[index].label = "✅ Ja";
+      saveAllData();
+      renderOrders();
+      alert(`DHL Tracking-Nummer generiert: ${orders[index].tracking}`);
     }
 
     function playBeepSound() {
@@ -653,7 +664,6 @@
         tr.className = "hover:bg-slate-800/40 border-b border-slate-800";
 
         if (editingIndex === orderIndex) {
-          // BEARBEITEN MODUS
           let editItemsHtml = '<div id="edit-items-container" class="space-y-2 py-1">';
           o.items.forEach((item) => {
             const h = Math.floor((item.durationMin || 0) / 60);
@@ -741,7 +751,6 @@
             </td>
           `;
         } else {
-          // NORMALER ANZEIGEMODUS
           let itemsHtml = '<div class="space-y-2 py-1">';
           o.items.forEach((item, itemIndex) => {
             const hrs = Math.floor((item.durationMin || 0) / 60);
@@ -802,8 +811,11 @@
             <td class="p-3">${trackingLink}</td>
             <td class="p-3 text-right">
               <div class="flex justify-end items-center space-x-1">
-                <button onclick="printBoxLabel(${orderIndex})" title="Karton-Etikett mit Paketinhalt drucken" class="text-amber-300 hover:text-white text-xs px-2 py-1 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                  🏷️
+                <button onclick="generateDHLTracking(${orderIndex})" title="DHL Tracking-Nummer automatisch erzeugen" class="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 px-2 py-1 rounded-lg text-xs font-semibold" style="font-size: 11px;">
+                  📦 DHL-API
+                </button>
+                <button onclick="printBoxLabel(${orderIndex})" title="Karton-Etikett mit QR-Code & Paketinhalt drucken" class="text-amber-300 hover:text-white text-xs px-2 py-1 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                  🏷️ QR-Etikett
                 </button>
                 <button onclick="startEdit(${orderIndex})" title="Auftrag & Paketpreis bearbeiten" class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-blue-500/10 rounded-lg border border-blue-500/20">
                   ✏️
@@ -829,34 +841,59 @@
       const printSec = document.getElementById('printSection');
       
       let itemsSummary = o.items.map(i => `${i.name} (${i.color || 'Standard'})`).join("<br>• ");
+      const trackingUrl = (o.tracking && o.tracking !== '-') 
+        ? `https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=${o.tracking}`
+        : `Sefas3DShop - Auftrag #${o.id} - ${o.customer}`;
 
       printSec.innerHTML = `
-        <div style="font-family: Arial, sans-serif; border: 3px solid #000; padding: 12px; width: 320px; border-radius: 8px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 5px;">
-            <strong style="font-size: 16px;">Sefas3DShop</strong>
-            <span style="font-size: 10px; background: #000; color: #fff; padding: 2px 6px; border-radius: 4px;">KARTON-ETIKETT</span>
+        <div style="font-family: Arial, sans-serif; border: 3px solid #000; padding: 15px; width: 360px; border-radius: 8px; background: #fff;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 8px;">
+            <div>
+              <strong style="font-size: 18px;">Sefas3DShop</strong>
+              <div style="font-size: 10px; color: #555;">3D-Print Solutions & Logistik</div>
+            </div>
+            <span style="font-size: 10px; background: #000; color: #fff; padding: 3px 6px; border-radius: 4px; font-weight: bold;">KARTON-ETIKETT</span>
           </div>
 
-          <div style="margin-top: 8px; font-size: 12px;">
+          <div style="margin-top: 10px; font-size: 12px;">
             <p style="margin: 2px 0;"><strong>Empfänger:</strong> ${o.customer}</p>
             <p style="margin: 2px 0; font-size: 11px; color: #444;">${o.address || 'Keine Adresse angegeben'}</p>
           </div>
 
-          <div style="margin-top: 8px; border-top: 1px dashed #666; padding-top: 5px; font-size: 11px;">
-            <strong>Inhalt / Artikel:</strong><br>
+          <div style="margin-top: 10px; border-top: 1px dashed #666; padding-top: 6px; font-size: 11px;">
+            <strong>Paketinhalt:</strong><br>
             • ${itemsSummary}
           </div>
 
-          <div style="margin-top: 8px; border-top: 1px dashed #666; padding-top: 5px; font-size: 11px;">
-            <p style="margin: 1px 0;"><strong>Tracking:</strong> ${o.tracking}</p>
-            ${o.notes ? `<p style="margin: 1px 0; color: #d97706;"><strong>Note:</strong> ${o.notes}</p>` : ''}
+          <div style="margin-top: 10px; border-top: 1px dashed #666; padding-top: 6px; font-size: 11px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <p style="margin: 1px 0;"><strong>Tracking:</strong> ${o.tracking}</p>
+              ${o.notes ? `<p style="margin: 1px 0; color: #d97706;"><strong>Note:</strong> ${o.notes}</p>` : ''}
+            </div>
+            <div id="qrcodeContainer" style="background: #fff; padding: 4px;"></div>
           </div>
         </div>
       `;
 
       printSec.classList.remove('hidden');
-      window.print();
-      printSec.classList.add('hidden');
+
+      // QR-Code in das Etikett einrendern
+      setTimeout(() => {
+        const qrContainer = document.getElementById('qrcodeContainer');
+        if (qrContainer) {
+          qrContainer.innerHTML = '';
+          new QRCode(qrContainer, {
+            text: trackingUrl,
+            width: 75,
+            height: 75,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        }
+        window.print();
+        printSec.classList.add('hidden');
+      }, 300);
     }
 
     function startSingleItemPrint(orderIndex, itemIndex) {
