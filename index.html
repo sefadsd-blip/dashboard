@@ -73,18 +73,15 @@
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <!-- NEUER TEST BUTTON -->
         <button onclick="testFilamentAlarm()" class="bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center">
           <i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Test Filament-Alarm
         </button>
-
         <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center">
           <i class="fa-solid fa-rotate mr-1.5"></i> 🔄 Cloud abrufen
         </button>
         <button onclick="pushToCloudManual()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center">
           <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> 📤 In Cloud speichern
         </button>
-        
         <button onclick="lockApp()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 rounded-xl text-xs font-medium">
           <i class="fa-solid fa-right-from-bracket mr-1"></i> Sperren
         </button>
@@ -348,7 +345,6 @@
       } catch(e) {}
     }
 
-    // DIREKTER TEST-BUTTON FÜR DEN FILAMENT-ALARM
     async function testFilamentAlarm() {
       await sendTelegramMessage("⚠️ TEST Filament-Alarm bei Sefas3DShop!\n\nSpule 'PETG Weiß' hat nur noch 150g übrig!");
       alert("✅ Test-Nachricht wurde an deinen Telegram-Bot gesendet! Schau mal aufs Handy.");
@@ -436,9 +432,9 @@
           <div class="p-2.5 rounded-xl border text-xs flex justify-between items-center ${isLow ? 'bg-red-950/40 border-red-500/60 pulse-low-spool' : 'bg-slate-900 border-slate-700/60'}">
             <span class="font-semibold text-white">${s.name}</span>
             <div class="flex items-center space-x-2">
-              <span class="${isLow ? 'text-red-400 font-bold' : 'text-slate-400'}">${s.remainingGrams}g</span>
-              <button onclick="editSpoolGrams(${idx})" class="text-slate-500 hover:text-white px-1"><i class="fa-solid fa-pen text-[10px]"></i></button>
-              <button onclick="deleteSpool(${idx})" class="text-red-400 px-1"><i class="fa-solid fa-xmark"></i></button>
+              <span onclick="editSpoolGrams(${idx})" class="${isLow ? 'text-red-400 font-bold' : 'text-slate-300'} cursor-pointer hover:underline" title="Klicken zum Bearbeiten">${s.remainingGrams}g</span>
+              <button onclick="editSpoolGrams(${idx})" class="text-slate-400 hover:text-white px-1" title="Gewicht ändern"><i class="fa-solid fa-pen text-[10px]"></i></button>
+              <button onclick="deleteSpool(${idx})" class="text-red-400 px-1" title="Spule löschen"><i class="fa-solid fa-xmark"></i></button>
             </div>
           </div>`;
       });
@@ -454,16 +450,16 @@
     }
 
     function addSpoolPrompt() {
-      const name = prompt("Name/Farbe der Spule:");
+      const name = prompt("Name/Farbe der Spule (z.B. PLA Rot):");
       if (!name) return;
-      const grams = parseInt(prompt("Gewicht (g):", "1000")) || 1000;
+      const grams = parseInt(prompt("Gewicht in Gramm (z.B. 1000):", "1000")) || 1000;
       spools.push({ id: Date.now(), name, remainingGrams: grams, notifiedCount: 0, lastNotifiedDate: "" });
       saveAllData();
     }
 
     function editSpoolGrams(idx) {
       const current = spools[idx];
-      const newGrams = prompt(`Neues Gewicht für "${current.name}" in g:`, current.remainingGrams);
+      const newGrams = prompt(`Neues Gewicht für "${current.name}" in Gramm:`, current.remainingGrams);
       if (newGrams !== null && !isNaN(parseInt(newGrams))) {
         spools[idx].remainingGrams = parseInt(newGrams);
         if (spools[idx].remainingGrams >= 250) {
@@ -474,8 +470,10 @@
     }
 
     function deleteSpool(idx) {
-      spools.splice(idx, 1);
-      saveAllData();
+      if (confirm(`Spule "${spools[idx].name}" wirklich löschen?`)) {
+        spools.splice(idx, 1);
+        saveAllData();
+      }
     }
 
     function updateSpoolDropdowns() {
@@ -732,7 +730,7 @@
 
     function renderPrinters() {
       const grid = document.getElementById('printersGrid');
-      grid.innerHTML = '';
+      grid.innerHTML = and -> '';
       printers.forEach((p, idx) => {
         let statusColor = 'text-blue-400';
         if (p.status === 'In Arbeit') statusColor = 'text-yellow-400 font-bold';
