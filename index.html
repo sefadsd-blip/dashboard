@@ -17,6 +17,12 @@
     }
     .pulse-done { animation: pulse-green 2s infinite; }
 
+    @keyframes pulse-red {
+      0%, 100% { border-color: rgba(239, 68, 68, 0.4); }
+      50% { border-color: rgba(239, 68, 68, 0.9); }
+    }
+    .pulse-low-spool { animation: pulse-red 2s infinite; }
+
     /* Lieferschein & Etikett Druck-Styling */
     @media print {
       body * { visibility: hidden; }
@@ -54,11 +60,14 @@
           <i class="fa-solid fa-cube text-xl"></i>
         </div>
         <div>
-          <h1 class="text-xl font-bold text-white">Sefas3DShop Dashboard Pro + Logistik</h1>
-          <p class="text-slate-400 text-xs">Auftrags-, DHL-Versand-, QR-Code Karton-Etikett- & Paketpreis-Management</p>
+          <h1 class="text-xl font-bold text-white">Sefas3DShop Dashboard Pro + Push Alarm</h1>
+          <p class="text-slate-400 text-xs">Auftrags-, Tracking-, QR-Code Karton-Etikett & Browser-Benachrichtigungen</p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
+        <button onclick="requestNotificationPermission()" class="bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center">
+          <i class="fa-solid fa-bell mr-1"></i> 🔔 Benachrichtigungen aktivieren
+        </button>
         <button onclick="forceRestoreAllCustomers()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center">
           <i class="fa-solid fa-arrows-rotate mr-1"></i> 🔄 Kunden Wiederherstellen
         </button>
@@ -136,6 +145,7 @@
         <div id="printersGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
       </section>
 
+      <!-- FILAMENT LAGER MIT WARN-BANNER -->
       <section class="card p-4 rounded-2xl space-y-3">
         <div class="flex justify-between items-center">
           <h2 class="text-md font-semibold text-slate-300 flex items-center">
@@ -145,6 +155,10 @@
             <i class="fa-solid fa-plus mr-1"></i> Spule
           </button>
         </div>
+
+        <!-- FILAMENT WARN-BANNER (<250g) -->
+        <div id="spoolWarningBanner" class="hidden bg-red-500/10 border border-red-500/40 p-3 rounded-xl text-xs flex items-start gap-2.5"></div>
+
         <div id="spoolsList" class="space-y-2 max-h-[220px] overflow-y-auto pr-1"></div>
       </section>
     </div>
@@ -245,7 +259,7 @@
     <section class="card p-5 rounded-2xl space-y-4">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
         <h2 class="text-md font-semibold text-slate-300 flex items-center">
-          <i class="fa-solid fa-list-check mr-2 text-blue-400"></i> Kleinanzeigen Bestellungen & DHL Logistik
+          <i class="fa-solid fa-list-check mr-2 text-blue-400"></i> Kleinanzeigen Bestellungen & Logistik
         </h2>
 
         <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
@@ -258,7 +272,7 @@
             <button id="filter-all" onclick="setFilter('all')" class="px-2.5 py-1 rounded-lg font-medium bg-blue-600 text-white">Aktive</button>
             <button id="filter-open" onclick="setFilter('open')" class="px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white">Offen</button>
             <button id="filter-done" onclick="setFilter('done')" class="px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white">Fertig</button>
-            <button id="filter-archived" onclick="setFilter('archived')" class="px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white">Archiv 📦</button>
+            <button id="filter-archived" onclick="setFilter('archived')" class="px-2.5 py-1 rounded-lg font-medium text-purple-600 text-white">Archiv 📦</button>
           </div>
         </div>
       </div>
@@ -275,8 +289,8 @@
               <th class="p-3">Gewicht</th>
               <th class="p-3">Label</th>
               <th class="p-3">Verpackt</th>
-              <th class="p-3">DHL Tracking</th>
-              <th class="p-3 text-right">Logistik & Aktionen</th>
+              <th class="p-3">Tracking</th>
+              <th class="p-3 text-right">Aktionen</th>
             </tr>
           </thead>
           <tbody id="ordersTableBody" class="divide-y divide-slate-700/50 text-slate-200">
@@ -421,12 +435,11 @@
       { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei", printHours: 45.0 },
       { name: "CR-10 Smart Pro #2", desc: "Creality Cloud / Großraum", status: "Bereit", printHours: 8.0 }
     ];
-    let failedFilamentGrams = 0;
 
     function saveAllData() {
-      localStorage.setItem('sefas_orders_v101', JSON.stringify(orders));
-      localStorage.setItem('sefas_spools_v101', JSON.stringify(spools));
-      localStorage.setItem('sefas_printers_v101', JSON.stringify(printers));
+      localStorage.setItem('sefas_orders_v105', JSON.stringify(orders));
+      localStorage.setItem('sefas_spools_v105', JSON.stringify(spools));
+      localStorage.setItem('sefas_printers_v105', JSON.stringify(printers));
     }
 
     function forceRestoreAllCustomers() {
@@ -437,13 +450,29 @@
       alert("Alle Kunden & Aufträge wurden erfolgreich wiederhergestellt!");
     }
 
-    function generateDHLTracking(index) {
-      const randomNum = Math.floor(100000000000 + Math.random() * 900000000000);
-      orders[index].tracking = "35" + randomNum.toString().substring(0, 10);
-      orders[index].label = "✅ Ja";
-      saveAllData();
-      renderOrders();
-      alert(`DHL Tracking-Nummer generiert: ${orders[index].tracking}`);
+    function requestNotificationPermission() {
+      if (!("Notification" in window)) {
+        alert("Dein Browser unterstützt keine Benachrichtigungen.");
+        return;
+      }
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          alert("Benachrichtigungen erfolgreich aktiviert! Du wirst ab sofort gewarnt.");
+          new Notification("Sefas3DShop", { body: "Push-Benachrichtigungen sind nun aktiv." });
+        } else {
+          alert("Benachrichtigungen wurden abgelehnt.");
+        }
+      });
+    }
+
+    function sendBrowserNotification(spoolName, grams) {
+      if (!("Notification" in window)) return;
+      if (Notification.permission === "granted") {
+        new Notification("⚠️ Sefas3DShop Filament-Alarm!", {
+          body: `Spule "${spoolName}" ist unter 250g gefallen! Restgewicht: ${grams}g.`,
+          icon: "https://cdn-icons-png.flaticon.com/512/2921/2921222.png"
+        });
+      }
     }
 
     function playBeepSound() {
@@ -490,6 +519,87 @@
       document.getElementById('filter-done').className = filter === 'done' ? 'px-2.5 py-1 rounded-lg font-medium bg-blue-600 text-white' : 'px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white';
       document.getElementById('filter-archived').className = filter === 'archived' ? 'px-2.5 py-1 rounded-lg font-medium bg-purple-600 text-white' : 'px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white';
       renderOrders();
+    }
+
+    /* FILAMENT LAGER MANAGEMENT & PUSH BENACHRICHTIGUNG */
+    function renderSpools() {
+      const container = document.getElementById('spoolsList');
+      const banner = document.getElementById('spoolWarningBanner');
+      container.innerHTML = '';
+      
+      let lowSpools = [];
+
+      spools.forEach((s, idx) => {
+        const isLow = s.remainingGrams < 250;
+        if (isLow) {
+          lowSpools.push(s);
+          if (!s.notified) {
+            sendBrowserNotification(s.name, s.remainingGrams);
+            s.notified = true;
+          }
+        } else {
+          s.notified = false;
+        }
+
+        const div = document.createElement('div');
+        div.className = `p-2.5 rounded-xl border text-xs flex justify-between items-center transition ${
+          isLow 
+            ? 'bg-red-950/40 border-red-500/60 pulse-low-spool' 
+            : 'bg-slate-900 border-slate-700/60'
+        }`;
+
+        div.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <span class="font-semibold text-white">${s.name}</span>
+            ${isLow ? '<span class="bg-red-500/20 text-red-300 border border-red-500/40 text-[10px] px-1.5 py-0.5 rounded font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i>&lt;250g</span>' : ''}
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="${isLow ? 'text-red-400 font-bold' : 'text-slate-400'}">${s.remainingGrams}g</span>
+            <button onclick="editSpoolGrams(${idx})" title="Gewicht anpassen" class="text-slate-500 hover:text-white px-1"><i class="fa-solid fa-pen text-[10px]"></i></button>
+            <button onclick="deleteSpool(${idx})" title="Spule löschen" class="text-red-400 hover:text-red-300 px-1"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+
+      if (lowSpools.length > 0) {
+        banner.classList.remove('hidden');
+        banner.innerHTML = `
+          <i class="fa-solid fa-bell text-red-400 text-sm mt-0.5"></i>
+          <div>
+            <strong class="text-red-300 font-semibold">Push-Alarm aktiv! Nachbestellung empfohlen.</strong>
+            <p class="text-[11px] text-red-200 mt-0.5">${lowSpools.map(s => `<b>${s.name}</b> (${s.remainingGrams}g)`).join(', ')} unter 250g Restgewicht.</p>
+          </div>
+        `;
+      } else {
+        banner.classList.add('hidden');
+      }
+    }
+
+    function addSpoolPrompt() {
+      const name = prompt("Name/Farbe der Filament-Spule (z.B. PLA Rot):");
+      if (!name) return;
+      const grams = parseInt(prompt("Verbleibendes Gewicht in Gramm:", "1000")) || 1000;
+      spools.push({ id: Date.now(), name: name, remainingGrams: grams, notified: false });
+      saveAllData();
+      renderSpools();
+    }
+
+    function editSpoolGrams(index) {
+      const current = spools[index];
+      const newGrams = prompt(`Neues Restgewicht für "${current.name}" in Gramm:`, current.remainingGrams);
+      if (newGrams !== null && !isNaN(parseInt(newGrams))) {
+        spools[index].remainingGrams = parseInt(newGrams);
+        if (parseInt(newGrams) >= 250) spools[index].notified = false;
+        saveAllData();
+        renderSpools();
+      }
+    }
+
+    function deleteSpool(index) {
+      spools.splice(index, 1);
+      saveAllData();
+      renderSpools();
     }
 
     function addArticleInputRow() {
@@ -738,7 +848,7 @@
                 <option value="✅ Ja" ${o.packed.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
               </select>
             </td>
-            <td class="p-2"><input type="text" id="edit-tracking-${orderIndex}" value="${o.tracking === '-' ? '' : o.tracking}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-20"></td>
+            <td class="p-2"><input type="text" id="edit-tracking-${orderIndex}" value="${o.tracking === '-' ? '' : o.tracking}" placeholder="Tracking..." class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-24"></td>
             <td class="p-2 text-right">
               <div class="flex justify-end space-x-1">
                 <button onclick="saveEdit(${orderIndex})" title="Speichern" class="bg-green-600 hover:bg-green-500 text-white px-2 py-1 rounded-lg text-xs font-semibold">
@@ -811,13 +921,10 @@
             <td class="p-3">${trackingLink}</td>
             <td class="p-3 text-right">
               <div class="flex justify-end items-center space-x-1">
-                <button onclick="generateDHLTracking(${orderIndex})" title="DHL Tracking-Nummer automatisch erzeugen" class="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 px-2 py-1 rounded-lg text-xs font-semibold" style="font-size: 11px;">
-                  📦 DHL-API
-                </button>
                 <button onclick="printBoxLabel(${orderIndex})" title="Karton-Etikett mit QR-Code & Paketinhalt drucken" class="text-amber-300 hover:text-white text-xs px-2 py-1 bg-amber-500/10 rounded-lg border border-amber-500/20">
                   🏷️ QR-Etikett
                 </button>
-                <button onclick="startEdit(${orderIndex})" title="Auftrag & Paketpreis bearbeiten" class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                <button onclick="startEdit(${orderIndex})" title="Auftrag & Tracking bearbeiten" class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-blue-500/10 rounded-lg border border-blue-500/20">
                   ✏️
                 </button>
                 <button onclick="deleteOrder(${orderIndex})" title="Löschen" class="text-red-400 hover:text-red-300 text-xs px-2 py-1 bg-red-500/10 rounded-lg border border-red-500/20">
@@ -877,7 +984,6 @@
 
       printSec.classList.remove('hidden');
 
-      // QR-Code in das Etikett einrendern
       setTimeout(() => {
         const qrContainer = document.getElementById('qrcodeContainer');
         if (qrContainer) {
@@ -970,17 +1076,6 @@
         card.className = "card p-4 rounded-2xl space-y-2";
         card.innerHTML = `<div class="flex justify-between"><h3 class="font-bold text-white">${p.name}</h3><span class="text-xs text-blue-400">${p.status}</span></div><p class="text-xs text-slate-400">${p.desc}</p>`;
         grid.appendChild(card);
-      });
-    }
-
-    function renderSpools() {
-      const container = document.getElementById('spoolsList');
-      container.innerHTML = '';
-      spools.forEach((s) => {
-        const div = document.createElement('div');
-        div.className = "p-2 rounded-xl bg-slate-900 border border-slate-700/60 text-xs flex justify-between";
-        div.innerHTML = `<span class="font-semibold text-white">${s.name}</span><span class="text-slate-400">${s.remainingGrams}g</span>`;
-        container.appendChild(div);
       });
     }
 
