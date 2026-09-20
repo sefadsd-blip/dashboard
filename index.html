@@ -42,6 +42,9 @@
         </div>
       </div>
       <div class="flex items-center space-x-3">
+        <button onclick="resetToScreenshotData()" class="bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition">
+          <i class="fa-solid fa-rotate-right mr-1"></i> Daten Zurücksetzen
+        </button>
         <button onclick="lockApp()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-medium">
           <i class="fa-solid fa-right-from-bracket mr-1"></i> Sperren
         </button>
@@ -174,14 +177,7 @@
   <script>
     const DEFAULT_PIN = "1234";
 
-    let printers = JSON.parse(localStorage.getItem('sefas_printers')) || [
-      { name: "CR-10 Smart Pro #1", desc: "Creality Cloud / Großraum", temp: "24°C", status: "Bereit" },
-      { name: "Ender 3 V3", desc: "Creality / Klipper", temp: "20°C", status: "Frei" },
-      { name: "Anycubic Kobra", desc: "Direct Drive", temp: "210°C", status: "In Arbeit" },
-      { name: "CR-10 Smart Pro #2", desc: "Creality Cloud / Großraum", temp: "23°C", status: "Bereit" }
-    ];
-
-    let orders = JSON.parse(localStorage.getItem('sefas_orders')) || [
+    const REAL_ORDERS = [
       { id: 1, customer: "Renate Evelin - Veere", item: "1 japandi vogel grün 1 kürbis orange 1 modernes eichhörnchen farbe wie auf dem Foto 4 Zapfenhäuschen 2xgrün, 2x beige", printer: "Anycubic Kobra", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-" },
       { id: 2, customer: "Ralf Hartmann", item: "6x renntier", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", tracking: "358070447889" },
       { id: 3, customer: "Sabine Beewen", item: "fernbedienungshalter", printer: "Anycubic Kobra", status: "Offen", label: "✅ Ja", packed: "❌ Nein", tracking: "-" },
@@ -191,6 +187,30 @@
       { id: 7, customer: "Gabi Thomas", item: "Bulldoge lila", printer: "Ender 3 V3", status: "Offen", label: "✅ Ja", packed: "❌ Nein", tracking: "358072492921" },
       { id: 8, customer: "Paul Hartmann", item: "3x Makitaakkuhalter", printer: "CR-10 Smart Pro #1", status: "In Arbeit", label: "✅ Ja", packed: "❌ Nein", tracking: "-" }
     ];
+
+    let printers = JSON.parse(localStorage.getItem('sefas_printers')) || [
+      { name: "CR-10 Smart Pro #1", desc: "Creality Cloud / Großraum", temp: "24°C", status: "Bereit" },
+      { name: "Ender 3 V3", desc: "Creality / Klipper", temp: "20°C", status: "Frei" },
+      { name: "Anycubic Kobra", desc: "Direct Drive", temp: "210°C", status: "In Arbeit" },
+      { name: "CR-10 Smart Pro #2", desc: "Creality Cloud / Großraum", temp: "23°C", status: "Bereit" }
+    ];
+
+    // Erzwinge beim ersten Laden mit V2-Schlüssel das Laden der echten Kundendaten
+    if (!localStorage.getItem('sefas_orders_v2')) {
+      localStorage.setItem('sefas_orders_v2', JSON.stringify(REAL_ORDERS));
+      localStorage.removeItem('sefas_orders');
+    }
+
+    let orders = JSON.parse(localStorage.getItem('sefas_orders_v2')) || REAL_ORDERS;
+
+    function resetToScreenshotData() {
+      if (confirm("Möchtest du alle Aufträge auf die Kundendaten zurücksetzen?")) {
+        orders = JSON.parse(JSON.stringify(REAL_ORDERS));
+        localStorage.setItem('sefas_orders_v2', JSON.stringify(orders));
+        renderOrders();
+        alert("Kundendaten zurückgesetzt!");
+      }
+    }
 
     function checkPin() {
       const pin = document.getElementById("pinInput").value;
@@ -306,7 +326,7 @@
         tbody.appendChild(tr);
       });
 
-      localStorage.setItem('sefas_orders', JSON.stringify(orders));
+      localStorage.setItem('sefas_orders_v2', JSON.stringify(orders));
       updateCustomerDropdown();
     }
 
@@ -330,7 +350,7 @@
 
     function updateField(index, field, value) {
       orders[index][field] = value;
-      localStorage.setItem('sefas_orders', JSON.stringify(orders));
+      localStorage.setItem('sefas_orders_v2', JSON.stringify(orders));
       if (field === 'tracking' || field === 'customer') {
         updateCustomerDropdown();
       }
