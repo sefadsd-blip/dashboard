@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sefas3DShop - Kleinanzeigen & Druck-Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+    .card { background-color: #1e293b; border: 1px solid #334155; }
+  </style>
+</head>
+<body class="p-4 md:p-6 min-h-screen">
+
+  <!-- LOGIN MODAL -->
+  <div id="loginModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div class="card p-6 rounded-2xl max-w-md w-full shadow-2xl text-center space-y-4">
+      <div class="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center mx-auto text-2xl border border-blue-500/20">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-white">Sefas3DShop Login</h2>
+      <p class="text-slate-400 text-sm">Bitte gib deinen PIN ein, um auf das Dashboard zuzugreifen.</p>
+      <input type="password" id="pinInput" placeholder="PIN eingeben" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-center text-xl text-white focus:outline-none focus:border-blue-500">
+      <button onclick="checkPin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition">Entsperren</button>
+      <p id="loginError" class="text-red-400 text-xs hidden">Falscher PIN! Bitte erneut versuchen.</p>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="mainApp" class="max-w-[1500px] mx-auto space-y-6 hidden">
+    
+    <!-- HEADER -->
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800 p-4 rounded-2xl border border-slate-700 gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
+          <i class="fa-solid fa-cube text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-white">Sefas3DShop Dashboard</h1>
+          <p class="text-slate-400 text-xs">Kleinanzeigen Auftrags- & Druckermanagement</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3">
+        <button onclick="lockApp()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-medium">
+          <i class="fa-solid fa-right-from-bracket mr-1"></i> Sperren
+        </button>
+      </div>
+    </header>
+
+    <!-- DRUCKER ÜBERSICHT (4 DRUCKER) -->
+    <section>
+      <h2 class="text-md font-semibold mb-3 text-slate-300 flex items-center">
+        <i class="fa-solid fa-print mr-2 text-blue-400"></i> Drucker-Übersicht & Status
+      </h2>
+      <div id="printersGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Dynamisch gerenderte Drucker -->
+      </div>
+    </section>
+
+    <!-- NEUEN AUFTRAG ANLEGEN -->
+    <section class="card p-5 rounded-2xl space-y-4">
+      <h2 class="text-md font-semibold text-slate-300 flex items-center">
+        <i class="fa-solid fa-plus-circle mr-2 text-blue-400"></i> Neuen Auftrag anlegen
+      </h2>
+      <form id="orderForm" onsubmit="addOrder(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <input type="text" id="customer" placeholder="Kundenname (Kleinanzeigen)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+        <input type="text" id="item" placeholder="Artikel & Material (z.B. Halterung PLA)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+        
+        <select id="printer" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+          <option value="CR-10 Smart Pro #1">CR-10 Smart Pro #1</option>
+          <option value="Ender 3 V3">Ender 3 V3</option>
+          <option value="Anycubic Kobra">Anycubic Kobra</option>
+          <option value="CR-10 Smart Pro #2">CR-10 Smart Pro #2</option>
+        </select>
+
+        <select id="status" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+          <option value="Offen">Offen</option>
+          <option value="In Arbeit">In Arbeit</option>
+          <option value="Fertig">Fertig</option>
+        </select>
+
+        <select id="label" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+          <option value="✅ Ja">Label: ✅ Ja</option>
+          <option value="❌ Nein">Label: ❌ Nein</option>
+          <option value="🟡 Wartet auf Zahlung">Label: 🟡 Wartet auf Zahlung</option>
+        </select>
+
+        <select id="packed" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+          <option value="❌ Nein">Verpackt: ❌ Nein</option>
+          <option value="✅ Ja">Verpackt: ✅ Ja</option>
+        </select>
+
+        <input type="text" id="tracking" placeholder="Tracking-Nummer (optional)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+
+        <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl px-4 py-2 text-sm transition flex items-center justify-center">
+          <i class="fa-solid fa-save mr-2"></i> Auftrag Speichern
+        </button>
+      </form>
+    </section>
+
+    <!-- KLEINANZEIGEN BESTELLUNGEN TABELLE -->
+    <section class="card p-5 rounded-2xl space-y-4">
+      <div class="flex justify-between items-center">
+        <h2 class="text-md font-semibold text-slate-300 flex items-center">
+          <i class="fa-solid fa-list-check mr-2 text-blue-400"></i> Kleinanzeigen Bestellungen
+        </h2>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
+            <tr>
+              <th class="p-3">Kunde</th>
+              <th class="p-3">Artikel & Material</th>
+              <th class="p-3">Drucker</th>
+              <th class="p-3">Druck-Status</th>
+              <th class="p-3">Versandlabel</th>
+              <th class="p-3">Verpackt</th>
+              <th class="p-3">Tracking</th>
+              <th class="p-3 text-right">Aktion</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody" class="divide-y divide-slate-700/50 text-slate-200">
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SCHNELL-NACHRICHTEN VORLAGEN -->
+    <section class="card p-5 rounded-2xl space-y-3">
+      <h2 class="text-md font-semibold text-slate-300 flex items-center">
+        <i class="fa-solid fa-comment-dots mr-2 text-blue-400"></i> Kleinanzeigen Antwort-Vorlagen
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/60 flex justify-between items-center">
+          <div>
+            <h4 class="font-medium text-sm text-white">Druck gestartet</h4>
+            <p class="text-xs text-slate-400">"Hallo! Dein Auftrag befindet sich jetzt auf dem Drucker..."</p>
+          </div>
+          <button onclick="copyStartMessage()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs border border-slate-600 flex items-center">
+            <i class="fa-solid fa-copy mr-1.5"></i> Kopieren
+          </button>
+        </div>
+
+        <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/60 flex justify-between items-center">
+          <div>
+            <h4 class="font-medium text-sm text-white">Versendet + Auto-Tracking</h4>
+            <p class="text-xs text-slate-400">Fügt automatisch die Tracking-Nummer des fertigen Auftrags an.</p>
+          </div>
+          <button onclick="copyTrackingMessage()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center transition">
+            <i class="fa-solid fa-paper-plane mr-1.5"></i> Mit Tracking Kopieren
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    const DEFAULT_PIN = "1234";
+
+    let printers = JSON.parse(localStorage.getItem('sefas_printers')) || [
+      { name: "CR-10 Smart Pro #1", desc: "Creality Cloud / Großraum", temp: "24°C", status: "Bereit" },
+      { name: "Ender 3 V3", desc: "Creality / Klipper", temp: "20°C", status: "Frei" },
+      { name: "Anycubic Kobra", desc: "Direct Drive", temp: "210°C", status: "In Arbeit" },
+      { name: "CR-10 Smart Pro #2", desc: "Creality Cloud / Großraum", temp: "23°C", status: "Bereit" }
+    ];
+
+    let orders = JSON.parse(localStorage.getItem('sefas_orders')) || [
+      { id: 1, customer: "Max M.", item: "2x Einkaufswagenlöser (Schwarz PLA)", printer: "Ender 3 V3", status: "Offen", label: "✅ Ja", packed: "❌ Nein", tracking: "-" },
+      { id: 2, customer: "Lisa K.", item: "1x Schlüsselanhänger (Rot PLA+)", printer: "Anycubic Kobra", status: "In Arbeit", label: "✅ Ja", packed: "❌ Nein", tracking: "-" },
+      { id: 3, customer: "David S.", item: "1x Wandhalterung (PETG)", printer: "CR-10 Smart Pro #1", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-" },
+      { id: 4, customer: "Peter M.", item: "1x Kabelabdeckung (Grau ASA)", printer: "CR-10 Smart Pro #2", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", tracking: "DHL123456" }
+    ];
+
+    function checkPin() {
+      const pin = document.getElementById("pinInput").value;
+      if (pin === DEFAULT_PIN || pin === "sefa") {
+        document.getElementById("loginModal").classList.add("hidden");
+        document.getElementById("mainApp").classList.remove("hidden");
+        document.getElementById("loginError").classList.add("hidden");
+        renderPrinters();
+        renderOrders();
+      } else {
+        document.getElementById("loginError").classList.remove("hidden");
+      }
+    }
+
+    function lockApp() {
+      document.getElementById("mainApp").classList.add("hidden");
+      document.getElementById("loginModal").classList.remove("hidden");
+      document.getElementById("pinInput").value = "";
+    }
+
+    function renderPrinters() {
+      const grid = document.getElementById('printersGrid');
+      grid.innerHTML = '';
+
+      printers.forEach((p, index) => {
+        const card = document.createElement('div');
+        card.className = "card p-4 rounded-2xl space-y-3";
+
+        const badgeClass = p.status === 'In Arbeit' 
+          ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' 
+          : p.status === 'Frei' 
+          ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' 
+          : 'bg-green-500/10 text-green-400 border-green-500/20';
+
+        card.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 class="font-bold text-lg text-white">${p.name}</h3>
+              <p class="text-xs text-slate-400">${p.desc}</p>
+            </div>
+            <span class="px-2.5 py-1 rounded-full text-xs font-medium border ${badgeClass}">
+              ${p.status}
+            </span>
+          </div>
+
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs text-slate-400 mb-1">
+              <span>Status ändern:</span>
+            </div>
+            <select onchange="updatePrinterStatus(${index}, this.value)" class="w-full bg-slate-900 border border-slate-700 text-xs rounded-xl px-2.5 py-1.5 text-white focus:outline-none">
+              <option value="In Arbeit" ${p.status === 'In Arbeit' ? 'selected' : ''}>🟡 In Arbeit</option>
+              <option value="Frei" ${p.status === 'Frei' ? 'selected' : ''}>🔵 Frei</option>
+              <option value="Bereit" ${p.status === 'Bereit' ? 'selected' : ''}>🟢 Bereit</option>
+            </select>
+          </div>
+
+          <div class="text-xs text-slate-400 flex justify-between pt-2 border-t border-slate-700/60">
+            <span>Düse: ${p.temp}</span>
+            <span>Restzeit: ${p.status === 'In Arbeit' ? 'Aktiv' : '--'}</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      localStorage.setItem('sefas_printers', JSON.stringify(printers));
+    }
+
+    function updatePrinterStatus(index, newStatus) {
+      printers[index].status = newStatus;
+      renderPrinters();
+    }
+
+    function renderOrders() {
+      const tbody = document.getElementById('ordersTableBody');
+      tbody.innerHTML = '';
+
+      orders.forEach((o, index) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/40 border-b border-slate-800";
+        tr.innerHTML = `
+          <td class="p-3 font-medium text-white">${o.customer}</td>
+          <td class="p-3">${o.item}</td>
+          <td class="p-3 text-slate-400">${o.printer}</td>
+          <td class="p-3">
+            <select onchange="updateField(${index}, 'status', this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-white focus:outline-none">
+              <option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option>
+              <option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option>
+              <option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option>
+            </select>
+          </td>
+          <td class="p-3">
+            <select onchange="updateField(${index}, 'label', this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-white focus:outline-none">
+              <option value="✅ Ja" ${o.label.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
+              <option value="❌ Nein" ${o.label.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
+              <option value="🟡 Wartet auf Zahlung" ${o.label.includes('Zahlung') ? 'selected' : ''}>🟡 Wartet auf Zahlung</option>
+            </select>
+          </td>
+          <td class="p-3">
+            <select onchange="updateField(${index}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-white focus:outline-none">
+              <option value="❌ Nein" ${o.packed.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
+              <option value="✅ Ja" ${o.packed.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
+            </select>
+          </td>
+          <td class="p-3">
+            <input type="text" value="${o.tracking === '-' ? '' : o.tracking}" placeholder="Tracking..." onblur="updateField(${index}, 'tracking', this.value || '-')" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-slate-200 w-28 focus:outline-none">
+          </td>
+          <td class="p-3 text-right">
+            <button onclick="deleteOrder(${index})" class="text-red-400 hover:text-red-300 text-xs px-2 py-1 bg-red-500/10 rounded-lg border border-red-500/20">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      localStorage.setItem('sefas_orders', JSON.stringify(orders));
+    }
+
+    function updateField(index, field, value) {
+      orders[index][field] = value;
+      localStorage.setItem('sefas_orders', JSON.stringify(orders));
+    }
+
+    function addOrder(e) {
+      e.preventDefault();
+      const newOrder = {
+        id: Date.now(),
+        customer: document.getElementById('customer').value,
+        item: document.getElementById('item').value,
+        printer: document.getElementById('printer').value,
+        status: document.getElementById('status').value,
+        label: document.getElementById('label').value,
+        packed: document.getElementById('packed').value,
+        tracking: document.getElementById('tracking').value || '-'
+      };
+
+      orders.unshift(newOrder);
+      renderOrders();
+      document.getElementById('orderForm').reset();
+    }
+
+    function deleteOrder(index) {
+      orders.splice(index, 1);
+      renderOrders();
+    }
+
+    function copyStartMessage() {
+      const msg = "Hallo! Dein Auftrag befindet sich jetzt auf dem Drucker und wird aktuell gefertigt. Ich melde mich, sobald das Paket versandbereit ist!";
+      navigator.clipboard.writeText(msg);
+      alert("Vorlage 'Druck gestartet' kopiert!");
+    }
+
+    function copyTrackingMessage() {
+      const orderWithTracking = orders.find(o => o.tracking && o.tracking !== '-' && o.tracking.trim() !== '');
+
+      if (orderWithTracking) {
+        const msg = `Hallo ${orderWithTracking.customer || ''}! Dein Paket wurde soeben fertig verpackt und verschickt. Hier ist deine Sendungsnummer zur Nachverfolgung: ${orderWithTracking.tracking}`;
+        navigator.clipboard.writeText(msg);
+        alert(`Nachricht mit Sendungsnummer (${orderWithTracking.tracking}) für ${orderWithTracking.customer} kopiert!`);
+      } else {
+        const msg = "Hallo! Dein Paket wurde soeben fertig verpackt und verschickt. Hier ist deine Sendungsnummer zur Nachverfolgung: ";
+        navigator.clipboard.writeText(msg);
+        alert("Keine fertige Sendungsnummer in den Aufträgen gefunden. Basis-Text wurde kopiert.");
+      }
+    }
+
+    document.getElementById("pinInput").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") checkPin();
+    });
+  </script>
+</body>
+</html>
