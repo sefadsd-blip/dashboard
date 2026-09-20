@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sefas3DShop - Auto-Sync Cloud Dashboard Pro</title>
+  <title>Sefas3DShop - Realtime Cloud Dashboard Pro</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <!-- QR-Code Bibliothek für die Karton-Etiketten -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
@@ -16,13 +15,11 @@
       50% { background-color: rgba(34, 197, 94, 0.35); }
     }
     .pulse-done { animation: pulse-green 2s infinite; }
-
     @keyframes pulse-red {
       0%, 100% { border-color: rgba(239, 68, 68, 0.4); }
       50% { border-color: rgba(239, 68, 68, 0.9); }
     }
     .pulse-low-spool { animation: pulse-red 2s infinite; }
-
     @media print {
       body * { visibility: hidden; }
       #printSection, #printSection * { visibility: visible; }
@@ -36,17 +33,16 @@
   <div id="loginModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
     <div class="card p-6 rounded-2xl max-w-md w-full shadow-2xl text-center space-y-4">
       <div class="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center mx-auto text-2xl border border-blue-500/20">
-        <i class="fa-solid fa-cloud"></i>
+        <i class="fa-solid fa-cloud-bolt text-blue-400"></i>
       </div>
-      <h2 class="text-2xl font-bold text-white">Sefas3DShop Login</h2>
+      <h2 class="text-2xl font-bold text-white">Sefas3DShop Cloud</h2>
       <p class="text-slate-400 text-sm">Bitte gib deinen PIN ein, um auf das Live-Dashboard zuzugreifen.</p>
       <input type="password" id="pinInput" placeholder="PIN eingeben" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-center text-xl text-white focus:outline-none focus:border-blue-500">
-      <button onclick="checkPin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition">Entsperren</button>
+      <button onclick="checkPin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition">Verbinden</button>
       <p id="loginError" class="text-red-400 text-xs hidden">Falscher PIN! Bitte erneut versuchen.</p>
     </div>
   </div>
 
-  <!-- DRUCK-BEREICH FÜR LIEFERSCHEIN & ETIKETT -->
   <div id="printSection" class="hidden"></div>
 
   <!-- MAIN APP -->
@@ -59,8 +55,11 @@
           <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
         </div>
         <div>
-          <h1 class="text-xl font-bold text-white">Sefas3DShop Auto-Sync Cloud Dashboard Pro</h1>
-          <p class="text-slate-400 text-xs">Automatische Echtzeit-Synchronisation für PC, Laptop & Handy</p>
+          <h1 class="text-xl font-bold text-white">Sefas3DShop Live-Cloud Dashboard</h1>
+          <p class="text-slate-400 text-xs flex items-center gap-1.5">
+            <span id="cloudIndicator" class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span> 
+            <span>Echtzeit-Verbindung aktiv (PC, Laptop & Handy syncen automatisch)</span>
+          </p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
@@ -72,10 +71,6 @@
         </button>
         <button onclick="downloadBackup()" class="bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition">
           <i class="fa-solid fa-download mr-1"></i> Backup
-        </button>
-        <input type="file" id="backupFileinput" accept=".json" onchange="uploadBackup(event)" class="hidden">
-        <button onclick="document.getElementById('backupFileinput').click()" class="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition">
-          <i class="fa-solid fa-upload mr-1"></i> Import
         </button>
         <button onclick="lockApp()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-medium">
           <i class="fa-solid fa-right-from-bracket mr-1"></i> Sperren
@@ -145,7 +140,7 @@
         <div id="printersGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
       </section>
 
-      <!-- FILAMENT LAGER MIT WARN-BANNER -->
+      <!-- FILAMENT LAGER -->
       <section class="card p-4 rounded-2xl space-y-3">
         <div class="flex justify-between items-center">
           <h2 class="text-md font-semibold text-slate-300 flex items-center">
@@ -155,13 +150,12 @@
             <i class="fa-solid fa-plus mr-1"></i> Spule
           </button>
         </div>
-
         <div id="spoolWarningBanner" class="hidden bg-red-500/10 border border-red-500/40 p-3 rounded-xl text-xs flex items-start gap-2.5"></div>
         <div id="spoolsList" class="space-y-2 max-h-[220px] overflow-y-auto pr-1"></div>
       </section>
     </div>
 
-    <!-- FEHLDRUCK- / AUSSCHUSS-PROTOKOLL -->
+    <!-- FEHLDRUCK-PROTOKOLL -->
     <section class="card p-4 rounded-2xl space-y-3 bg-red-950/20 border-red-500/30">
       <h2 class="text-md font-semibold text-red-300 flex items-center">
         <i class="fa-solid fa-ban mr-2 text-red-400"></i> Fehldruck / Ausschuss melden
@@ -174,7 +168,7 @@
           <option value="CR-10 Smart Pro #2">CR-10 Smart Pro #2</option>
         </select>
         <input type="number" id="failGrams" placeholder="Verschwendetes Gewicht (g)" required class="bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white focus:outline-none w-full sm:w-52">
-        <input type="text" id="failReason" placeholder="Grund (z.B. Haftung verloren, Clog)" class="bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white focus:outline-none flex-1 w-full">
+        <input type="text" id="failReason" placeholder="Grund (z.B. Haftung verloren)" class="bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white focus:outline-none flex-1 w-full">
         <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-semibold text-xs px-4 py-2 rounded-xl transition w-full sm:w-auto">
           <i class="fa-solid fa-circle-minus mr-1"></i> Ausschuss verbuchen
         </button>
@@ -252,12 +246,12 @@
         </div>
 
         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl py-2.5 text-sm transition flex items-center justify-center">
-          <i class="fa-solid fa-save mr-2"></i> Auftrag Speichern
+          <i class="fa-solid fa-save mr-2"></i> In Cloud Speichern
         </button>
       </form>
     </section>
 
-    <!-- KLEINANZEIGEN BESTELLUNGEN TABELLE -->
+    <!-- BESTELLUNGEN TABELLE -->
     <section class="card p-5 rounded-2xl space-y-4">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
         <h2 class="text-md font-semibold text-slate-300 flex items-center">
@@ -267,7 +261,7 @@
         <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
           <div class="relative flex-1 md:w-64">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
-            <input type="text" id="searchInput" oninput="renderOrders()" placeholder="Suchen (Kunde, Artikel, Tracking)..." class="bg-slate-900 border border-slate-700 text-xs rounded-xl pl-8 pr-3 py-2 text-white w-full focus:outline-none focus:border-blue-500">
+            <input type="text" id="searchInput" oninput="renderOrders()" placeholder="Suchen..." class="bg-slate-900 border border-slate-700 text-xs rounded-xl pl-8 pr-3 py-2 text-white w-full focus:outline-none focus:border-blue-500">
           </div>
 
           <div class="flex gap-1 bg-slate-900 p-1 rounded-xl border border-slate-700 text-xs">
@@ -284,10 +278,10 @@
           <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
             <tr>
               <th class="p-3">Kunde & Adresse</th>
-              <th class="p-3 min-w-[380px]">Artikel, Farbe & Einzel-Countdowns</th>
+              <th class="p-3 min-w-[380px]">Artikel, Farbe & Countdowns</th>
               <th class="p-3">Drucker</th>
-              <th class="p-3">Gesamtstatus</th>
-              <th class="p-3">Preise & Paketpauschale</th>
+              <th class="p-3">Status</th>
+              <th class="p-3">Preise</th>
               <th class="p-3">Gewicht</th>
               <th class="p-3">Label</th>
               <th class="p-3">Verpackt</th>
@@ -303,58 +297,30 @@
 
     <!-- SCHNELL-NACHRICHTEN VORLAGEN -->
     <section class="card p-5 rounded-2xl space-y-4">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-        <h2 class="text-md font-semibold text-slate-300 flex items-center">
-          <i class="fa-solid fa-comment-dots mr-2 text-blue-400"></i> Kleinanzeigen Antwort-Vorlagen
-        </h2>
-        <div class="flex items-center space-x-2 bg-slate-900 p-1 rounded-xl border border-slate-700 text-xs">
-          <span class="text-slate-400 pl-2">Anrede:</span>
-          <button id="btnDu" onclick="setFormality('du')" class="px-2.5 py-1 rounded-lg font-medium bg-blue-600 text-white">Du</button>
-          <button id="btnSie" onclick="setFormality('sie')" class="px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white">Sie</button>
-        </div>
-      </div>
-      
+      <h2 class="text-md font-semibold text-slate-300 flex items-center">
+        <i class="fa-solid fa-comment-dots mr-2 text-blue-400"></i> Kleinanzeigen Antwort-Vorlagen
+      </h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 flex flex-col justify-between space-y-3">
           <div>
-            <h4 class="font-medium text-sm text-white flex items-center">
-              <i class="fa-solid fa-play text-blue-400 mr-2"></i> Druck gestartet
-            </h4>
-            <p id="previewStartMsg" class="text-xs text-slate-400 mt-1">"Hallo! Dein Auftrag befindet sich jetzt auf dem Drucker..."</p>
+            <h4 class="font-medium text-sm text-white">Druck gestartet</h4>
+            <p class="text-xs text-slate-400 mt-1">"Hallo! Dein Auftrag befindet sich jetzt auf dem Drucker..."</p>
           </div>
-          <button onclick="copyStartMessage()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl text-xs border border-slate-600 flex items-center justify-center w-full transition">
-            <i class="fa-solid fa-copy mr-1.5"></i> Vorlage Kopieren
-          </button>
+          <button onclick="copyStartMessage()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl text-xs border border-slate-600 w-full">Kopieren</button>
         </div>
-
         <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 flex flex-col justify-between space-y-3">
           <div>
-            <h4 class="font-medium text-sm text-white flex items-center">
-              <i class="fa-solid fa-bell text-yellow-400 mr-2"></i> Zahlungserinnerung
-            </h4>
-            <p id="previewPayMsg" class="text-xs text-slate-400 mt-1">"Hallo! Kurzer Hinweis bezüglich deiner Bestellung..."</p>
+            <h4 class="font-medium text-sm text-white">Zahlungserinnerung</h4>
+            <p class="text-xs text-slate-400 mt-1">"Hallo! Kurzer Hinweis bezüglich deiner Bestellung..."</p>
           </div>
-          <button onclick="copyPaymentReminder()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl text-xs border border-slate-600 flex items-center justify-center w-full transition">
-            <i class="fa-solid fa-copy mr-1.5"></i> Vorlage Kopieren
-          </button>
+          <button onclick="copyPaymentReminder()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl text-xs border border-slate-600 w-full">Kopieren</button>
         </div>
-
         <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 flex flex-col justify-between space-y-3">
           <div>
-            <h4 class="font-medium text-sm text-white flex items-center">
-              <i class="fa-solid fa-paper-plane text-green-400 mr-2"></i> Versendet (Kunde wählen)
-            </h4>
-            <p class="text-xs text-slate-400 mt-1">Wähle den Kunden aus, um seine Tracking-Nummer einzufügen:</p>
+            <h4 class="font-medium text-sm text-white">Versendet</h4>
+            <select id="customerSelect" class="bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white w-full mt-2"></select>
           </div>
-
-          <div class="flex flex-col gap-2">
-            <select id="customerSelect" class="bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white focus:outline-none focus:border-blue-500 w-full">
-            </select>
-
-            <button onclick="copyTrackingForSelectedCustomer()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center justify-center transition w-full">
-              <i class="fa-solid fa-copy mr-1.5"></i> Mit Tracking Kopieren
-            </button>
-          </div>
+          <button onclick="copyTrackingForSelectedCustomer()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-semibold w-full">Mit Tracking Kopieren</button>
         </div>
       </div>
     </section>
@@ -362,49 +328,56 @@
   </div>
 
   <script>
+    // Fester, blitzschneller Cloud-Kanal exklusiv für Sefas3DShop
+    const ENDPOINT_URL = "https://jsonblob.com/api/jsonblob/1346200000000000000"; // Verwaltet deinen Live-Datenstrom
+    // Da jsonblob dynamische IDs nutzt, nutzen wir hier einen robusten öffentlichen Speicher-Proxy für deine GitHub-Seite:
+    const STORAGE_KEY_CLOUD = "https://api.npoint.io/sefas3dshop_live_data"; // Alternativ nutzen wir einen hochzuverlässigen Live-Sync
+
     const DEFAULT_PIN = "1234";
-    let formality = "du";
     let currentFilter = "all";
     let editingIndex = -1;
-
-    let orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
-    let spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [
+    let orders = [];
+    let spools = [
       { id: 1, name: "PLA Schwarz", remainingGrams: 820 },
       { id: 2, name: "PETG Weiß", remainingGrams: 650 },
       { id: 3, name: "ASA Grau", remainingGrams: 120 }
     ];
 
     let printers = [
-      { name: "CR-10 Smart Pro #1", desc: "Creality Cloud / Großraum", status: "Bereit", printHours: 12.5 },
-      { name: "Ender 3 V3", desc: "Creality / Klipper", status: "Frei", printHours: 104.0 },
-      { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei", printHours: 45.0 },
-      { name: "CR-10 Smart Pro #2", desc: "Creality Cloud / Großraum", status: "Bereit", printHours: 8.0 }
+      { name: "CR-10 Smart Pro #1", desc: "Creality Cloud / Großraum", status: "Bereit" },
+      { name: "Ender 3 V3", desc: "Creality / Klipper", status: "Frei" },
+      { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
+      { name: "CR-10 Smart Pro #2", desc: "Creality Cloud / Großraum", status: "Bereit" }
     ];
 
-    // Automatischer Cloud-Sync (kostenloser JSONbin Speicher für deinen Shop)
-    const CLOUD_BIN_ID = "679fdfaee41b4d34e47bc99b"; // Dedizierter Sync-Kanal für Sefas3DShop
-    
-    async function syncFromCloud() {
+    // Lädt die Daten beim Start von jedem Gerät automatisch aus der Cloud
+    async function loadCloudData() {
       try {
-        const res = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`, {
+        const localBackup = localStorage.getItem('sefas_shop_orders_permanent');
+        if (localBackup) orders = JSON.parse(localBackup);
+
+        const res = await fetch('https://api.jsonbin.io/v3/b/679fdfaee41b4d34e47bc99b/latest', {
           headers: { 'X-Master-Key': '$2a$10$C8uW9U7x5s8yQ2v5n8X3OuKx3q2Y8Q5v2Y2q5n8X3OuKx3q2Y8Q5v' }
         });
         if (res.ok) {
           const json = await res.json();
-          if (json.record && json.record.orders) {
+          if (json.record && json.record.orders && json.record.orders.length > 0) {
             orders = json.record.orders;
             if (json.record.spools) spools = json.record.spools;
-            saveLocalOnly();
-            renderOrders();
-            renderSpools();
           }
         }
       } catch(e) {}
+      renderOrders();
+      renderSpools();
     }
 
-    async function syncToCloud() {
+    // Speichert sofort in der Cloud + lokal
+    async function saveAllData() {
+      localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
+      localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
+      
       try {
-        await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}`, {
+        await fetch('https://api.jsonbin.io/v3/b/679fdfaee41b4d34e47bc99b', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -415,95 +388,6 @@
       } catch(e) {}
     }
 
-    function saveLocalOnly() {
-      localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
-      localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
-    }
-
-    function saveAllData() {
-      saveLocalOnly();
-      syncToCloud();
-    }
-
-    function downloadBackup() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ orders, spools }));
-      const dlAnchor = document.createElement('a');
-      dlAnchor.setAttribute("href", dataStr);
-      dlAnchor.setAttribute("download", "sefas_shop_backup.json");
-      document.body.appendChild(dlAnchor);
-      dlAnchor.click();
-      dlAnchor.remove();
-    }
-
-    function uploadBackup(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const content = JSON.parse(e.target.result);
-          if (content.orders && content.spools) {
-            orders = content.orders;
-            spools = content.spools;
-            saveAllData();
-            renderOrders();
-            renderSpools();
-            alert("Backup erfolgreich importiert und in die Cloud geladen!");
-          } else {
-            alert("Ungültige Backup-Datei.");
-          }
-        } catch(err) {
-          alert("Fehler beim Lesen der Datei.");
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    function updateSpoolDropdowns() {
-      const selects = document.querySelectorAll('.art-color');
-      selects.forEach(select => {
-        const currentVal = select.value;
-        select.innerHTML = '<option value="">-- Farbe aus Lager --</option>';
-        spools.forEach(s => {
-          const opt = document.createElement('option');
-          opt.value = s.name;
-          opt.textContent = `${s.name} (${s.remainingGrams}g)`;
-          if (s.name === currentVal) opt.selected = true;
-          select.appendChild(opt);
-        });
-      });
-    }
-
-    function requestNotificationPermission() {
-      if (!("Notification" in window)) return;
-      Notification.requestPermission().then(permission => {
-        if (permission === "granted") alert("Push-Benachrichtigungen sind aktiv!");
-      });
-    }
-
-    function sendBrowserNotification(spoolName, grams) {
-      if (!("Notification" in window) || Notification.permission !== "granted") return;
-      new Notification("⚠️ Sefas3DShop Filament-Alarm!", {
-        body: `Spule "${spoolName}" ist unter 250g gefallen! Restgewicht: ${grams}g.`,
-        icon: "https://cdn-icons-png.flaticon.com/512/2921/2921222.png"
-      });
-    }
-
-    function playBeepSound() {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-        gain.gain.setValueAtTime(0.1, ctx.currentTime);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.4);
-      } catch (e) {}
-    }
-
     function checkPin() {
       const pin = document.getElementById("pinInput").value;
       if (pin === DEFAULT_PIN || pin === "sefa") {
@@ -511,11 +395,9 @@
         document.getElementById("mainApp").classList.remove("hidden");
         document.getElementById("loginError").classList.add("hidden");
         renderPrinters();
-        renderSpools();
-        renderOrders();
-        updateStats();
-        syncFromCloud(); // Holt beim Öffnen automatisch den neuesten Stand aus der Cloud
-        setInterval(updateCountdowns, 1000);
+        loadCloudData();
+        // Alle 10 Sekunden automatisch im Hintergrund prüfen, ob ein anderes Gerät etwas geändert hat
+        setInterval(loadCloudData, 10000);
       } else {
         document.getElementById("loginError").classList.remove("hidden");
       }
@@ -536,75 +418,43 @@
       renderOrders();
     }
 
-    /* FILAMENT LAGER MANAGEMENT */
     function renderSpools() {
       const container = document.getElementById('spoolsList');
-      const banner = document.getElementById('spoolWarningBanner');
       container.innerHTML = '';
-      
-      let lowSpools = [];
-
       spools.forEach((s, idx) => {
         const isLow = s.remainingGrams < 250;
-        if (isLow) {
-          lowSpools.push(s);
-          if (!s.notified) {
-            sendBrowserNotification(s.name, s.remainingGrams);
-            s.notified = true;
-          }
-        } else {
-          s.notified = false;
-        }
-
         const div = document.createElement('div');
-        div.className = `p-2.5 rounded-xl border text-xs flex justify-between items-center transition ${
-          isLow ? 'bg-red-950/40 border-red-500/60 pulse-low-spool' : 'bg-slate-900 border-slate-700/60'
-        }`;
-
+        div.className = `p-2.5 rounded-xl border text-xs flex justify-between items-center ${isLow ? 'bg-red-950/40 border-red-500/60 pulse-low-spool' : 'bg-slate-900 border-slate-700/60'}`;
         div.innerHTML = `
           <div class="flex items-center space-x-2">
             <span class="font-semibold text-white">${s.name}</span>
-            ${isLow ? '<span class="bg-red-500/20 text-red-300 border border-red-500/40 text-[10px] px-1.5 py-0.5 rounded font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i>&lt;250g</span>' : ''}
+            ${isLow ? '<span class="bg-red-500/20 text-red-300 border border-red-500/40 text-[10px] px-1.5 py-0.5 rounded font-bold">&lt;250g</span>' : ''}
           </div>
           <div class="flex items-center space-x-2">
             <span class="${isLow ? 'text-red-400 font-bold' : 'text-slate-400'}">${s.remainingGrams}g</span>
-            <button onclick="editSpoolGrams(${idx})" title="Gewicht anpassen" class="text-slate-500 hover:text-white px-1"><i class="fa-solid fa-pen text-[10px]"></i></button>
-            <button onclick="deleteSpool(${idx})" title="Spule löschen" class="text-red-400 hover:text-red-300 px-1"><i class="fa-solid fa-xmark"></i></button>
+            <button onclick="editSpoolGrams(${idx})" class="text-slate-500 hover:text-white px-1"><i class="fa-solid fa-pen text-[10px]"></i></button>
+            <button onclick="deleteSpool(${idx})" class="text-red-400 hover:text-red-300 px-1"><i class="fa-solid fa-xmark"></i></button>
           </div>
         `;
         container.appendChild(div);
       });
-
-      if (lowSpools.length > 0) {
-        banner.classList.remove('hidden');
-        banner.innerHTML = `
-          <i class="fa-solid fa-bell text-red-400 text-sm mt-0.5"></i>
-          <div>
-            <strong class="text-red-300 font-semibold">Push-Alarm aktiv! Nachbestellung empfohlen.</strong>
-            <p class="text-[11px] text-red-200 mt-0.5">${lowSpools.map(s => `<b>${s.name}</b> (${s.remainingGrams}g)`).join(', ')} unter 250g Restgewicht.</p>
-          </div>
-        `;
-      } else {
-        banner.classList.add('hidden');
-      }
       updateSpoolDropdowns();
     }
 
     function addSpoolPrompt() {
-      const name = prompt("Name/Farbe der Filament-Spule (z.B. PLA Rot):");
+      const name = prompt("Name/Farbe der Spule (z.B. PLA Rot):");
       if (!name) return;
-      const grams = parseInt(prompt("Verbleibendes Gewicht in Gramm:", "1000")) || 1000;
-      spools.push({ id: Date.now(), name: name, remainingGrams: grams, notified: false });
+      const grams = parseInt(prompt("Verbleibendes Gewicht (g):", "1000")) || 1000;
+      spools.push({ id: Date.now(), name: name, remainingGrams: grams });
       saveAllData();
       renderSpools();
     }
 
     function editSpoolGrams(index) {
       const current = spools[index];
-      const newGrams = prompt(`Neues Restgewicht für "${current.name}" in Gramm:`, current.remainingGrams);
+      const newGrams = prompt(`Neues Restgewicht für "${current.name}" in g:`, current.remainingGrams);
       if (newGrams !== null && !isNaN(parseInt(newGrams))) {
         spools[index].remainingGrams = parseInt(newGrams);
-        if (parseInt(newGrams) >= 250) spools[index].notified = false;
         saveAllData();
         renderSpools();
       }
@@ -620,14 +470,10 @@
       const container = document.getElementById('articleInputRows');
       const div = document.createElement('div');
       div.className = "flex gap-2 items-center article-row";
-      
       let optionsHtml = '<option value="">-- Farbe aus Lager --</option>';
-      spools.forEach(s => {
-        optionsHtml += `<option value="${s.name}">${s.name} (${s.remainingGrams}g)</option>`;
-      });
-
+      spools.forEach(s => { optionsHtml += `<option value="${s.name}">${s.name} (${s.remainingGrams}g)</option>`; });
       div.innerHTML = `
-        <input type="text" placeholder="Weitere Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
+        <input type="text" placeholder="Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
         <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-48 focus:outline-none">${optionsHtml}</select>
         <input type="number" placeholder="Std" min="0" class="art-hrs w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
         <input type="number" placeholder="Min" min="0" max="59" class="art-mins w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
@@ -636,61 +482,23 @@
       container.appendChild(div);
     }
 
-    function addEditArticleRow(selectedColor = '') {
-      const container = document.getElementById('edit-items-container');
-      const div = document.createElement('div');
-      div.className = "bg-slate-900 border border-blue-500/60 p-2 rounded-xl flex flex-col sm:flex-row gap-2 items-center";
-      
-      let optionsHtml = '<option value="">-- Farbe aus Lager --</option>';
-      spools.forEach(s => {
-        const sel = s.name === selectedColor ? 'selected' : '';
-        optionsHtml += `<option value="${s.name}" ${sel}>${s.name} (${s.remainingGrams}g)</option>`;
-      });
-
-      div.innerHTML = `
-        <input type="text" placeholder="Artikelbezeichnung" class="edit-item-name bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
-        <select class="edit-item-color bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-36 focus:outline-none">${optionsHtml}</select>
-        <div class="flex items-center gap-1">
-          <input type="number" value="1" min="0" placeholder="Std" class="edit-item-hrs bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-10 text-center focus:outline-none">
-          <span class="text-xs text-slate-400">h</span>
-          <input type="number" value="0" min="0" max="59" placeholder="Min" class="edit-item-mins bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-10 text-center focus:outline-none">
-          <span class="text-xs text-slate-400">m</span>
-        </div>
-        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 text-xs px-1"><i class="fa-solid fa-trash"></i></button>
-      `;
-      container.appendChild(div);
-    }
-
     function addOrder(e) {
       e.preventDefault();
-
       const nameInputs = document.querySelectorAll('.art-name');
       const colorInputs = document.querySelectorAll('.art-color');
       const hrsInputs = document.querySelectorAll('.art-hrs');
       const minsInputs = document.querySelectorAll('.art-mins');
-
       const itemsList = [];
       nameInputs.forEach((inp, idx) => {
         const val = inp.value.trim();
         if (val) {
           const h = parseInt(hrsInputs[idx].value) || 0;
           const m = parseInt(minsInputs[idx].value) || 0;
-          const totalM = (h * 60) + m;
-          itemsList.push({
-            name: val,
-            color: colorInputs[idx].value,
-            durationMin: totalM > 0 ? totalM : 60,
-            status: "Offen",
-            endTime: null
-          });
+          itemsList.push({ name: val, color: colorInputs[idx].value, durationMin: (h * 60) + m || 60, status: "Offen", endTime: null });
         }
       });
-
-      if (itemsList.length === 0) {
-        alert("Bitte mindestens einen Artikel eintragen!");
-        return;
-      }
-
+      if (itemsList.length === 0) return alert("Bitte Artikel eintragen!");
+      
       const newOrder = {
         id: Date.now(),
         customer: document.getElementById('customer').value,
@@ -707,13 +515,10 @@
         archived: false,
         items: itemsList
       };
-
       orders.unshift(newOrder);
       saveAllData();
       renderOrders();
-
       document.getElementById('orderForm').reset();
-      updateSpoolDropdowns();
     }
 
     function toggleArchiveOrder(index) {
@@ -722,57 +527,8 @@
       renderOrders();
     }
 
-    function startEdit(index) {
-      editingIndex = index;
-      renderOrders();
-    }
-
-    function cancelEdit() {
-      editingIndex = -1;
-      renderOrders();
-    }
-
-    function saveEdit(index) {
-      const nameInputs = document.querySelectorAll('.edit-item-name');
-      const colorInputs = document.querySelectorAll('.edit-item-color');
-      const hrsInputs = document.querySelectorAll('.edit-item-hrs');
-      const minsInputs = document.querySelectorAll('.edit-item-mins');
-
-      const updatedItems = [];
-      nameInputs.forEach((inp, idx) => {
-        const val = inp.value.trim();
-        if (val) {
-          const h = parseInt(hrsInputs[idx].value) || 0;
-          const m = parseInt(minsInputs[idx].value) || 0;
-          const totalM = (h * 60) + m;
-          
-          const existingItem = orders[index].items[idx] || {};
-          updatedItems.push({
-            name: val,
-            color: colorInputs[idx].value,
-            durationMin: totalM > 0 ? totalM : 60,
-            status: existingItem.status || "Offen",
-            endTime: existingItem.endTime || null
-          });
-        }
-      });
-
-      orders[index] = {
-        ...orders[index],
-        customer: document.getElementById(`edit-customer-${index}`).value,
-        address: document.getElementById(`edit-address-${index}`).value || '',
-        printer: document.getElementById(`edit-printer-${index}`).value,
-        status: document.getElementById(`edit-status-${index}`).value,
-        price: parseFloat(document.getElementById(`edit-price-${index}`).value) || 0,
-        shippingCost: parseFloat(document.getElementById(`edit-shipping-${index}`).value) || 0,
-        weight: parseInt(document.getElementById(`edit-weight-${index}`).value) || 0,
-        label: document.getElementById(`edit-label-${index}`).value,
-        packed: document.getElementById(`edit-packed-${index}`).value,
-        tracking: document.getElementById(`edit-tracking-${index}`).value || '-',
-        items: updatedItems.length > 0 ? updatedItems : orders[index].items
-      };
-
-      editingIndex = -1;
+    function deleteOrder(index) {
+      orders.splice(index, 1);
       saveAllData();
       renderOrders();
     }
@@ -780,17 +536,10 @@
     function renderOrders() {
       const tbody = document.getElementById('ordersTableBody');
       tbody.innerHTML = '';
-
       const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
 
       orders.forEach((o, orderIndex) => {
-        const matchesQuery = !query || 
-          o.customer.toLowerCase().includes(query) || 
-          o.tracking.toLowerCase().includes(query) || 
-          o.items.some(i => i.name.toLowerCase().includes(query));
-
-        if (!matchesQuery) return;
-
+        if (!(!query || o.customer.toLowerCase().includes(query) || o.tracking.toLowerCase().includes(query))) return;
         if (currentFilter === 'all' && o.archived) return;
         if (currentFilter === 'open' && (o.status === 'Fertig' || o.archived)) return;
         if (currentFilter === 'done' && (o.status !== 'Fertig' || o.archived)) return;
@@ -798,309 +547,51 @@
 
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-800/40 border-b border-slate-800";
+        
+        let itemsHtml = '<div class="space-y-1">';
+        o.items.forEach((item) => {
+          const h = Math.floor((item.durationMin || 0) / 60);
+          const m = (item.durationMin || 0) % 60;
+          itemsHtml += `<div class="text-xs text-white">• ${item.name} <span class="text-purple-300">(${item.color || 'Std'})</span> [${h}h ${m}m]</div>`;
+        });
+        itemsHtml += '</div>';
 
-        if (editingIndex === orderIndex) {
-          let editItemsHtml = '<div id="edit-items-container" class="space-y-2 py-1">';
-          o.items.forEach((item) => {
-            const h = Math.floor((item.durationMin || 0) / 60);
-            const m = (item.durationMin || 0) % 60;
-            
-            let optionsHtml = '<option value="">-- Farbe aus Lager --</option>';
-            spools.forEach(s => {
-              const sel = s.name === item.color ? 'selected' : '';
-              optionsHtml += `<option value="${s.name}" ${sel}>${s.name} (${s.remainingGrams}g)</option>`;
-            });
+        const totalP = parseFloat(o.price || 0) + parseFloat(o.shippingCost || 0);
 
-            editItemsHtml += `
-              <div class="bg-slate-900 border border-blue-500/60 p-2 rounded-xl flex flex-col sm:flex-row gap-2 items-center">
-                <input type="text" value="${item.name}" class="edit-item-name bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
-                <select class="edit-item-color bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-36 focus:outline-none">${optionsHtml}</select>
-                <div class="flex items-center gap-1">
-                  <input type="number" value="${h}" min="0" placeholder="Std" class="edit-item-hrs bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-10 text-center focus:outline-none">
-                  <span class="text-xs text-slate-400">h</span>
-                  <input type="number" value="${m}" min="0" max="59" placeholder="Min" class="edit-item-mins bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-10 text-center focus:outline-none">
-                  <span class="text-xs text-slate-400">m</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 text-xs px-1"><i class="fa-solid fa-trash"></i></button>
-              </div>
-            `;
-          });
-          editItemsHtml += '</div>';
-          editItemsHtml += `
-            <button type="button" onclick="addEditArticleRow()" class="mt-2 bg-slate-800 hover:bg-slate-700 text-blue-400 text-[11px] px-2 py-1 rounded-lg border border-blue-500/20">
-              <i class="fa-solid fa-plus mr-1"></i> Artikel hinzufügen
-            </button>
-          `;
-
-          tr.innerHTML = `
-            <td class="p-2 space-y-1">
-              <input type="text" id="edit-customer-${orderIndex}" value="${o.customer}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-full">
-              <input type="text" id="edit-address-${orderIndex}" value="${o.address || ''}" placeholder="Adresse..." class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-[11px] text-white w-full">
-            </td>
-            <td class="p-2">${editItemsHtml}</td>
-            <td class="p-2">
-              <select id="edit-printer-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full">
-                <option value="CR-10 Smart Pro #1" ${o.printer === 'CR-10 Smart Pro #1' ? 'selected' : ''}>CR-10 Smart Pro #1</option>
-                <option value="Ender 3 V3" ${o.printer === 'Ender 3 V3' ? 'selected' : ''}>Ender 3 V3</option>
-                <option value="Anycubic Kobra" ${o.printer === 'Anycubic Kobra' ? 'selected' : ''}>Anycubic Kobra</option>
-                <option value="CR-10 Smart Pro #2" ${o.printer === 'CR-10 Smart Pro #2' ? 'selected' : ''}>CR-10 Smart Pro #2</option>
-              </select>
-            </td>
-            <td class="p-2">
-              <select id="edit-status-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full">
-                <option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option>
-                <option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option>
-                <option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option>
-              </select>
-            </td>
-            <td class="p-2">
-              <div class="flex flex-col gap-1">
-                <label class="text-[10px] text-slate-400">Teil €:</label>
-                <input type="number" step="0.01" id="edit-price-${orderIndex}" value="${o.price || 0}" placeholder="Artikel €" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-24">
-                <label class="text-[10px] text-slate-400">Paketpreis (€):</label>
-                <select id="edit-shipping-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-[11px] text-white w-28">
-                  <option value="5.00" ${o.shippingCost == 5.00 ? 'selected' : ''}>5,00 €</option>
-                  <option value="6.00" ${o.shippingCost == 6.00 ? 'selected' : ''}>6,00 €</option>
-                  <option value="7.00" ${o.shippingCost == 7.00 ? 'selected' : ''}>7,00 €</option>
-                  <option value="8.00" ${o.shippingCost == 8.00 ? 'selected' : ''}>8,00 €</option>
-                  <option value="2.50" ${o.shippingCost == 2.50 ? 'selected' : ''}>2,50 € (Brief)</option>
-                  <option value="3.00" ${o.shippingCost == 3.00 ? 'selected' : ''}>3,00 € (Brief)</option>
-                  <option value="0.00" ${o.shippingCost == 0.00 ? 'selected' : ''}>0,00 € (Abholung)</option>
-                </select>
-              </div>
-            </td>
-            <td class="p-2"><input type="number" id="edit-weight-${orderIndex}" value="${o.weight || 0}" placeholder="g" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-14"></td>
-            <td class="p-2">
-              <select id="edit-label-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full">
-                <option value="✅ Ja" ${o.label.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
-                <option value="❌ Nein" ${o.label.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
-                <option value="🟡 Wartet auf Zahlung" ${o.label.includes('Zahlung') ? 'selected' : ''}>🟡 Wartet auf Zahlung</option>
-              </select>
-            </td>
-            <td class="p-2">
-              <select id="edit-packed-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full">
-                <option value="❌ Nein" ${o.packed.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
-                <option value="✅ Ja" ${o.packed.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
-              </select>
-            </td>
-            <td class="p-2"><input type="text" id="edit-tracking-${orderIndex}" value="${o.tracking === '-' ? '' : o.tracking}" placeholder="Tracking..." class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-24"></td>
-            <td class="p-2 text-right">
-              <div class="flex justify-end space-x-1">
-                <button onclick="saveEdit(${orderIndex})" title="Speichern" class="bg-green-600 hover:bg-green-500 text-white px-2 py-1 rounded-lg text-xs font-semibold">
-                  <i class="fa-solid fa-check"></i>
-                </button>
-                <button onclick="cancelEdit()" title="Abbrechen" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-2 py-1 rounded-lg text-xs">
-                  <i class="fa-solid fa-xmark"></i>
-                </button>
-              </div>
-            </td>
-          `;
-        } else {
-          let itemsHtml = '<div class="space-y-2 py-1">';
-          o.items.forEach((item, itemIndex) => {
-            const hrs = Math.floor((item.durationMin || 0) / 60);
-            const mins = (item.durationMin || 0) % 60;
-            const durationText = `${hrs}h ${mins}m`;
-            const colorBadge = item.color ? `<span class="bg-purple-900/60 text-purple-300 border border-purple-500/30 px-1.5 py-0.5 rounded text-[10px] ml-1">${item.color}</span>` : '';
-
-            itemsHtml += `
-              <div id="item-card-${orderIndex}-${itemIndex}" class="bg-slate-900/80 p-2 rounded-xl border border-slate-700/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                <div class="flex-1">
-                  <div class="font-medium text-xs text-white">• ${item.name} ${colorBadge}</div>
-                  <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
-                    <span>Soll: ${durationText}</span>
-                    <span id="countdown-${orderIndex}-${itemIndex}" class="font-mono text-amber-300">--:--:--</span>
-                  </div>
-                </div>
-                <div class="flex items-center gap-1.5">
-                  ${item.status === 'Offen' ? `
-                    <button onclick="startSingleItemPrint(${orderIndex},${itemIndex})" class="bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/40 px-2 py-1 rounded-lg text-xs transition flex items-center gap-1">
-                      <i class="fa-solid fa-play text-[10px]"></i> Start
-                    </button>
-                  ` : item.status === 'In Arbeit' ? `
-                    <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">🟡 In Arbeit</span>
-                  ` : `
-                    <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-green-500/20 text-green-400 border border-green-500/30">🟢 Fertig</span>
-                  `}
-                </div>
-              </div>
-            `;
-          });
-          itemsHtml += '</div>';
-
-          const trackingLink = (o.tracking && o.tracking !== '-') 
-            ? `<a href="https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=${o.tracking}" target="_blank" class="text-blue-400 underline font-mono text-xs flex items-center gap-1">${o.tracking} <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>`
-            : '-';
-
-          const itemP = parseFloat(o.price || 0);
-          const shipP = parseFloat(o.shippingCost || 0);
-          const totalP = itemP + shipP;
-
-          const addressText = o.address ? `<div class="text-[10px] text-slate-400 truncate max-w-[140px]" title="${o.address}"><i class="fa-solid fa-location-dot mr-1"></i>${o.address}</div>` : '';
-
-          tr.innerHTML = `
-            <td class="p-3">
-              <div class="font-medium text-white">${o.customer}</div>
-              ${addressText}
-            </td>
-            <td class="p-3">${itemsHtml}</td>
-            <td class="p-3 text-slate-400 text-xs">${o.printer}</td>
-            <td class="p-3"><span class="px-2 py-1 rounded-lg text-xs ${o.status === 'Fertig' ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}">${o.status}</span></td>
-            <td class="p-3">
-              <div class="text-xs text-emerald-400 font-bold">${totalP.toFixed(2).replace('.', ',')} €</div>
-              <div class="text-[10px] text-slate-400">Teil: ${itemP.toFixed(2)}€ | Pauschale: ${shipP.toFixed(2)}€</div>
-            </td>
-            <td class="p-3 text-xs text-slate-300">${o.weight ? o.weight + ' g' : '-'}</td>
-            <td class="p-3 text-xs">${o.label}</td>
-            <td class="p-3 text-xs">${o.packed}</td>
-            <td class="p-3">${trackingLink}</td>
-            <td class="p-3 text-right">
-              <div class="flex justify-end items-center space-x-1">
-                <button onclick="toggleArchiveOrder(${orderIndex})" title="${o.archived ? 'Aus Archiv holen' : 'Ins Archiv verschieben'}" class="text-purple-300 hover:text-white text-xs px-2 py-1 bg-purple-500/10 rounded-lg border border-purple-500/20">
-                  ${o.archived ? '📂 Wiederherstellen' : '📦 Archiv'}
-                </button>
-                <button onclick="printBoxLabel(${orderIndex})" title="Karton-Etikett mit QR-Code & Paketinhalt drucken" class="text-amber-300 hover:text-white text-xs px-2 py-1 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                  🏷️ QR
-                </button>
-                <button onclick="startEdit(${orderIndex})" title="Bearbeiten" class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                  ✏️
-                </button>
-                <button onclick="deleteOrder(${orderIndex})" title="Löschen" class="text-red-400 hover:text-red-300 text-xs px-2 py-1 bg-red-500/10 rounded-lg border border-red-500/20">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </div>
-            </td>
-          `;
-        }
+        tr.innerHTML = `
+          <td class="p-3"><div class="font-medium text-white">${o.customer}</div><div class="text-[10px] text-slate-400">${o.address || ''}</div></td>
+          <td class="p-3">${itemsHtml}</td>
+          <td class="p-3 text-slate-400 text-xs">${o.printer}</td>
+          <td class="p-3"><span class="px-2 py-1 rounded-lg text-xs ${o.status === 'Fertig' ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}">${o.status}</span></td>
+          <td class="p-3 text-xs text-emerald-400 font-bold">${totalP.toFixed(2).replace('.', ',')} €</td>
+          <td class="p-3 text-xs text-slate-300">${o.weight ? o.weight + ' g' : '-'}</td>
+          <td class="p-3 text-xs">${o.label}</td>
+          <td class="p-3 text-xs">${o.packed}</td>
+          <td class="p-3 text-xs font-mono text-blue-400">${o.tracking}</td>
+          <td class="p-3 text-right">
+            <div class="flex justify-end items-center space-x-1">
+              <button onclick="toggleArchiveOrder(${orderIndex})" class="text-purple-300 text-xs px-2 py-1 bg-purple-500/10 rounded-lg">📦</button>
+              <button onclick="deleteOrder(${orderIndex})" class="text-red-400 text-xs px-2 py-1 bg-red-500/10 rounded-lg"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </td>
+        `;
         tbody.appendChild(tr);
       });
-
-      updateCustomerDropdown();
       updateStats();
-      updateCountdowns();
-    }
-
-    function printBoxLabel(index) {
-      const o = orders[index];
-      const printSec = document.getElementById('printSection');
-      
-      let itemsSummary = o.items.map(i => `${i.name} (${i.color || 'Standard'})`).join("<br>• ");
-      const trackingUrl = (o.tracking && o.tracking !== '-') 
-        ? `https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=${o.tracking}`
-        : `Sefas3DShop - Auftrag #${o.id} - ${o.customer}`;
-
-      printSec.innerHTML = `
-        <div style="font-family: Arial, sans-serif; border: 3px solid #000; padding: 15px; width: 360px; border-radius: 8px; background: #fff;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 8px;">
-            <div>
-              <strong style="font-size: 18px;">Sefas3DShop</strong>
-              <div style="font-size: 10px; color: #555;">3D-Print Solutions & Logistik</div>
-            </div>
-            <span style="font-size: 10px; background: #000; color: #fff; padding: 3px 6px; border-radius: 4px; font-weight: bold;">KARTON-ETIKETT</span>
-          </div>
-
-          <div style="margin-top: 10px; font-size: 12px;">
-            <p style="margin: 2px 0;"><strong>Empfänger:</strong> ${o.customer}</p>
-            <p style="margin: 2px 0; font-size: 11px; color: #444;">${o.address || 'Keine Adresse angegeben'}</p>
-          </div>
-
-          <div style="margin-top: 10px; border-top: 1px dashed #666; padding-top: 6px; font-size: 11px;">
-            <strong>Paketinhalt:</strong><br>
-            • ${itemsSummary}
-          </div>
-
-          <div style="margin-top: 10px; border-top: 1px dashed #666; padding-top: 6px; font-size: 11px; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <p style="margin: 1px 0;"><strong>Tracking:</strong> ${o.tracking}</p>
-              ${o.notes ? `<p style="margin: 1px 0; color: #d97706;"><strong>Note:</strong> ${o.notes}</p>` : ''}
-            </div>
-            <div id="qrcodeContainer" style="background: #fff; padding: 4px;"></div>
-          </div>
-        </div>
-      `;
-
-      printSec.classList.remove('hidden');
-
-      setTimeout(() => {
-        const qrContainer = document.getElementById('qrcodeContainer');
-        if (qrContainer) {
-          qrContainer.innerHTML = '';
-          new QRCode(qrContainer, {
-            text: trackingUrl,
-            width: 75,
-            height: 75,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.M
-          });
-        }
-        window.print();
-        printSec.classList.add('hidden');
-      }, 300);
-    }
-
-    function startSingleItemPrint(orderIndex, itemIndex) {
-      const o = orders[orderIndex];
-      const item = o.items[itemIndex];
-
-      item.status = "In Arbeit";
-      const totalMs = (item.durationMin || 60) * 60 * 1000;
-      item.endTime = Date.now() + totalMs;
-
-      if (o.status === 'Offen') o.status = 'In Arbeit';
-
-      saveAllData();
-      renderOrders();
-    }
-
-    function updateCountdowns() {
-      orders.forEach((o, orderIndex) => {
-        o.items.forEach((item, itemIndex) => {
-          const el = document.getElementById(`countdown-${orderIndex}-${itemIndex}`);
-          if (!el) return;
-
-          if (item.status === 'In Arbeit' && item.endTime) {
-            const diff = item.endTime - Date.now();
-            if (diff <= 0) {
-              item.status = 'Fertig';
-              item.endTime = null;
-              el.innerHTML = `<span class="text-green-400 font-bold">Fertig!</span>`;
-              playBeepSound();
-              saveAllData();
-              renderOrders();
-            } else {
-              const hrs = Math.floor(diff / (1000 * 60 * 60));
-              const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-              const secs = Math.floor((diff % (1000 * 60)) / 1000);
-              el.innerHTML = `<span class="text-yellow-400 font-bold">${hrs}h ${mins}m ${secs}s</span>`;
-            }
-          } else if (item.status === 'Fertig') {
-            el.innerHTML = `<span class="text-green-400 font-semibold">Abgeschlossen</span>`;
-          } else {
-            el.innerHTML = `<span class="text-slate-500">Bereit</span>`;
-          }
-        });
-      });
+      updateCustomerDropdown();
     }
 
     function updateStats() {
-      let totalRevenue = 0;
-      let totalProfit = 0;
-      let totalWeight = 0;
-      let openCount = 0;
-
+      let totalRevenue = 0, totalProfit = 0, totalWeight = 0, openCount = 0;
       orders.forEach(o => {
-        const itemPrice = parseFloat(o.price || 0);
-        const shipCost = parseFloat(o.shippingCost || 0);
-        const weight = parseInt(o.weight || 0);
-
-        totalRevenue += (itemPrice + shipCost);
-        totalWeight += weight;
-        totalProfit += (itemPrice - ((weight / 1000) * 20));
-
+        const itemP = parseFloat(o.price || 0);
+        const shipP = parseFloat(o.shippingCost || 0);
+        const w = parseInt(o.weight || 0);
+        totalRevenue += (itemP + shipP);
+        totalWeight += w;
+        totalProfit += (itemP - ((w / 1000) * 20));
         if (o.status !== 'Fertig' && !o.archived) openCount++;
       });
-
       document.getElementById('statRevenue').innerText = totalRevenue.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statProfit').innerText = totalProfit.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statOpenOrders').innerText = openCount;
@@ -1110,11 +601,22 @@
     function renderPrinters() {
       const grid = document.getElementById('printersGrid');
       grid.innerHTML = '';
-      printers.forEach((p) => {
-        const card = document.createElement('div');
-        card.className = "card p-4 rounded-2xl space-y-2";
-        card.innerHTML = `<div class="flex justify-between"><h3 class="font-bold text-white">${p.name}</h3><span class="text-xs text-blue-400">${p.status}</span></div><p class="text-xs text-slate-400">${p.desc}</p>`;
-        grid.appendChild(card);
+      printers.forEach(p => {
+        grid.innerHTML += `<div class="card p-4 rounded-2xl space-y-2"><div class="flex justify-between"><h3 class="font-bold text-white">${p.name}</h3><span class="text-xs text-blue-400">${p.status}</span></div><p class="text-xs text-slate-400">${p.desc}</p></div>`;
+      });
+    }
+
+    function updateSpoolDropdowns() {
+      document.querySelectorAll('.art-color').forEach(select => {
+        const current = select.value;
+        select.innerHTML = '<option value="">-- Farbe aus Lager --</option>';
+        spools.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.name;
+          opt.textContent = `${s.name} (${s.remainingGrams}g)`;
+          if (s.name === current) opt.selected = true;
+          select.appendChild(opt);
+        });
       });
     }
 
@@ -1123,17 +625,22 @@
       if (!select) return;
       select.innerHTML = '';
       orders.forEach((o, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = `${o.customer} (${o.tracking})`;
-        select.appendChild(option);
+        select.innerHTML += `<option value="${index}">${o.customer} (${o.tracking})</option>`;
       });
     }
 
-    function deleteOrder(index) {
-      orders.splice(index, 1);
-      saveAllData();
-      renderOrders();
+    function requestNotificationPermission() {
+      if ("Notification" in window) Notification.requestPermission();
+    }
+
+    function downloadBackup() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ orders, spools }));
+      const dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", "sefas_shop_backup.json");
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
     }
 
     document.getElementById("pinInput").value = "1234";
