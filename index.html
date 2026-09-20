@@ -28,7 +28,7 @@
   </div>
 
   <!-- MAIN APP -->
-  <div id="mainApp" class="max-w-[1550px] mx-auto space-y-6 hidden">
+  <div id="mainApp" class="max-w-[1600px] mx-auto space-y-6 hidden">
     
     <!-- HEADER -->
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800 p-4 rounded-2xl border border-slate-700 gap-4">
@@ -38,7 +38,7 @@
         </div>
         <div>
           <h1 class="text-xl font-bold text-white">Sefas3DShop Dashboard Pro</h1>
-          <p class="text-slate-400 text-xs">Kleinanzeigen Auftrags- & Druckermanagement mit Mehrzeilen-Support</p>
+          <p class="text-slate-400 text-xs">Kleinanzeigen Auftrags- & Druckermanagement (inkl. Bearbeiten-Funktion)</p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
@@ -110,10 +110,10 @@
       </div>
     </section>
 
-    <!-- NEUEN AUFTRAG ANLEGEN (MEHRZEILIGES ITEM-FELD) -->
+    <!-- NEUEN AUFTRAG ANLEGEN -->
     <section class="card p-5 rounded-2xl space-y-4">
       <h2 class="text-md font-semibold text-slate-300 flex items-center">
-        <i class="fa-solid fa-plus-circle mr-2 text-blue-400"></i> Neuen Auftrag & Artikel anlegen
+        <i class="fa-solid fa-plus-circle mr-2 text-blue-400"></i> Neuen Auftrag anlegen
       </h2>
       <form id="orderForm" onsubmit="addOrder(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <input type="text" id="customer" placeholder="Kundenname (Kleinanzeigen)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
@@ -256,6 +256,7 @@
   <script>
     const DEFAULT_PIN = "1234";
     let formality = "du";
+    let editingIndex = -1;
 
     const REAL_ORDERS = [
       { id: 1, customer: "Renate Evelin - Veere", item: "1x Japandi Vogel grün\n1x Kürbis orange\n1x Modernes Eichhörnchen\n4x Zapfenhäuschen (2x grün, 2x beige)", printer: "Anycubic Kobra", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 25.00, weight: 180, durationMin: 210, endTime: null },
@@ -268,23 +269,24 @@
       { id: 8, customer: "Paul Hartmann", item: "3x Makita Akkuhalter", printer: "CR-10 Smart Pro #1", status: "In Arbeit", label: "✅ Ja", packed: "❌ Nein", tracking: "-", price: 14.00, weight: 95, durationMin: 135, endTime: Date.now() + 1000 * 60 * 45 }
     ];
 
-    let printers = JSON.parse(localStorage.getItem('sefas_printers_v5')) || [
+    let printers = JSON.parse(localStorage.getItem('sefas_printers_v6')) || [
       { name: "CR-10 Smart Pro #1", desc: "Creality Cloud / Großraum", status: "Bereit" },
       { name: "Ender 3 V3", desc: "Creality / Klipper", status: "Frei" },
       { name: "Anycubic Kobra", desc: "Direct Drive", status: "In Arbeit" },
       { name: "CR-10 Smart Pro #2", desc: "Creality Cloud / Großraum", status: "Bereit" }
     ];
 
-    if (!localStorage.getItem('sefas_orders_v5')) {
-      localStorage.setItem('sefas_orders_v5', JSON.stringify(REAL_ORDERS));
+    if (!localStorage.getItem('sefas_orders_v6')) {
+      localStorage.setItem('sefas_orders_v6', JSON.stringify(REAL_ORDERS));
     }
 
-    let orders = JSON.parse(localStorage.getItem('sefas_orders_v5')) || REAL_ORDERS;
+    let orders = JSON.parse(localStorage.getItem('sefas_orders_v6')) || REAL_ORDERS;
 
     function resetToScreenshotData() {
       if (confirm("Möchtest du alle Aufträge auf die Standard-Daten zurücksetzen?")) {
         orders = JSON.parse(JSON.stringify(REAL_ORDERS));
-        localStorage.setItem('sefas_orders_v5', JSON.stringify(orders));
+        localStorage.setItem('sefas_orders_v6', JSON.stringify(orders));
+        editingIndex = -1;
         renderOrders();
         updateStats();
         alert("Daten zurückgesetzt!");
@@ -386,7 +388,7 @@
         grid.appendChild(card);
       });
 
-      localStorage.setItem('sefas_printers_v5', JSON.stringify(printers));
+      localStorage.setItem('sefas_printers_v6', JSON.stringify(printers));
     }
 
     function updatePrinterStatus(index, newStatus) {
@@ -407,65 +409,166 @@
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-800/40 border-b border-slate-800";
 
-        const hrs = Math.floor((o.durationMin || 0) / 60);
-        const mins = (o.durationMin || 0) % 60;
-        const durationStr = `${hrs}h ${mins}m`;
+        if (editingIndex === index) {
+          // BEARBEITEN-MODUS (INLINE FORMULAR)
+          const hrs = Math.floor((o.durationMin || 0) / 60);
+          const mins = (o.durationMin || 0) % 60;
 
-        tr.innerHTML = `
-          <td class="p-3 font-medium text-white">${o.customer}</td>
-          <td class="p-3 text-xs text-slate-200 leading-relaxed">${formatMultilines(o.item)}</td>
-          <td class="p-3 text-slate-400 text-xs">${o.printer}</td>
-          <td class="p-3">
-            <div class="text-xs font-semibold text-slate-200">${durationStr}</div>
-            <div id="countdown-${index}" class="text-[11px] font-mono mt-0.5 text-slate-400">--:--:--</div>
-          </td>
-          <td class="p-3">
-            <div class="flex items-center space-x-1">
-              <select onchange="updateField(${index}, 'status', this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-white focus:outline-none">
+          tr.innerHTML = `
+            <td class="p-2"><input type="text" id="edit-customer-${index}" value="${o.customer}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full"></td>
+            <td class="p-2"><textarea id="edit-item-${index}" rows="2" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full">${o.item}</textarea></td>
+            <td class="p-2">
+              <select id="edit-printer-${index}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full">
+                <option value="CR-10 Smart Pro #1" ${o.printer === 'CR-10 Smart Pro #1' ? 'selected' : ''}>CR-10 Smart Pro #1</option>
+                <option value="Ender 3 V3" ${o.printer === 'Ender 3 V3' ? 'selected' : ''}>Ender 3 V3</option>
+                <option value="Anycubic Kobra" ${o.printer === 'Anycubic Kobra' ? 'selected' : ''}>Anycubic Kobra</option>
+                <option value="CR-10 Smart Pro #2" ${o.printer === 'CR-10 Smart Pro #2' ? 'selected' : ''}>CR-10 Smart Pro #2</option>
+              </select>
+            </td>
+            <td class="p-2">
+              <div class="flex gap-1">
+                <input type="number" id="edit-hrs-${index}" value="${hrs}" placeholder="h" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-12">
+                <input type="number" id="edit-mins-${index}" value="${mins}" placeholder="m" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-12">
+              </div>
+            </td>
+            <td class="p-2">
+              <select id="edit-status-${index}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full">
                 <option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option>
                 <option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option>
                 <option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option>
               </select>
-              ${o.status === 'Offen' ? `
-                <button onclick="startPrint(${index})" title="Druck starten" class="bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/40 p-1 rounded-lg text-xs transition">
-                  <i class="fa-solid fa-play"></i>
+            </td>
+            <td class="p-2">
+              <div class="flex flex-col gap-1">
+                <input type="number" step="0.01" id="edit-price-${index}" value="${o.price || 0}" placeholder="€" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-16">
+                <input type="number" id="edit-weight-${index}" value="${o.weight || 0}" placeholder="g" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-16">
+              </div>
+            </td>
+            <td class="p-2">
+              <select id="edit-label-${index}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full">
+                <option value="✅ Ja" ${o.label.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
+                <option value="❌ Nein" ${o.label.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
+                <option value="🟡 Wartet auf Zahlung" ${o.label.includes('Zahlung') ? 'selected' : ''}>🟡 Wartet auf Zahlung</option>
+              </select>
+            </td>
+            <td class="p-2">
+              <select id="edit-packed-${index}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full">
+                <option value="❌ Nein" ${o.packed.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
+                <option value="✅ Ja" ${o.packed.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
+              </select>
+            </td>
+            <td class="p-2"><input type="text" id="edit-tracking-${index}" value="${o.tracking === '-' ? '' : o.tracking}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-20"></td>
+            <td class="p-2 text-right">
+              <div class="flex justify-end space-x-1">
+                <button onclick="saveEdit(${index})" title="Speichern" class="bg-green-600 hover:bg-green-500 text-white px-2 py-1 rounded-lg text-xs font-semibold">
+                  <i class="fa-solid fa-check"></i>
                 </button>
-              ` : ''}
-            </div>
-          </td>
-          <td class="p-3">
-            <div class="text-xs text-emerald-400 font-semibold">${o.price ? parseFloat(o.price).toFixed(2) + ' €' : '-'}</div>
-            <div class="text-[10px] text-slate-400">${o.weight ? o.weight + ' g' : '-'}</div>
-          </td>
-          <td class="p-3">
-            <select onchange="updateField(${index}, 'label', this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-white focus:outline-none">
-              <option value="✅ Ja" ${o.label.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
-              <option value="❌ Nein" ${o.label.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
-              <option value="🟡 Wartet auf Zahlung" ${o.label.includes('Zahlung') ? 'selected' : ''}>🟡 Wartet auf Zahlung</option>
-            </select>
-          </td>
-          <td class="p-3">
-            <select onchange="updateField(${index}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-white focus:outline-none">
-              <option value="❌ Nein" ${o.packed.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
-              <option value="✅ Ja" ${o.packed.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
-            </select>
-          </td>
-          <td class="p-3">
-            <input type="text" value="${o.tracking === '-' ? '' : o.tracking}" placeholder="Tracking..." onblur="updateField(${index}, 'tracking', this.value || '-')" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-slate-200 w-24 focus:outline-none">
-          </td>
-          <td class="p-3 text-right">
-            <button onclick="deleteOrder(${index})" class="text-red-400 hover:text-red-300 text-xs px-2 py-1 bg-red-500/10 rounded-lg border border-red-500/20">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </td>
-        `;
+                <button onclick="cancelEdit()" title="Abbrechen" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-2 py-1 rounded-lg text-xs">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </td>
+          `;
+        } else {
+          // NORMALER ANZEIGE-MODUS
+          const hrs = Math.floor((o.durationMin || 0) / 60);
+          const mins = (o.durationMin || 0) % 60;
+          const durationStr = `${hrs}h ${mins}m`;
+
+          tr.innerHTML = `
+            <td class="p-3 font-medium text-white">${o.customer}</td>
+            <td class="p-3 text-xs text-slate-200 leading-relaxed">${formatMultilines(o.item)}</td>
+            <td class="p-3 text-slate-400 text-xs">${o.printer}</td>
+            <td class="p-3">
+              <div class="text-xs font-semibold text-slate-200">${durationStr}</div>
+              <div id="countdown-${index}" class="text-[11px] font-mono mt-0.5 text-slate-400">--:--:--</div>
+            </td>
+            <td class="p-3">
+              <div class="flex items-center space-x-1">
+                <select onchange="updateField(${index}, 'status', this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-white focus:outline-none">
+                  <option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option>
+                  <option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option>
+                  <option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option>
+                </select>
+                ${o.status === 'Offen' ? `
+                  <button onclick="startPrint(${index})" title="Druck starten" class="bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/40 p-1 rounded-lg text-xs transition">
+                    <i class="fa-solid fa-play"></i>
+                  </button>
+                ` : ''}
+              </div>
+            </td>
+            <td class="p-3">
+              <div class="text-xs text-emerald-400 font-semibold">${o.price ? parseFloat(o.price).toFixed(2) + ' €' : '-'}</div>
+              <div class="text-[10px] text-slate-400">${o.weight ? o.weight + ' g' : '-'}</div>
+            </td>
+            <td class="p-3">
+              <select onchange="updateField(${index}, 'label', this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-white focus:outline-none">
+                <option value="✅ Ja" ${o.label.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
+                <option value="❌ Nein" ${o.label.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
+                <option value="🟡 Wartet auf Zahlung" ${o.label.includes('Zahlung') ? 'selected' : ''}>🟡 Wartet auf Zahlung</option>
+              </select>
+            </td>
+            <td class="p-3">
+              <select onchange="updateField(${index}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-white focus:outline-none">
+                <option value="❌ Nein" ${o.packed.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
+                <option value="✅ Ja" ${o.packed.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
+              </select>
+            </td>
+            <td class="p-3">
+              <input type="text" value="${o.tracking === '-' ? '' : o.tracking}" placeholder="Tracking..." onblur="updateField(${index}, 'tracking', this.value || '-')" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-slate-200 w-24 focus:outline-none">
+            </td>
+            <td class="p-3 text-right">
+              <div class="flex justify-end space-x-1">
+                <button onclick="startEdit(${index})" title="Bearbeiten" class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button onclick="deleteOrder(${index})" title="Löschen" class="text-red-400 hover:text-red-300 text-xs px-2 py-1 bg-red-500/10 rounded-lg border border-red-500/20">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          `;
+        }
         tbody.appendChild(tr);
       });
 
-      localStorage.setItem('sefas_orders_v5', JSON.stringify(orders));
+      localStorage.setItem('sefas_orders_v6', JSON.stringify(orders));
       updateCustomerDropdown();
       updateStats();
       updateCountdowns();
+    }
+
+    function startEdit(index) {
+      editingIndex = index;
+      renderOrders();
+    }
+
+    function cancelEdit() {
+      editingIndex = -1;
+      renderOrders();
+    }
+
+    function saveEdit(index) {
+      const h = parseInt(document.getElementById(`edit-hrs-${index}`).value) || 0;
+      const m = parseInt(document.getElementById(`edit-mins-${index}`).value) || 0;
+      const totalMin = (h * 60) + m;
+
+      orders[index] = {
+        ...orders[index],
+        customer: document.getElementById(`edit-customer-${index}`).value,
+        item: document.getElementById(`edit-item-${index}`).value,
+        printer: document.getElementById(`edit-printer-${index}`).value,
+        durationMin: totalMin > 0 ? totalMin : 60,
+        status: document.getElementById(`edit-status-${index}`).value,
+        price: parseFloat(document.getElementById(`edit-price-${index}`).value) || 0,
+        weight: parseInt(document.getElementById(`edit-weight-${index}`).value) || 0,
+        label: document.getElementById(`edit-label-${index}`).value,
+        packed: document.getElementById(`edit-packed-${index}`).value,
+        tracking: document.getElementById(`edit-tracking-${index}`).value || '-'
+      };
+
+      editingIndex = -1;
+      renderOrders();
     }
 
     function startPrint(index) {
@@ -537,7 +640,7 @@
       if (field === 'status' && value !== 'In Arbeit') {
         orders[index].endTime = null;
       }
-      localStorage.setItem('sefas_orders_v5', JSON.stringify(orders));
+      localStorage.setItem('sefas_orders_v6', JSON.stringify(orders));
       if (field === 'tracking' || field === 'customer') {
         updateCustomerDropdown();
       }
