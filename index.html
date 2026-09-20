@@ -186,8 +186,13 @@
 
     <!-- TABELLE -->
     <section class="card p-5 rounded-2xl space-y-4">
-      <div class="flex justify-between items-center">
-        <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-list-check mr-2 text-blue-400"></i> Bestellungen</h2>
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div class="flex items-center space-x-3">
+          <h2 id="tableTitle" class="text-md font-semibold text-slate-300"><i class="fa-solid fa-list-check mr-2 text-blue-400"></i> Bestellungen (Aktiv)</h2>
+          <button onclick="toggleArchiveView()" id="archiveToggleBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 px-3 py-1.5 rounded-xl text-xs font-medium transition">
+            📂 Archiv anzeigen
+          </button>
+        </div>
         <input type="text" id="searchInput" oninput="renderOrders()" placeholder="Suchen..." class="bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white w-64 focus:outline-none">
       </div>
       <div class="overflow-x-auto">
@@ -260,6 +265,7 @@
     ];
 
     let editingIndex = -1;
+    let showingArchive = false;
     let orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
     let spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
 
@@ -330,6 +336,30 @@
       saveAllData();
     }
 
+    function toggleArchiveView() {
+      showingArchive = !showingArchive;
+      const btn = document.getElementById('archiveToggleBtn');
+      const title = document.getElementById('tableTitle');
+      if (showingArchive) {
+        btn.innerText = "📋 Aktive Aufträge";
+        btn.className = "bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 border border-purple-500/50 px-3 py-1.5 rounded-xl text-xs font-medium transition";
+        title.innerHTML = '<i class="fa-solid fa-box-archive mr-2 text-purple-400"></i> Bestellungen (Archiv)';
+      } else {
+        btn.innerText = "📂 Archiv anzeigen";
+        btn.className = "bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 px-3 py-1.5 rounded-xl text-xs font-medium transition";
+        title.innerHTML = '<i class="fa-solid fa-list-check mr-2 text-blue-400"></i> Bestellungen (Aktiv)';
+      }
+      renderOrders();
+    }
+
+    function toggleArchiveOrder(id) {
+      const order = orders.find(o => o.id === id);
+      if (order) {
+        order.archived = !order.archived;
+        saveAllData();
+      }
+    }
+
     function requestNotificationPermission() {
       if ("Notification" in window) Notification.requestPermission();
     }
@@ -349,6 +379,7 @@
         renderOrders();
         renderSpools();
       } else {
+        document.getElementById("loginError").classList.add("hidden"); // Korrigiert
         document.getElementById("loginError").classList.remove("hidden");
       }
     }
@@ -520,8 +551,8 @@
       saveAllData();
     }
 
-    function deleteOrder(idx) {
-      orders.splice(idx, 1);
+    function deleteOrder(id) {
+      orders = orders.filter(o => o.id !== id);
       saveAllData();
     }
 
@@ -565,6 +596,8 @@
       const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
 
       orders.forEach((o, idx) => {
+        // Filter nach Archiv-Status
+        if (Boolean(o.archived) !== showingArchive) return;
         if (query && !o.customer.toLowerCase().includes(query) && !o.tracking.toLowerCase().includes(query)) return;
 
         if (editingIndex === idx) {
@@ -621,6 +654,10 @@
           });
           itemsHtml += '</div>';
 
+          let archiveBtnHtml = o.archived 
+            ? `<button onclick="toggleArchiveOrder(${o.id})" title="Aus Archiv wiederherstellen" class="text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded text-xs">📥 Aktivieren</button>`
+            : `<button onclick="toggleArchiveOrder(${o.id})" title="Ins Archiv verschieben" class="text-purple-300 bg-purple-500/10 px-2 py-1 rounded text-xs">📦 Archiv</button>`;
+
           tbody.innerHTML += `
             <tr class="hover:bg-slate-800/40 border-b border-slate-800">
               <td class="p-3 font-medium text-white">${o.customer}<div class="text-[10px] text-slate-400">${o.address || ''}</div></td>
@@ -633,9 +670,10 @@
               <td class="p-3 text-xs">${o.packed}</td>
               <td class="p-3 text-xs font-mono text-blue-400">${o.tracking}</td>
               <td class="p-3 text-right space-x-1">
+                ${archiveBtnHtml}
                 <button onclick="printBoxLabel(${idx})" title="QR Etikett drucken" class="text-amber-300 bg-amber-500/10 px-2 py-1 rounded text-xs">🏷️ QR</button>
                 <button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-2 py-1 rounded text-xs">✏️</button>
-                <button onclick="deleteOrder(${idx})" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
+                <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
               </td>
             </tr>`;
         }
@@ -646,9 +684,11 @@
     function updateStats() {
       let totalRev = 0, totalW = 0, openC = 0;
       orders.forEach(o => {
-        totalRev += (o.price + o.shippingCost);
-        totalW += (o.weight || 0);
-        if (o.status !== 'Fertig') openC++;
+        if (!o.archived) {
+          totalRev += (o.price + o.shippingCost);
+          totalW += (o.weight || 0);
+          if (o.status !== 'Fertig') openC++;
+        }
       });
       document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statProfit').innerText = (totalRev * 0.6).toFixed(2).replace('.', ',') + ' €';
