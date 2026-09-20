@@ -171,15 +171,13 @@
 
         <div class="border-t border-slate-700/60 pt-3 space-y-2">
           <div class="flex justify-between items-center">
-            <label class="text-xs font-semibold text-slate-300">Artikel, Farbe & Druckzeit:</label>
+            <label class="text-xs font-semibold text-slate-300">Artikel & Farbe:</label>
             <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-lg text-xs">+ Artikel</button>
           </div>
           <div id="articleInputRows" class="space-y-2">
             <div class="flex gap-2 items-center article-row">
               <input type="text" placeholder="Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
-              <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-48 focus:outline-none"><option value="">-- Farbe --</option></select>
-              <input type="number" placeholder="Std" min="0" class="art-hrs w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
-              <input type="number" placeholder="Min" min="0" max="59" class="art-mins w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
+              <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-64 focus:outline-none"><option value="">-- Farbe --</option></select>
             </div>
           </div>
         </div>
@@ -198,7 +196,7 @@
           <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
             <tr>
               <th class="p-3">Kunde & Adresse</th>
-              <th class="p-3">Artikel, Farbe & Zeit</th>
+              <th class="p-3">Artikel & Farbe</th>
               <th class="p-3">Drucker</th>
               <th class="p-3">Status</th>
               <th class="p-3">Preis</th>
@@ -384,14 +382,12 @@
       spools.forEach(s => { optionsHtml += `<option value="${s.name}">${s.name} (${s.remainingGrams}g)</option>`; });
       div.innerHTML = `
         <input type="text" placeholder="Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
-        <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-48 focus:outline-none">${optionsHtml}</select>
-        <input type="number" placeholder="Std" min="0" class="art-hrs w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
-        <input type="number" placeholder="Min" min="0" max="59" class="art-mins w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
+        <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-64 focus:outline-none">${optionsHtml}</select>
         <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2"><i class="fa-solid fa-xmark"></i></button>`;
       container.appendChild(div);
     }
 
-    function addEditArticleRow(name = '', color = '', hrs = 1, mins = 0) {
+    function addEditArticleRow(name = '', color = '') {
       const container = document.getElementById('editArticleRows');
       if (!container) return;
       const div = document.createElement('div');
@@ -402,9 +398,7 @@
       });
       div.innerHTML = `
         <input type="text" placeholder="Artikelbezeichnung" value="${name}" required class="edit-art-name bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
-        <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-36 focus:outline-none">${optionsHtml}</select>
-        <input type="number" placeholder="Std" min="0" value="${hrs}" class="edit-art-hrs w-12 bg-slate-900 border border-slate-700 rounded-lg px-1 py-1 text-xs text-white text-center focus:outline-none">
-        <input type="number" placeholder="Min" min="0" max="59" value="${mins}" class="edit-art-mins w-12 bg-slate-900 border border-slate-700 rounded-lg px-1 py-1 text-xs text-white text-center focus:outline-none">
+        <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-48 focus:outline-none">${optionsHtml}</select>
         <button type="button" onclick="this.parentElement.remove()" class="text-red-400 text-xs px-2"><i class="fa-solid fa-xmark"></i></button>`;
       container.appendChild(div);
     }
@@ -413,13 +407,11 @@
       e.preventDefault();
       const nameInputs = document.querySelectorAll('.art-name');
       const colorInputs = document.querySelectorAll('.art-color');
-      const hrsInputs = document.querySelectorAll('.art-hrs');
-      const minsInputs = document.querySelectorAll('.art-mins');
       const itemsList = [];
       nameInputs.forEach((inp, idx) => {
         const val = inp.value.trim();
         if (val) {
-          itemsList.push({ name: val, color: colorInputs[idx].value, durationMin: (parseInt(hrsInputs[idx].value) || 0) * 60 + (parseInt(minsInputs[idx].value) || 0) || 60 });
+          itemsList.push({ name: val, color: colorInputs[idx].value });
         }
       });
       if (itemsList.length === 0) return alert("Bitte Artikel eintragen!");
@@ -457,16 +449,12 @@
     function saveEdit(idx) {
       const nameInputs = document.querySelectorAll('.edit-art-name');
       const colorInputs = document.querySelectorAll('.edit-art-color');
-      const hrsInputs = document.querySelectorAll('.edit-art-hrs');
-      const minsInputs = document.querySelectorAll('.edit-art-mins');
       const updatedItems = [];
 
       nameInputs.forEach((inp, i) => {
         const val = inp.value.trim();
         if (val) {
-          const h = parseInt(hrsInputs[i].value) || 0;
-          const m = parseInt(minsInputs[i].value) || 0;
-          updatedItems.push({ name: val, color: colorInputs[i].value, durationMin: (h * 60) + m || 60 });
+          updatedItems.push({ name: val, color: colorInputs[i].value });
         }
       });
 
@@ -537,8 +525,6 @@
         if (editingIndex === idx) {
           let editItemsHtml = `<div id="editArticleRows" class="space-y-2 my-2">`;
           o.items.forEach(i => {
-            const h = Math.floor((i.durationMin || 60) / 60);
-            const m = (i.durationMin || 60) % 60;
             let optionsHtml = '<option value="">-- Farbe --</option>';
             spools.forEach(s => {
               optionsHtml += `<option value="${s.name}" ${s.name === i.color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`;
@@ -546,9 +532,7 @@
             editItemsHtml += `
               <div class="flex gap-2 items-center edit-article-row bg-slate-950 p-2 rounded-xl border border-slate-800">
                 <input type="text" placeholder="Artikelbezeichnung" value="${i.name}" required class="edit-art-name bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
-                <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-36 focus:outline-none">${optionsHtml}</select>
-                <input type="number" placeholder="Std" min="0" value="${h}" class="edit-art-hrs w-12 bg-slate-900 border border-slate-700 rounded-lg px-1 py-1 text-xs text-white text-center focus:outline-none">
-                <input type="number" placeholder="Min" min="0" max="59" value="${m}" class="edit-art-mins w-12 bg-slate-900 border border-slate-700 rounded-lg px-1 py-1 text-xs text-white text-center focus:outline-none">
+                <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-48 focus:outline-none">${optionsHtml}</select>
                 <button type="button" onclick="this.parentElement.remove()" class="text-red-400 text-xs px-2"><i class="fa-solid fa-xmark"></i></button>
               </div>`;
           });
@@ -588,9 +572,7 @@
         } else {
           let itemsHtml = '<div class="space-y-1">';
           o.items.forEach(i => {
-            const h = Math.floor((i.durationMin || 60) / 60);
-            const m = (i.durationMin || 60) % 60;
-            itemsHtml += `<div class="text-xs text-white">• ${i.name} <span class="text-purple-300">(${i.color || 'Std'})</span> [${h}h ${m}m]</div>`;
+            itemsHtml += `<div class="text-xs text-white">• ${i.name} <span class="text-purple-300">(${i.color || 'Std'})</span></div>`;
           });
           itemsHtml += '</div>';
 
