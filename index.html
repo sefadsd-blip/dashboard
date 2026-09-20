@@ -73,9 +73,9 @@
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <!-- TELEGRAM SETUP BUTTON -->
-        <button onclick="findMyTelegramChatId()" class="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center" title="Schreibe deinem Bot 'Hallo' auf Telegram und klicke hier, um deine Chat-ID zu finden!">
-          <i class="fa-brands fa-telegram mr-1.5"></i> Telegram ID finden
+        <!-- NEUER TEST BUTTON -->
+        <button onclick="testFilamentAlarm()" class="bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center">
+          <i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Test Filament-Alarm
         </button>
 
         <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center">
@@ -271,7 +271,7 @@
     let showingArchive = false;
     let orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
     let spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
-    let telegramChatId = localStorage.getItem('sefas_telegram_chat_id') || '';
+    let telegramChatId = localStorage.getItem('sefas_telegram_chat_id') || '8316865010';
 
     if (orders.length === 0) {
       orders = BACKUP_ORDERS;
@@ -337,30 +337,6 @@
       }).catch(e => console.log("Hintergrund-Speichern fehlgeschlagen", e));
     }
 
-    // AUTOMATISCHE TELEGRAM CHAT-ID FINDEN & TESTEN
-    async function findMyTelegramChatId() {
-      try {
-        const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getUpdates`);
-        const data = await res.json();
-        if (data.ok && data.result.length > 0) {
-          // Nimmt die letzte Chat-ID, die mit dem Bot geschrieben hat
-          const latestUpdate = data.result[data.result.length - 1];
-          const chatId = latestUpdate.message ? latestUpdate.message.chat.id : (latestUpdate.my_chat_member ? latestUpdate.my_chat_member.chat.id : null);
-          
-          if (chatId) {
-            telegramChatId = chatId;
-            saveLocalOnly();
-            alert(`🎉 Erfolg! Deine Chat-ID (${chatId}) wurde gefunden und gespeichert!`);
-            sendTelegramMessage("🤖 Sefas3DShop Bot ist erfolgreich verbunden!");
-            return;
-          }
-        }
-        alert("❌ Keine Nachricht gefunden. Hast du deinem Bot auf Telegram (t.me/Sefas3DShopBot) vorher eine Nachricht wie 'Hallo' geschickt? Probier es noch einmal!");
-      } catch (e) {
-        alert("Fehler beim Verbinden mit Telegram.");
-      }
-    }
-
     async function sendTelegramMessage(text) {
       if (!telegramChatId) return;
       try {
@@ -370,6 +346,12 @@
           body: JSON.stringify({ chat_id: telegramChatId, text: text })
         });
       } catch(e) {}
+    }
+
+    // DIREKTER TEST-BUTTON FÜR DEN FILAMENT-ALARM
+    async function testFilamentAlarm() {
+      await sendTelegramMessage("⚠️ TEST Filament-Alarm bei Sefas3DShop!\n\nSpule 'PETG Weiß' hat nur noch 150g übrig!");
+      alert("✅ Test-Nachricht wurde an deinen Telegram-Bot gesendet! Schau mal aufs Handy.");
     }
 
     function checkSpoolTelegramNotifications() {
