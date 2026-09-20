@@ -366,12 +366,22 @@
     let currentFilter = "all";
     let editingIndex = -1;
 
-    let orders = JSON.parse(localStorage.getItem('sefas_orders_v107')) || [];
-    let spools = JSON.parse(localStorage.getItem('sefas_spools_v107')) || [
+    // Automatische Datenrettung: Holt Daten aus v107 oder fällt automatisch auf v106 / v105 / v104 zurück!
+    let savedOrders = localStorage.getItem('sefas_orders_v107') || 
+                      localStorage.getItem('sefas_orders_v106') || 
+                      localStorage.getItem('sefas_orders_v105') || 
+                      localStorage.getItem('sefas_orders_v104');
+    let orders = savedOrders ? JSON.parse(savedOrders) : [];
+
+    let savedSpools = localStorage.getItem('sefas_spools_v107') || 
+                      localStorage.getItem('sefas_spools_v106') || 
+                      localStorage.getItem('sefas_spools_v105');
+    let spools = savedSpools ? JSON.parse(savedSpools) : [
       { id: 1, name: "PLA Schwarz", remainingGrams: 820 },
       { id: 2, name: "PETG Weiß", remainingGrams: 650 },
       { id: 3, name: "ASA Grau", remainingGrams: 120 }
     ];
+
     let printers = [
       { name: "CR-10 Smart Pro #1", desc: "Creality Cloud / Großraum", status: "Bereit", printHours: 12.5 },
       { name: "Ender 3 V3", desc: "Creality / Klipper", status: "Frei", printHours: 104.0 },
