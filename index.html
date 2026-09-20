@@ -60,16 +60,13 @@
           <i class="fa-solid fa-cube text-xl"></i>
         </div>
         <div>
-          <h1 class="text-xl font-bold text-white">Sefas3DShop Dashboard Pro + Push Alarm</h1>
-          <p class="text-slate-400 text-xs">Auftrags-, Tracking-, QR-Code Karton-Etikett & Browser-Benachrichtigungen</p>
+          <h1 class="text-xl font-bold text-white">Sefas3DShop Dashboard Pro + Archiv & Lager-Auswahl</h1>
+          <p class="text-slate-400 text-xs">Auftrags-, Tracking-, QR-Code Karton-Etikett & Filament-Verknüpfung</p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <button onclick="requestNotificationPermission()" class="bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center">
-          <i class="fa-solid fa-bell mr-1"></i> 🔔 Benachrichtigungen aktivieren
-        </button>
-        <button onclick="forceRestoreAllCustomers()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center">
-          <i class="fa-solid fa-arrows-rotate mr-1"></i> 🔄 Kunden Wiederherstellen
+          <i class="fa-solid fa-bell mr-1"></i> 🔔 Push aktiv
         </button>
         <button onclick="exportCSV()" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition">
           <i class="fa-solid fa-file-excel mr-1"></i> CSV Export
@@ -232,10 +229,10 @@
           <input type="text" id="notes" placeholder="Notizen / Sonderwünsche" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
         </div>
 
-        <!-- DYNAMISCHE ARTIKEL-EINGABE -->
+        <!-- DYNAMISCHE ARTIKEL-EINGABE (MIT LAGER-FARBWAHL) -->
         <div class="border-t border-slate-700/60 pt-3 space-y-2">
           <div class="flex justify-between items-center">
-            <label class="text-xs font-semibold text-slate-300">Artikel, Farbe & Druckzeiten:</label>
+            <label class="text-xs font-semibold text-slate-300">Artikel, Farbe (aus Lager) & Druckzeiten:</label>
             <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-3 py-1 rounded-lg text-xs transition flex items-center">
               <i class="fa-solid fa-plus mr-1"></i> Weitere Position hinzufügen
             </button>
@@ -244,7 +241,9 @@
           <div id="articleInputRows" class="space-y-2">
             <div class="flex gap-2 items-center article-row">
               <input type="text" placeholder="Artikelbezeichnung (z.B. 1x Japandi Vogel)" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
-              <input type="text" placeholder="Farbe/Filament (z.B. PLA Grün)" class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-40 focus:outline-none">
+              <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-48 focus:outline-none">
+                <option value="">-- Farbe aus Lager --</option>
+              </select>
               <input type="number" placeholder="Std" min="0" class="art-hrs w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
               <input type="number" placeholder="Min" min="0" max="59" class="art-mins w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
             </div>
@@ -367,66 +366,8 @@
     let currentFilter = "all";
     let editingIndex = -1;
 
-    const ALL_MASTER_ORDERS = [
-      {
-        id: 1, customer: "Renate Evelin - Veere", address: "Musterstraße 12, 12345 Berlin", notes: "Bitte gut verpacken", printer: "Anycubic Kobra", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 18.00, shippingCost: 7.00, weight: 180, archived: false,
-        items: [
-          { name: "1x Japandi Vogel", color: "PLA Grün", durationMin: 60, status: "Offen", endTime: null },
-          { name: "1x Kürbis", color: "PLA Orange", durationMin: 45, status: "Offen", endTime: null },
-          { name: "1x Modernes Eichhörnchen", color: "PLA Braun", durationMin: 50, status: "Offen", endTime: null },
-          { name: "4x Zapfenhäuschen", color: "2x Grün, 2x Beige", durationMin: 120, status: "Offen", endTime: null }
-        ]
-      },
-      {
-        id: 2, customer: "Ralf Hartmann", address: "", notes: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", tracking: "358070447889", price: 18.00, shippingCost: 7.00, weight: 120, archived: false,
-        items: [
-          { name: "6x Rentier", color: "PLA Braun", durationMin: 150, status: "Fertig", endTime: null }
-        ]
-      },
-      {
-        id: 3, customer: "Sabine Beewen", address: "", notes: "", printer: "Anycubic Kobra", status: "Offen", label: "✅ Ja", packed: "❌ Nein", tracking: "-", price: 7.00, shippingCost: 3.00, weight: 65, archived: false,
-        items: [
-          { name: "1x Fernbedienungshalter", color: "PETG Schwarz", durationMin: 90, status: "Offen", endTime: null }
-        ]
-      },
-      {
-        id: 4, customer: "Dunja marcinkowski", address: "", notes: "", printer: "Ender 3 V3", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 25.00, shippingCost: 5.00, weight: 240, archived: false,
-        items: [
-          { name: "6x Weinhalter schwarz", color: "PLA Schwarz", durationMin: 180, status: "Offen", endTime: null },
-          { name: "9x Bäume", color: "PLA Grün", durationMin: 120, status: "Offen", endTime: null }
-        ]
-      },
-      {
-        id: 5, customer: "Tobias von der Famile Ulm", address: "", notes: "", printer: "Anycubic Kobra", status: "In Arbeit", label: "✅ Ja", packed: "❌ Nein", tracking: "358072492915", price: 23.00, shippingCost: 7.00, weight: 210, archived: false,
-        items: [
-          { name: "3x Suppenhalter 6cm", color: "PLA Schwarz", durationMin: 60, status: "Fertig", endTime: null },
-          { name: "4x Backpulverhalter", color: "PLA Schwarz", durationMin: 40, status: "In Arbeit", endTime: Date.now() + 1000 * 60 * 25 },
-          { name: "4x Backpulverhalter 6cm", color: "PLA Schwarz", durationMin: 45, status: "Offen", endTime: null },
-          { name: "1x Abroller Alufolie", color: "PLA Grau", durationMin: 90, status: "Offen", endTime: null }
-        ]
-      },
-      {
-        id: 6, customer: "Antje Nanninga", address: "", notes: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 12.00, shippingCost: 3.00, weight: 110, archived: false,
-        items: [
-          { name: "1x Vase weiß", color: "PLA Weiß", durationMin: 120, status: "Fertig", endTime: null }
-        ]
-      },
-      {
-        id: 7, customer: "Gabi Thomas", address: "", notes: "", printer: "Ender 3 V3", status: "Offen", label: "✅ Ja", packed: "❌ Nein", tracking: "358072492921", price: 10.00, shippingCost: 2.50, weight: 85, archived: false,
-        items: [
-          { name: "1x Dogge lila", color: "PLA Lila", durationMin: 105, status: "Offen", endTime: null }
-        ]
-      },
-      {
-        id: 8, customer: "Paul Hartmann", address: "", notes: "", printer: "CR-10 Smart Pro #1", status: "In Arbeit", label: "✅ Ja", packed: "❌ Nein", tracking: "-", price: 11.50, shippingCost: 2.50, weight: 95, archived: false,
-        items: [
-          { name: "3x Makita Akkuhalter", color: "PETG Schwarz", durationMin: 135, status: "In Arbeit", endTime: Date.now() + 1000 * 60 * 45 }
-        ]
-      }
-    ];
-
-    let orders = ALL_MASTER_ORDERS;
-    let spools = [
+    let orders = JSON.parse(localStorage.getItem('sefas_orders_v107')) || [];
+    let spools = JSON.parse(localStorage.getItem('sefas_spools_v107')) || [
       { id: 1, name: "PLA Schwarz", remainingGrams: 820 },
       { id: 2, name: "PETG Weiß", remainingGrams: 650 },
       { id: 3, name: "ASA Grau", remainingGrams: 120 }
@@ -439,42 +380,38 @@
     ];
 
     function saveAllData() {
-      localStorage.setItem('sefas_orders_v106', JSON.stringify(orders));
-      localStorage.setItem('sefas_spools_v106', JSON.stringify(spools));
-      localStorage.setItem('sefas_printers_v106', JSON.stringify(printers));
+      localStorage.setItem('sefas_orders_v107', JSON.stringify(orders));
+      localStorage.setItem('sefas_spools_v107', JSON.stringify(spools));
     }
 
-    function forceRestoreAllCustomers() {
-      orders = JSON.parse(JSON.stringify(ALL_MASTER_ORDERS));
-      saveAllData();
-      renderOrders();
-      updateStats();
-      alert("Alle Kunden & Aufträge wurden erfolgreich wiederhergestellt!");
+    function updateSpoolDropdowns() {
+      const selects = document.querySelectorAll('.art-color');
+      selects.forEach(select => {
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">-- Farbe aus Lager --</option>';
+        spools.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.name;
+          opt.textContent = `${s.name} (${s.remainingGrams}g)`;
+          if (s.name === currentVal) opt.selected = true;
+          select.appendChild(opt);
+        });
+      });
     }
 
     function requestNotificationPermission() {
-      if (!("Notification" in window)) {
-        alert("Dein Browser unterstützt keine Benachrichtigungen.");
-        return;
-      }
+      if (!("Notification" in window)) return;
       Notification.requestPermission().then(permission => {
-        if (permission === "granted") {
-          alert("Benachrichtigungen erfolgreich aktiviert! Du wirst ab sofort gewarnt.");
-          new Notification("Sefas3DShop", { body: "Push-Benachrichtigungen sind nun aktiv." });
-        } else {
-          alert("Benachrichtigungen wurden abgelehnt.");
-        }
+        if (permission === "granted") alert("Push-Benachrichtigungen sind aktiv!");
       });
     }
 
     function sendBrowserNotification(spoolName, grams) {
-      if (!("Notification" in window)) return;
-      if (Notification.permission === "granted") {
-        new Notification("⚠️ Sefas3DShop Filament-Alarm!", {
-          body: `Spule "${spoolName}" ist unter 250g gefallen! Restgewicht: ${grams}g.`,
-          icon: "https://cdn-icons-png.flaticon.com/512/2921/2921222.png"
-        });
-      }
+      if (!("Notification" in window) || Notification.permission !== "granted") return;
+      new Notification("⚠️ Sefas3DShop Filament-Alarm!", {
+        body: `Spule "${spoolName}" ist unter 250g gefallen! Restgewicht: ${grams}g.`,
+        icon: "https://cdn-icons-png.flaticon.com/512/2921/2921222.png"
+      });
     }
 
     function playBeepSound() {
@@ -523,7 +460,7 @@
       renderOrders();
     }
 
-    /* FILAMENT LAGER MANAGEMENT & PUSH BENACHRICHTIGUNG */
+    /* FILAMENT LAGER MANAGEMENT */
     function renderSpools() {
       const container = document.getElementById('spoolsList');
       const banner = document.getElementById('spoolWarningBanner');
@@ -545,9 +482,7 @@
 
         const div = document.createElement('div');
         div.className = `p-2.5 rounded-xl border text-xs flex justify-between items-center transition ${
-          isLow 
-            ? 'bg-red-950/40 border-red-500/60 pulse-low-spool' 
-            : 'bg-slate-900 border-slate-700/60'
+          isLow ? 'bg-red-950/40 border-red-500/60 pulse-low-spool' : 'bg-slate-900 border-slate-700/60'
         }`;
 
         div.innerHTML = `
@@ -576,6 +511,7 @@
       } else {
         banner.classList.add('hidden');
       }
+      updateSpoolDropdowns();
     }
 
     function addSpoolPrompt() {
@@ -608,9 +544,15 @@
       const container = document.getElementById('articleInputRows');
       const div = document.createElement('div');
       div.className = "flex gap-2 items-center article-row";
+      
+      let optionsHtml = '<option value="">-- Farbe aus Lager --</option>';
+      spools.forEach(s => {
+        optionsHtml += `<option value="${s.name}">${s.name} (${s.remainingGrams}g)</option>`;
+      });
+
       div.innerHTML = `
         <input type="text" placeholder="Weitere Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
-        <input type="text" placeholder="Farbe/Filament" class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-40 focus:outline-none">
+        <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-48 focus:outline-none">${optionsHtml}</select>
         <input type="number" placeholder="Std" min="0" class="art-hrs w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
         <input type="number" placeholder="Min" min="0" max="59" class="art-mins w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
         <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 text-xs px-2"><i class="fa-solid fa-xmark"></i></button>
@@ -618,13 +560,20 @@
       container.appendChild(div);
     }
 
-    function addEditArticleRow() {
+    function addEditArticleRow(selectedColor = '') {
       const container = document.getElementById('edit-items-container');
       const div = document.createElement('div');
       div.className = "bg-slate-900 border border-blue-500/60 p-2 rounded-xl flex flex-col sm:flex-row gap-2 items-center";
+      
+      let optionsHtml = '<option value="">-- Farbe aus Lager --</option>';
+      spools.forEach(s => {
+        const sel = s.name === selectedColor ? 'selected' : '';
+        optionsHtml += `<option value="${s.name}" ${sel}>${s.name} (${s.remainingGrams}g)</option>`;
+      });
+
       div.innerHTML = `
         <input type="text" placeholder="Artikelbezeichnung" class="edit-item-name bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
-        <input type="text" placeholder="Farbe" class="edit-item-color bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-28 focus:outline-none">
+        <select class="edit-item-color bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-36 focus:outline-none">${optionsHtml}</select>
         <div class="flex items-center gap-1">
           <input type="number" value="1" min="0" placeholder="Std" class="edit-item-hrs bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-10 text-center focus:outline-none">
           <span class="text-xs text-slate-400">h</span>
@@ -653,7 +602,7 @@
           const totalM = (h * 60) + m;
           itemsList.push({
             name: val,
-            color: colorInputs[idx].value.trim(),
+            color: colorInputs[idx].value,
             durationMin: totalM > 0 ? totalM : 60,
             status: "Offen",
             endTime: null
@@ -688,14 +637,13 @@
       renderOrders();
 
       document.getElementById('orderForm').reset();
-      document.getElementById('articleInputRows').innerHTML = `
-        <div class="flex gap-2 items-center article-row">
-          <input type="text" placeholder="Artikelbezeichnung (z.B. 1x Japandi Vogel)" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
-          <input type="text" placeholder="Farbe/Filament (z.B. PLA Grün)" class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-40 focus:outline-none">
-          <input type="number" placeholder="Std" min="0" class="art-hrs w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
-          <input type="number" placeholder="Min" min="0" max="59" class="art-mins w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
-        </div>
-      `;
+      updateSpoolDropdowns();
+    }
+
+    function toggleArchiveOrder(index) {
+      orders[index].archived = !orders[index].archived;
+      saveAllData();
+      renderOrders();
     }
 
     function startEdit(index) {
@@ -725,7 +673,7 @@
           const existingItem = orders[index].items[idx] || {};
           updatedItems.push({
             name: val,
-            color: colorInputs[idx].value.trim(),
+            color: colorInputs[idx].value,
             durationMin: totalM > 0 ? totalM : 60,
             status: existingItem.status || "Offen",
             endTime: existingItem.endTime || null
@@ -780,10 +728,17 @@
           o.items.forEach((item) => {
             const h = Math.floor((item.durationMin || 0) / 60);
             const m = (item.durationMin || 0) % 60;
+            
+            let optionsHtml = '<option value="">-- Farbe aus Lager --</option>';
+            spools.forEach(s => {
+              const sel = s.name === item.color ? 'selected' : '';
+              optionsHtml += `<option value="${s.name}" ${sel}>${s.name} (${s.remainingGrams}g)</option>`;
+            });
+
             editItemsHtml += `
               <div class="bg-slate-900 border border-blue-500/60 p-2 rounded-xl flex flex-col sm:flex-row gap-2 items-center">
                 <input type="text" value="${item.name}" class="edit-item-name bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
-                <input type="text" value="${item.color || ''}" placeholder="Farbe" class="edit-item-color bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-28 focus:outline-none">
+                <select class="edit-item-color bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-36 focus:outline-none">${optionsHtml}</select>
                 <div class="flex items-center gap-1">
                   <input type="number" value="${h}" min="0" placeholder="Std" class="edit-item-hrs bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-10 text-center focus:outline-none">
                   <span class="text-xs text-slate-400">h</span>
@@ -925,10 +880,13 @@
             <td class="p-3">${trackingLink}</td>
             <td class="p-3 text-right">
               <div class="flex justify-end items-center space-x-1">
-                <button onclick="printBoxLabel(${orderIndex})" title="Karton-Etikett mit QR-Code & Paketinhalt drucken" class="text-amber-300 hover:text-white text-xs px-2 py-1 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                  🏷️ QR-Etikett
+                <button onclick="toggleArchiveOrder(${orderIndex})" title="${o.archived ? 'Aus Archiv holen' : 'Ins Archiv verschieben'}" class="text-purple-300 hover:text-white text-xs px-2 py-1 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                  ${o.archived ? '📂 Wiederherstellen' : '📦 Archiv'}
                 </button>
-                <button onclick="startEdit(${orderIndex})" title="Auftrag & Tracking bearbeiten" class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                <button onclick="printBoxLabel(${orderIndex})" title="Karton-Etikett mit QR-Code & Paketinhalt drucken" class="text-amber-300 hover:text-white text-xs px-2 py-1 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                  🏷️ QR
+                </button>
+                <button onclick="startEdit(${orderIndex})" title="Bearbeiten" class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-blue-500/10 rounded-lg border border-blue-500/20">
                   ✏️
                 </button>
                 <button onclick="deleteOrder(${orderIndex})" title="Löschen" class="text-red-400 hover:text-red-300 text-xs px-2 py-1 bg-red-500/10 rounded-lg border border-red-500/20">
@@ -1063,7 +1021,7 @@
         totalWeight += weight;
         totalProfit += (itemPrice - ((weight / 1000) * 20));
 
-        if (o.status !== 'Fertig') openCount++;
+        if (o.status !== 'Fertig' && !o.archived) openCount++;
       });
 
       document.getElementById('statRevenue').innerText = totalRevenue.toFixed(2).replace('.', ',') + ' €';
