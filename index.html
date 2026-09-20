@@ -38,7 +38,7 @@
         </div>
         <div>
           <h1 class="text-xl font-bold text-white">Sefas3DShop Dashboard Pro</h1>
-          <p class="text-slate-400 text-xs">Einzelartikel-Drucksteuerung & Live-Countdowns</p>
+          <p class="text-slate-400 text-xs">Einzelartikel-Drucksteuerung, Edit-Funktion & Druckzeiten-Verwaltung</p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
@@ -180,7 +180,7 @@
           <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
             <tr>
               <th class="p-3">Kunde</th>
-              <th class="p-3 min-w-[380px]">Artikel, Druckdauer & Einzel-Countdowns</th>
+              <th class="p-3 min-w-[420px]">Artikel, Druckdauer & Einzel-Countdowns</th>
               <th class="p-3">Drucker</th>
               <th class="p-3">Gesamtstatus</th>
               <th class="p-3">Preis / Gewicht</th>
@@ -262,6 +262,7 @@
   <script>
     const DEFAULT_PIN = "1234";
     let formality = "du";
+    let editingIndex = -1;
 
     const REAL_ORDERS = [
       {
@@ -321,23 +322,24 @@
       }
     ];
 
-    let printers = JSON.parse(localStorage.getItem('sefas_printers_v7')) || [
+    let printers = JSON.parse(localStorage.getItem('sefas_printers_v8')) || [
       { name: "CR-10 Smart Pro #1", desc: "Creality Cloud / Großraum", status: "Bereit" },
       { name: "Ender 3 V3", desc: "Creality / Klipper", status: "Frei" },
       { name: "Anycubic Kobra", desc: "Direct Drive", status: "In Arbeit" },
       { name: "CR-10 Smart Pro #2", desc: "Creality Cloud / Großraum", status: "Bereit" }
     ];
 
-    if (!localStorage.getItem('sefas_orders_v7')) {
-      localStorage.setItem('sefas_orders_v7', JSON.stringify(REAL_ORDERS));
+    if (!localStorage.getItem('sefas_orders_v8')) {
+      localStorage.setItem('sefas_orders_v8', JSON.stringify(REAL_ORDERS));
     }
 
-    let orders = JSON.parse(localStorage.getItem('sefas_orders_v7')) || REAL_ORDERS;
+    let orders = JSON.parse(localStorage.getItem('sefas_orders_v8')) || REAL_ORDERS;
 
     function resetToScreenshotData() {
       if (confirm("Möchtest du alle Aufträge auf die Standard-Daten zurücksetzen?")) {
         orders = JSON.parse(JSON.stringify(REAL_ORDERS));
-        localStorage.setItem('sefas_orders_v7', JSON.stringify(orders));
+        localStorage.setItem('sefas_orders_v8', JSON.stringify(orders));
+        editingIndex = -1;
         renderOrders();
         updateStats();
         alert("Daten zurückgesetzt!");
@@ -452,7 +454,7 @@
         grid.appendChild(card);
       });
 
-      localStorage.setItem('sefas_printers_v7', JSON.stringify(printers));
+      localStorage.setItem('sefas_printers_v8', JSON.stringify(printers));
     }
 
     function updatePrinterStatus(index, newStatus) {
@@ -468,81 +470,233 @@
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-800/40 border-b border-slate-800";
 
-        let itemsHtml = '<div class="space-y-2 py-1">';
-        o.items.forEach((item, itemIndex) => {
-          const hrs = Math.floor((item.durationMin || 0) / 60);
-          const mins = (item.durationMin || 0) % 60;
-          const durationText = `${hrs}h ${mins}m`;
+        if (editingIndex === orderIndex) {
+          // BEARBEITEN-MODUS FÜR KUNDE & ARTIKEL
+          let editItemsHtml = '<div id="edit-items-container" class="space-y-2 py-1">';
+          o.items.forEach((item, itemIdx) => {
+            const h = Math.floor((item.durationMin || 0) / 60);
+            const m = (item.durationMin || 0) % 60;
+            editItemsHtml += `
+              <div class="bg-slate-900 border border-blue-500/60 p-2 rounded-xl flex flex-col sm:flex-row gap-2 items-center">
+                <input type="text" value="${item.name}" class="edit-item-name bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
+                <div class="flex items-center gap-1">
+                  <span class="text-[10px] text-slate-400">Dauer:</span>
+                  <input type="number" value="${h}" min="0" placeholder="Std" class="edit-item-hrs bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-12 text-center focus:outline-none">
+                  <span class="text-xs text-slate-400">h</span>
+                  <input type="number" value="${m}" min="0" max="59" placeholder="Min" class="edit-item-mins bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-12 text-center focus:outline-none">
+                  <span class="text-xs text-slate-400">m</span>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 text-xs px-1"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            `;
+          });
+          editItemsHtml += '</div>';
+          editItemsHtml += `
+            <button type="button" onclick="addEditArticleRow()" class="mt-2 bg-slate-800 hover:bg-slate-700 text-blue-400 text-[11px] px-2 py-1 rounded-lg border border-blue-500/20">
+              <i class="fa-solid fa-plus mr-1"></i> Artikel hinzufügen
+            </button>
+          `;
 
-          itemsHtml += `
-            <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-700/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-              <div class="flex-1">
-                <div class="font-medium text-xs text-white">• ${item.name}</div>
-                <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
-                  <span>Soll: ${durationText}</span>
-                  <span id="countdown-${orderIndex}-${itemIndex}" class="font-mono text-amber-300">--:--:--</span>
+          tr.innerHTML = `
+            <td class="p-2"><input type="text" id="edit-customer-${orderIndex}" value="${o.customer}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full"></td>
+            <td class="p-2">${editItemsHtml}</td>
+            <td class="p-2">
+              <select id="edit-printer-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full">
+                <option value="CR-10 Smart Pro #1" ${o.printer === 'CR-10 Smart Pro #1' ? 'selected' : ''}>CR-10 Smart Pro #1</option>
+                <option value="Ender 3 V3" ${o.printer === 'Ender 3 V3' ? 'selected' : ''}>Ender 3 V3</option>
+                <option value="Anycubic Kobra" ${o.printer === 'Anycubic Kobra' ? 'selected' : ''}>Anycubic Kobra</option>
+                <option value="CR-10 Smart Pro #2" ${o.printer === 'CR-10 Smart Pro #2' ? 'selected' : ''}>CR-10 Smart Pro #2</option>
+              </select>
+            </td>
+            <td class="p-2">
+              <select id="edit-status-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full">
+                <option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option>
+                <option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option>
+                <option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option>
+              </select>
+            </td>
+            <td class="p-2">
+              <div class="flex flex-col gap-1">
+                <input type="number" step="0.01" id="edit-price-${orderIndex}" value="${o.price || 0}" placeholder="€" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-16">
+                <input type="number" id="edit-weight-${orderIndex}" value="${o.weight || 0}" placeholder="g" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-16">
+              </div>
+            </td>
+            <td class="p-2">
+              <select id="edit-label-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full">
+                <option value="✅ Ja" ${o.label.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
+                <option value="❌ Nein" ${o.label.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
+                <option value="🟡 Wartet auf Zahlung" ${o.label.includes('Zahlung') ? 'selected' : ''}>🟡 Wartet auf Zahlung</option>
+              </select>
+            </td>
+            <td class="p-2">
+              <select id="edit-packed-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full">
+                <option value="❌ Nein" ${o.packed.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
+                <option value="✅ Ja" ${o.packed.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
+              </select>
+            </td>
+            <td class="p-2"><input type="text" id="edit-tracking-${orderIndex}" value="${o.tracking === '-' ? '' : o.tracking}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-20"></td>
+            <td class="p-2 text-right">
+              <div class="flex justify-end space-x-1">
+                <button onclick="saveEdit(${orderIndex})" title="Speichern" class="bg-green-600 hover:bg-green-500 text-white px-2 py-1 rounded-lg text-xs font-semibold">
+                  <i class="fa-solid fa-check"></i>
+                </button>
+                <button onclick="cancelEdit()" title="Abbrechen" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-2 py-1 rounded-lg text-xs">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </td>
+          `;
+        } else {
+          // NORMALER ANZEIGEMODUS
+          let itemsHtml = '<div class="space-y-2 py-1">';
+          o.items.forEach((item, itemIndex) => {
+            const hrs = Math.floor((item.durationMin || 0) / 60);
+            const mins = (item.durationMin || 0) % 60;
+            const durationText = `${hrs}h ${mins}m`;
+
+            itemsHtml += `
+              <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-700/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div class="flex-1">
+                  <div class="font-medium text-xs text-white">• ${item.name}</div>
+                  <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
+                    <span>Soll: ${durationText}</span>
+                    <span id="countdown-${orderIndex}-${itemIndex}" class="font-mono text-amber-300">--:--:--</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  ${item.status === 'Offen' ? `
+                    <button onclick="startSingleItemPrint(${orderIndex},${itemIndex})" class="bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/40 px-2 py-1 rounded-lg text-xs transition flex items-center gap-1">
+                      <i class="fa-solid fa-play text-[10px]"></i> Start
+                    </button>
+                  ` : item.status === 'In Arbeit' ? `
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">🟡 In Arbeit</span>
+                  ` : `
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-green-500/20 text-green-400 border border-green-500/30">🟢 Fertig</span>
+                  `}
                 </div>
               </div>
-              <div class="flex items-center gap-1.5">
-                ${item.status === 'Offen' ? `
-                  <button onclick="startSingleItemPrint(${orderIndex},${itemIndex})" class="bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/40 px-2 py-1 rounded-lg text-xs transition flex items-center gap-1">
-                    <i class="fa-solid fa-play text-[10px]"></i> Start
-                  </button>
-                ` : item.status === 'In Arbeit' ? `
-                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">🟡 In Arbeit</span>
-                ` : `
-                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-green-500/20 text-green-400 border border-green-500/30">🟢 Fertig</span>
-                `}
-              </div>
-            </div>
-          `;
-        });
-        itemsHtml += '</div>';
+            `;
+          });
+          itemsHtml += '</div>';
 
-        tr.innerHTML = `
-          <td class="p-3 font-medium text-white">${o.customer}</td>
-          <td class="p-3">${itemsHtml}</td>
-          <td class="p-3 text-slate-400 text-xs">${o.printer}</td>
-          <td class="p-3">
-            <select onchange="updateField(${orderIndex}, 'status', this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-white focus:outline-none">
-              <option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option>
-              <option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option>
-              <option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option>
-            </select>
-          </td>
-          <td class="p-3">
-            <div class="text-xs text-emerald-400 font-semibold">${o.price ? parseFloat(o.price).toFixed(2) + ' €' : '-'}</div>
-            <div class="text-[10px] text-slate-400">${o.weight ? o.weight + ' g' : '-'}</div>
-          </td>
-          <td class="p-3">
-            <select onchange="updateField(${orderIndex}, 'label', this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-white focus:outline-none">
-              <option value="✅ Ja" ${o.label.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
-              <option value="❌ Nein" ${o.label.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
-              <option value="🟡 Wartet auf Zahlung" ${o.label.includes('Zahlung') ? 'selected' : ''}>🟡 Wartet auf Zahlung</option>
-            </select>
-          </td>
-          <td class="p-3">
-            <select onchange="updateField(${orderIndex}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-white focus:outline-none">
-              <option value="❌ Nein" ${o.packed.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
-              <option value="✅ Ja" ${o.packed.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
-            </select>
-          </td>
-          <td class="p-3">
-            <input type="text" value="${o.tracking === '-' ? '' : o.tracking}" placeholder="Tracking..." onblur="updateField(${orderIndex}, 'tracking', this.value || '-')" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-slate-200 w-24 focus:outline-none">
-          </td>
-          <td class="p-3 text-right">
-            <button onclick="deleteOrder(${orderIndex})" title="Löschen" class="text-red-400 hover:text-red-300 text-xs px-2 py-1 bg-red-500/10 rounded-lg border border-red-500/20">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </td>
-        `;
+          tr.innerHTML = `
+            <td class="p-3 font-medium text-white">${o.customer}</td>
+            <td class="p-3">${itemsHtml}</td>
+            <td class="p-3 text-slate-400 text-xs">${o.printer}</td>
+            <td class="p-3">
+              <select onchange="updateField(${orderIndex}, 'status', this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-white focus:outline-none">
+                <option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option>
+                <option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option>
+                <option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option>
+              </select>
+            </td>
+            <td class="p-3">
+              <div class="text-xs text-emerald-400 font-semibold">${o.price ? parseFloat(o.price).toFixed(2) + ' €' : '-'}</div>
+              <div class="text-[10px] text-slate-400">${o.weight ? o.weight + ' g' : '-'}</div>
+            </td>
+            <td class="p-3">
+              <select onchange="updateField(${orderIndex}, 'label', this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-white focus:outline-none">
+                <option value="✅ Ja" ${o.label.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
+                <option value="❌ Nein" ${o.label.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
+                <option value="🟡 Wartet auf Zahlung" ${o.label.includes('Zahlung') ? 'selected' : ''}>🟡 Wartet auf Zahlung</option>
+              </select>
+            </td>
+            <td class="p-3">
+              <select onchange="updateField(${orderIndex}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-white focus:outline-none">
+                <option value="❌ Nein" ${o.packed.includes('Nein') ? 'selected' : ''}>❌ Nein</option>
+                <option value="✅ Ja" ${o.packed.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
+              </select>
+            </td>
+            <td class="p-3">
+              <input type="text" value="${o.tracking === '-' ? '' : o.tracking}" placeholder="Tracking..." onblur="updateField(${orderIndex}, 'tracking', this.value || '-')" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-slate-200 w-24 focus:outline-none">
+            </td>
+            <td class="p-3 text-right">
+              <div class="flex justify-end space-x-1">
+                <button onclick="startEdit(${orderIndex})" title="Bearbeiten" class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button onclick="deleteOrder(${orderIndex})" title="Löschen" class="text-red-400 hover:text-red-300 text-xs px-2 py-1 bg-red-500/10 rounded-lg border border-red-500/20">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          `;
+        }
         tbody.appendChild(tr);
       });
 
-      localStorage.setItem('sefas_orders_v7', JSON.stringify(orders));
+      localStorage.setItem('sefas_orders_v8', JSON.stringify(orders));
       updateCustomerDropdown();
       updateStats();
       updateCountdowns();
+    }
+
+    function addEditArticleRow() {
+      const container = document.getElementById('edit-items-container');
+      const div = document.createElement('div');
+      div.className = "bg-slate-900 border border-blue-500/60 p-2 rounded-xl flex flex-col sm:flex-row gap-2 items-center";
+      div.innerHTML = `
+        <input type="text" placeholder="Artikelbezeichnung" class="edit-item-name bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
+        <div class="flex items-center gap-1">
+          <span class="text-[10px] text-slate-400">Dauer:</span>
+          <input type="number" value="1" min="0" placeholder="Std" class="edit-item-hrs bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-12 text-center focus:outline-none">
+          <span class="text-xs text-slate-400">h</span>
+          <input type="number" value="0" min="0" max="59" placeholder="Min" class="edit-item-mins bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-12 text-center focus:outline-none">
+          <span class="text-xs text-slate-400">m</span>
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 text-xs px-1"><i class="fa-solid fa-trash"></i></button>
+      `;
+      container.appendChild(div);
+    }
+
+    function startEdit(index) {
+      editingIndex = index;
+      renderOrders();
+    }
+
+    function cancelEdit() {
+      editingIndex = -1;
+      renderOrders();
+    }
+
+    function saveEdit(index) {
+      const nameInputs = document.querySelectorAll('.edit-item-name');
+      const hrsInputs = document.querySelectorAll('.edit-item-hrs');
+      const minsInputs = document.querySelectorAll('.edit-item-mins');
+
+      const updatedItems = [];
+      nameInputs.forEach((inp, idx) => {
+        const val = inp.value.trim();
+        if (val) {
+          const h = parseInt(hrsInputs[idx].value) || 0;
+          const m = parseInt(minsInputs[idx].value) || 0;
+          const totalM = (h * 60) + m;
+          
+          const existingItem = orders[index].items[idx] || {};
+          updatedItems.push({
+            name: val,
+            durationMin: totalM > 0 ? totalM : 60,
+            status: existingItem.status || "Offen",
+            endTime: existingItem.endTime || null
+          });
+        }
+      });
+
+      orders[index] = {
+        ...orders[index],
+        customer: document.getElementById(`edit-customer-${index}`).value,
+        printer: document.getElementById(`edit-printer-${index}`).value,
+        status: document.getElementById(`edit-status-${index}`).value,
+        price: parseFloat(document.getElementById(`edit-price-${index}`).value) || 0,
+        weight: parseInt(document.getElementById(`edit-weight-${index}`).value) || 0,
+        label: document.getElementById(`edit-label-${index}`).value,
+        packed: document.getElementById(`edit-packed-${index}`).value,
+        tracking: document.getElementById(`edit-tracking-${index}`).value || '-',
+        items: updatedItems.length > 0 ? updatedItems : orders[index].items
+      };
+
+      editingIndex = -1;
+      renderOrders();
     }
 
     function startSingleItemPrint(orderIndex, itemIndex) {
@@ -553,12 +707,10 @@
       const totalMs = (item.durationMin || 60) * 60 * 1000;
       item.endTime = Date.now() + totalMs;
 
-      // Wenn Gesamtauftrag noch offen war, auf In Arbeit setzen
       if (o.status === 'Offen') {
         o.status = 'In Arbeit';
       }
 
-      // Drucker auf In Arbeit setzen
       const pIndex = printers.findIndex(p => p.name === o.printer);
       if (pIndex !== -1) {
         printers[pIndex].status = "In Arbeit";
@@ -602,7 +754,6 @@
           }
         });
 
-        // Wenn alle Einzelartikel fertig sind, setze Hauptauftrag auf Fertig
         if (allItemsDone && o.items.length > 0 && o.status !== 'Fertig') {
           o.status = 'Fertig';
           renderOrders();
@@ -630,7 +781,7 @@
 
     function updateField(index, field, value) {
       orders[index][field] = value;
-      localStorage.setItem('sefas_orders_v7', JSON.stringify(orders));
+      localStorage.setItem('sefas_orders_v8', JSON.stringify(orders));
       if (field === 'tracking' || field === 'customer') {
         updateCustomerDropdown();
       }
