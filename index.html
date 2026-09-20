@@ -9,6 +9,18 @@
   <style>
     body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
     .card { background-color: #1e293b; border: 1px solid #334155; }
+    @keyframes pulse-green {
+      0%, 100% { background-color: rgba(34, 197, 94, 0.15); }
+      50% { background-color: rgba(34, 197, 94, 0.35); }
+    }
+    .pulse-done { animation: pulse-green 2s infinite; }
+
+    /* Lieferschein & Etikett Druck-Styling */
+    @media print {
+      body * { visibility: hidden; }
+      #printSection, #printSection * { visibility: visible; }
+      #printSection { position: absolute; left: 0; top: 0; width: 100%; color: #000; background: #fff; padding: 20px; }
+    }
   </style>
 </head>
 <body class="p-4 md:p-6 min-h-screen">
@@ -27,8 +39,11 @@
     </div>
   </div>
 
+  <!-- DRUCK-BEREICH FÜR LIEFERSCHEIN & ETIKETT -->
+  <div id="printSection" class="hidden"></div>
+
   <!-- MAIN APP -->
-  <div id="mainApp" class="max-w-[1650px] mx-auto space-y-6 hidden">
+  <div id="mainApp" class="max-w-[1700px] mx-auto space-y-6 hidden">
     
     <!-- HEADER -->
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800 p-4 rounded-2xl border border-slate-700 gap-4">
@@ -38,7 +53,7 @@
         </div>
         <div>
           <h1 class="text-xl font-bold text-white">Sefas3DShop Dashboard Pro</h1>
-          <p class="text-slate-400 text-xs">Einzelartikel-Drucksteuerung, Edit-Funktion & Druckzeiten-Verwaltung</p>
+          <p class="text-slate-400 text-xs">Auftrags-, Wartungs-, Karton-Etikett- & Fehldruck-Management</p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
@@ -58,7 +73,7 @@
     </header>
 
     <!-- STATISTIK & FINANZ-KARTEN -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       <div class="card p-4 rounded-2xl flex items-center justify-between">
         <div>
           <p class="text-xs text-slate-400">Gesamt-Umsatz</p>
@@ -98,16 +113,58 @@
           <i class="fa-solid fa-spool text-xl"></i>
         </div>
       </div>
+
+      <div class="card p-4 rounded-2xl flex items-center justify-between">
+        <div>
+          <p class="text-xs text-slate-400">Fehldruck / Ausschuss</p>
+          <h3 id="statFailedFilament" class="text-2xl font-bold text-red-400">0 g</h3>
+        </div>
+        <div class="p-3 bg-red-500/10 text-red-400 rounded-xl border border-red-500/20">
+          <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+        </div>
+      </div>
     </section>
 
-    <!-- DRUCKER ÜBERSICHT -->
-    <section>
-      <h2 class="text-md font-semibold mb-3 text-slate-300 flex items-center">
-        <i class="fa-solid fa-print mr-2 text-blue-400"></i> Drucker-Übersicht & Status
+    <!-- DRUCKER (MIT WARTUNGSTRACKER) & FILAMENT-SPULEN BEREICH -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <section class="lg:col-span-2 space-y-3">
+        <h2 class="text-md font-semibold text-slate-300 flex items-center">
+          <i class="fa-solid fa-print mr-2 text-blue-400"></i> Drucker-Übersicht & Wartungs-Tracker
+        </h2>
+        <div id="printersGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+      </section>
+
+      <section class="card p-4 rounded-2xl space-y-3">
+        <div class="flex justify-between items-center">
+          <h2 class="text-md font-semibold text-slate-300 flex items-center">
+            <i class="fa-solid fa-layer-group mr-2 text-purple-400"></i> Filament-Lager
+          </h2>
+          <button onclick="addSpoolPrompt()" class="bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs px-2.5 py-1 rounded-lg border border-purple-500/30">
+            <i class="fa-solid fa-plus mr-1"></i> Spule
+          </button>
+        </div>
+        <div id="spoolsList" class="space-y-2 max-h-[220px] overflow-y-auto pr-1"></div>
+      </section>
+    </div>
+
+    <!-- FEHLDRUCK- / AUSSCHUSS-PROTOKOLL -->
+    <section class="card p-4 rounded-2xl space-y-3 bg-red-950/20 border-red-500/30">
+      <h2 class="text-md font-semibold text-red-300 flex items-center">
+        <i class="fa-solid fa-ban mr-2 text-red-400"></i> Fehldruck / Ausschuss melden
       </h2>
-      <div id="printersGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- Dynamisch gerenderte Drucker -->
-      </div>
+      <form onsubmit="reportFailedPrint(event)" class="flex flex-col sm:flex-row gap-3 items-center">
+        <select id="failPrinter" class="bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white focus:outline-none flex-1 w-full">
+          <option value="CR-10 Smart Pro #1">CR-10 Smart Pro #1</option>
+          <option value="Ender 3 V3">Ender 3 V3</option>
+          <option value="Anycubic Kobra">Anycubic Kobra</option>
+          <option value="CR-10 Smart Pro #2">CR-10 Smart Pro #2</option>
+        </select>
+        <input type="number" id="failGrams" placeholder="Verschwendetes Gewicht (g)" required class="bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white focus:outline-none w-full sm:w-52">
+        <input type="text" id="failReason" placeholder="Grund (z.B. Haftung verloren, Clog)" class="bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white focus:outline-none flex-1 w-full">
+        <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-semibold text-xs px-4 py-2 rounded-xl transition w-full sm:w-auto">
+          <i class="fa-solid fa-circle-minus mr-1"></i> Ausschuss verbuchen
+        </button>
+      </form>
     </section>
 
     <!-- NEUEN AUFTRAG ANLEGEN -->
@@ -126,7 +183,16 @@
             <option value="CR-10 Smart Pro #2">CR-10 Smart Pro #2</option>
           </select>
 
-          <input type="number" step="0.01" id="price" placeholder="Gesamtpreis (€)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+          <input type="number" step="0.01" id="price" placeholder="Artikelpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+
+          <select id="shipping" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+            <option value="6.19">📦 DHL Paket (bis 2 kg) - 6,19 €</option>
+            <option value="7.68">📦 DHL Paket (bis 5 kg) - 7,68 €</option>
+            <option value="2.70">✉️ DHL Warenpost / Großbrief - 2,70 €</option>
+            <option value="3.20">✉️ DHL Warenpost / Großbrief - 3,20 €</option>
+            <option value="0.00">🤝 Selbstabholung - 0,00 €</option>
+          </select>
+
           <input type="number" id="weight" placeholder="Gewicht gesamt (g)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
 
           <select id="label" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
@@ -140,13 +206,17 @@
             <option value="✅ Ja">Verpackt: ✅ Ja</option>
           </select>
 
-          <input type="text" id="tracking" placeholder="Tracking-Nummer (optional)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 col-span-1 sm:col-span-2">
+          <input type="text" id="tracking" placeholder="Tracking-Nummer (optional)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
         </div>
 
-        <!-- DYNAMISCHE ARTIKEL-EINGABE -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <input type="text" id="address" placeholder="Lieferadresse (Straße, PLZ, Ort - optional)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+          <input type="text" id="notes" placeholder="Notizen / Sonderwünsche" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+        </div>
+
         <div class="border-t border-slate-700/60 pt-3 space-y-2">
           <div class="flex justify-between items-center">
-            <label class="text-xs font-semibold text-slate-300">Artikel & individuelle Druckzeiten:</label>
+            <label class="text-xs font-semibold text-slate-300">Artikel, Farbe & Druckzeiten:</label>
             <button type="button" onclick="addArticleInputRow()" class="bg-slate-800 hover:bg-slate-700 text-blue-400 border border-blue-500/30 px-2.5 py-1 rounded-lg text-xs">
               <i class="fa-solid fa-plus mr-1"></i> Weitere Position
             </button>
@@ -154,7 +224,8 @@
 
           <div id="articleInputRows" class="space-y-2">
             <div class="flex gap-2 items-center">
-              <input type="text" placeholder="Artikelbezeichnung (z.B. 1x Japandi Vogel grün)" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
+              <input type="text" placeholder="Artikelbezeichnung (z.B. 1x Japandi Vogel)" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
+              <input type="text" placeholder="Farbe/Filament (z.B. PLA Grün)" class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-40 focus:outline-none">
               <input type="number" placeholder="Std" min="0" class="art-hrs w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
               <input type="number" placeholder="Min" min="0" max="59" class="art-mins w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
             </div>
@@ -169,25 +240,40 @@
 
     <!-- KLEINANZEIGEN BESTELLUNGEN TABELLE -->
     <section class="card p-5 rounded-2xl space-y-4">
-      <div class="flex justify-between items-center">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
         <h2 class="text-md font-semibold text-slate-300 flex items-center">
           <i class="fa-solid fa-list-check mr-2 text-blue-400"></i> Kleinanzeigen Bestellungen
         </h2>
+
+        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <div class="relative flex-1 md:w-64">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+            <input type="text" id="searchInput" oninput="renderOrders()" placeholder="Suchen (Kunde, Artikel, Tracking)..." class="bg-slate-900 border border-slate-700 text-xs rounded-xl pl-8 pr-3 py-2 text-white w-full focus:outline-none focus:border-blue-500">
+          </div>
+
+          <div class="flex gap-1 bg-slate-900 p-1 rounded-xl border border-slate-700 text-xs">
+            <button id="filter-all" onclick="setFilter('all')" class="px-2.5 py-1 rounded-lg font-medium bg-blue-600 text-white">Aktive</button>
+            <button id="filter-open" onclick="setFilter('open')" class="px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white">Offen</button>
+            <button id="filter-done" onclick="setFilter('done')" class="px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white">Fertig</button>
+            <button id="filter-archived" onclick="setFilter('archived')" class="px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white">Archiv 📦</button>
+          </div>
+        </div>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full text-left text-sm">
           <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
             <tr>
-              <th class="p-3">Kunde</th>
-              <th class="p-3 min-w-[420px]">Artikel, Druckdauer & Einzel-Countdowns</th>
+              <th class="p-3">Kunde & Adresse</th>
+              <th class="p-3 min-w-[380px]">Artikel, Farbe & Einzel-Countdowns</th>
               <th class="p-3">Drucker</th>
               <th class="p-3">Gesamtstatus</th>
-              <th class="p-3">Preis / Gewicht</th>
+              <th class="p-3">Preise & Versand</th>
+              <th class="p-3">Gewicht</th>
               <th class="p-3">Label</th>
               <th class="p-3">Verpackt</th>
               <th class="p-3">Tracking</th>
-              <th class="p-3 text-right">Aktion</th>
+              <th class="p-3 text-right">Aktionen</th>
             </tr>
           </thead>
           <tbody id="ordersTableBody" class="divide-y divide-slate-700/50 text-slate-200">
@@ -196,7 +282,7 @@
       </div>
     </section>
 
-    <!-- SCHNELL-NACHRICHTEN VORLAGEN MIT FORMALITÄT-UMSCHALTER -->
+    <!-- SCHNELL-NACHRICHTEN VORLAGEN -->
     <section class="card p-5 rounded-2xl space-y-4">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <h2 class="text-md font-semibold text-slate-300 flex items-center">
@@ -210,7 +296,6 @@
       </div>
       
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- VORLAGE 1: DRUCK GESTARTET -->
         <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 flex flex-col justify-between space-y-3">
           <div>
             <h4 class="font-medium text-sm text-white flex items-center">
@@ -223,7 +308,6 @@
           </button>
         </div>
 
-        <!-- VORLAGE 2: ZAHLUNGSERINNERUNG -->
         <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 flex flex-col justify-between space-y-3">
           <div>
             <h4 class="font-medium text-sm text-white flex items-center">
@@ -236,7 +320,6 @@
           </button>
         </div>
 
-        <!-- VORLAGE 3: VERSENDET + KUNDEN-TRACKING -->
         <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 flex flex-col justify-between space-y-3">
           <div>
             <h4 class="font-medium text-sm text-white flex items-center">
@@ -262,83 +345,68 @@
   <script>
     const DEFAULT_PIN = "1234";
     let formality = "du";
+    let currentFilter = "all";
     let editingIndex = -1;
+    let failedFilamentGrams = parseInt(localStorage.getItem('sefas_failed_grams')) || 0;
 
     const REAL_ORDERS = [
       {
-        id: 1, customer: "Renate Evelin - Veere", printer: "Anycubic Kobra", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 25.00, weight: 180,
+        id: 1, customer: "Renate Evelin - Veere", address: "Musterstraße 12, 12345 Berlin", notes: "Bitte gut verpacken", printer: "Anycubic Kobra", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 25.00, shippingCost: 6.19, weight: 180, archived: false,
         items: [
-          { name: "1x Japandi Vogel grün", durationMin: 60, status: "Offen", endTime: null },
-          { name: "1x Kürbis orange", durationMin: 45, status: "Offen", endTime: null },
-          { name: "1x Modernes Eichhörnchen", durationMin: 50, status: "Offen", endTime: null },
-          { name: "4x Zapfenhäuschen (2x grün, 2x beige)", durationMin: 120, status: "Offen", endTime: null }
+          { name: "1x Japandi Vogel", color: "PLA Grün", durationMin: 60, status: "Offen", endTime: null },
+          { name: "1x Kürbis", color: "PLA Orange", durationMin: 45, status: "Offen", endTime: null }
         ]
       },
       {
-        id: 2, customer: "Ralf Hartmann", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", tracking: "358070447889", price: 18.00, weight: 120,
+        id: 2, customer: "Ralf Hartmann", address: "", notes: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", tracking: "358070447889", price: 18.00, shippingCost: 6.19, weight: 120, archived: false,
         items: [
-          { name: "6x Rentier", durationMin: 150, status: "Fertig", endTime: null }
-        ]
-      },
-      {
-        id: 3, customer: "Sabine Beewen", printer: "Anycubic Kobra", status: "Offen", label: "✅ Ja", packed: "❌ Nein", tracking: "-", price: 9.50, weight: 65,
-        items: [
-          { name: "1x Fernbedienungshalter", durationMin: 90, status: "Offen", endTime: null }
-        ]
-      },
-      {
-        id: 4, customer: "Dunja marcinkowski", printer: "Ender 3 V3", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 32.00, weight: 240,
-        items: [
-          { name: "6x Weinhalter schwarz", durationMin: 180, status: "Offen", endTime: null },
-          { name: "9x Bäume", durationMin: 120, status: "Offen", endTime: null }
-        ]
-      },
-      {
-        id: 5, customer: "Tobias von der Famile Ulm", printer: "Anycubic Kobra", status: "In Arbeit", label: "✅ Ja", packed: "❌ Nein", tracking: "358072492915", price: 29.00, weight: 210,
-        items: [
-          { name: "3x Suppenhalter 6cm", durationMin: 60, status: "Fertig", endTime: null },
-          { name: "4x Backpulverhalter", durationMin: 40, status: "In Arbeit", endTime: Date.now() + 1000 * 60 * 25 },
-          { name: "4x Backpulverhalter 6cm", durationMin: 45, status: "Offen", endTime: null },
-          { name: "1x Abroller Alufolie", durationMin: 90, status: "Offen", endTime: null }
-        ]
-      },
-      {
-        id: 6, customer: "Antje Nanninga", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 15.00, weight: 110,
-        items: [
-          { name: "1x Vase weiß", durationMin: 120, status: "Fertig", endTime: null }
-        ]
-      },
-      {
-        id: 7, customer: "Gabi Thomas", printer: "Ender 3 V3", status: "Offen", label: "✅ Ja", packed: "❌ Nein", tracking: "358072492921", price: 12.00, weight: 85,
-        items: [
-          { name: "1x Dogge lila", durationMin: 105, status: "Offen", endTime: null }
-        ]
-      },
-      {
-        id: 8, customer: "Paul Hartmann", printer: "CR-10 Smart Pro #1", status: "In Arbeit", label: "✅ Ja", packed: "❌ Nein", tracking: "-", price: 14.00, weight: 95,
-        items: [
-          { name: "3x Makita Akkuhalter", durationMin: 135, status: "In Arbeit", endTime: Date.now() + 1000 * 60 * 45 }
+          { name: "6x Rentier", color: "PLA Braun", durationMin: 150, status: "Fertig", endTime: null }
         ]
       }
     ];
 
-    let printers = JSON.parse(localStorage.getItem('sefas_printers_v8')) || [
-      { name: "CR-10 Smart Pro #1", desc: "Creality Cloud / Großraum", status: "Bereit" },
-      { name: "Ender 3 V3", desc: "Creality / Klipper", status: "Frei" },
-      { name: "Anycubic Kobra", desc: "Direct Drive", status: "In Arbeit" },
-      { name: "CR-10 Smart Pro #2", desc: "Creality Cloud / Großraum", status: "Bereit" }
+    let spools = JSON.parse(localStorage.getItem('sefas_spools_v13')) || [
+      { id: 1, name: "PLA Schwarz", remainingGrams: 820 },
+      { id: 2, name: "PETG Weiß", remainingGrams: 650 },
+      { id: 3, name: "ASA Grau", remainingGrams: 120 }
     ];
 
-    if (!localStorage.getItem('sefas_orders_v8')) {
-      localStorage.setItem('sefas_orders_v8', JSON.stringify(REAL_ORDERS));
+    let printers = JSON.parse(localStorage.getItem('sefas_printers_v13')) || [
+      { name: "CR-10 Smart Pro #1", desc: "Creality Cloud / Großraum", status: "Bereit", printHours: 12.5 },
+      { name: "Ender 3 V3", desc: "Creality / Klipper", status: "Frei", printHours: 104.0 },
+      { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei", printHours: 45.0 },
+      { name: "CR-10 Smart Pro #2", desc: "Creality Cloud / Großraum", status: "Bereit", printHours: 8.0 }
+    ];
+
+    if (!localStorage.getItem('sefas_orders_v13')) {
+      localStorage.setItem('sefas_orders_v13', JSON.stringify(REAL_ORDERS));
     }
 
-    let orders = JSON.parse(localStorage.getItem('sefas_orders_v8')) || REAL_ORDERS;
+    let orders = JSON.parse(localStorage.getItem('sefas_orders_v13')) || REAL_ORDERS;
+
+    function playBeepSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.4);
+      } catch (e) {
+        console.log("Audio play blocked");
+      }
+    }
 
     function resetToScreenshotData() {
       if (confirm("Möchtest du alle Aufträge auf die Standard-Daten zurücksetzen?")) {
         orders = JSON.parse(JSON.stringify(REAL_ORDERS));
-        localStorage.setItem('sefas_orders_v8', JSON.stringify(orders));
+        localStorage.setItem('sefas_orders_v13', JSON.stringify(orders));
+        failedFilamentGrams = 0;
+        localStorage.setItem('sefas_failed_grams', 0);
         editingIndex = -1;
         renderOrders();
         updateStats();
@@ -353,6 +421,7 @@
         document.getElementById("mainApp").classList.remove("hidden");
         document.getElementById("loginError").classList.add("hidden");
         renderPrinters();
+        renderSpools();
         renderOrders();
         updateStats();
         setInterval(updateCountdowns, 1000);
@@ -367,51 +436,112 @@
       document.getElementById("pinInput").value = "";
     }
 
-    function setFormality(f) {
-      formality = f;
-      document.getElementById('btnDu').className = f === 'du' ? 'px-2.5 py-1 rounded-lg font-medium bg-blue-600 text-white' : 'px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white';
-      document.getElementById('btnSie').className = f === 'sie' ? 'px-2.5 py-1 rounded-lg font-medium bg-blue-600 text-white' : 'px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white';
-      
-      document.getElementById('previewStartMsg').innerText = f === 'du' 
-        ? '"Hallo! Dein Auftrag befindet sich jetzt auf dem Drucker..."'
-        : '"Guten Tag! Ihr Auftrag befindet sich jetzt auf dem Drucker..."';
-      
-      document.getElementById('previewPayMsg').innerText = f === 'du'
-        ? '"Hallo! Kurzer Hinweis bezüglich deiner Bestellung..."'
-        : '"Guten Tag! Kurzer Hinweis bezüglich Ihrer Bestellung..."';
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.getElementById('filter-all').className = filter === 'all' ? 'px-2.5 py-1 rounded-lg font-medium bg-blue-600 text-white' : 'px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white';
+      document.getElementById('filter-open').className = filter === 'open' ? 'px-2.5 py-1 rounded-lg font-medium bg-blue-600 text-white' : 'px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white';
+      document.getElementById('filter-done').className = filter === 'done' ? 'px-2.5 py-1 rounded-lg font-medium bg-blue-600 text-white' : 'px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white';
+      document.getElementById('filter-archived').className = filter === 'archived' ? 'px-2.5 py-1 rounded-lg font-medium bg-purple-600 text-white' : 'px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white';
+      renderOrders();
     }
 
-    function addArticleInputRow() {
-      const container = document.getElementById('articleInputRows');
-      const div = document.createElement('div');
-      div.className = "flex gap-2 items-center";
-      div.innerHTML = `
-        <input type="text" placeholder="Weitere Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
-        <input type="number" placeholder="Std" min="0" class="art-hrs w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
-        <input type="number" placeholder="Min" min="0" max="59" class="art-mins w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
-        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 text-xs px-2"><i class="fa-solid fa-xmark"></i></button>
-      `;
-      container.appendChild(div);
+    function reportFailedPrint(e) {
+      e.preventDefault();
+      const grams = parseInt(document.getElementById('failGrams').value) || 0;
+      const printerName = document.getElementById('failPrinter').value;
+      const reason = document.getElementById('failReason').value || 'Kein Grund angegeben';
+
+      if (grams <= 0) return;
+
+      failedFilamentGrams += grams;
+      localStorage.setItem('sefas_failed_grams', failedFilamentGrams);
+
+      if (spools.length > 0) {
+        spools[0].remainingGrams = Math.max(0, spools[0].remainingGrams - grams);
+        renderSpools();
+      }
+
+      updateStats();
+      document.getElementById('failGrams').value = '';
+      document.getElementById('failReason').value = '';
+      alert(`Ausschuss von ${grams}g für ${printerName} verbucht ("${reason}")!`);
+    }
+
+    function renderSpools() {
+      const container = document.getElementById('spoolsList');
+      container.innerHTML = '';
+
+      spools.forEach((s, idx) => {
+        const isLow = s.remainingGrams < 150;
+        const div = document.createElement('div');
+        div.className = `p-2.5 rounded-xl border flex justify-between items-center text-xs ${isLow ? 'bg-red-500/10 border-red-500/30 text-red-300' : 'bg-slate-900 border-slate-700/60 text-slate-200'}`;
+        div.innerHTML = `
+          <div>
+            <div class="font-semibold text-white">${s.name}</div>
+            <div class="text-[10px] ${isLow ? 'text-red-400 font-bold' : 'text-slate-400'}">${s.remainingGrams}g verbleibend ${isLow ? '(Nachbestellen!)' : ''}</div>
+          </div>
+          <div class="flex items-center gap-1">
+            <button onclick="editSpoolGrams(${idx})" class="text-blue-400 hover:text-blue-300 p-1"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deleteSpool(${idx})" class="text-red-400 hover:text-red-300 p-1"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+
+      localStorage.setItem('sefas_spools_v13', JSON.stringify(spools));
+    }
+
+    function addSpoolPrompt() {
+      const name = prompt("Name der neuen Filament-Spule (z.B. PLA Rot):");
+      if (!name) return;
+      const grams = parseInt(prompt("Gewicht in Gramm (z.B. 1000):")) || 1000;
+      spools.push({ id: Date.now(), name: name, remainingGrams: grams });
+      renderSpools();
+    }
+
+    function editSpoolGrams(idx) {
+      const newGrams = parseInt(prompt("Neues verbleibendes Gewicht in Gramm:", spools[idx].remainingGrams));
+      if (!isNaN(newGrams)) {
+        spools[idx].remainingGrams = newGrams;
+        renderSpools();
+      }
+    }
+
+    function deleteSpool(idx) {
+      if (confirm(`Spule '${spools[idx].name}' wirklich löschen?`)) {
+        spools.splice(idx, 1);
+        renderSpools();
+      }
     }
 
     function updateStats() {
       let totalRevenue = 0;
+      let totalProfit = 0;
       let totalWeight = 0;
       let openCount = 0;
 
       orders.forEach(o => {
-        totalRevenue += parseFloat(o.price || 0);
-        totalWeight += parseInt(o.weight || 0);
+        const itemPrice = parseFloat(o.price || 0);
+        const shipCost = parseFloat(o.shippingCost || 0);
+        const weight = parseInt(o.weight || 0);
+
+        totalRevenue += (itemPrice + shipCost);
+        totalWeight += weight;
+
+        const materialCost = (weight / 1000) * 20;
+        totalProfit += (itemPrice - materialCost);
+
         if (o.status !== 'Fertig') openCount++;
       });
 
-      const materialCost = (totalWeight / 1000) * 20;
-      const profit = totalRevenue - materialCost;
+      const wasteCost = (failedFilamentGrams / 1000) * 20;
+      totalProfit -= wasteCost;
 
       document.getElementById('statRevenue').innerText = totalRevenue.toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('statProfit').innerText = profit.toFixed(2).replace('.', ',') + ' €';
+      document.getElementById('statProfit').innerText = totalProfit.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statOpenOrders').innerText = openCount;
       document.getElementById('statFilament').innerText = totalWeight + ' g';
+      document.getElementById('statFailedFilament').innerText = failedFilamentGrams + ' g';
     }
 
     function renderPrinters() {
@@ -421,6 +551,11 @@
       printers.forEach((p, index) => {
         const card = document.createElement('div');
         card.className = "card p-4 rounded-2xl space-y-3";
+
+        const needsMaint = p.printHours >= 100;
+        const maintBadge = needsMaint 
+          ? `<span class="bg-red-500/20 text-red-300 border border-red-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse">🛠️ Wartung fällig</span>`
+          : `<span class="text-slate-400 text-[10px]">${p.printHours.toFixed(1)}h / 100h</span>`;
 
         const badgeClass = p.status === 'In Arbeit' 
           ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' 
@@ -441,6 +576,18 @@
             </span>
           </div>
 
+          <div class="flex justify-between items-center text-xs bg-slate-900/60 p-2 rounded-xl border border-slate-700/50">
+            <div>
+              <span class="text-slate-400 block text-[10px]">Laufzeit:</span>
+              ${maintBadge}
+            </div>
+            ${needsMaint ? `
+              <button onclick="resetPrinterMaintenance(${index})" class="bg-red-600/30 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/40 px-2 py-1 rounded-lg text-[10px] font-semibold">
+                Reset (Done)
+              </button>
+            ` : ''}
+          </div>
+
           <div class="space-y-1">
             <label class="text-xs text-slate-400">Status:</label>
             <select onchange="updatePrinterStatus(${index}, this.value)" class="w-full bg-slate-900 border border-slate-700 text-xs rounded-xl px-2.5 py-1.5 text-white focus:outline-none">
@@ -454,7 +601,13 @@
         grid.appendChild(card);
       });
 
-      localStorage.setItem('sefas_printers_v8', JSON.stringify(printers));
+      localStorage.setItem('sefas_printers_v13', JSON.stringify(printers));
+    }
+
+    function resetPrinterMaintenance(index) {
+      printers[index].printHours = 0;
+      renderPrinters();
+      alert(`Wartungszähler für ${printers[index].name} auf 0 Stunden zurückgesetzt!`);
     }
 
     function updatePrinterStatus(index, newStatus) {
@@ -466,24 +619,37 @@
       const tbody = document.getElementById('ordersTableBody');
       tbody.innerHTML = '';
 
+      const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
+
       orders.forEach((o, orderIndex) => {
+        const matchesQuery = !query || 
+          o.customer.toLowerCase().includes(query) || 
+          o.tracking.toLowerCase().includes(query) || 
+          o.items.some(i => i.name.toLowerCase().includes(query));
+
+        if (!matchesQuery) return;
+
+        if (currentFilter === 'all' && o.archived) return;
+        if (currentFilter === 'open' && (o.status === 'Fertig' || o.archived)) return;
+        if (currentFilter === 'done' && (o.status !== 'Fertig' || o.archived)) return;
+        if (currentFilter === 'archived' && !o.archived) return;
+
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-800/40 border-b border-slate-800";
 
         if (editingIndex === orderIndex) {
-          // BEARBEITEN-MODUS FÜR KUNDE & ARTIKEL
           let editItemsHtml = '<div id="edit-items-container" class="space-y-2 py-1">';
-          o.items.forEach((item, itemIdx) => {
+          o.items.forEach((item) => {
             const h = Math.floor((item.durationMin || 0) / 60);
             const m = (item.durationMin || 0) % 60;
             editItemsHtml += `
               <div class="bg-slate-900 border border-blue-500/60 p-2 rounded-xl flex flex-col sm:flex-row gap-2 items-center">
                 <input type="text" value="${item.name}" class="edit-item-name bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
+                <input type="text" value="${item.color || ''}" placeholder="Farbe" class="edit-item-color bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-28 focus:outline-none">
                 <div class="flex items-center gap-1">
-                  <span class="text-[10px] text-slate-400">Dauer:</span>
-                  <input type="number" value="${h}" min="0" placeholder="Std" class="edit-item-hrs bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-12 text-center focus:outline-none">
+                  <input type="number" value="${h}" min="0" placeholder="Std" class="edit-item-hrs bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-10 text-center focus:outline-none">
                   <span class="text-xs text-slate-400">h</span>
-                  <input type="number" value="${m}" min="0" max="59" placeholder="Min" class="edit-item-mins bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-12 text-center focus:outline-none">
+                  <input type="number" value="${m}" min="0" max="59" placeholder="Min" class="edit-item-mins bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-10 text-center focus:outline-none">
                   <span class="text-xs text-slate-400">m</span>
                 </div>
                 <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 text-xs px-1"><i class="fa-solid fa-trash"></i></button>
@@ -498,7 +664,10 @@
           `;
 
           tr.innerHTML = `
-            <td class="p-2"><input type="text" id="edit-customer-${orderIndex}" value="${o.customer}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full"></td>
+            <td class="p-2 space-y-1">
+              <input type="text" id="edit-customer-${orderIndex}" value="${o.customer}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-full">
+              <input type="text" id="edit-address-${orderIndex}" value="${o.address || ''}" placeholder="Adresse..." class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-[11px] text-white w-full">
+            </td>
             <td class="p-2">${editItemsHtml}</td>
             <td class="p-2">
               <select id="edit-printer-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full">
@@ -517,10 +686,17 @@
             </td>
             <td class="p-2">
               <div class="flex flex-col gap-1">
-                <input type="number" step="0.01" id="edit-price-${orderIndex}" value="${o.price || 0}" placeholder="€" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-16">
-                <input type="number" id="edit-weight-${orderIndex}" value="${o.weight || 0}" placeholder="g" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-16">
+                <input type="number" step="0.01" id="edit-price-${orderIndex}" value="${o.price || 0}" placeholder="Artikel €" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-20">
+                <select id="edit-shipping-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-[11px] text-white w-20">
+                  <option value="6.19" ${o.shippingCost == 6.19 ? 'selected' : ''}>6,19 €</option>
+                  <option value="7.68" ${o.shippingCost == 7.68 ? 'selected' : ''}>7,68 €</option>
+                  <option value="2.70" ${o.shippingCost == 2.70 ? 'selected' : ''}>2,70 €</option>
+                  <option value="3.20" ${o.shippingCost == 3.20 ? 'selected' : ''}>3,20 €</option>
+                  <option value="0.00" ${o.shippingCost == 0.00 ? 'selected' : ''}>0,00 €</option>
+                </select>
               </div>
             </td>
+            <td class="p-2"><input type="number" id="edit-weight-${orderIndex}" value="${o.weight || 0}" placeholder="g" class="bg-slate-900 border border-blue-500 rounded-lg p-1 text-xs text-white w-14"></td>
             <td class="p-2">
               <select id="edit-label-${orderIndex}" class="bg-slate-900 border border-blue-500 rounded-lg p-1.5 text-xs text-white w-full">
                 <option value="✅ Ja" ${o.label.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
@@ -547,17 +723,17 @@
             </td>
           `;
         } else {
-          // NORMALER ANZEIGEMODUS
           let itemsHtml = '<div class="space-y-2 py-1">';
           o.items.forEach((item, itemIndex) => {
             const hrs = Math.floor((item.durationMin || 0) / 60);
             const mins = (item.durationMin || 0) % 60;
             const durationText = `${hrs}h ${mins}m`;
+            const colorBadge = item.color ? `<span class="bg-purple-900/60 text-purple-300 border border-purple-500/30 px-1.5 py-0.5 rounded text-[10px] ml-1">${item.color}</span>` : '';
 
             itemsHtml += `
-              <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-700/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <div id="item-card-${orderIndex}-${itemIndex}" class="bg-slate-900/80 p-2 rounded-xl border border-slate-700/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <div class="flex-1">
-                  <div class="font-medium text-xs text-white">• ${item.name}</div>
+                  <div class="font-medium text-xs text-white">• ${item.name} ${colorBadge}</div>
                   <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
                     <span>Soll: ${durationText}</span>
                     <span id="countdown-${orderIndex}-${itemIndex}" class="font-mono text-amber-300">--:--:--</span>
@@ -579,8 +755,21 @@
           });
           itemsHtml += '</div>';
 
+          const trackingLink = (o.tracking && o.tracking !== '-') 
+            ? `<a href="https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=${o.tracking}" target="_blank" class="text-blue-400 underline font-mono text-xs flex items-center gap-1">${o.tracking} <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>`
+            : '-';
+
+          const itemP = parseFloat(o.price || 0);
+          const shipP = parseFloat(o.shippingCost || 0);
+          const totalP = itemP + shipP;
+
+          const addressText = o.address ? `<div class="text-[10px] text-slate-400 truncate max-w-[140px]" title="${o.address}"><i class="fa-solid fa-location-dot mr-1"></i>${o.address}</div>` : '';
+
           tr.innerHTML = `
-            <td class="p-3 font-medium text-white">${o.customer}</td>
+            <td class="p-3">
+              <div class="font-medium text-white">${o.customer}</div>
+              ${addressText}
+            </td>
             <td class="p-3">${itemsHtml}</td>
             <td class="p-3 text-slate-400 text-xs">${o.printer}</td>
             <td class="p-3">
@@ -591,9 +780,10 @@
               </select>
             </td>
             <td class="p-3">
-              <div class="text-xs text-emerald-400 font-semibold">${o.price ? parseFloat(o.price).toFixed(2) + ' €' : '-'}</div>
-              <div class="text-[10px] text-slate-400">${o.weight ? o.weight + ' g' : '-'}</div>
+              <div class="text-xs text-emerald-400 font-bold">${totalP.toFixed(2).replace('.', ',')} €</div>
+              <div class="text-[10px] text-slate-400">Teil: ${itemP.toFixed(2)}€ | Porto: ${shipP.toFixed(2)}€</div>
             </td>
+            <td class="p-3 text-xs text-slate-300">${o.weight ? o.weight + ' g' : '-'}</td>
             <td class="p-3">
               <select onchange="updateField(${orderIndex}, 'label', this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-white focus:outline-none">
                 <option value="✅ Ja" ${o.label.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
@@ -607,11 +797,21 @@
                 <option value="✅ Ja" ${o.packed.includes('Ja') ? 'selected' : ''}>✅ Ja</option>
               </select>
             </td>
-            <td class="p-3">
-              <input type="text" value="${o.tracking === '-' ? '' : o.tracking}" placeholder="Tracking..." onblur="updateField(${orderIndex}, 'tracking', this.value || '-')" class="bg-slate-900 border border-slate-700 text-xs rounded-lg p-1 text-slate-200 w-24 focus:outline-none">
-            </td>
+            <td class="p-3">${trackingLink}</td>
             <td class="p-3 text-right">
-              <div class="flex justify-end space-x-1">
+              <div class="flex justify-end items-center space-x-1">
+                <button onclick="markAsReadyToShip(${orderIndex})" title="1-Klick: Versandbereit" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded-lg text-xs font-semibold">
+                  📦
+                </button>
+                <button onclick="printBoxLabel(${orderIndex})" title="Karton-Etikett drucken" class="text-amber-300 hover:text-white text-xs px-2 py-1 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                  🏷️
+                </button>
+                <button onclick="printDeliveryNote(${orderIndex})" title="Lieferschein drucken" class="text-slate-300 hover:text-white text-xs px-2 py-1 bg-slate-800 rounded-lg border border-slate-700">
+                  <i class="fa-solid fa-file-invoice"></i>
+                </button>
+                <button onclick="toggleArchive(${orderIndex})" title="${o.archived ? 'Wiederherstellen' : 'Archivieren'}" class="text-purple-300 hover:text-purple-200 text-xs px-2 py-1 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                  <i class="fa-solid ${o.archived ? 'fa-box-open' : 'fa-box-archive'}"></i>
+                </button>
                 <button onclick="startEdit(${orderIndex})" title="Bearbeiten" class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-blue-500/10 rounded-lg border border-blue-500/20">
                   <i class="fa-solid fa-pen"></i>
                 </button>
@@ -625,10 +825,131 @@
         tbody.appendChild(tr);
       });
 
-      localStorage.setItem('sefas_orders_v8', JSON.stringify(orders));
+      localStorage.setItem('sefas_orders_v13', JSON.stringify(orders));
       updateCustomerDropdown();
       updateStats();
       updateCountdowns();
+    }
+
+    function toggleArchive(index) {
+      orders[index].archived = !orders[index].archived;
+      renderOrders();
+      updateStats();
+    }
+
+    function markAsReadyToShip(index) {
+      const o = orders[index];
+      o.label = "✅ Ja";
+      o.packed = "✅ Ja";
+      o.status = "Fertig";
+
+      const trackingNr = (o.tracking && o.tracking !== '-') ? o.tracking : '[KEINE TRACKING-NUMMER VORHANDEN]';
+      const msg = formality === 'du'
+        ? `Hallo ${o.customer}! Dein Paket wurde soeben fertig verpackt und verschickt. Hier ist deine Sendungsnummer zur Nachverfolgung: ${trackingNr}`
+        : `Guten Tag ${o.customer}! Ihr Paket wurde soeben fertig verpackt und verschickt. Hier ist Ihre Sendungsnummer zur Nachverfolgung: ${trackingNr}`;
+      
+      navigator.clipboard.writeText(msg);
+      renderOrders();
+      alert(`Auftrag für ${o.customer} auf VERSANDBEREIT gesetzt & Nachricht in Zwischenablage kopiert!`);
+    }
+
+    function printBoxLabel(index) {
+      const o = orders[index];
+      const printSec = document.getElementById('printSection');
+      
+      let itemsSummary = o.items.map(i => `${i.name} (${i.color || 'Standard'})`).join("<br>• ");
+
+      printSec.innerHTML = `
+        <div style="font-family: Arial, sans-serif; border: 3px solid #000; padding: 12px; width: 320px; border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 5px;">
+            <strong style="font-size: 16px;">Sefas3DShop</strong>
+            <span style="font-size: 10px; background: #000; color: #fff; padding: 2px 6px; border-radius: 4px;">KARTON-ETIKETT</span>
+          </div>
+
+          <div style="margin-top: 8px; font-size: 12px;">
+            <p style="margin: 2px 0;"><strong>Empfänger:</strong> ${o.customer}</p>
+            <p style="margin: 2px 0; font-size: 11px; color: #444;">${o.address || 'Keine Adresse angegeben'}</p>
+          </div>
+
+          <div style="margin-top: 8px; border-top: 1px dashed #666; padding-top: 5px; font-size: 11px;">
+            <strong>Inhalt / Artikel:</strong><br>
+            • ${itemsSummary}
+          </div>
+
+          <div style="margin-top: 8px; border-top: 1px dashed #666; padding-top: 5px; font-size: 11px;">
+            <p style="margin: 1px 0;"><strong>Tracking:</strong> ${o.tracking}</p>
+            ${o.notes ? `<p style="margin: 1px 0; color: #d97706;"><strong>Note:</strong> ${o.notes}</p>` : ''}
+          </div>
+        </div>
+      `;
+
+      printSec.classList.remove('hidden');
+      window.print();
+      printSec.classList.add('hidden');
+    }
+
+    function printDeliveryNote(index) {
+      const o = orders[index];
+      const printSec = document.getElementById('printSection');
+      
+      let itemsListHtml = '';
+      o.items.forEach(i => {
+        itemsListHtml += `
+          <tr style="border-bottom: 1px solid #ccc;">
+            <td style="padding: 8px;">${i.name}</td>
+            <td style="padding: 8px;">${i.color || '-'}</td>
+            <td style="padding: 8px; text-align: center;">1</td>
+          </tr>
+        `;
+      });
+
+      printSec.innerHTML = `
+        <div style="font-family: Arial, sans-serif; line-height: 1.5; font-size: 14px;">
+          <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
+            <div>
+              <h1 style="margin: 0; font-size: 24px;">Sefas3DShop</h1>
+              <p style="margin: 0; font-size: 12px; color: #555;">Individual 3D-Prints & Solutions</p>
+            </div>
+            <div style="text-align: right; font-size: 12px;">
+              <p style="margin: 0;"><strong>Datum:</strong> ${new Date().toLocaleDateString('de-DE')}</p>
+              <p style="margin: 0;"><strong>Auftrags-ID:</strong> #${o.id}</p>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 20px; display: flex; justify-content: space-between;">
+            <div>
+              <p style="margin: 0; font-size: 11px; color: #777;">Lieferadresse:</p>
+              <h2 style="margin: 0; font-size: 16px;">${o.customer}</h2>
+              <p style="margin: 0; font-size: 13px;">${o.address || 'Keine Adresse hinterlegt'}</p>
+            </div>
+            ${o.notes ? `<div style="max-width: 200px; background: #f9f9f9; padding: 8px; border-radius: 5px; font-size: 11px;"><strong>Notizen:</strong> ${o.notes}</div>` : ''}
+          </div>
+
+          <h3 style="border-bottom: 1px solid #000; padding-bottom: 5px; margin-top: 20px;">LIEFERSCHEIN</h3>
+
+          <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+            <thead>
+              <tr style="background: #f0f0f0; border-bottom: 1px solid #000; text-align: left;">
+                <th style="padding: 8px;">Artikel / Produkt</th>
+                <th style="padding: 8px;">Farbe / Filament</th>
+                <th style="padding: 8px; text-align: center;">Menge</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsListHtml}
+            </tbody>
+          </table>
+
+          <div style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 10px; text-align: center; font-size: 12px; color: #666;">
+            <p>Vielen Dank für deine Bestellung bei Sefas3DShop!</p>
+            <p>Bei Fragen kannst du dich jederzeit über Kleinanzeigen melden.</p>
+          </div>
+        </div>
+      `;
+
+      printSec.classList.remove('hidden');
+      window.print();
+      printSec.classList.add('hidden');
     }
 
     function addEditArticleRow() {
@@ -637,11 +958,11 @@
       div.className = "bg-slate-900 border border-blue-500/60 p-2 rounded-xl flex flex-col sm:flex-row gap-2 items-center";
       div.innerHTML = `
         <input type="text" placeholder="Artikelbezeichnung" class="edit-item-name bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
+        <input type="text" placeholder="Farbe" class="edit-item-color bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-28 focus:outline-none">
         <div class="flex items-center gap-1">
-          <span class="text-[10px] text-slate-400">Dauer:</span>
-          <input type="number" value="1" min="0" placeholder="Std" class="edit-item-hrs bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-12 text-center focus:outline-none">
+          <input type="number" value="1" min="0" placeholder="Std" class="edit-item-hrs bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-10 text-center focus:outline-none">
           <span class="text-xs text-slate-400">h</span>
-          <input type="number" value="0" min="0" max="59" placeholder="Min" class="edit-item-mins bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-12 text-center focus:outline-none">
+          <input type="number" value="0" min="0" max="59" placeholder="Min" class="edit-item-mins bg-slate-950 border border-slate-700 rounded-lg px-1.5 py-1 text-xs text-white w-10 text-center focus:outline-none">
           <span class="text-xs text-slate-400">m</span>
         </div>
         <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 text-xs px-1"><i class="fa-solid fa-trash"></i></button>
@@ -661,6 +982,7 @@
 
     function saveEdit(index) {
       const nameInputs = document.querySelectorAll('.edit-item-name');
+      const colorInputs = document.querySelectorAll('.edit-item-color');
       const hrsInputs = document.querySelectorAll('.edit-item-hrs');
       const minsInputs = document.querySelectorAll('.edit-item-mins');
 
@@ -675,6 +997,7 @@
           const existingItem = orders[index].items[idx] || {};
           updatedItems.push({
             name: val,
+            color: colorInputs[idx].value.trim(),
             durationMin: totalM > 0 ? totalM : 60,
             status: existingItem.status || "Offen",
             endTime: existingItem.endTime || null
@@ -685,9 +1008,11 @@
       orders[index] = {
         ...orders[index],
         customer: document.getElementById(`edit-customer-${index}`).value,
+        address: document.getElementById(`edit-address-${index}`).value || '',
         printer: document.getElementById(`edit-printer-${index}`).value,
         status: document.getElementById(`edit-status-${index}`).value,
         price: parseFloat(document.getElementById(`edit-price-${index}`).value) || 0,
+        shippingCost: parseFloat(document.getElementById(`edit-shipping-${index}`).value) || 0,
         weight: parseInt(document.getElementById(`edit-weight-${index}`).value) || 0,
         label: document.getElementById(`edit-label-${index}`).value,
         packed: document.getElementById(`edit-packed-${index}`).value,
@@ -714,7 +1039,13 @@
       const pIndex = printers.findIndex(p => p.name === o.printer);
       if (pIndex !== -1) {
         printers[pIndex].status = "In Arbeit";
+        printers[pIndex].printHours += (item.durationMin || 60) / 60;
         renderPrinters();
+      }
+
+      if (spools.length > 0 && o.weight > 0) {
+        spools[0].remainingGrams = Math.max(0, spools[0].remainingGrams - Math.round(o.weight / o.items.length));
+        renderSpools();
       }
 
       renderOrders();
@@ -727,6 +1058,8 @@
 
         o.items.forEach((item, itemIndex) => {
           const el = document.getElementById(`countdown-${orderIndex}-${itemIndex}`);
+          const cardEl = document.getElementById(`item-card-${orderIndex}-${itemIndex}`);
+
           if (!el) return;
 
           if (item.status === 'In Arbeit' && item.endTime) {
@@ -736,6 +1069,8 @@
               item.status = 'Fertig';
               item.endTime = null;
               el.innerHTML = `<span class="text-green-400 font-bold">Fertig!</span>`;
+              if (cardEl) cardEl.classList.add('pulse-done');
+              playBeepSound();
               renderOrders();
             } else {
               const hrs = Math.floor(diff / (1000 * 60 * 60));
@@ -756,6 +1091,13 @@
 
         if (allItemsDone && o.items.length > 0 && o.status !== 'Fertig') {
           o.status = 'Fertig';
+
+          const pIndex = printers.findIndex(p => p.name === o.printer);
+          if (pIndex !== -1 && printers[pIndex].status === 'In Arbeit') {
+            printers[pIndex].status = 'Bereit';
+            renderPrinters();
+          }
+
           renderOrders();
         }
       });
@@ -781,17 +1123,32 @@
 
     function updateField(index, field, value) {
       orders[index][field] = value;
-      localStorage.setItem('sefas_orders_v8', JSON.stringify(orders));
+      localStorage.setItem('sefas_orders_v13', JSON.stringify(orders));
       if (field === 'tracking' || field === 'customer') {
         updateCustomerDropdown();
       }
       renderOrders();
     }
 
+    function addArticleInputRow() {
+      const container = document.getElementById('articleInputRows');
+      const div = document.createElement('div');
+      div.className = "flex gap-2 items-center";
+      div.innerHTML = `
+        <input type="text" placeholder="Weitere Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
+        <input type="text" placeholder="Farbe/Filament" class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-40 focus:outline-none">
+        <input type="number" placeholder="Std" min="0" class="art-hrs w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
+        <input type="number" placeholder="Min" min="0" max="59" class="art-mins w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 text-xs px-2"><i class="fa-solid fa-xmark"></i></button>
+      `;
+      container.appendChild(div);
+    }
+
     function addOrder(e) {
       e.preventDefault();
 
       const nameInputs = document.querySelectorAll('.art-name');
+      const colorInputs = document.querySelectorAll('.art-color');
       const hrsInputs = document.querySelectorAll('.art-hrs');
       const minsInputs = document.querySelectorAll('.art-mins');
 
@@ -804,6 +1161,7 @@
           const totalM = (h * 60) + m;
           itemsList.push({
             name: val,
+            color: colorInputs[idx].value.trim(),
             durationMin: totalM > 0 ? totalM : 60,
             status: "Offen",
             endTime: null
@@ -819,13 +1177,17 @@
       const newOrder = {
         id: Date.now(),
         customer: document.getElementById('customer').value,
+        address: document.getElementById('address').value || '',
+        notes: document.getElementById('notes').value || '',
         printer: document.getElementById('printer').value,
         status: "Offen",
         label: document.getElementById('label').value,
         packed: document.getElementById('packed').value,
         price: parseFloat(document.getElementById('price').value) || 0,
+        shippingCost: parseFloat(document.getElementById('shipping').value) || 0,
         weight: parseInt(document.getElementById('weight').value) || 0,
         tracking: document.getElementById('tracking').value || '-',
+        archived: false,
         items: itemsList
       };
 
@@ -835,7 +1197,8 @@
       document.getElementById('orderForm').reset();
       document.getElementById('articleInputRows').innerHTML = `
         <div class="flex gap-2 items-center">
-          <input type="text" placeholder="Artikelbezeichnung (z.B. 1x Japandi Vogel grün)" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
+          <input type="text" placeholder="Artikelbezeichnung (z.B. 1x Japandi Vogel)" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
+          <input type="text" placeholder="Farbe/Filament (z.B. PLA Grün)" class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-40 focus:outline-none">
           <input type="number" placeholder="Std" min="0" class="art-hrs w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
           <input type="number" placeholder="Min" min="0" max="59" class="art-mins w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
         </div>
@@ -886,10 +1249,13 @@
     }
 
     function exportCSV() {
-      let csv = "Kunde;Artikel;Drucker;Status;Preis;Gewicht;Versandlabel;Verpackt;Tracking\n";
+      let csv = "Kunde;Adresse;Notizen;Artikel;Drucker;Status;Artikelpreis;Versandkosten;Gesamtpreis;Gewicht;Versandlabel;Verpackt;Tracking;Archiviert\n";
       orders.forEach(o => {
-        const articleSummary = o.items.map(i => `${i.name} (${Math.floor(i.durationMin/60)}h ${i.durationMin%60}m)`).join(" | ");
-        csv += `"${o.customer}";"${articleSummary}";"${o.printer}";"${o.status}";"${o.price || 0}";"${o.weight || 0}";"${o.label}";"${o.packed}";"${o.tracking}"\n`;
+        const articleSummary = o.items.map(i => `${i.name} [${i.color || '-'}] (${Math.floor(i.durationMin/60)}h ${i.durationMin%60}m)`).join(" | ");
+        const itemP = parseFloat(o.price || 0);
+        const shipP = parseFloat(o.shippingCost || 0);
+        const totalP = itemP + shipP;
+        csv += `"${o.customer}";"${o.address || '-'}";"${o.notes || '-'}";"${articleSummary}";"${o.printer}";"${o.status}";"${itemP}";"${shipP}";"${totalP}";"${o.weight || 0}";"${o.label}";"${o.packed}";"${o.tracking}";"${o.archived ? 'Ja' : 'Nein'}"\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
@@ -899,7 +1265,8 @@
     }
 
     function downloadBackup() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(orders));
+      const backupData = { orders: orders, spools: spools, printers: printers, failedGrams: failedFilamentGrams };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
       downloadAnchor.setAttribute("download", "Sefas3DShop_Backup.json");
