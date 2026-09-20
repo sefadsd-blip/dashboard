@@ -73,6 +73,11 @@
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
+        <!-- TELEGRAM SETUP BUTTON -->
+        <button onclick="findMyTelegramChatId()" class="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center" title="Schreibe deinem Bot 'Hallo' auf Telegram und klicke hier, um deine Chat-ID zu finden!">
+          <i class="fa-brands fa-telegram mr-1.5"></i> Telegram ID finden
+        </button>
+
         <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center">
           <i class="fa-solid fa-rotate mr-1.5"></i> 🔄 Cloud abrufen
         </button>
@@ -80,9 +85,6 @@
           <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> 📤 In Cloud speichern
         </button>
         
-        <button onclick="requestNotificationPermission()" class="bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-3 py-2 rounded-xl text-xs font-medium transition flex items-center">
-          <i class="fa-solid fa-bell mr-1"></i> Push
-        </button>
         <button onclick="lockApp()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 rounded-xl text-xs font-medium">
           <i class="fa-solid fa-right-from-bracket mr-1"></i> Sperren
         </button>
@@ -220,6 +222,7 @@
   <script>
     const DEFAULT_PIN = "1234";
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
+    const TELEGRAM_TOKEN = '8918418759:AAHEyb2eJYwvY8OTyb0lEWjin7MstbsEdMM';
 
     const BACKUP_ORDERS = [
       {"id":1789933732086,"customer":"Silke Schwarzer","address":"Gartenweg 10d 04862 Mockrehna","notes":"","printer":"Ender 3 V3","status":"Offen","label":"🟡 Wartet auf Zahlung","packed":"❌ Nein","price":20,"shippingCost":5,"weight":0,"tracking":"-","archived":false,"items":[{"name":"2x Tannenzapfen","color":"","durationMin":60,"status":"Offen","endTime":null},{"name":"2x Tannenzapfen","color":"","durationMin":60,"status":"Offen","endTime":null}]},
@@ -235,26 +238,26 @@
     ];
 
     const BACKUP_SPOOLS = [
-      {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notified":false},
-      {"id":2,"name":"PETG Weiß","remainingGrams":650,"notified":false},
-      {"id":1789935199927,"name":"PLA Dunkelblau","remainingGrams":100,"notified":true},
-      {"id":1789935232879,"name":"PETG Orange","remainingGrams":800,"notified":false},
-      {"id":1789935274064,"name":"PETG Schwarz","remainingGrams":950,"notified":false},
-      {"id":1789935301168,"name":"ASA Grau","remainingGrams":980,"notified":false},
-      {"id":1789935377136,"name":"PLA Hellblau ","remainingGrams":1000,"notified":false},
-      {"id":1789935389839,"name":"PLA Braun","remainingGrams":1000,"notified":false},
-      {"id":1789935427641,"name":"Pla Weiß","remainingGrams":700,"notified":false},
-      {"id":1789935452144,"name":"PLA Pink","remainingGrams":900,"notified":false},
-      {"id":1789935472744,"name":"PLA lila ","remainingGrams":1000,"notified":false},
-      {"id":1789935549240,"name":"PLA Regenbogen","remainingGrams":150,"notified":true},
-      {"id":1789935577272,"name":"PLA Gold ","remainingGrams":380,"notified":false},
-      {"id":1789935652839,"name":"PLA Dunkelrot ","remainingGrams":340,"notified":false},
-      {"id":1789935739912,"name":"PLA Dunkelrot ","remainingGrams":900,"notified":false},
-      {"id":1789935772655,"name":"PLA Hellbraun ","remainingGrams":900,"notified":false},
-      {"id":1789935791895,"name":"PLA Hellrot ","remainingGrams":800,"notified":false},
-      {"id":1789935820543,"name":"PLA grün","remainingGrams":760,"notified":false},
-      {"id":1789935848831,"name":"PLA Sage grün","remainingGrams":780,"notified":false},
-      {"id":1789935882064,"name":"PLA Olivgrün","remainingGrams":560,"notified":false}
+      {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":2,"name":"PETG Weiß","remainingGrams":650,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935199927,"name":"PLA Dunkelblau","remainingGrams":100,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935232879,"name":"PETG Orange","remainingGrams":800,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935274064,"name":"PETG Schwarz","remainingGrams":950,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935301168,"name":"ASA Grau","remainingGrams":980,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935377136,"name":"PLA Hellblau ","remainingGrams":1000,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935389839,"name":"PLA Braun","remainingGrams":1000,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935427641,"name":"Pla Weiß","remainingGrams":700,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935452144,"name":"PLA Pink","remainingGrams":900,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935472744,"name":"PLA lila ","remainingGrams":1000,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935549240,"name":"PLA Regenbogen","remainingGrams":150,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935577272,"name":"PLA Gold ","remainingGrams":380,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935652839,"name":"PLA Dunkelrot ","remainingGrams":340,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935739912,"name":"PLA Dunkelrot ","remainingGrams":900,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935772655,"name":"PLA Hellbraun ","remainingGrams":900,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935791895,"name":"PLA Hellrot ","remainingGrams":800,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935820543,"name":"PLA grün","remainingGrams":760,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935848831,"name":"PLA Sage grün","remainingGrams":780,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":1789935882064,"name":"PLA Olivgrün","remainingGrams":560,"notifiedCount":0,"lastNotifiedDate":""}
     ];
 
     let printers = JSON.parse(localStorage.getItem('sefas_shop_printers')) || [
@@ -268,6 +271,7 @@
     let showingArchive = false;
     let orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
     let spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
+    let telegramChatId = localStorage.getItem('sefas_telegram_chat_id') || '';
 
     if (orders.length === 0) {
       orders = BACKUP_ORDERS;
@@ -279,6 +283,7 @@
       localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
       localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
       localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
+      localStorage.setItem('sefas_telegram_chat_id', telegramChatId);
     }
 
     async function loadCloudData() {
@@ -290,6 +295,7 @@
             orders = json.orders;
             if (Array.isArray(json.spools)) spools = json.spools;
             if (Array.isArray(json.printers)) printers = json.printers;
+            if (json.telegramChatId) { telegramChatId = json.telegramChatId; }
             saveLocalOnly();
             renderOrders();
             renderSpools();
@@ -310,7 +316,7 @@
         await fetch(NPOINT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orders, spools, printers })
+          body: JSON.stringify({ orders, spools, printers, telegramChatId })
         });
         alert("✅ Daten erfolgreich in der Cloud gespeichert!");
       } catch(e) {
@@ -327,8 +333,62 @@
       fetch(NPOINT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orders, spools, printers })
+        body: JSON.stringify({ orders, spools, printers, telegramChatId })
       }).catch(e => console.log("Hintergrund-Speichern fehlgeschlagen", e));
+    }
+
+    // AUTOMATISCHE TELEGRAM CHAT-ID FINDEN & TESTEN
+    async function findMyTelegramChatId() {
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getUpdates`);
+        const data = await res.json();
+        if (data.ok && data.result.length > 0) {
+          // Nimmt die letzte Chat-ID, die mit dem Bot geschrieben hat
+          const latestUpdate = data.result[data.result.length - 1];
+          const chatId = latestUpdate.message ? latestUpdate.message.chat.id : (latestUpdate.my_chat_member ? latestUpdate.my_chat_member.chat.id : null);
+          
+          if (chatId) {
+            telegramChatId = chatId;
+            saveLocalOnly();
+            alert(`🎉 Erfolg! Deine Chat-ID (${chatId}) wurde gefunden und gespeichert!`);
+            sendTelegramMessage("🤖 Sefas3DShop Bot ist erfolgreich verbunden!");
+            return;
+          }
+        }
+        alert("❌ Keine Nachricht gefunden. Hast du deinem Bot auf Telegram (t.me/Sefas3DShopBot) vorher eine Nachricht wie 'Hallo' geschickt? Probier es noch einmal!");
+      } catch (e) {
+        alert("Fehler beim Verbinden mit Telegram.");
+      }
+    }
+
+    async function sendTelegramMessage(text) {
+      if (!telegramChatId) return;
+      try {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: telegramChatId, text: text })
+        });
+      } catch(e) {}
+    }
+
+    function checkSpoolTelegramNotifications() {
+      if (!telegramChatId) return;
+      const todayStr = new Date().toDateString();
+
+      spools.forEach(s => {
+        if (s.remainingGrams < 250) {
+          if (s.lastNotifiedDate !== todayStr) {
+            s.lastNotifiedDate = todayStr;
+            s.notifiedCount = 0;
+          }
+          if (s.notifiedCount < 3) {
+            sendTelegramMessage(`⚠️ Filament-Alarm bei Sefas3DShop!\n\nSpule "${s.name}" hat nur noch ${s.remainingGrams}g übrig!`);
+            s.notifiedCount++;
+            saveLocalOnly();
+          }
+        }
+      });
     }
 
     function updatePrinterStatus(index, newStatus) {
@@ -360,16 +420,6 @@
       }
     }
 
-    function requestNotificationPermission() {
-      if ("Notification" in window) Notification.requestPermission();
-    }
-
-    function sendBrowserNotification(spoolName, grams) {
-      if ("Notification" in window && Notification.permission === "granted") {
-        new Notification("⚠️ Filament-Alarm!", { body: `Spule "${spoolName}" ist unter 250g (${grams}g)!` });
-      }
-    }
-
     function checkPin() {
       const pin = document.getElementById("pinInput").value;
       if (pin === DEFAULT_PIN || pin === "sefa") {
@@ -378,8 +428,8 @@
         renderPrinters();
         renderOrders();
         renderSpools();
+        checkSpoolTelegramNotifications();
       } else {
-        document.getElementById("loginError").classList.add("hidden"); // Korrigiert
         document.getElementById("loginError").classList.remove("hidden");
       }
     }
@@ -398,10 +448,7 @@
 
       spools.forEach((s, idx) => {
         const isLow = s.remainingGrams < 250;
-        if (isLow) {
-          lowSpools.push(s);
-          if (!s.notified) { sendBrowserNotification(s.name, s.remainingGrams); s.notified = true; }
-        } else { s.notified = false; }
+        if (isLow) lowSpools.push(s);
 
         container.innerHTML += `
           <div class="p-2.5 rounded-xl border text-xs flex justify-between items-center ${isLow ? 'bg-red-950/40 border-red-500/60 pulse-low-spool' : 'bg-slate-900 border-slate-700/60'}">
@@ -417,7 +464,10 @@
       if (lowSpools.length > 0) {
         banner.classList.remove('hidden');
         banner.innerHTML = `<i class="fa-solid fa-bell text-red-400"></i> Spulen-Alarm: ${lowSpools.map(s => `${s.name} (${s.remainingGrams}g)`).join(', ')} unter 250g!`;
-      } else { banner.classList.add('hidden'); }
+        checkSpoolTelegramNotifications();
+      } else { 
+        banner.classList.add('hidden'); 
+      }
       updateSpoolDropdowns();
     }
 
@@ -425,7 +475,7 @@
       const name = prompt("Name/Farbe der Spule:");
       if (!name) return;
       const grams = parseInt(prompt("Gewicht (g):", "1000")) || 1000;
-      spools.push({ id: Date.now(), name, remainingGrams: grams });
+      spools.push({ id: Date.now(), name, remainingGrams: grams, notifiedCount: 0, lastNotifiedDate: "" });
       saveAllData();
     }
 
@@ -434,6 +484,9 @@
       const newGrams = prompt(`Neues Gewicht für "${current.name}" in g:`, current.remainingGrams);
       if (newGrams !== null && !isNaN(parseInt(newGrams))) {
         spools[idx].remainingGrams = parseInt(newGrams);
+        if (spools[idx].remainingGrams >= 250) {
+          spools[idx].notifiedCount = 0;
+        }
         saveAllData();
       }
     }
@@ -596,7 +649,6 @@
       const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
 
       orders.forEach((o, idx) => {
-        // Filter nach Archiv-Status
         if (Boolean(o.archived) !== showingArchive) return;
         if (query && !o.customer.toLowerCase().includes(query) && !o.tracking.toLowerCase().includes(query)) return;
 
