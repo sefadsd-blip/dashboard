@@ -125,7 +125,7 @@
       </div>
     </section>
 
-    <!-- DRUCKER (MIT WARTUNGSTRACKER) & FILAMENT-SPULEN BEREICH -->
+    <!-- DRUCKER & FILAMENT-SPULEN BEREICH -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <section class="lg:col-span-2 space-y-3">
         <h2 class="text-md font-semibold text-slate-300 flex items-center">
@@ -214,16 +214,17 @@
           <input type="text" id="notes" placeholder="Notizen / Sonderwünsche" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
         </div>
 
+        <!-- DYNAMISCHE ARTIKEL-EINGABE -->
         <div class="border-t border-slate-700/60 pt-3 space-y-2">
           <div class="flex justify-between items-center">
             <label class="text-xs font-semibold text-slate-300">Artikel, Farbe & Druckzeiten:</label>
-            <button type="button" onclick="addArticleInputRow()" class="bg-slate-800 hover:bg-slate-700 text-blue-400 border border-blue-500/30 px-2.5 py-1 rounded-lg text-xs">
+            <button type="button" onclick="addArticleInputRow()" class="bg-slate-800 hover:bg-slate-700 text-blue-400 border border-blue-500/30 px-2.5 py-1 rounded-lg text-xs font-semibold transition">
               <i class="fa-solid fa-plus mr-1"></i> Weitere Position
             </button>
           </div>
 
           <div id="articleInputRows" class="space-y-2">
-            <div class="flex gap-2 items-center">
+            <div class="flex gap-2 items-center article-row">
               <input type="text" placeholder="Artikelbezeichnung (z.B. 1x Japandi Vogel)" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
               <input type="text" placeholder="Farbe/Filament (z.B. PLA Grün)" class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-40 focus:outline-none">
               <input type="number" placeholder="Std" min="0" class="art-hrs w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
@@ -348,18 +349,6 @@
     let currentFilter = "all";
     let editingIndex = -1;
 
-    // ALTE DATEN AUS SPEICHER ZUSAMMENFÜHREN UND LADEN
-    function getStoredData(keyPattern, defaultVal) {
-      for (let i = 20; i >= 1; i--) {
-        const key = keyPattern + (i === 1 ? '' : '_v' + i);
-        const stored = localStorage.getItem(key);
-        if (stored) {
-          try { return JSON.parse(stored); } catch(e){}
-        }
-      }
-      return defaultVal;
-    }
-
     const INITIAL_ORDERS = [
       {
         id: 1, customer: "Renate Evelin - Veere", address: "Musterstraße 12, 12345 Berlin", notes: "Bitte gut verpacken", printer: "Anycubic Kobra", status: "Offen", label: "🟡 Wartet auf Zahlung", packed: "❌ Nein", tracking: "-", price: 25.00, shippingCost: 6.19, weight: 180, archived: false,
@@ -418,27 +407,39 @@
       }
     ];
 
-    let orders = getStoredData('sefas_orders', INITIAL_ORDERS);
-    let spools = getStoredData('sefas_spools', [
+    function loadInitialData() {
+      const keys = ['sefas_orders_v13', 'sefas_orders_v12', 'sefas_orders'];
+      for (let k of keys) {
+        const stored = localStorage.getItem(k);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          } catch(e){}
+        }
+      }
+      return INITIAL_ORDERS;
+    }
+
+    let orders = loadInitialData();
+    let spools = JSON.parse(localStorage.getItem('sefas_spools_v14')) || [
       { id: 1, name: "PLA Schwarz", remainingGrams: 820 },
       { id: 2, name: "PETG Weiß", remainingGrams: 650 },
       { id: 3, name: "ASA Grau", remainingGrams: 120 }
-    ]);
-    let printers = getStoredData('sefas_printers', [
+    ];
+    let printers = JSON.parse(localStorage.getItem('sefas_printers_v14')) || [
       { name: "CR-10 Smart Pro #1", desc: "Creality Cloud / Großraum", status: "Bereit", printHours: 12.5 },
       { name: "Ender 3 V3", desc: "Creality / Klipper", status: "Frei", printHours: 104.0 },
       { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei", printHours: 45.0 },
       { name: "CR-10 Smart Pro #2", desc: "Creality Cloud / Großraum", status: "Bereit", printHours: 8.0 }
-    ]);
+    ];
     let failedFilamentGrams = parseInt(localStorage.getItem('sefas_failed_grams')) || 0;
 
     function saveAllData() {
-      for (let i = 1; i <= 20; i++) {
-        const suffix = (i === 1 ? '' : '_v' + i);
-        localStorage.setItem('sefas_orders' + suffix, JSON.stringify(orders));
-        localStorage.setItem('sefas_spools' + suffix, JSON.stringify(spools));
-        localStorage.setItem('sefas_printers' + suffix, JSON.stringify(printers));
-      }
+      localStorage.setItem('sefas_orders_v14', JSON.stringify(orders));
+      localStorage.setItem('sefas_orders_v13', JSON.stringify(orders));
+      localStorage.setItem('sefas_spools_v14', JSON.stringify(spools));
+      localStorage.setItem('sefas_printers_v14', JSON.stringify(printers));
       localStorage.setItem('sefas_failed_grams', failedFilamentGrams);
     }
 
@@ -1008,6 +1009,20 @@
       printSec.classList.add('hidden');
     }
 
+    function addArticleInputRow() {
+      const container = document.getElementById('articleInputRows');
+      const div = document.createElement('div');
+      div.className = "flex gap-2 items-center article-row";
+      div.innerHTML = `
+        <input type="text" placeholder="Weitere Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
+        <input type="text" placeholder="Farbe/Filament" class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-40 focus:outline-none">
+        <input type="number" placeholder="Std" min="0" class="art-hrs w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
+        <input type="number" placeholder="Min" min="0" max="59" class="art-mins w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 text-xs px-2"><i class="fa-solid fa-xmark"></i></button>
+      `;
+      container.appendChild(div);
+    }
+
     function addEditArticleRow() {
       const container = document.getElementById('edit-items-container');
       const div = document.createElement('div');
@@ -1186,20 +1201,6 @@
       renderOrders();
     }
 
-    function addArticleInputRow() {
-      const container = document.getElementById('articleInputRows');
-      const div = document.createElement('div');
-      div.className = "flex gap-2 items-center";
-      div.innerHTML = `
-        <input type="text" placeholder="Weitere Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
-        <input type="text" placeholder="Farbe/Filament" class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-40 focus:outline-none">
-        <input type="number" placeholder="Std" min="0" class="art-hrs w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
-        <input type="number" placeholder="Min" min="0" max="59" class="art-mins w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
-        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 text-xs px-2"><i class="fa-solid fa-xmark"></i></button>
-      `;
-      container.appendChild(div);
-    }
-
     function addOrder(e) {
       e.preventDefault();
 
@@ -1252,7 +1253,7 @@
 
       document.getElementById('orderForm').reset();
       document.getElementById('articleInputRows').innerHTML = `
-        <div class="flex gap-2 items-center">
+        <div class="flex gap-2 items-center article-row">
           <input type="text" placeholder="Artikelbezeichnung (z.B. 1x Japandi Vogel)" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
           <input type="text" placeholder="Farbe/Filament (z.B. PLA Grün)" class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-40 focus:outline-none">
           <input type="number" placeholder="Std" min="0" class="art-hrs w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5 text-sm text-white text-center focus:outline-none">
