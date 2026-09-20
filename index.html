@@ -36,11 +36,11 @@
   <!-- LOGIN MODAL -->
   <div id="loginModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
     <div class="card p-6 rounded-2xl max-w-md w-full shadow-2xl text-center space-y-4">
-      <div class="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center mx-auto text-2xl border border-blue-500/20">
+      <div onclick="emergencyRestore()" title="3x klicken zum Wiederherstellen!" class="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center mx-auto text-2xl border border-blue-500/20 cursor-pointer hover:bg-blue-500/20 transition">
         <i class="fa-solid fa-lock"></i>
       </div>
       <h2 class="text-2xl font-bold text-white">Sefas3DShop Login</h2>
-      <p class="text-slate-400 text-sm">Bitte gib deinen PIN ein, um auf das Dashboard zuzugreifen.</p>
+      <p class="text-slate-400 text-sm">Bitte gib deinen PIN ein, um auf das Dashboard zuzugreifen.<br><span class="text-[11px] text-blue-400">(Tipp: Klicke 3x auf das Schloss oben, falls Daten fehlen)</span></p>
       <input type="password" id="pinInput" placeholder="PIN eingeben" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-center text-xl text-white focus:outline-none focus:border-blue-500">
       <button onclick="checkPin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition">Entsperren</button>
       <p id="loginError" class="text-red-400 text-xs hidden">Falscher PIN! Bitte erneut versuchen.</p>
@@ -366,21 +366,54 @@
     let currentFilter = "all";
     let editingIndex = -1;
 
-    // Automatische Datenrettung: Holt Daten aus v107 oder fällt automatisch auf v106 / v105 / v104 zurück!
-    let savedOrders = localStorage.getItem('sefas_orders_v107') || 
-                      localStorage.getItem('sefas_orders_v106') || 
-                      localStorage.getItem('sefas_orders_v105') || 
-                      localStorage.getItem('sefas_orders_v104');
-    let orders = savedOrders ? JSON.parse(savedOrders) : [];
-
-    let savedSpools = localStorage.getItem('sefas_spools_v107') || 
-                      localStorage.getItem('sefas_spools_v106') || 
-                      localStorage.getItem('sefas_spools_v105');
-    let spools = savedSpools ? JSON.parse(savedSpools) : [
+    // Automatischer Daten-Finder
+    let orders = [];
+    let spools = [
       { id: 1, name: "PLA Schwarz", remainingGrams: 820 },
       { id: 2, name: "PETG Weiß", remainingGrams: 650 },
       { id: 3, name: "ASA Grau", remainingGrams: 120 }
     ];
+
+    // Durchsucht ALLE alten Versionen im Browser-Speicher nach deinen Kundendaten
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.includes('orders') && key !== 'sefas_shop_orders_permanent') {
+        try {
+          const data = JSON.parse(localStorage.getItem(key));
+          if (Array.isArray(data) && data.length > 0) {
+            orders = data;
+            break;
+          }
+        } catch(e){}
+      }
+    }
+
+    if (orders.length === 0) {
+      orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
+    }
+
+    // Notfall-Wiederherstellungsfunktion (wird durch 3x Klick auf das Schloss aktiviert)
+    function emergencyRestore() {
+      let found = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        try {
+          const val = JSON.parse(localStorage.getItem(key));
+          if (Array.isArray(val) && val.length > 0 && val[0].customer) {
+            found = val;
+            break;
+          }
+        } catch(e){}
+      }
+      if (found.length > 0) {
+        orders = found;
+        saveAllData();
+        alert("Erfolg! " + found.length + " Aufträge wurden wiederhergestellt!");
+        location.reload();
+      } else {
+        alert("Keine alten Aufträge im Browser gefunden.");
+      }
+    }
 
     let printers = [
       { name: "CR-10 Smart Pro #1", desc: "Creality Cloud / Großraum", status: "Bereit", printHours: 12.5 },
@@ -390,8 +423,18 @@
     ];
 
     function saveAllData() {
-      localStorage.setItem('sefas_orders_v107', JSON.stringify(orders));
-      localStorage.setItem('sefas_spools_v107', JSON.stringify(spools));
+      localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
+      localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
+    }
+
+    function downloadBackup() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ orders, spools }));
+      const dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", "sefas_shop_backup.json");
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
     }
 
     function updateSpoolDropdowns() {
@@ -1067,9 +1110,6 @@
       saveAllData();
       renderOrders();
     }
-
-    document.getElementById("pinInput").value = "1234";
-    checkPin();
   </script>
 </body>
 </html>
