@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sefas3DShop - Realtime Cloud Dashboard Pro</title>
+  <title>Sefas3DShop - Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -44,8 +44,8 @@
       <div class="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center mx-auto text-2xl border border-blue-500/20">
         <i class="fa-solid fa-cloud-bolt text-blue-400"></i>
       </div>
-      <h2 class="text-2xl font-bold text-white">Sefas3DShop Cloud</h2>
-      <p class="text-slate-400 text-sm">Bitte gib deinen PIN ein, um auf das Live-Dashboard zuzugreifen.</p>
+      <h2 class="text-2xl font-bold text-white">Sefas3DShop Dashboard</h2>
+      <p class="text-slate-400 text-sm">Bitte gib deinen PIN ein, um auf das Dashboard zuzugreifen.</p>
       <input type="password" id="pinInput" placeholder="PIN eingeben" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-center text-xl text-white focus:outline-none focus:border-blue-500">
       <button onclick="checkPin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition">Verbinden</button>
       <p id="loginError" class="text-red-400 text-xs hidden">Falscher PIN! Bitte erneut versuchen.</p>
@@ -65,10 +65,10 @@
           <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
         </div>
         <div>
-          <h1 class="text-xl font-bold text-white">Sefas3DShop Live-Cloud Dashboard</h1>
+          <h1 class="text-xl font-bold text-white">Sefas3DShop Dashboard</h1>
           <p class="text-slate-400 text-xs flex items-center gap-1.5">
             <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span> 
-            <span>Echtzeit-Verbindung aktiv</span>
+            <span>System betriebsbereit</span>
           </p>
         </div>
       </div>
@@ -236,6 +236,7 @@
     async function loadCloudData() {
       try {
         const res = await fetch(`${BIN_URL}/latest`, {
+          method: 'GET',
           headers: { 'X-Master-Key': MASTER_KEY }
         });
         if (res.ok) {
@@ -247,11 +248,13 @@
             localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
             renderOrders();
             renderSpools();
-            alert("Cloud-Daten erfolgreich geladen!");
+            alert("Erfolgreich aus der Cloud geladen!");
+            return;
           }
         }
+        alert("Keine gültigen Daten in der Cloud gefunden.");
       } catch(e) {
-        alert("Fehler beim Laden aus der Cloud.");
+        alert("Netzwerkfehler oder Browser-Blockade bei der Cloud-Verbindung.");
       }
     }
 
