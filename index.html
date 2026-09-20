@@ -6,6 +6,7 @@
   <title>Sefas3DShop - Realtime Cloud Dashboard Pro</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <!-- QR-Code Bibliothek für die Karton-Etiketten -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
@@ -43,6 +44,7 @@
     </div>
   </div>
 
+  <!-- DRUCK-BEREICH FÜR QR-ETIKETTEN -->
   <div id="printSection" class="hidden"></div>
 
   <!-- MAIN APP -->
@@ -419,7 +421,7 @@
         loadCloudData();
         setInterval(loadCloudData, 10000);
       } else {
-        document.getElementById("loginError").classList.add("hidden");
+        document.getElementById("loginError").classList.remove("hidden");
       }
     }
 
@@ -582,6 +584,66 @@
       renderOrders();
     }
 
+    // QR-KARTON-ETIKETT DRUCK FUNKTION
+    function printBoxLabel(index) {
+      const o = orders[index];
+      const printSec = document.getElementById('printSection');
+      
+      let itemsSummary = o.items.map(i => `${i.name} (${i.color || 'Standard'})`).join("<br>• ");
+      const trackingUrl = (o.tracking && o.tracking !== '-') 
+        ? `https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=${o.tracking}`
+        : `Sefas3DShop - Auftrag #${o.id} - ${o.customer}`;
+
+      printSec.innerHTML = `
+        <div style="font-family: Arial, sans-serif; border: 3px solid #000; padding: 15px; width: 360px; border-radius: 8px; background: #fff;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 8px;">
+            <div>
+              <strong style="font-size: 18px;">Sefas3DShop</strong>
+              <div style="font-size: 10px; color: #555;">3D-Print Solutions & Logistik</div>
+            </div>
+            <span style="font-size: 10px; background: #000; color: #fff; padding: 3px 6px; border-radius: 4px; font-weight: bold;">KARTON-ETIKETT</span>
+          </div>
+
+          <div style="margin-top: 10px; font-size: 12px;">
+            <p style="margin: 2px 0;"><strong>Empfänger:</strong> ${o.customer}</p>
+            <p style="margin: 2px 0; font-size: 11px; color: #444;">${o.address || 'Keine Adresse angegeben'}</p>
+          </div>
+
+          <div style="margin-top: 10px; border-top: 1px dashed #666; padding-top: 6px; font-size: 11px;">
+            <strong>Paketinhalt:</strong><br>
+            • ${itemsSummary}
+          </div>
+
+          <div style="margin-top: 10px; border-top: 1px dashed #666; padding-top: 6px; font-size: 11px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <p style="margin: 1px 0;"><strong>Tracking:</strong> ${o.tracking}</p>
+              ${o.notes ? `<p style="margin: 1px 0; color: #d97706;"><strong>Note:</strong> ${o.notes}</p>` : ''}
+            </div>
+            <div id="qrcodeContainer" style="background: #fff; padding: 4px;"></div>
+          </div>
+        </div>
+      `;
+
+      printSec.classList.remove('hidden');
+
+      setTimeout(() => {
+        const qrContainer = document.getElementById('qrcodeContainer');
+        if (qrContainer) {
+          qrContainer.innerHTML = '';
+          new QRCode(qrContainer, {
+            text: trackingUrl,
+            width: 75,
+            height: 75,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        }
+        window.print();
+        printSec.classList.add('hidden');
+      }, 300);
+    }
+
     function renderOrders() {
       const tbody = document.getElementById('ordersTableBody');
       tbody.innerHTML = '';
@@ -669,8 +731,9 @@
             <td class="p-3 text-right">
               <div class="flex justify-end items-center space-x-1">
                 <button onclick="toggleArchiveOrder(${orderIndex})" class="text-purple-300 text-xs px-2 py-1 bg-purple-500/10 rounded-lg">📦</button>
+                <button onclick="printBoxLabel(${orderIndex})" title="Karton-Etikett mit QR-Code drucken" class="text-amber-300 hover:text-white text-xs px-2 py-1 bg-amber-500/10 rounded-lg border border-amber-500/20">🏷️ QR</button>
                 <button onclick="startEdit(${orderIndex})" class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-blue-500/10 rounded-lg">✏️</button>
-                <button onclick="deleteOrder(${orderIndex})" class="text-red-400 text-xs px-2 py-1 bg-red-500/10 rounded-lg"><i class="fa-solid fa-trash"></i></button>
+                <button onclick="deleteOrder(${orderIndex})" class="text-red-400 hover:text-red-300 text-xs px-2 py-1 bg-red-500/10 rounded-lg"><i class="fa-solid fa-trash"></i></button>
               </div>
             </td>
           `;
