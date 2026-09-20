@@ -67,16 +67,24 @@
         <div>
           <h1 class="text-xl font-bold text-white">Sefas3DShop Dashboard</h1>
           <p class="text-slate-400 text-xs flex items-center gap-1.5">
-            <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span> 
-            <span id="syncStatus">Cloud Synchronisiert</span>
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500"></span> 
+            <span id="syncStatus">Daten sicher geladen</span>
           </p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <button onclick="requestNotificationPermission()" class="bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center">
-          <i class="fa-solid fa-bell mr-1"></i> 🔔 Push aktiv
+        <!-- NEUER MANUELLER SYNC BUTTON -->
+        <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center">
+          <i class="fa-solid fa-rotate mr-2"></i> 🔄 Von Cloud abrufen
         </button>
-        <button onclick="lockApp()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-medium">
+        <button onclick="pushToCloudManual()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center">
+          <i class="fa-solid fa-cloud-arrow-up mr-2"></i> 📤 In Cloud speichern
+        </button>
+        
+        <button onclick="requestNotificationPermission()" class="bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-3 py-2 rounded-xl text-xs font-medium transition flex items-center">
+          <i class="fa-solid fa-bell mr-1"></i> Push aktiv
+        </button>
+        <button onclick="lockApp()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 rounded-xl text-xs font-medium">
           <i class="fa-solid fa-right-from-bracket mr-1"></i> Sperren
         </button>
       </div>
@@ -209,12 +217,43 @@
     const DEFAULT_PIN = "1234";
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
 
-    let editingIndex = -1;
-    let orders = [];
-    let spools = [
-      { id: 1, name: "PLA Schwarz", remainingGrams: 820 },
-      { id: 2, name: "PETG Weiß", remainingGrams: 650 }
+    // Feste Backup-Daten - UNLÖSCHBAR
+    const BACKUP_ORDERS = [
+      {"id":1789933732086,"customer":"Silke Schwarzer","address":"Gartenweg 10d 04862 Mockrehna","notes":"","printer":"Ender 3 V3","status":"Offen","label":"🟡 Wartet auf Zahlung","packed":"❌ Nein","price":20,"shippingCost":5,"weight":0,"tracking":"-","archived":false,"items":[{"name":"2x Tannenzapfen","color":"","durationMin":60,"status":"Offen","endTime":null},{"name":"2x Tannenzapfen","color":"","durationMin":60,"status":"Offen","endTime":null}]},
+      {"id":1789933658205,"customer":"Familie Tchoffo","address":"Prämienstraße 62 52428 Jülich","notes":"","printer":"CR-10 Smart Pro #1","status":"Offen","label":"✅ Ja","packed":"❌ Nein","price":10,"shippingCost":5,"weight":460,"tracking":"-","archived":false,"items":[{"name":"Küchenrollnhalter 2X","color":"","durationMin":60,"status":"Offen","endTime":null}]},
+      {"id":1,"customer":"Renate Evelin - Veere","address":"Heinrich - Zillestr.11 04668 Grimma","notes":"Bitte gut verpacken","printer":"Anycubic Kobra","status":"Offen","label":"🟡 Wartet auf Zahlung","packed":"❌ Nein","tracking":"-","price":43,"shippingCost":7,"weight":0,"archived":false,"items":[{"name":"1x Japandi Vogel","color":"","durationMin":60,"status":"Offen","endTime":null},{"name":"1x Kürbis","color":"","durationMin":45,"status":"Offen","endTime":null},{"name":"1x Modernes Eichhörnchen","color":"","durationMin":50,"status":"Offen","endTime":null},{"name":"4x Zapfenhäuschen","color":"","durationMin":120,"status":"Offen","endTime":null}]},
+      {"id":2,"customer":"Ralf Hartmann","address":"Eichelweg 1 49377 Vechta","notes":"","printer":"CR-10 Smart Pro #1","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","tracking":"358070447889","price":34,"shippingCost":5,"weight":120,"archived":false,"items":[{"name":"6x Rentier","color":"","durationMin":150,"status":"Fertig","endTime":null}]},
+      {"id":3,"customer":"Sabine Beewen","address":"Bremer Str 62 a  49356 Diepholz","notes":"","printer":"Anycubic Kobra","status":"Offen","label":"✅ Ja","packed":"❌ Nein","tracking":"-","price":9.5,"shippingCost":5,"weight":0,"archived":false,"items":[{"name":"1x Fernbedienungshalter","color":"","durationMin":90,"status":"Offen","endTime":null}]},
+      {"id":4,"customer":"Dunja marcinkowski","address":"","notes":"","printer":"Ender 3 V3","status":"Offen","label":"🟡 Wartet auf Zahlung","packed":"❌ Nein","tracking":"-","price":0,"shippingCost":0,"weight":240,"archived":false,"items":[{"name":"6x Weinhalter schwarz","color":"PLA Schwarz","durationMin":180,"status":"Offen","endTime":null},{"name":"9x Bäume","color":"","durationMin":120,"status":"Offen","endTime":null}]},
+      {"id":5,"customer":"Tobias von der Famile Ulm","address":"","notes":"","printer":"Anycubic Kobra","status":"In Arbeit","label":"✅ Ja","packed":"❌ Nein","tracking":"358072492915","price":33,"shippingCost":7,"weight":210,"archived":false,"items":[{"name":"3x Suppenhalter 6cm","color":"PLA Schwarz","durationMin":60,"status":"Fertig","endTime":null},{"name":"4x Backpulverhalter","color":"PLA Schwarz","durationMin":40,"status":"Fertig","endTime":null},{"name":"4x Backpulverhalter 6cm","color":"PLA Schwarz","durationMin":45,"status":"Offen","endTime":null},{"name":"1x Abroller Alufolie","color":"PLA Schwarz","durationMin":90,"status":"Offen","endTime":null}]},
+      {"id":6,"customer":"Antje Nanninga","address":"Rinderhagenstraße 27 in 26802 Moormerland","notes":"","printer":"CR-10 Smart Pro #1","status":"Fertig","label":"🟡 Wartet auf Zahlung","packed":"❌ Nein","tracking":"-","price":9,"shippingCost":6,"weight":110,"archived":false,"items":[{"name":"1x Vase weiß","color":"","durationMin":120,"status":"Fertig","endTime":null}]},
+      {"id":7,"customer":"Gabi Thomas","address":"Goerdelerstr. 141, 27755 delmenhorst","notes":"","printer":"Ender 3 V3","status":"Offen","label":"✅ Ja","packed":"❌ Nein","tracking":"358072492921","price":0,"shippingCost":0,"weight":85,"archived":false,"items":[{"name":"1x Dogge lila","color":"","durationMin":105,"status":"Offen","endTime":null}]},
+      {"id":8,"customer":"Paul Hartmann","address":"Ellernstraße 40  32457 Porta Westfalica","notes":"","printer":"CR-10 Smart Pro #1","status":"In Arbeit","label":"✅ Ja","packed":"❌ Nein","tracking":"-","price":14,"shippingCost":5,"weight":95,"archived":false,"items":[{"name":"3x Makita Akkuhalter","color":"","durationMin":135,"status":"Fertig","endTime":null}]}
     ];
+
+    const BACKUP_SPOOLS = [
+      {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notified":false},
+      {"id":2,"name":"PETG Weiß","remainingGrams":650,"notified":false},
+      {"id":1789935199927,"name":"PLA Dunkelblau","remainingGrams":100,"notified":true},
+      {"id":1789935232879,"name":"PETG Orange","remainingGrams":800,"notified":false},
+      {"id":1789935274064,"name":"PETG Schwarz","remainingGrams":950,"notified":false},
+      {"id":1789935301168,"name":"ASA Grau","remainingGrams":980,"notified":false},
+      {"id":1789935377136,"name":"PLA Hellblau ","remainingGrams":1000,"notified":false},
+      {"id":1789935389839,"name":"PLA Braun","remainingGrams":1000,"notified":false},
+      {"id":1789935427641,"name":"Pla Weiß","remainingGrams":700,"notified":false},
+      {"id":1789935452144,"name":"PLA Pink","remainingGrams":900,"notified":false},
+      {"id":1789935472744,"name":"PLA lila ","remainingGrams":1000,"notified":false},
+      {"id":1789935549240,"name":"PLA Regenbogen","remainingGrams":150,"notified":true},
+      {"id":1789935577272,"name":"PLA Gold ","remainingGrams":380,"notified":false},
+      {"id":1789935652839,"name":"PLA Dunkelrot ","remainingGrams":340,"notified":false},
+      {"id":1789935739912,"name":"PLA Dunkelrot ","remainingGrams":900,"notified":false},
+      {"id":1789935772655,"name":"PLA Hellbraun ","remainingGrams":900,"notified":false},
+      {"id":1789935791895,"name":"PLA Hellrot ","remainingGrams":800,"notified":false},
+      {"id":1789935820543,"name":"PLA grün","remainingGrams":760,"notified":false},
+      {"id":1789935848831,"name":"PLA Sage grün","remainingGrams":780,"notified":false},
+      {"id":1789935882064,"name":"PLA Olivgrün","remainingGrams":560,"notified":false}
+    ];
+
     let printers = [
       { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Bereit" },
       { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
@@ -222,39 +261,71 @@
       { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Bereit" }
     ];
 
+    let editingIndex = -1;
+    let orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
+    let spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
+
+    // LADE BACKUP WENN NICHTS DA IST
+    if (orders.length === 0) {
+      orders = BACKUP_ORDERS;
+      spools = BACKUP_SPOOLS;
+      saveLocalOnly();
+    }
+
+    function saveLocalOnly() {
+      localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
+      localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
+    }
+
     async function loadCloudData() {
       try {
         const res = await fetch(NPOINT_URL, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
-          if (json && Array.isArray(json.orders)) {
+          // LÄDT NUR WENN AUCH WIRKLICH DATEN IN DER CLOUD SIND!
+          if (json && Array.isArray(json.orders) && json.orders.length > 0) {
             orders = json.orders;
             if (Array.isArray(json.spools)) spools = json.spools;
+            saveLocalOnly();
             renderOrders();
             renderSpools();
+            alert("✅ Daten erfolgreich von der Cloud abgerufen!");
+          } else {
+            alert("Die Cloud ist leer. Es wurden keine lokalen Daten überschrieben.");
           }
         }
-      } catch(e) {}
+      } catch(e) {
+        alert("Fehler beim Abrufen der Cloud-Daten.");
+      }
     }
 
-    async function saveAllData() {
-      renderOrders();
-      renderSpools();
+    async function pushToCloudManual() {
+      saveLocalOnly();
       try {
         await fetch(NPOINT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ orders, spools })
         });
-      } catch(e) {}
+        alert("✅ Daten erfolgreich in der Cloud gespeichert!");
+      } catch(e) {
+        alert("Fehler beim Speichern in der Cloud.");
+      }
     }
 
-    // Automatischer Abgleich alle 3 Sekunden im Hintergrund
-    setInterval(() => {
-      if (!document.getElementById('mainApp').classList.contains('hidden')) {
-        loadCloudData();
-      }
-    }, 3000);
+    function saveAllData() {
+      saveLocalOnly();
+      renderOrders();
+      renderSpools();
+      
+      // Speichert im Hintergrund, ohne die UI zu blockieren
+      fetch(NPOINT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orders, spools })
+      }).catch(e => console.log("Hintergrund-Speichern fehlgeschlagen", e));
+    }
+
 
     function requestNotificationPermission() {
       if ("Notification" in window) Notification.requestPermission();
@@ -272,10 +343,8 @@
         document.getElementById("loginModal").classList.add("hidden");
         document.getElementById("mainApp").classList.remove("hidden");
         renderPrinters();
-        loadCloudData().then(() => {
-          renderOrders();
-          renderSpools();
-        });
+        renderOrders();
+        renderSpools();
       } else {
         document.getElementById("loginError").classList.remove("hidden");
       }
