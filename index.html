@@ -41,13 +41,13 @@
   <!-- LOGIN MODAL -->
   <div id="loginModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
     <div class="card p-6 rounded-2xl max-w-md w-full shadow-2xl text-center space-y-4">
-      <div class="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto text-2xl border border-emerald-500/20">
-        <i class="fa-solid fa-cloud text-emerald-400"></i>
+      <div class="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center mx-auto text-2xl border border-blue-500/20">
+        <i class="fa-solid fa-shop text-blue-400"></i>
       </div>
       <h2 class="text-2xl font-bold text-white">Sefas3DShop Dashboard</h2>
       <p class="text-slate-400 text-sm">Bitte gib deinen PIN ein, um auf das Dashboard zuzugreifen.</p>
-      <input type="password" id="pinInput" placeholder="PIN eingeben" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-center text-xl text-white focus:outline-none focus:border-emerald-500">
-      <button onclick="checkPin()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl transition">Verbinden</button>
+      <input type="password" id="pinInput" placeholder="PIN eingeben" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-center text-xl text-white focus:outline-none focus:border-blue-500">
+      <button onclick="checkPin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition">Verbinden</button>
       <p id="loginError" class="text-red-400 text-xs hidden">Falscher PIN! Bitte erneut versuchen.</p>
     </div>
   </div>
@@ -61,30 +61,27 @@
     <!-- HEADER -->
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800 p-4 rounded-2xl border border-slate-700 gap-4">
       <div class="flex items-center space-x-3">
-        <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
-          <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
+        <div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
+          <i class="fa-solid fa-print text-xl"></i>
         </div>
         <div>
           <h1 class="text-xl font-bold text-white">Sefas3DShop Dashboard</h1>
           <p class="text-slate-400 text-xs flex items-center gap-1.5">
-            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> 
-            <span id="syncStatus">Cloud aktiv (Automatischer Abgleich)</span>
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span> 
+            <span>System betriebsbereit</span>
           </p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <button onclick="manualSync()" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center">
-          <i class="fa-solid fa-rotate mr-1"></i> 🔄 Sync erzwingen
-        </button>
         <button onclick="requestNotificationPermission()" class="bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center">
           <i class="fa-solid fa-bell mr-1"></i> 🔔 Push aktiv
         </button>
         <button onclick="downloadBackup()" class="bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition">
-          <i class="fa-solid fa-download mr-1"></i> Backup
+          <i class="fa-solid fa-download mr-1"></i> 📤 Exportieren
         </button>
         <input type="file" id="backupFileinput" accept=".json" onchange="uploadBackup(event)" class="hidden">
         <button onclick="document.getElementById('backupFileinput').click()" class="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition">
-          <i class="fa-solid fa-upload mr-1"></i> Import
+          <i class="fa-solid fa-upload mr-1"></i> 📥 Importieren
         </button>
         <button onclick="lockApp()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-medium">
           <i class="fa-solid fa-right-from-bracket mr-1"></i> Sperren
@@ -217,9 +214,6 @@
 
   <script>
     const DEFAULT_PIN = "1234";
-    // Zuverlässiger, offener Cloud-Endpunkt für Sefas3DShop
-    const CLOUD_URL = 'https://json.extendsclass.com/bin/6a82c9f52f4a';
-
     let editingIndex = -1;
     let orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
     let spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [
@@ -233,59 +227,10 @@
       { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Bereit" }
     ];
 
-    async function loadCloudData(isSilent = false) {
-      try {
-        const res = await fetch(CLOUD_URL, { cache: 'no-store' });
-        if (res.ok) {
-          const json = await res.json();
-          if (json && Array.isArray(json.orders)) {
-            // Wenn Cloud Daten hat, diese übernehmen
-            orders = json.orders;
-            if (Array.isArray(json.spools)) spools = json.spools;
-            localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
-            localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
-            renderOrders();
-            renderSpools();
-            if (!isSilent) {
-              document.getElementById('syncStatus').innerText = "Cloud aktiv (Aktualisiert)";
-            }
-            return;
-          }
-        }
-      } catch(e) {
-        if (!isSilent) console.log("Cloud im Offline-Modus.");
-      }
-    }
-
-    async function saveAllData() {
-      // Sofort lokal speichern
+    function saveAllData() {
       localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
       localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
-      
-      // Im Hintergrund in die Cloud pushen
-      try {
-        await fetch(CLOUD_URL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orders, spools })
-        });
-        document.getElementById('syncStatus').innerText = "Cloud aktiv (Gespeichert)";
-      } catch(e) {
-        document.getElementById('syncStatus').innerText = "Offline gespeichert";
-      }
     }
-
-    function manualSync() {
-      loadCloudData(false);
-      alert("Daten wurden von der Cloud aktualisiert!");
-    }
-
-    // Automatischer Hintergrund-Abgleich alle 4 Sekunden
-    setInterval(() => {
-      if (!document.getElementById('mainApp').classList.contains('hidden')) {
-        loadCloudData(true);
-      }
-    }, 4000);
 
     function requestNotificationPermission() {
       if ("Notification" in window) Notification.requestPermission();
@@ -295,6 +240,16 @@
       if ("Notification" in window && Notification.permission === "granted") {
         new Notification("⚠️ Filament-Alarm!", { body: `Spule "${spoolName}" ist unter 250g (${grams}g)!` });
       }
+    }
+
+    function downloadBackup() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ orders, spools }));
+      const dl = document.createElement('a');
+      dl.setAttribute("href", dataStr);
+      dl.setAttribute("download", "sefas_shop_backup.json");
+      document.body.appendChild(dl);
+      dl.click();
+      dl.remove();
     }
 
     function uploadBackup(event) {
@@ -310,9 +265,9 @@
             saveAllData();
             renderOrders();
             renderSpools();
-            alert("Backup erfolgreich importiert!");
+            alert("Erfolgreich importiert und aktualisiert!");
           }
-        } catch(err) { alert("Fehler beim Lesen."); }
+        } catch(err) { alert("Fehler beim Lesen der Datei."); }
       };
       reader.readAsText(file);
     }
@@ -325,7 +280,6 @@
         renderPrinters();
         renderOrders();
         renderSpools();
-        loadCloudData(true);
       } else {
         document.getElementById("loginError").classList.remove("hidden");
       }
@@ -646,16 +600,6 @@
       printers.forEach(p => {
         grid.innerHTML += `<div class="card p-4 rounded-2xl space-y-2"><div class="flex justify-between"><h3 class="font-bold text-white">${p.name}</h3><span class="text-xs text-blue-400">${p.status}</span></div><p class="text-xs text-slate-400">${p.desc}</p></div>`;
       });
-    }
-
-    function downloadBackup() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ orders, spools }));
-      const dl = document.createElement('a');
-      dl.setAttribute("href", dataStr);
-      dl.setAttribute("download", "sefas_shop_backup.json");
-      document.body.appendChild(dl);
-      dl.click();
-      dl.remove();
     }
 
     document.getElementById("pinInput").value = "1234";
