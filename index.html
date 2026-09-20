@@ -195,7 +195,6 @@
       { name: "CR-10 Smart Pro #2", desc: "Creality Cloud / Großraum", temp: "23°C", status: "Bereit" }
     ];
 
-    // Erzwinge beim ersten Laden mit V2-Schlüssel das Laden der echten Kundendaten
     if (!localStorage.getItem('sefas_orders_v2')) {
       localStorage.setItem('sefas_orders_v2', JSON.stringify(REAL_ORDERS));
       localStorage.removeItem('sefas_orders');
@@ -243,6 +242,8 @@
           ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' 
           : p.status === 'Frei' 
           ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' 
+          : p.status === 'Außer Betrieb'
+          ? 'bg-red-500/10 text-red-400 border-red-500/20'
           : 'bg-green-500/10 text-green-400 border-green-500/20';
 
         card.innerHTML = `
@@ -264,6 +265,7 @@
               <option value="In Arbeit" ${p.status === 'In Arbeit' ? 'selected' : ''}>🟡 In Arbeit</option>
               <option value="Frei" ${p.status === 'Frei' ? 'selected' : ''}>🔵 Frei</option>
               <option value="Bereit" ${p.status === 'Bereit' ? 'selected' : ''}>🟢 Bereit</option>
+              <option value="Außer Betrieb" ${p.status === 'Außer Betrieb' ? 'selected' : ''}>🔴 Außer Betrieb</option>
             </select>
           </div>
 
