@@ -69,7 +69,7 @@
           <h1 class="text-xl font-bold text-white">Sefas3DShop Live-Cloud Dashboard</h1>
           <p class="text-slate-400 text-xs flex items-center gap-1.5">
             <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span> 
-            <span>Echtzeit-Verbindung & Push aktiv</span>
+            <span>Echtzeit-Cloud Sync & Push aktiv (Auto-Sync)</span>
           </p>
         </div>
       </div>
@@ -215,6 +215,9 @@
 
   <script>
     const DEFAULT_PIN = "1234";
+    const BIN_URL = 'https://api.jsonbin.io/v3/b/679fdfaee41b4d34e47bc99b';
+    const MASTER_KEY = '$2a$10$C8uW9U7x5s8yQ2v5n8X3OuKx3q2Y8Q5v2Y2q5n8X3OuKx3q2Y8Q5v';
+
     let editingIndex = -1;
     let orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
     let spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [
@@ -228,37 +231,53 @@
       { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Bereit" }
     ];
 
-    async function loadCloudData() {
+    // Daten aus der Cloud laden (mit Fehlerprüfung)
+    async function loadCloudData(silent = false) {
       try {
-        const res = await fetch('https://api.jsonbin.io/v3/b/679fdfaee41b4d34e47bc99b/latest', {
-          headers: { 'X-Master-Key': '$2a$10$C8uW9U7x5s8yQ2v5n8X3OuKx3q2Y8Q5v2Y2q5n8X3OuKx3q2Y8Q5v' }
+        const res = await fetch(`${BIN_URL}/latest`, {
+          headers: { 'X-Master-Key': MASTER_KEY }
         });
         if (res.ok) {
           const json = await res.json();
           if (json.record && json.record.orders) {
             orders = json.record.orders;
             if (json.record.spools) spools = json.record.spools;
+            localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
+            localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
+            if (!silent) {
+              renderOrders();
+              renderSpools();
+            }
           }
         }
       } catch(e) {}
-      renderOrders();
-      renderSpools();
     }
 
+    // Daten in die Cloud & lokal speichern
     async function saveAllData() {
       localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
       localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
       try {
-        await fetch('https://api.jsonbin.io/v3/b/679fdfaee41b4d34e47bc99b', {
+        await fetch(BIN_URL, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'X-Master-Key': '$2a$10$C8uW9U7x5s8yQ2v5n8X3OuKx3q2Y8Q5v2Y2q5n8X3OuKx3q2Y8Q5v'
+            'X-Master-Key': MASTER_KEY
           },
           body: JSON.stringify({ orders, spools })
         });
       } catch(e) {}
     }
+
+    // Auto-Sync alle 5 Sekunden im Hintergrund, damit Änderungen auf dem anderen Gerät sofort sichtbar werden
+    setInterval(() => {
+      if (!document.getElementById('mainApp').classList.contains('hidden')) {
+        loadCloudData(true);
+        // UI aktualisieren falls sich Daten im Hintergrund geändert haben
+        renderOrders();
+        renderSpools();
+      }
+    }, 5000);
 
     function requestNotificationPermission() {
       if ("Notification" in window) Notification.requestPermission();
@@ -298,7 +317,7 @@
         renderPrinters();
         loadCloudData();
       } else {
-        document.getElementById("loginError").classList.add("hidden");
+        document.getElementById("loginError").classList.remove("hidden");
       }
     }
 
@@ -399,7 +418,7 @@
       div.innerHTML = `
         <input type="text" placeholder="Artikelbezeichnung" value="${name}" required class="edit-art-name bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
         <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-48 focus:outline-none">${optionsHtml}</select>
-        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 text-xs px-2"><i class="fa-solid fa-xmark"></i></button>`;
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2"><i class="fa-solid fa-xmark"></i></button>`;
       container.appendChild(div);
     }
 
