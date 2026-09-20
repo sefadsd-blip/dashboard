@@ -72,6 +72,11 @@
         <button onclick="downloadBackup()" class="bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition">
           <i class="fa-solid fa-download mr-1"></i> Backup
         </button>
+        <!-- WIEDER DA: Import Button -->
+        <input type="file" id="backupFileinput" accept=".json" onchange="uploadBackup(event)" class="hidden">
+        <button onclick="document.getElementById('backupFileinput').click()" class="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition">
+          <i class="fa-solid fa-upload mr-1"></i> Import
+        </button>
         <button onclick="lockApp()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-medium">
           <i class="fa-solid fa-right-from-bracket mr-1"></i> Sperren
         </button>
@@ -328,11 +333,6 @@
   </div>
 
   <script>
-    // Fester, blitzschneller Cloud-Kanal exklusiv für Sefas3DShop
-    const ENDPOINT_URL = "https://jsonblob.com/api/jsonblob/1346200000000000000"; // Verwaltet deinen Live-Datenstrom
-    // Da jsonblob dynamische IDs nutzt, nutzen wir hier einen robusten öffentlichen Speicher-Proxy für deine GitHub-Seite:
-    const STORAGE_KEY_CLOUD = "https://api.npoint.io/sefas3dshop_live_data"; // Alternativ nutzen wir einen hochzuverlässigen Live-Sync
-
     const DEFAULT_PIN = "1234";
     let currentFilter = "all";
     let editingIndex = -1;
@@ -350,7 +350,6 @@
       { name: "CR-10 Smart Pro #2", desc: "Creality Cloud / Großraum", status: "Bereit" }
     ];
 
-    // Lädt die Daten beim Start von jedem Gerät automatisch aus der Cloud
     async function loadCloudData() {
       try {
         const localBackup = localStorage.getItem('sefas_shop_orders_permanent');
@@ -371,7 +370,6 @@
       renderSpools();
     }
 
-    // Speichert sofort in der Cloud + lokal
     async function saveAllData() {
       localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
       localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
@@ -388,6 +386,30 @@
       } catch(e) {}
     }
 
+    function uploadBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const content = JSON.parse(e.target.result);
+          if (content.orders && content.spools) {
+            orders = content.orders;
+            spools = content.spools;
+            saveAllData();
+            renderOrders();
+            renderSpools();
+            alert("Backup erfolgreich importiert und in die Cloud geladen!");
+          } else {
+            alert("Ungültige Backup-Datei.");
+          }
+        } catch(err) {
+          alert("Fehler beim Lesen der Datei.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
     function checkPin() {
       const pin = document.getElementById("pinInput").value;
       if (pin === DEFAULT_PIN || pin === "sefa") {
@@ -396,10 +418,9 @@
         document.getElementById("loginError").classList.add("hidden");
         renderPrinters();
         loadCloudData();
-        // Alle 10 Sekunden automatisch im Hintergrund prüfen, ob ein anderes Gerät etwas geändert hat
         setInterval(loadCloudData, 10000);
       } else {
-        document.getElementById("loginError").classList.remove("hidden");
+        document.getElementById("loginError").classList.add("hidden");
       }
     }
 
