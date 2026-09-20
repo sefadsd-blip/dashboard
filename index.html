@@ -68,13 +68,13 @@
           <h1 class="text-xl font-bold text-white">Sefas3DShop Dashboard</h1>
           <p class="text-slate-400 text-xs flex items-center gap-1.5">
             <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span> 
-            <span>System betriebsbereit</span>
+            <span id="syncStatus">Live-Modus aktiv</span>
           </p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center">
-          <i class="fa-solid fa-rotate mr-1"></i> 🔄 Cloud laden
+        <button onclick="syncNow()" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center">
+          <i class="fa-solid fa-rotate mr-1"></i> 🔄 Sync prüfen
         </button>
         <button onclick="requestNotificationPermission()" class="bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center">
           <i class="fa-solid fa-bell mr-1"></i> 🔔 Push aktiv
@@ -233,29 +233,30 @@
       { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Bereit" }
     ];
 
-    async function loadCloudData() {
+    async function loadCloudData(isAuto = false) {
       try {
         const res = await fetch(`${BIN_URL}/latest`, {
           headers: { 'X-Master-Key': MASTER_KEY }
         });
         if (res.ok) {
           const json = await res.json();
-          // JSONBin packt Daten manchmal direkt in json oder in json.record
           const targetData = json.record || json;
-          if (targetData && targetData.orders) {
+          if (targetData && Array.isArray(targetData.orders)) {
             orders = targetData.orders;
-            if (targetData.spools) spools = targetData.spools;
+            if (Array.isArray(targetData.spools)) spools = targetData.spools;
             localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
             localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
             renderOrders();
             renderSpools();
-            alert("Erfolgreich aus der Cloud geladen!");
+            document.getElementById('syncStatus').innerText = "Live-Modus: Verbunden";
+            if (!isAuto) alert("Erfolgreich synchronisiert!");
             return;
           }
         }
-        alert("Cloud-Daten konnten nicht gelesen werden (Format-Prüfung fehlgeschlagen).");
+        // Wenn Cloud leer ist, initialisiere sie sofort mit den lokalen Daten
+        if (!isAuto) saveAllData();
       } catch(e) {
-        alert("Netzwerkfehler: Verbindung zur Cloud blockiert.");
+        if (!isAuto) alert("Offline-Modus (Lokale Daten werden genutzt).");
       }
     }
 
@@ -273,6 +274,17 @@
         });
       } catch(e) {}
     }
+
+    function syncNow() {
+      loadCloudData(false);
+    }
+
+    // Auto-Sync im Hintergrund alle 5 Sekunden ohne Fehlermeldung-Spam
+    setInterval(() => {
+      if (!document.getElementById('mainApp').classList.contains('hidden')) {
+        loadCloudData(true);
+      }
+    }, 5000);
 
     function requestNotificationPermission() {
       if ("Notification" in window) Notification.requestPermission();
@@ -312,6 +324,7 @@
         renderPrinters();
         renderOrders();
         renderSpools();
+        loadCloudData(true);
       } else {
         document.getElementById("loginError").classList.remove("hidden");
       }
