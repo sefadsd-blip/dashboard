@@ -236,14 +236,15 @@
     async function loadCloudData() {
       try {
         const res = await fetch(`${BIN_URL}/latest`, {
-          method: 'GET',
           headers: { 'X-Master-Key': MASTER_KEY }
         });
         if (res.ok) {
           const json = await res.json();
-          if (json.record && json.record.orders) {
-            orders = json.record.orders;
-            if (json.record.spools) spools = json.record.spools;
+          // JSONBin packt Daten manchmal direkt in json oder in json.record
+          const targetData = json.record || json;
+          if (targetData && targetData.orders) {
+            orders = targetData.orders;
+            if (targetData.spools) spools = targetData.spools;
             localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
             localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
             renderOrders();
@@ -252,9 +253,9 @@
             return;
           }
         }
-        alert("Keine gültigen Daten in der Cloud gefunden.");
+        alert("Cloud-Daten konnten nicht gelesen werden (Format-Prüfung fehlgeschlagen).");
       } catch(e) {
-        alert("Netzwerkfehler oder Browser-Blockade bei der Cloud-Verbindung.");
+        alert("Netzwerkfehler: Verbindung zur Cloud blockiert.");
       }
     }
 
