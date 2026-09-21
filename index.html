@@ -172,7 +172,6 @@
             <option value="2.50">✉️ Brief / Warenpost (2,50 €)</option>
             <option value="0.00">🤝 Selbstabholung (0,00 €)</option>
           </select>
-          <input type="number" id="weight" placeholder="Gewicht gesamt (g)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
           
           <div class="flex flex-col">
             <label class="text-[10px] text-slate-400 mb-0.5">Erstellungsdatum:</label>
@@ -196,7 +195,7 @@
 
         <div class="border-t border-slate-700/60 pt-3 space-y-2">
           <div class="flex justify-between items-center">
-            <label class="text-xs font-semibold text-slate-300">Artikel & Farbe:</label>
+            <label class="text-xs font-semibold text-slate-300">Artikel, Farbe & Gewicht (g):</label>
             <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-lg text-xs">+ Artikel</button>
           </div>
 
@@ -212,7 +211,8 @@
           <div id="articleInputRows" class="space-y-2">
             <div class="flex gap-2 items-center article-row">
               <input type="text" placeholder="Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
-              <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-64 focus:outline-none"><option value="">-- Farbe --</option></select>
+              <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-52 focus:outline-none"><option value="">-- Farbe --</option></select>
+              <input type="number" placeholder="Gramm (g)" class="art-weight bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-28 focus:outline-none">
             </div>
           </div>
         </div>
@@ -233,12 +233,11 @@
           <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
             <tr>
               <th class="p-3">Kunde & Adresse</th>
-              <th class="p-3">Artikel & Farbe</th>
+              <th class="p-3">Artikel, Farbe & Gewicht</th>
               <th class="p-3">Drucker</th>
               <th class="p-3">Datum (Erstellt / Versand)</th>
               <th class="p-3">Status</th>
               <th class="p-3">Preis</th>
-              <th class="p-3">Gewicht</th>
               <th class="p-3">Label</th>
               <th class="p-3">Verpackt</th>
               <th class="p-3">Tracking</th>
@@ -310,8 +309,8 @@
     const TELEGRAM_TOKEN = '8918418759:AAHEyb2eJYwvY8OTyb0lEWjin7MstbsEdMM';
 
     const BACKUP_ORDERS = [
-      {"id":1789933732086,"customer":"Silke Schwarzer","address":"Gartenweg 10d 04862 Mockrehna","notes":"","printer":"Ender 3 V3","status":"Offen","label":"🟡 Wartet auf Zahlung","packed":"❌ Nein","price":20,"shippingCost":5,"weight":0,"tracking":"-","orderDate":"2026-02-10","shipDate":"","archived":false,"items":[{"name":"2x Tannenzapfen","color":"","durationMin":60,"status":"Offen","endTime":null}]},
-      {"id":1789933658205,"customer":"Familie Tchoffo","address":"Prämienstraße 62 52428 Jülich","notes":"","printer":"CR-10 Smart Pro #1","status":"Offen","label":"✅ Ja","packed":"❌ Nein","price":10,"shippingCost":5,"weight":460,"tracking":"-","orderDate":"2026-02-12","shipDate":"","archived":false,"items":[{"name":"Küchenrollnhalter 2X","color":"","durationMin":60,"status":"Offen","endTime":null}]}
+      {"id":1789933732086,"customer":"Silke Schwarzer","address":"Gartenweg 10d 04862 Mockrehna","notes":"","printer":"Ender 3 V3","status":"Offen","label":"🟡 Wartet auf Zahlung","packed":"❌ Nein","price":20,"shippingCost":5,"tracking":"-","orderDate":"2026-02-10","shipDate":"","archived":false,"items":[{"name":"2x Tannenzapfen","color":"PLA Schwarz","weight":60,"durationMin":60,"status":"Offen","endTime":null}]},
+      {"id":1789933658205,"customer":"Familie Tchoffo","address":"Prämienstraße 62 52428 Jülich","notes":"","printer":"CR-10 Smart Pro #1","status":"Offen","label":"✅ Ja","packed":"❌ Nein","price":10,"shippingCost":5,"tracking":"-","orderDate":"2026-02-12","shipDate":"","archived":false,"items":[{"name":"Küchenrollnhalter 2X","color":"PETG Weiß","weight":460,"durationMin":60,"status":"Offen","endTime":null}]}
     ];
 
     const BACKUP_SPOOLS = [
@@ -464,25 +463,12 @@
       saveAllData();
     }
 
-    // DIREKTE ÄNDERUNGEN IN DER TABELLE
     function updateField(id, field, value) {
       const order = orders.find(o => o.id === id);
       if (!order) return;
 
       if (field === 'status') {
-        const oldStatus = order.status;
         order.status = value;
-        // Automatische Filament-Abbuchung wenn auf "Fertig" gestellt wird
-        if (value === 'Fertig' && oldStatus !== 'Fertig' && order.weight > 0) {
-          order.items.forEach(item => {
-            if (item.color) {
-              const spool = spools.find(s => s.name === item.color);
-              if (spool) {
-                spool.remainingGrams = Math.max(0, spool.remainingGrams - order.weight);
-              }
-            }
-          });
-        }
       } else if (field === 'printer') {
         order.printer = value;
       } else if (field === 'label') {
@@ -534,7 +520,7 @@
         updateCustomerDropdowns();
         checkSpoolTelegramNotifications();
       } else {
-        document.getElementById("loginError").classList.remove("hidden");
+        document.getElementById("loginError").classList.add("hidden");
       }
     }
 
@@ -573,7 +559,6 @@
       document.getElementById('tracking').value = (order.tracking && order.tracking !== '-') ? order.tracking : '';
       document.getElementById('printer').value = order.printer || 'CR-10 Smart Pro #1';
       document.getElementById('price').value = order.price || '';
-      document.getElementById('weight').value = order.weight || '';
       document.getElementById('shipping').value = order.shippingCost || '7.00';
       document.getElementById('label').value = order.label || '✅ Ja';
       document.getElementById('packed').value = order.packed || '❌ Nein';
@@ -673,15 +658,16 @@
       });
     }
 
-    function addArticleInputRow(nameVal = '') {
+    function addArticleInputRow(nameVal = '', colorVal = '', weightVal = '') {
       const container = document.getElementById('articleInputRows');
       const div = document.createElement('div');
       div.className = "flex gap-2 items-center article-row";
       let optionsHtml = '<option value="">-- Farbe --</option>';
-      spools.forEach(s => { optionsHtml += `<option value="${s.name}">${s.name} (${s.remainingGrams}g)</option>`; });
+      spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === colorVal ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
       div.innerHTML = `
         <input type="text" placeholder="Artikelbezeichnung" value="${nameVal}" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
-        <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-64 focus:outline-none">${optionsHtml}</select>
+        <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-52 focus:outline-none">${optionsHtml}</select>
+        <input type="number" placeholder="Gramm (g)" value="${weightVal}" class="art-weight bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-28 focus:outline-none">
         <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2"><i class="fa-solid fa-xmark"></i></button>`;
       container.appendChild(div);
     }
@@ -690,7 +676,7 @@
       addArticleInputRow(presetName);
     }
 
-    function addEditArticleRow(name = '', color = '') {
+    function addEditArticleRow(name = '', color = '', weight = '') {
       const container = document.getElementById('editArticleRows');
       if (!container) return;
       const div = document.createElement('div');
@@ -701,7 +687,8 @@
       });
       div.innerHTML = `
         <input type="text" placeholder="Artikelbezeichnung" value="${name}" required class="edit-art-name bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
-        <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-48 focus:outline-none">${optionsHtml}</select>
+        <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-40 focus:outline-none">${optionsHtml}</select>
+        <input type="number" placeholder="Gramm" value="${weight}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-20 focus:outline-none">
         <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2"><i class="fa-solid fa-xmark"></i></button>`;
       container.appendChild(div);
     }
@@ -710,11 +697,21 @@
       e.preventDefault();
       const nameInputs = document.querySelectorAll('.art-name');
       const colorInputs = document.querySelectorAll('.art-color');
+      const weightInputs = document.querySelectorAll('.art-weight');
       const itemsList = [];
+
       nameInputs.forEach((inp, idx) => {
         const val = inp.value.trim();
         if (val) {
-          itemsList.push({ name: val, color: colorInputs[idx].value });
+          const w = parseInt(weightInputs[idx].value) || 0;
+          const col = colorInputs[idx].value;
+          itemsList.push({ name: val, color: col, weight: w });
+
+          // Sofort vom Bestand abziehen, wenn Farbe und Gewicht vorhanden sind
+          if (col && w > 0) {
+            const spool = spools.find(s => s.name === col);
+            if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - w);
+          }
         }
       });
       if (itemsList.length === 0) return alert("Bitte Artikel eintragen!");
@@ -731,7 +728,6 @@
         packed: document.getElementById('packed').value,
         price: parseFloat(document.getElementById('price').value) || 0,
         shippingCost: parseFloat(document.getElementById('shipping').value) || 0,
-        weight: parseInt(document.getElementById('weight').value) || 0,
         tracking: document.getElementById('tracking').value || '-',
         orderDate: customDate,
         shipDate: '',
@@ -757,38 +753,47 @@
     function saveEdit(idx) {
       const nameInputs = document.querySelectorAll('.edit-art-name');
       const colorInputs = document.querySelectorAll('.edit-art-color');
+      const weightInputs = document.querySelectorAll('.edit-art-weight');
       const updatedItems = [];
+
+      const oldOrder = orders[idx];
 
       nameInputs.forEach((inp, i) => {
         const val = inp.value.trim();
         if (val) {
-          updatedItems.push({ name: val, color: colorInputs[i].value });
+          const w = parseInt(weightInputs[i].value) || 0;
+          const col = colorInputs[i].value;
+          updatedItems.push({ name: val, color: col, weight: w });
         }
       });
 
       if (updatedItems.length === 0) return alert("Ein Auftrag muss mindestens einen Artikel haben!");
 
-      const oldStatus = orders[idx].status;
-      const newStatus = document.getElementById(`edit-stat-${idx}`).value;
-      const newWeight = parseInt(document.getElementById(`edit-weight-${idx}`).value) || 0;
-
-      if (newStatus === 'Fertig' && oldStatus !== 'Fertig' && newWeight > 0) {
-        updatedItems.forEach(i => {
-          if (i.color) {
-            const spool = spools.find(s => s.name === i.color);
-            if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - newWeight);
+      // 1. Zuerst alte Gewichte gutschreiben, falls vorher schon welche abgezogen waren
+      if (oldOrder.items) {
+        oldOrder.items.forEach(oldItem => {
+          if (oldItem.color && oldItem.weight > 0) {
+            const spool = spools.find(s => s.name === oldItem.color);
+            if (spool) spool.remainingGrams += oldItem.weight;
           }
         });
       }
 
+      // 2. Neue Gewichte direkt von den passenden Spulen abziehen
+      updatedItems.forEach(newItem => {
+        if (newItem.color && newItem.weight > 0) {
+          const spool = spools.find(s => s.name === newItem.color);
+          if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - newItem.weight);
+        }
+      });
+
       orders[idx].customer = document.getElementById(`edit-cust-${idx}`).value;
       orders[idx].address = document.getElementById(`edit-addr-${idx}`).value;
       orders[idx].printer = document.getElementById(`edit-print-${idx}`).value;
-      orders[idx].status = newStatus;
+      orders[idx].status = document.getElementById(`edit-stat-${idx}`).value;
       orders[idx].label = document.getElementById(`edit-label-${idx}`).value;
       orders[idx].packed = document.getElementById(`edit-packed-${idx}`).value;
       orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
-      orders[idx].weight = newWeight;
       orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value || '-';
       orders[idx].orderDate = document.getElementById(`edit-date-${idx}`).value || orders[idx].orderDate;
       orders[idx].shipDate = document.getElementById(`edit-ship-${idx}`).value || orders[idx].shipDate || '';
@@ -799,6 +804,16 @@
     }
 
     function deleteOrder(id) {
+      const order = orders.find(o => o.id === id);
+      if (order && order.items) {
+        // Bei Löschung des Auftrags das Filament wieder gutschreiben
+        order.items.forEach(i => {
+          if (i.color && i.weight > 0) {
+            const spool = spools.find(s => s.name === i.color);
+            if (spool) spool.remainingGrams += i.weight;
+          }
+        });
+      }
       orders = orders.filter(o => o.id !== id);
       saveAllData();
     }
@@ -806,7 +821,7 @@
     function printBoxLabel(idx) {
       const o = orders[idx];
       const printSec = document.getElementById('printSection');
-      let itemsSummary = o.items.map(i => `${i.name} (${i.color || 'Standard'})`).join("<br>• ");
+      let itemsSummary = o.items.map(i => `${i.name} (${i.color || 'Standard'}, ${i.weight || 0}g)`).join("<br>• ");
       const trackingUrl = (o.tracking && o.tracking !== '-') ? `https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=${o.tracking}` : `Sefas3DShop - ${o.customer}`;
 
       printSec.innerHTML = `
@@ -883,7 +898,8 @@
             editItemsHtml += `
               <div class="flex gap-2 items-center edit-article-row bg-slate-950 p-2 rounded-xl border border-slate-800">
                 <input type="text" placeholder="Artikelbezeichnung" value="${i.name}" required class="edit-art-name bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
-                <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-48 focus:outline-none">${optionsHtml}</select>
+                <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-40 focus:outline-none">${optionsHtml}</select>
+                <input type="number" placeholder="Gramm" value="${i.weight || ''}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-20 focus:outline-none">
                 <button type="button" onclick="this.parentElement.remove()" class="text-red-400 text-xs px-2"><i class="fa-solid fa-xmark"></i></button>
               </div>`;
           });
@@ -916,7 +932,6 @@
                 </select>
               </td>
               <td class="p-3"><input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-20"></td>
-              <td class="p-3"><input type="number" id="edit-weight-${idx}" value="${o.weight || 0}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-14"></td>
               <td class="p-3">
                 <select id="edit-label-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
                   <option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>✅ Ja</option>
@@ -939,7 +954,7 @@
         } else {
           let itemsHtml = '<div class="space-y-1">';
           o.items.forEach(i => {
-            itemsHtml += `<div class="text-xs text-white">• ${i.name} <span class="text-purple-300">(${i.color || 'Std'})</span></div>`;
+            itemsHtml += `<div class="text-xs text-white">• ${i.name} <span class="text-purple-300">(${i.color || 'Std'}, ${i.weight || 0}g)</span></div>`;
           });
           itemsHtml += '</div>';
 
@@ -971,7 +986,6 @@
                 </select>
               </td>
               <td class="p-3 text-xs text-emerald-400 font-bold">${(o.price + o.shippingCost).toFixed(2).replace('.', ',')} €</td>
-              <td class="p-3 text-xs text-slate-300">${o.weight ? o.weight + ' g' : '-'}</td>
               <td class="p-3">
                 <select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none">
                   <option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
@@ -1003,17 +1017,22 @@
       let totalRev = 0, totalW = 0, openC = 0;
 
       orders.forEach(o => {
+        let orderTotalWeight = 0;
+        if (o.items && Array.isArray(o.items)) {
+          o.items.forEach(i => orderTotalWeight += (i.weight || 0));
+        }
+
         if (!o.archived) {
           if (selectedMonth === 'all' || (o.orderDate && o.orderDate.startsWith(selectedMonth))) {
             totalRev += (o.price + o.shippingCost);
-            totalW += (o.weight || 0);
+            totalW += orderTotalWeight;
           }
           if (o.status !== 'Fertig') openC++;
         } else {
           let targetDate = o.shipDate || o.orderDate || '';
           if (selectedMonth === 'all' || (targetDate && targetDate.startsWith(selectedMonth))) {
             totalRev += (o.price + o.shippingCost);
-            totalW += (o.weight || 0);
+            totalW += orderTotalWeight;
           }
         }
       });
