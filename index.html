@@ -260,14 +260,14 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- VORLAGE 1: Zahlung erhalten & Druck gestartet -->
+        <!-- VORLAGE 1: Zahlung erhalten -->
         <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="text-xs font-bold text-emerald-400">1. Zahlung da & Druck!</span>
+              <span class="text-xs font-bold text-emerald-400">1. Zahlung erhalten</span>
               <button onclick="copyTemplate(1)" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-lg text-xs"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
             </div>
-            <textarea id="templateText1" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.</textarea>
+            <textarea id="templateText1" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.</textarea>
           </div>
         </div>
 
@@ -293,7 +293,7 @@
           </div>
         </div>
 
-        <!-- VORLAGE 4: Paket gepackt & Sendungsnummer -->
+        <!-- VORLAGE 4: Paket unterwegs -->
         <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
           <div>
             <div class="flex justify-between items-center mb-2">
@@ -553,7 +553,7 @@
 
       const track = (o.tracking && o.tracking !== '-') ? o.tracking : '[Sendungsnummer einfügen]';
 
-      document.getElementById('templateText1').value = `Hallo ${o.customer},\n\ndeine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.`;
+      document.getElementById('templateText1').value = `Hallo ${o.customer},\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.`;
       document.getElementById('templateText2').value = `Hallo ${o.customer},\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!`;
       document.getElementById('templateText3').value = `Hallo ${o.customer},\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.`;
       document.getElementById('templateText4').value = `Hallo ${o.customer},\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n${track}\n\nLink: https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=${track}\n\nViel Freude damit!`;
