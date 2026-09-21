@@ -134,7 +134,13 @@
 
     <!-- NEUEN AUFTRAG ANLEGEN -->
     <section class="card p-5 rounded-2xl space-y-4">
-      <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-plus-circle mr-2 text-blue-400"></i> Neuen Auftrag anlegen</h2>
+      <div class="flex justify-between items-center">
+        <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-plus-circle mr-2 text-blue-400"></i> Neuen Auftrag anlegen</h2>
+        <select id="existingCustomerSelect" onchange="autofillCustomerData(this.value)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none">
+          <option value="">📋 Bestehenden Kunden laden...</option>
+        </select>
+      </div>
+
       <form id="orderForm" onsubmit="addOrder(event)" class="space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
@@ -172,6 +178,17 @@
             <label class="text-xs font-semibold text-slate-300">Artikel & Farbe:</label>
             <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-lg text-xs">+ Artikel</button>
           </div>
+
+          <!-- SCHNELL-VORLAGEN BUTTONS -->
+          <div class="flex flex-wrap gap-1.5 py-1">
+            <span class="text-[11px] text-slate-400 self-center mr-1">Schnell:</span>
+            <button type="button" onclick="addPresetArticle('Einkaufswagenlöser')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700">+ Einkaufswagenlöser</button>
+            <button type="button" onclick="addPresetArticle('Tannenzapfen')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700">+ Tannenzapfen</button>
+            <button type="button" onclick="addPresetArticle('Küchenrollenhalter')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700">+ Küchenrollenhalter</button>
+            <button type="button" onclick="addPresetArticle('Vase')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700">+ Vase</button>
+            <button type="button" onclick="addPresetArticle('Akkuhalter')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700">+ Akkuhalter</button>
+          </div>
+
           <div id="articleInputRows" class="space-y-2">
             <div class="flex gap-2 items-center article-row">
               <input type="text" placeholder="Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
@@ -299,6 +316,7 @@
             renderOrders();
             renderSpools();
             renderPrinters();
+            updateCustomerDropdown();
             alert("✅ Daten erfolgreich von der Cloud abgerufen!");
           } else {
             alert("Die Cloud ist leer.");
@@ -328,6 +346,7 @@
       renderOrders();
       renderSpools();
       renderPrinters();
+      updateCustomerDropdown();
       
       fetch(NPOINT_URL, {
         method: 'POST',
@@ -408,6 +427,7 @@
         renderPrinters();
         renderOrders();
         renderSpools();
+        updateCustomerDropdown();
         checkSpoolTelegramNotifications();
       } else {
         document.getElementById("loginError").classList.remove("hidden");
@@ -418,6 +438,32 @@
       document.getElementById("mainApp").classList.add("hidden");
       document.getElementById("loginModal").classList.remove("hidden");
       document.getElementById("pinInput").value = "";
+    }
+
+    function updateCustomerDropdown() {
+      const sel = document.getElementById('existingCustomerSelect');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">📋 Bestehenden Kunden laden...</option>';
+      orders.forEach(o => {
+        sel.innerHTML += `<option value="${o.id}">${o.customer} (${o.tracking && o.tracking !== '-' ? o.tracking : 'Keine Tracking'})</option>`;
+      });
+    }
+
+    function autofillCustomerData(orderId) {
+      if (!orderId) return;
+      const order = orders.find(o => o.id == orderId);
+      if (!order) return;
+
+      document.getElementById('customer').value = order.customer || '';
+      document.getElementById('address').value = order.address || '';
+      document.getElementById('tracking').value = (order.tracking && order.tracking !== '-') ? order.tracking : '';
+      document.getElementById('printer').value = order.printer || 'CR-10 Smart Pro #1';
+      document.getElementById('price').value = order.price || '';
+      document.getElementById('weight').value = order.weight || '';
+      document.getElementById('shipping').value = order.shippingCost || '7.00';
+      document.getElementById('label').value = order.label || '✅ Ja';
+      document.getElementById('packed').value = order.packed || '❌ Nein';
+      document.getElementById('notes').value = order.notes || '';
     }
 
     function renderSpools() {
@@ -489,17 +535,21 @@
       });
     }
 
-    function addArticleInputRow() {
+    function addArticleInputRow(nameVal = '') {
       const container = document.getElementById('articleInputRows');
       const div = document.createElement('div');
       div.className = "flex gap-2 items-center article-row";
       let optionsHtml = '<option value="">-- Farbe --</option>';
       spools.forEach(s => { optionsHtml += `<option value="${s.name}">${s.name} (${s.remainingGrams}g)</option>`; });
       div.innerHTML = `
-        <input type="text" placeholder="Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
+        <input type="text" placeholder="Artikelbezeichnung" value="${nameVal}" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
         <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-64 focus:outline-none">${optionsHtml}</select>
         <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2"><i class="fa-solid fa-xmark"></i></button>`;
       container.appendChild(div);
+    }
+
+    function addPresetArticle(presetName) {
+      addArticleInputRow(presetName);
     }
 
     function addEditArticleRow(name = '', color = '') {
@@ -548,6 +598,7 @@
       });
       saveAllData();
       document.getElementById('orderForm').reset();
+      document.getElementById('existingCustomerSelect').value = "";
     }
 
     function startEdit(idx) {
