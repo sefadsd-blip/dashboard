@@ -345,7 +345,7 @@
       spools = BACKUP_SPOOLS;
     }
 
-    // VOLLSTÄNDIGER FIX: Überschreibt bei absolut jedem Laden bei allen Kunden das Datum auf heute!
+    // Automatisches Setzen des heutigen Datums beim Laden
     const todayStr = new Date().toISOString().slice(0, 10);
     orders.forEach(o => {
       o.orderDate = todayStr;
@@ -367,7 +367,6 @@
       } catch(e) {}
     }
 
-    // Auch der Button oben ruft das jetzt hart auf
     function setTodayForAllExisting() {
       const currentToday = new Date().toISOString().slice(0, 10);
       orders.forEach(o => {
@@ -935,7 +934,7 @@
               <td class="p-3 text-xs font-mono text-blue-400">${o.tracking}</td>
               <td class="p-3 text-right space-x-1">
                 ${archiveBtnHtml}
-                <button onclick="printBoxLabel(${idx})" title="QR Etikett drucken" class="text-amber-300 bg-amber-500/10 px-2 py-1 rounded text-xs">🏷️ QR</button> ab
+                <button onclick="printBoxLabel(${idx})" title="QR Etikett drucken" class="text-amber-300 bg-amber-500/10 px-2 py-1 rounded text-xs">🏷️ QR</button>
                 <button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-2 py-1 rounded text-xs">✏️</button>
                 <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
               </td>
