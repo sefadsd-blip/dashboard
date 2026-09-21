@@ -88,30 +88,42 @@
       </div>
     </header>
 
-    <!-- STATISTIK -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="card p-4 rounded-2xl flex items-center justify-between">
-        <div>
-          <p class="text-xs text-slate-400">Gesamt-Umsatz</p>
-          <h3 id="statRevenue" class="text-2xl font-bold text-emerald-400">0,00 €</h3>
+    <!-- STATISTIK & MONATS-FILTER -->
+    <section class="space-y-3">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800/60 p-3 rounded-2xl border border-slate-700 gap-3">
+        <h2 class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-chart-pie mr-2 text-blue-400"></i> Statistik-Auswertung</h2>
+        <div class="flex items-center space-x-2">
+          <label class="text-xs text-slate-400">Monat wählen:</label>
+          <select id="statsMonthFilter" onchange="renderOrders()" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none">
+            <option value="all">📅 Alle Monate (Gesamt)</option>
+          </select>
         </div>
       </div>
-      <div class="card p-4 rounded-2xl flex items-center justify-between">
-        <div>
-          <p class="text-xs text-slate-400">Geschätzter Reingewinn</p>
-          <h3 id="statProfit" class="text-2xl font-bold text-blue-400">0,00 €</h3>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Gesamt-Umsatz (Monat)</p>
+            <h3 id="statRevenue" class="text-2xl font-bold text-emerald-400">0,00 €</h3>
+          </div>
         </div>
-      </div>
-      <div class="card p-4 rounded-2xl flex items-center justify-between">
-        <div>
-          <p class="text-xs text-slate-400">Offene Aufträge</p>
-          <h3 id="statOpenOrders" class="text-2xl font-bold text-yellow-400">0</h3>
+        <div class="card p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Geschätzter Reingewinn</p>
+            <h3 id="statProfit" class="text-2xl font-bold text-blue-400">0,00 €</h3>
+          </div>
         </div>
-      </div>
-      <div class="card p-4 rounded-2xl flex items-center justify-between">
-        <div>
-          <p class="text-xs text-slate-400">Materialverbrauch gesamt</p>
-          <h3 id="statFilament" class="text-2xl font-bold text-purple-400">0 g</h3>
+        <div class="card p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Offene Aufträge</p>
+            <h3 id="statOpenOrders" class="text-2xl font-bold text-yellow-400">0</h3>
+          </div>
+        </div>
+        <div class="card p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Materialverbrauch (Monat)</p>
+            <h3 id="statFilament" class="text-2xl font-bold text-purple-400">0 g</h3>
+          </div>
         </div>
       </div>
     </section>
@@ -158,15 +170,22 @@
             <option value="0.00">🤝 Selbstabholung (0,00 €)</option>
           </select>
           <input type="number" id="weight" placeholder="Gewicht gesamt (g)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-          <select id="label" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          
+          <!-- ERSTELLUNGSDATUM -->
+          <div class="flex flex-col">
+            <label class="text-[10px] text-slate-400 mb-0.5">Erstellungsdatum:</label>
+            <input type="date" id="orderDate" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none">
+          </div>
+
+          <select id="label" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none self-end">
             <option value="✅ Ja">Label: ✅ Ja</option>
             <option value="❌ Nein">Label: ❌ Nein</option>
           </select>
-          <select id="packed" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <select id="packed" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none self-end">
             <option value="❌ Nein">Verpackt: ❌ Nein</option>
             <option value="✅ Ja">Verpackt: ✅ Ja</option>
           </select>
-          <input type="text" id="tracking" placeholder="Tracking-Nummer" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <input type="text" id="tracking" placeholder="Tracking-Nummer" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none self-end">
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input type="text" id="address" placeholder="Lieferadresse" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
@@ -218,6 +237,7 @@
               <th class="p-3">Kunde & Adresse</th>
               <th class="p-3">Artikel & Farbe</th>
               <th class="p-3">Drucker</th>
+              <th class="p-3">Datum (Erstellt / Versand)</th>
               <th class="p-3">Status</th>
               <th class="p-3">Preis</th>
               <th class="p-3">Gewicht</th>
@@ -232,24 +252,24 @@
       </div>
     </section>
 
-    <!-- KUNDEN-NACHRICHTEN VORLAGEN (3 KACHELN) -->
+    <!-- KUNDEN-NACHRICHTEN VORLAGEN (4 KACHELN) -->
     <section class="card p-5 rounded-2xl space-y-4">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-700/60 pb-3">
-        <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-comments mr-2 text-blue-400"></i> Kunden-Nachrichten Vorlagen</h2>
+        <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-comments mr-2 text-blue-400"></i> Kleinanzeigen & Kunden-Vorlagen</h2>
         <select id="templateCustomerSelect" onchange="updateTemplatePreview()" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none w-full sm:w-72">
           <option value="">👤 Kunden auswählen (zieht Sendungsnummer)...</option>
         </select>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- VORLAGE 1: Druck gestartet -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- VORLAGE 1: Zahlung erhalten & Druck gestartet (NEU) -->
         <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="text-xs font-bold text-blue-400">1. Druck gestartet</span>
-              <button onclick="copyTemplate(1)" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/40 px-2.5 py-1 rounded-lg text-xs"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
+              <span class="text-xs font-bold text-emerald-400">1. Zahlung da & Druck!</span>
+              <button onclick="copyTemplate(1)" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-lg text-xs"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
             </div>
-            <textarea id="templateText1" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.</textarea>
+            <textarea id="templateText1" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\niene Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.</textarea>
           </div>
         </div>
 
@@ -264,14 +284,25 @@
           </div>
         </div>
 
-        <!-- VORLAGE 3: Paket gepackt & Sendungsnummer (Kombiniert) -->
+        <!-- VORLAGE 3: Druck gestartet -->
         <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="text-xs font-bold text-emerald-400">3. Paket gepackt & unterwegs</span>
-              <button onclick="copyTemplate(3)" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-lg text-xs"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
+              <span class="text-xs font-bold text-blue-400">3. Druck gestartet</span>
+              <button onclick="copyTemplate(3)" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/40 px-2.5 py-1 rounded-lg text-xs"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
             </div>
-            <textarea id="templateText3" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n[Sendungsnummer]\n\nLink: https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=[Sendungsnummer]\n\nViel Freude damit!</textarea>
+            <textarea id="templateText3" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.</textarea>
+          </div>
+        </div>
+
+        <!-- VORLAGE 4: Paket gepackt & Sendungsnummer -->
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-purple-400">4. Paket unterwegs</span>
+              <button onclick="copyTemplate(4)" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/40 px-2.5 py-1 rounded-lg text-xs"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
+            </div>
+            <textarea id="templateText4" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n[Sendungsnummer]\n\nLink: https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=[Sendungsnummer]\n\nViel Freude damit!</textarea>
           </div>
         </div>
       </div>
@@ -285,39 +316,13 @@
     const TELEGRAM_TOKEN = '8918418759:AAHEyb2eJYwvY8OTyb0lEWjin7MstbsEdMM';
 
     const BACKUP_ORDERS = [
-      {"id":1789933732086,"customer":"Silke Schwarzer","address":"Gartenweg 10d 04862 Mockrehna","notes":"","printer":"Ender 3 V3","status":"Offen","label":"🟡 Wartet auf Zahlung","packed":"❌ Nein","price":20,"shippingCost":5,"weight":0,"tracking":"-","archived":false,"items":[{"name":"2x Tannenzapfen","color":"","durationMin":60,"status":"Offen","endTime":null},{"name":"2x Tannenzapfen","color":"","durationMin":60,"status":"Offen","endTime":null}]},
-      {"id":1789933658205,"customer":"Familie Tchoffo","address":"Prämienstraße 62 52428 Jülich","notes":"","printer":"CR-10 Smart Pro #1","status":"Offen","label":"✅ Ja","packed":"❌ Nein","price":10,"shippingCost":5,"weight":460,"tracking":"-","archived":false,"items":[{"name":"Küchenrollnhalter 2X","color":"","durationMin":60,"status":"Offen","endTime":null}]},
-      {"id":1,"customer":"Renate Evelin - Veere","address":"Heinrich - Zillestr.11 04668 Grimma","notes":"Bitte gut verpacken","printer":"Anycubic Kobra","status":"Offen","label":"🟡 Wartet auf Zahlung","packed":"❌ Nein","tracking":"-","price":43,"shippingCost":7,"weight":0,"archived":false,"items":[{"name":"1x Japandi Vogel","color":"","durationMin":60,"status":"Offen","endTime":null},{"name":"1x Kürbis","color":"","durationMin":45,"status":"Offen","endTime":null},{"name":"1x Modernes Eichhörnchen","color":"","durationMin":50,"status":"Offen","endTime":null},{"name":"4x Zapfenhäuschen","color":"","durationMin":120,"status":"Offen","endTime":null}]},
-      {"id":2,"customer":"Ralf Hartmann","address":"Eichelweg 1 49377 Vechta","notes":"","printer":"CR-10 Smart Pro #1","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","tracking":"358070447889","price":34,"shippingCost":5,"weight":120,"archived":false,"items":[{"name":"6x Rentier","color":"","durationMin":150,"status":"Fertig","endTime":null}]},
-      {"id":3,"customer":"Sabine Beewen","address":"Bremer Str 62 a  49356 Diepholz","notes":"","printer":"Anycubic Kobra","status":"Offen","label":"✅ Ja","packed":"❌ Nein","tracking":"-","price":9.5,"shippingCost":5,"weight":0,"archived":false,"items":[{"name":"1x Fernbedienungshalter","color":"","durationMin":90,"status":"Offen","endTime":null}]},
-      {"id":4,"customer":"Dunja marcinkowski","address":"","notes":"","printer":"Ender 3 V3","status":"Offen","label":"🟡 Wartet auf Zahlung","packed":"❌ Nein","tracking":"-","price":0,"shippingCost":0,"weight":240,"archived":false,"items":[{"name":"6x Weinhalter schwarz","color":"PLA Schwarz","durationMin":180,"status":"Offen","endTime":null},{"name":"9x Bäume","color":"","durationMin":120,"status":"Offen","endTime":null}]},
-      {"id":5,"customer":"Tobias von der Famile Ulm","address":"","notes":"","printer":"Anycubic Kobra","status":"In Arbeit","label":"✅ Ja","packed":"❌ Nein","tracking":"358072492915","price":33,"shippingCost":7,"weight":210,"archived":false,"items":[{"name":"3x Suppenhalter 6cm","color":"PLA Schwarz","durationMin":60,"status":"Fertig","endTime":null},{"name":"4x Backpulverhalter","color":"PLA Schwarz","durationMin":40,"status":"Fertig","endTime":null},{"name":"4x Backpulverhalter 6cm","color":"PLA Schwarz","durationMin":45,"status":"Offen","endTime":null},{"name":"1x Abroller Alufolie","color":"PLA Schwarz","durationMin":90,"status":"Offen","endTime":null}]},
-      {"id":6,"customer":"Antje Nanninga","address":"Rinderhagenstraße 27 in 26802 Moormerland","notes":"","printer":"CR-10 Smart Pro #1","status":"Fertig","label":"🟡 Wartet auf Zahlung","packed":"❌ Nein","tracking":"-","price":9,"shippingCost":6,"weight":110,"archived":false,"items":[{"name":"1x Vase weiß","color":"","durationMin":120,"status":"Fertig","endTime":null}]},
-      {"id":7,"customer":"Gabi Thomas","address":"Goerdelerstr. 141, 27755 delmenhorst","notes":"","printer":"Ender 3 V3","status":"Offen","label":"✅ Ja","packed":"❌ Nein","tracking":"358072492921","price":0,"shippingCost":0,"weight":85,"archived":false,"items":[{"name":"1x Dogge lila","color":"","durationMin":105,"status":"Offen","endTime":null}]},
-      {"id":8,"customer":"Paul Hartmann","address":"Ellernstraße 40  32457 Porta Westfalica","notes":"","printer":"CR-10 Smart Pro #1","status":"In Arbeit","label":"✅ Ja","packed":"❌ Nein","tracking":"-","price":14,"shippingCost":5,"weight":95,"archived":false,"items":[{"name":"3x Makita Akkuhalter","durationMin":135,"status":"Fertig","endTime":null}]}
+      {"id":1789933732086,"customer":"Silke Schwarzer","address":"Gartenweg 10d 04862 Mockrehna","notes":"","printer":"Ender 3 V3","status":"Offen","label":"🟡 Wartet auf Zahlung","packed":"❌ Nein","price":20,"shippingCost":5,"weight":0,"tracking":"-","orderDate":"2026-02-10","shipDate":"","archived":false,"items":[{"name":"2x Tannenzapfen","color":"","durationMin":60,"status":"Offen","endTime":null}]},
+      {"id":1789933658205,"customer":"Familie Tchoffo","address":"Prämienstraße 62 52428 Jülich","notes":"","printer":"CR-10 Smart Pro #1","status":"Offen","label":"✅ Ja","packed":"❌ Nein","price":10,"shippingCost":5,"weight":460,"tracking":"-","orderDate":"2026-02-12","shipDate":"","archived":false,"items":[{"name":"Küchenrollnhalter 2X","color":"","durationMin":60,"status":"Offen","endTime":null}]}
     ];
 
     const BACKUP_SPOOLS = [
       {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":2,"name":"PETG Weiß","remainingGrams":650,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935199927,"name":"PLA Dunkelblau","remainingGrams":100,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935232879,"name":"PETG Orange","remainingGrams":800,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935274064,"name":"PETG Schwarz","remainingGrams":950,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935301168,"name":"ASA Grau","remainingGrams":980,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935377136,"name":"PLA Hellblau ","remainingGrams":1000,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935389839,"name":"PLA Braun","remainingGrams":1000,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935427641,"name":"Pla Weiß","remainingGrams":700,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935452144,"name":"PLA Pink","remainingGrams":900,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935472744,"name":"PLA lila ","remainingGrams":1000,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935549240,"name":"PLA Regenbogen","remainingGrams":150,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935577272,"name":"PLA Gold ","remainingGrams":380,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935652839,"name":"PLA Dunkelrot ","remainingGrams":340,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935739912,"name":"PLA Dunkelrot ","remainingGrams":900,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935772655,"name":"PLA Hellbraun ","remainingGrams":900,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935791895,"name":"PLA Hellrot ","remainingGrams":800,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935820543,"name":"PLA grün","remainingGrams":760,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935848831,"name":"PLA Sage grün","remainingGrams":780,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":1789935882064,"name":"PLA Olivgrün","remainingGrams":560,"notifiedCount":0,"lastNotifiedDate":""}
+      {"id":2,"name":"PETG Weiß","remainingGrams":650,"notifiedCount":0,"lastNotifiedDate":""}
     ];
 
     let printers = JSON.parse(localStorage.getItem('sefas_shop_printers')) || [
@@ -337,7 +342,18 @@
       orders = BACKUP_ORDERS;
       spools = BACKUP_SPOOLS;
       saveLocalOnly();
+    } else {
+      orders.forEach(o => {
+        if (!o.orderDate) o.orderDate = "2026-02-01";
+        if (!o.shipDate) o.shipDate = "";
+      });
     }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().slice(0,10);
+      const dateInput = document.getElementById('orderDate');
+      if (dateInput) dateInput.value = today;
+    });
 
     function saveLocalOnly() {
       try {
@@ -355,6 +371,10 @@
           const json = await res.json();
           if (json && Array.isArray(json.orders) && json.orders.length > 0) {
             orders = json.orders;
+            orders.forEach(o => {
+              if (!o.orderDate) o.orderDate = "2026-02-01";
+              if (!o.shipDate) o.shipDate = "";
+            });
             if (Array.isArray(json.spools)) spools = json.spools;
             if (Array.isArray(json.printers)) printers = json.printers;
             if (json.telegramChatId) { telegramChatId = json.telegramChatId; }
@@ -465,6 +485,10 @@
       const order = orders.find(o => o.id === id);
       if (order) {
         order.archived = !order.archived;
+        const todayStr = new Date().toISOString().slice(0,10);
+        if (order.archived) {
+          if (!order.shipDate) order.shipDate = todayStr;
+        }
         saveAllData();
       }
     }
@@ -475,6 +499,7 @@
         document.getElementById("loginModal").classList.add("hidden");
         document.getElementById("mainApp").classList.remove("hidden");
         renderPrinters();
+        updateMonthFilterDropdown();
         renderOrders();
         renderSpools();
         updateCustomerDropdowns();
@@ -524,6 +549,7 @@
       document.getElementById('label').value = order.label || '✅ Ja';
       document.getElementById('packed').value = order.packed || '❌ Nein';
       document.getElementById('notes').value = order.notes || '';
+      if (order.orderDate) document.getElementById('orderDate').value = order.orderDate;
     }
 
     function updateTemplatePreview() {
@@ -534,9 +560,10 @@
 
       const track = (o.tracking && o.tracking !== '-') ? o.tracking : '[Sendungsnummer einfügen]';
 
-      document.getElementById('templateText1').value = `Hallo ${o.customer},\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.`;
+      document.getElementById('templateText1').value = `Hallo ${o.customer},\n\ndeine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.`;
       document.getElementById('templateText2').value = `Hallo ${o.customer},\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!`;
-      document.getElementById('templateText3').value = `Hallo ${o.customer},\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n${track}\n\nLink: https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=${track}\n\nViel Freude damit!`;
+      document.getElementById('templateText3').value = `Hallo ${o.customer},\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.`;
+      document.getElementById('templateText4').value = `Hallo ${o.customer},\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n${track}\n\nLink: https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=${track}\n\nViel Freude damit!`;
     }
 
     function copyTemplate(num) {
@@ -663,6 +690,8 @@
       });
       if (itemsList.length === 0) return alert("Bitte Artikel eintragen!");
       
+      const customDate = document.getElementById('orderDate').value || new Date().toISOString().slice(0,10);
+
       orders.unshift({
         id: Date.now(),
         customer: document.getElementById('customer').value,
@@ -675,11 +704,14 @@
         shippingCost: parseFloat(document.getElementById('shipping').value) || 0,
         weight: parseInt(document.getElementById('weight').value) || 0,
         tracking: document.getElementById('tracking').value || '-',
+        orderDate: customDate,
+        shipDate: '',
         archived: false,
         items: itemsList
       });
       saveAllData();
       document.getElementById('orderForm').reset();
+      document.getElementById('orderDate').value = new Date().toISOString().slice(0,10);
       document.getElementById('existingCustomerSelect').value = "";
     }
 
@@ -716,6 +748,8 @@
       orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
       orders[idx].weight = parseInt(document.getElementById(`edit-weight-${idx}`).value) || 0;
       orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value || '-';
+      orders[idx].orderDate = document.getElementById(`edit-date-${idx}`).value || orders[idx].orderDate;
+      orders[idx].shipDate = document.getElementById(`edit-ship-${idx}`).value || orders[idx].shipDate || '';
       orders[idx].items = updatedItems;
 
       editingIndex = -1;
@@ -761,7 +795,37 @@
       }, 300);
     }
 
+    function updateMonthFilterDropdown() {
+      const select = document.getElementById('statsMonthFilter');
+      if (!select) return;
+      const currentSelection = select.value;
+      
+      let monthsSet = new Set();
+      orders.forEach(o => {
+        if (o.orderDate) {
+          monthsSet.add(o.orderDate.slice(0, 7)); // YYYY-MM
+        }
+        if (o.shipDate) {
+          monthsSet.add(o.shipDate.slice(0, 7));
+        }
+      });
+
+      let sortedMonths = Array.from(monthsSet).sort().reverse();
+      
+      select.innerHTML = '<option value="all">📅 Alle Monate (Gesamt)</option>';
+      sortedMonths.forEach(m => {
+        let parts = m.split('-');
+        let formattedName = `${parts[1]}.${parts[0]}`; // MM.YYYY
+        select.innerHTML += `<option value="${m}">${formattedName}</option>`;
+      });
+
+      if ([...select.options].some(opt => opt.value === currentSelection)) {
+        select.value = currentSelection;
+      }
+    }
+
     function renderOrders() {
+      updateMonthFilterDropdown();
       const tbody = document.getElementById('ordersTableBody');
       if (!tbody) return;
       tbody.innerHTML = '';
@@ -801,6 +865,10 @@
                   <option ${o.printer==='Anycubic Kobra'?'selected':''}>Anycubic Kobra</option>
                   <option ${o.printer==='CR-10 Smart Pro #2'?'selected':''}>CR-10 Smart Pro #2</option>
                 </select>
+              </td>
+              <td class="p-3 space-y-1 text-xs">
+                <div>Erst: <input type="date" id="edit-date-${idx}" value="${o.orderDate || ''}" class="bg-slate-950 border border-blue-500 rounded p-0.5 text-white"></div>
+                <div>Vers: <input type="date" id="edit-ship-${idx}" value="${o.shipDate || ''}" class="bg-slate-950 border border-blue-500 rounded p-0.5 text-white"></div>
               </td>
               <td class="p-3">
                 <select id="edit-stat-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
@@ -846,6 +914,10 @@
               <td class="p-3 font-medium text-white">${o.customer}<div class="text-[10px] text-slate-400">${o.address || ''}</div></td>
               <td class="p-3">${itemsHtml}</td>
               <td class="p-3 text-slate-400 text-xs">${o.printer}</td>
+              <td class="p-3 text-xs text-slate-300">
+                <div>📥 ${o.orderDate || '-'}</div>
+                <div>📤 ${o.shipDate || (o.archived ? 'Archiviert' : 'Offen')}</div>
+              </td>
               <td class="p-3"><span class="px-2 py-1 rounded-lg text-xs bg-yellow-500/20 text-yellow-300">${o.status}</span></td>
               <td class="p-3 text-xs text-emerald-400 font-bold">${(o.price + o.shippingCost).toFixed(2).replace('.', ',')} €</td>
               <td class="p-3 text-xs text-slate-300">${o.weight ? o.weight + ' g' : '-'}</td>
@@ -865,14 +937,25 @@
     }
 
     function updateStats() {
+      const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
       let totalRev = 0, totalW = 0, openC = 0;
+
       orders.forEach(o => {
         if (!o.archived) {
-          totalRev += (o.price + o.shippingCost);
-          totalW += (o.weight || 0);
+          if (selectedMonth === 'all' || (o.orderDate && o.orderDate.startsWith(selectedMonth))) {
+            totalRev += (o.price + o.shippingCost);
+            totalW += (o.weight || 0);
+          }
           if (o.status !== 'Fertig') openC++;
+        } else {
+          let targetDate = o.shipDate || o.orderDate || '';
+          if (selectedMonth === 'all' || (targetDate && targetDate.startsWith(selectedMonth))) {
+            totalRev += (o.price + o.shippingCost);
+            totalW += (o.weight || 0);
+          }
         }
       });
+
       if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = (totalRev * 0.6).toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerText = openC;
