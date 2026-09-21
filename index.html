@@ -77,6 +77,10 @@
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center">
           <i class="fa-solid fa-box-archive mr-1.5"></i> 📂 Archiv anzeigen
         </button>
+        <!-- BUTTON FÜR HEUTIGES DATUM BEI BESTEHENDEN KUNDEN -->
+        <button onclick="setTodayForAllExisting()" class="bg-amber-600/20 hover:bg-amber-600/40 text-amber-300 border border-amber-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center" title="Setzt bei allen Aufträgen ohne Datum das heutige Datum">
+          <i class="fa-solid fa-calendar-day mr-1.5"></i> 📅 Alle auf heute setzen
+        </button>
         <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center">
           <i class="fa-solid fa-rotate mr-1.5"></i> 🔄 Cloud abrufen
         </button>
@@ -341,12 +345,10 @@
       spools = BACKUP_SPOOLS;
       saveLocalOnly();
     } else {
-      const todayStr = new Date().toISOString().slice(0,10);
       orders.forEach(o => {
-        if (!o.orderDate) o.orderDate = todayStr;
+        if (!o.orderDate) o.orderDate = "";
         if (!o.shipDate) o.shipDate = "";
       });
-      saveLocalOnly();
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -364,6 +366,20 @@
       } catch(e) {}
     }
 
+    // Funktion für den Button: Setzt bei allen bestehenden Aufträgen ohne Erstellungsdatum das heutige Datum
+    function setTodayForAllExisting() {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      let count = 0;
+      orders.forEach(o => {
+        if (!o.orderDate || o.orderDate === "") {
+          o.orderDate = todayStr;
+          count++;
+        }
+      });
+      saveAllData();
+      alert(`✅ Bei ${count} bestehenden Aufträgen wurde das Erstellungsdatum auf heute (${todayStr}) gesetzt!`);
+    }
+
     async function loadCloudData() {
       try {
         const res = await fetch(NPOINT_URL, { cache: 'no-store' });
@@ -371,9 +387,8 @@
           const json = await res.json();
           if (json && Array.isArray(json.orders) && json.orders.length > 0) {
             orders = json.orders;
-            const todayStr = new Date().toISOString().slice(0,10);
             orders.forEach(o => {
-              if (!o.orderDate) o.orderDate = todayStr;
+              if (!o.orderDate) o.orderDate = "";
               if (!o.shipDate) o.shipDate = "";
             });
             if (Array.isArray(json.spools)) spools = json.spools;
@@ -386,7 +401,7 @@
             updateCustomerDropdowns();
             alert("✅ Daten erfolgreich von der Cloud abgerufen!");
           } else {
-            alert("Die Cloud is leer.");
+            alert("Die Cloud ist leer.");
           }
         }
       } catch(e) {
