@@ -277,10 +277,12 @@
     }
 
     function saveLocalOnly() {
-      localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
-      localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
-      localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
-      localStorage.setItem('sefas_telegram_chat_id', telegramChatId);
+      try {
+        localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
+        localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
+        localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
+        localStorage.setItem('sefas_telegram_chat_id', telegramChatId);
+      } catch(e) {}
     }
 
     async function loadCloudData() {
@@ -303,7 +305,7 @@
           }
         }
       } catch(e) {
-        alert("Fehler beim Abrufen der Cloud-Daten.");
+        alert("Hinweis: Cloud konnte nicht erreicht werden, arbeite mit lokalen Daten.");
       }
     }
 
@@ -421,6 +423,7 @@
     function renderSpools() {
       const container = document.getElementById('spoolsList');
       const banner = document.getElementById('spoolWarningBanner');
+      if (!container) return;
       container.innerHTML = '';
       let lowSpools = [];
 
@@ -625,6 +628,7 @@
 
     function renderOrders() {
       const tbody = document.getElementById('ordersTableBody');
+      if (!tbody) return;
       tbody.innerHTML = '';
       const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
 
@@ -722,15 +726,16 @@
           if (o.status !== 'Fertig') openC++;
         }
       });
-      document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('statProfit').innerText = (totalRev * 0.6).toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('statOpenOrders').innerText = openC;
-      document.getElementById('statFilament').innerText = totalW + ' g';
+      if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = (totalRev * 0.6).toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerText = openC;
+      if (document.getElementById('statFilament')) document.getElementById('statFilament').innerText = totalW + ' g';
     }
 
     function renderPrinters() {
       const grid = document.getElementById('printersGrid');
-      grid.innerHTML = and -> '';
+      if (!grid) return;
+      grid.innerHTML = '';
       printers.forEach((p, idx) => {
         let statusColor = 'text-blue-400';
         if (p.status === 'In Arbeit') statusColor = 'text-yellow-400 font-bold';
@@ -752,7 +757,6 @@
     }
 
     document.getElementById("pinInput").value = "1234";
-    checkPin();
   </script>
 </body>
 </html>
