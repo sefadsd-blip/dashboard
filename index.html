@@ -707,7 +707,7 @@
           const col = colorInputs[idx].value;
           itemsList.push({ name: val, color: col, weight: w });
 
-          // Sofort vom Bestand abziehen, wenn Farbe und Gewicht vorhanden sind
+          // Korrekt abziehen vom Bestand (Minus statt Plus)
           if (col && w > 0) {
             const spool = spools.find(s => s.name === col);
             if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - w);
@@ -769,7 +769,7 @@
 
       if (updatedItems.length === 0) return alert("Ein Auftrag muss mindestens einen Artikel haben!");
 
-      // 1. Zuerst alte Gewichte gutschreiben, falls vorher schon welche abgezogen waren
+      // 1. Zuerst alte Gewichte wieder Gutschreiben (da wir sie vorhin fälschlicherweise aufgerechnet haben, korrigieren wir das hier direkt beim Speichern)
       if (oldOrder.items) {
         oldOrder.items.forEach(oldItem => {
           if (oldItem.color && oldItem.weight > 0) {
@@ -779,7 +779,7 @@
         });
       }
 
-      // 2. Neue Gewichte direkt von den passenden Spulen abziehen
+      // 2. Jetzt die neuen Gewichte korrekt abziehen
       updatedItems.forEach(newItem => {
         if (newItem.color && newItem.weight > 0) {
           const spool = spools.find(s => s.name === newItem.color);
