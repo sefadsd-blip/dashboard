@@ -231,6 +231,63 @@
         </table>
       </div>
     </section>
+
+    <!-- KUNDEN-NACHRICHTEN VORLAGEN (4 KACHELN MIT AUTO-TRACKING) -->
+    <section class="card p-5 rounded-2xl space-y-4">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-700/60 pb-3">
+        <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-comments mr-2 text-blue-400"></i> Kunden-Nachrichten Vorlagen</h2>
+        <select id="templateCustomerSelect" onchange="updateTemplatePreview()" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none w-full sm:w-72">
+          <option value="">👤 Kunden auswählen (zieht Sendungsnummer automatisch)...</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- VORLAGE 1: Druck gestartet -->
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-blue-400">1. Druck gestartet</span>
+              <button onclick="copyTemplate(1)" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/40 px-2 py-0.5 rounded text-xs">Kopieren</button>
+            </div>
+            <textarea id="templateText1" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.</textarea>
+          </div>
+        </div>
+
+        <!-- VORLAGE 2: Zahlungserinnerung -->
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-yellow-400">2. Zahlungserinnerung</span>
+              <button onclick="copyTemplate(2)" class="bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-300 border border-yellow-500/40 px-2 py-0.5 rounded text-xs">Kopieren</button>
+            </div>
+            <textarea id="templateText2" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!</textarea>
+          </div>
+        </div>
+
+        <!-- VORLAGE 3: Paket gepackt -->
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-purple-400">3. Paket gepackt</span>
+              <button onclick="copyTemplate(3)" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded text-xs">Kopieren</button>
+            </div>
+            <textarea id="templateText3" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket geht gleich auf die Reise.</textarea>
+          </div>
+        </div>
+
+        <!-- VORLAGE 4: Sendungsnummer -->
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-emerald-400">4. Sendungsnummer</span>
+              <button onclick="copyTemplate(4)" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded text-xs">Kopieren</button>
+            </div>
+            <textarea id="templateText4" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\ndein Paket ist unterwegs! Hier ist deine Sendungsnummer:\n[Sendungsnummer]\n\nLink: https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=[Sendungsnummer]\n\nViel Freude damit!</textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
 
   <script>
@@ -248,7 +305,7 @@
       {"id":5,"customer":"Tobias von der Famile Ulm","address":"","notes":"","printer":"Anycubic Kobra","status":"In Arbeit","label":"✅ Ja","packed":"❌ Nein","tracking":"358072492915","price":33,"shippingCost":7,"weight":210,"archived":false,"items":[{"name":"3x Suppenhalter 6cm","color":"PLA Schwarz","durationMin":60,"status":"Fertig","endTime":null},{"name":"4x Backpulverhalter","color":"PLA Schwarz","durationMin":40,"status":"Fertig","endTime":null},{"name":"4x Backpulverhalter 6cm","color":"PLA Schwarz","durationMin":45,"status":"Offen","endTime":null},{"name":"1x Abroller Alufolie","color":"PLA Schwarz","durationMin":90,"status":"Offen","endTime":null}]},
       {"id":6,"customer":"Antje Nanninga","address":"Rinderhagenstraße 27 in 26802 Moormerland","notes":"","printer":"CR-10 Smart Pro #1","status":"Fertig","label":"🟡 Wartet auf Zahlung","packed":"❌ Nein","tracking":"-","price":9,"shippingCost":6,"weight":110,"archived":false,"items":[{"name":"1x Vase weiß","color":"","durationMin":120,"status":"Fertig","endTime":null}]},
       {"id":7,"customer":"Gabi Thomas","address":"Goerdelerstr. 141, 27755 delmenhorst","notes":"","printer":"Ender 3 V3","status":"Offen","label":"✅ Ja","packed":"❌ Nein","tracking":"358072492921","price":0,"shippingCost":0,"weight":85,"archived":false,"items":[{"name":"1x Dogge lila","color":"","durationMin":105,"status":"Offen","endTime":null}]},
-      {"id":8,"customer":"Paul Hartmann","address":"Ellernstraße 40  32457 Porta Westfalica","notes":"","printer":"CR-10 Smart Pro #1","status":"In Arbeit","label":"✅ Ja","packed":"❌ Nein","tracking":"-","price":14,"shippingCost":5,"weight":95,"archived":false,"items":[{"name":"3x Makita Akkuhalter","color":"","durationMin":135,"status":"Fertig","endTime":null}]}
+      {"id":8,"customer":"Paul Hartmann","address":"Ellernstraße 40  32457 Porta Westfalica","notes":"","printer":"CR-10 Smart Pro #1","status":"In Arbeit","label":"✅ Ja","packed":"❌ Nein","tracking":"-","price":14,"shippingCost":5,"weight":95,"archived":false,"items":[{"name":"3x Makita Akkuhalter","durationMin":135,"status":"Fertig","endTime":null}]}
     ];
 
     const BACKUP_SPOOLS = [
@@ -316,7 +373,7 @@
             renderOrders();
             renderSpools();
             renderPrinters();
-            updateCustomerDropdown();
+            updateCustomerDropdowns();
             alert("✅ Daten erfolgreich von der Cloud abgerufen!");
           } else {
             alert("Die Cloud ist leer.");
@@ -346,7 +403,7 @@
       renderOrders();
       renderSpools();
       renderPrinters();
-      updateCustomerDropdown();
+      updateCustomerDropdowns();
       
       fetch(NPOINT_URL, {
         method: 'POST',
@@ -427,7 +484,7 @@
         renderPrinters();
         renderOrders();
         renderSpools();
-        updateCustomerDropdown();
+        updateCustomerDropdowns();
         checkSpoolTelegramNotifications();
       } else {
         document.getElementById("loginError").classList.remove("hidden");
@@ -440,13 +497,23 @@
       document.getElementById("pinInput").value = "";
     }
 
-    function updateCustomerDropdown() {
-      const sel = document.getElementById('existingCustomerSelect');
-      if (!sel) return;
-      sel.innerHTML = '<option value="">📋 Bestehenden Kunden laden...</option>';
-      orders.forEach(o => {
-        sel.innerHTML += `<option value="${o.id}">${o.customer} (${o.tracking && o.tracking !== '-' ? o.tracking : 'Keine Tracking'})</option>`;
-      });
+    function updateCustomerDropdowns() {
+      const sel1 = document.getElementById('existingCustomerSelect');
+      const sel2 = document.getElementById('templateCustomerSelect');
+      
+      if (sel1) {
+        sel1.innerHTML = '<option value="">📋 Bestehenden Kunden laden...</option>';
+        orders.forEach(o => {
+          sel1.innerHTML += `<option value="${o.id}">${o.customer} (${o.tracking && o.tracking !== '-' ? o.tracking : 'Keine Tracking'})</option>`;
+        });
+      }
+
+      if (sel2) {
+        sel2.innerHTML = '<option value="">👤 Kunden für Vorlagen auswählen...</option>';
+        orders.forEach(o => {
+          sel2.innerHTML += `<option value="${o.id}">${o.customer} (${o.tracking && o.tracking !== '-' ? o.tracking : 'Keine Tracking'})</option>`;
+        });
+      }
     }
 
     function autofillCustomerData(orderId) {
@@ -464,6 +531,29 @@
       document.getElementById('label').value = order.label || '✅ Ja';
       document.getElementById('packed').value = order.packed || '❌ Nein';
       document.getElementById('notes').value = order.notes || '';
+    }
+
+    function updateTemplatePreview() {
+      const orderId = document.getElementById('templateCustomerSelect').value;
+      if (!orderId) return;
+      const o = orders.find(item => item.id == orderId);
+      if (!o) return;
+
+      const track = (o.tracking && o.tracking !== '-') ? o.tracking : '[Sendungsnummer einfügen]';
+
+      document.getElementById('templateText1').value = `Hallo ${o.customer},\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.`;
+      document.getElementById('templateText2').value = `Hallo ${o.customer},\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!`;
+      document.getElementById('templateText3').value = `Hallo ${o.customer},\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket geht gleich auf die Reise.`;
+      document.getElementById('templateText4').value = `Hallo ${o.customer},\n\ndein Paket ist unterwegs! Hier ist deine Sendungsnummer:\n${track}\n\nLink: https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=${track}\n\nViel Freude damit!`;
+    }
+
+    function copyTemplate(num) {
+      const text = document.getElementById(`templateText${num}`).value;
+      navigator.clipboard.writeText(text).then(() => {
+        alert(`✅ Nachricht-Vorlage ${num} wurde in die Zwischenablage kopiert!`);
+      }).catch(() => {
+        alert("Fehler beim Kopieren.");
+      });
     }
 
     function renderSpools() {
