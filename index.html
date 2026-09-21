@@ -464,25 +464,31 @@
       saveAllData();
     }
 
-    // AUTOMATISCHE FILAMENT-ABBUCHUNG BEI STATUSÄNDERUNG AUF "FERTIG"
-    function handleOrderStatusChange(id, newStatus) {
+    // DIREKTE ÄNDERUNGEN IN DER TABELLE
+    function updateField(id, field, value) {
       const order = orders.find(o => o.id === id);
       if (!order) return;
 
-      const oldStatus = order.status;
-      order.status = newStatus;
-
-      // Wenn der Auftrag auf "Fertig" gesetzt wird und Gewicht hat
-      if (newStatus === 'Fertig' && oldStatus !== 'Fertig' && order.weight > 0) {
-        // Wir schauen in den Artikeln nach der passenden Spule
-        order.items.forEach(item => {
-          if (item.color) {
-            const spool = spools.find(s => s.name === item.color);
-            if (spool) {
-              spool.remainingGrams = Math.max(0, spool.remainingGrams - order.weight);
+      if (field === 'status') {
+        const oldStatus = order.status;
+        order.status = value;
+        // Automatische Filament-Abbuchung wenn auf "Fertig" gestellt wird
+        if (value === 'Fertig' && oldStatus !== 'Fertig' && order.weight > 0) {
+          order.items.forEach(item => {
+            if (item.color) {
+              const spool = spools.find(s => s.name === item.color);
+              if (spool) {
+                spool.remainingGrams = Math.max(0, spool.remainingGrams - order.weight);
+              }
             }
-          }
-        });
+          });
+        }
+      } else if (field === 'printer') {
+        order.printer = value;
+      } else if (field === 'label') {
+        order.label = value;
+      } else if (field === 'packed') {
+        order.packed = value;
       }
 
       saveAllData();
@@ -766,7 +772,6 @@
       const newStatus = document.getElementById(`edit-stat-${idx}`).value;
       const newWeight = parseInt(document.getElementById(`edit-weight-${idx}`).value) || 0;
 
-      // Filament-Abbuchung bei Bearbeitung falls auf "Fertig" gewechselt
       if (newStatus === 'Fertig' && oldStatus !== 'Fertig' && newWeight > 0) {
         updatedItems.forEach(i => {
           if (i.color) {
@@ -946,13 +951,20 @@
             <tr class="hover:bg-slate-800/40 border-b border-slate-800">
               <td class="p-3 font-medium text-white">${o.customer}<div class="text-[10px] text-slate-400">${o.address || ''}</div></td>
               <td class="p-3">${itemsHtml}</td>
-              <td class="p-3 text-slate-400 text-xs">${o.printer}</td>
+              <td class="p-3">
+                <select onchange="updateField(${o.id}, 'printer', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none">
+                  <option value="CR-10 Smart Pro #1" ${o.printer === 'CR-10 Smart Pro #1' ? 'selected' : ''}>CR-10 Smart Pro #1</option>
+                  <option value="Ender 3 V3" ${o.printer === 'Ender 3 V3' ? 'selected' : ''}>Ender 3 V3</option>
+                  <option value="Anycubic Kobra" ${o.printer === 'Anycubic Kobra' ? 'selected' : ''}>Anycubic Kobra</option>
+                  <option value="CR-10 Smart Pro #2" ${o.printer === 'CR-10 Smart Pro #2' ? 'selected' : ''}>CR-10 Smart Pro #2</option>
+                </select>
+              </td>
               <td class="p-3 text-xs text-slate-300">
                 <div>📥 ${o.orderDate || '-'}</div>
                 <div>📤 ${o.shipDate || (o.archived ? 'Archiviert' : 'Offen')}</div>
               </td>
               <td class="p-3">
-                <select onchange="handleOrderStatusChange(${o.id}, this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-yellow-300 focus:outline-none">
+                <select onchange="updateField(${o.id}, 'status', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-yellow-300 focus:outline-none">
                   <option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option>
                   <option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option>
                   <option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option>
@@ -960,8 +972,19 @@
               </td>
               <td class="p-3 text-xs text-emerald-400 font-bold">${(o.price + o.shippingCost).toFixed(2).replace('.', ',')} €</td>
               <td class="p-3 text-xs text-slate-300">${o.weight ? o.weight + ' g' : '-'}</td>
-              <td class="p-3 text-xs">${o.label}</td>
-              <td class="p-3 text-xs">${o.packed}</td>
+              <td class="p-3">
+                <select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none">
+                  <option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
+                  <option value="❌ Nein" ${o.label === '❌ Nein' ? 'selected' : ''}>❌ Nein</option>
+                  <option value="🟡 Wartet auf Zahlung" ${o.label === '🟡 Wartet auf Zahlung' ? 'selected' : ''}>🟡 Wartet auf Zahlung</option>
+                </select>
+              </td>
+              <td class="p-3">
+                <select onchange="updateField(${o.id}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none">
+                  <option value="✅ Ja" ${o.packed === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
+                  <option value="❌ Nein" ${o.packed === '❌ Nein' ? 'selected' : ''}>❌ Nein</option>
+                </select>
+              </td>
               <td class="p-3 text-xs font-mono text-blue-400">${o.tracking}</td>
               <td class="p-3 text-right space-x-1">
                 ${archiveBtnHtml}
