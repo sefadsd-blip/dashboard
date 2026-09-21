@@ -341,10 +341,12 @@
       spools = BACKUP_SPOOLS;
       saveLocalOnly();
     } else {
+      const todayStr = new Date().toISOString().slice(0,10);
       orders.forEach(o => {
-        if (!o.orderDate) o.orderDate = "2026-02-01";
+        if (!o.orderDate) o.orderDate = todayStr;
         if (!o.shipDate) o.shipDate = "";
       });
+      saveLocalOnly();
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -369,8 +371,9 @@
           const json = await res.json();
           if (json && Array.isArray(json.orders) && json.orders.length > 0) {
             orders = json.orders;
+            const todayStr = new Date().toISOString().slice(0,10);
             orders.forEach(o => {
-              if (!o.orderDate) o.orderDate = "2026-02-01";
+              if (!o.orderDate) o.orderDate = todayStr;
               if (!o.shipDate) o.shipDate = "";
             });
             if (Array.isArray(json.spools)) spools = json.spools;
@@ -383,7 +386,7 @@
             updateCustomerDropdowns();
             alert("✅ Daten erfolgreich von der Cloud abgerufen!");
           } else {
-            alert("Die Cloud ist leer.");
+            alert("Die Cloud is leer.");
           }
         }
       } catch(e) {
