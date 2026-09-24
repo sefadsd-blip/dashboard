@@ -18,7 +18,7 @@
     
     @media print {
       body * { visibility: hidden !important; }
-      #printSection, #printSection * { visibility: visible !important; }
+      #printSection, #printSection *, #invoiceSection, #invoiceSection * { visibility: visible !important; }
       #printSection { 
         position: fixed !important; 
         left: 0 !important; 
@@ -31,6 +31,17 @@
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
+      }
+      #invoiceSection {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100vw !important;
+        min-height: 100vh !important;
+        color: #000 !important;
+        background: #fff !important;
+        padding: 20px !important;
+        display: block !important;
       }
       @page { size: auto; margin: 0mm; }
     }
@@ -54,6 +65,9 @@
 
   <!-- DRUCK-BEREICH FÜR QR-ETIKETTEN -->
   <div id="printSection" class="hidden"></div>
+
+  <!-- DRUCK-BEREICH FÜR RECHNUNGEN -->
+  <div id="invoiceSection" class="hidden"></div>
 
   <!-- MAIN APP -->
   <div id="mainApp" class="max-w-[1700px] mx-auto space-y-6 hidden">
@@ -707,7 +721,6 @@
           const col = colorInputs[idx].value;
           itemsList.push({ name: val, color: col, weight: w });
 
-          // Korrekt abziehen vom Bestand (Minus statt Plus)
           if (col && w > 0) {
             const spool = spools.find(s => s.name === col);
             if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - w);
@@ -769,7 +782,6 @@
 
       if (updatedItems.length === 0) return alert("Ein Auftrag muss mindestens einen Artikel haben!");
 
-      // 1. Zuerst alte Gewichte wieder Gutschreiben (da wir sie vorhin fälschlicherweise aufgerechnet haben, korrigieren wir das hier direkt beim Speichern)
       if (oldOrder.items) {
         oldOrder.items.forEach(oldItem => {
           if (oldItem.color && oldItem.weight > 0) {
@@ -779,7 +791,6 @@
         });
       }
 
-      // 2. Jetzt die neuen Gewichte korrekt abziehen
       updatedItems.forEach(newItem => {
         if (newItem.color && newItem.weight > 0) {
           const spool = spools.find(s => s.name === newItem.color);
@@ -806,7 +817,6 @@
     function deleteOrder(id) {
       const order = orders.find(o => o.id === id);
       if (order && order.items) {
-        // Bei Löschung des Auftrags das Filament wieder gutschreiben
         order.items.forEach(i => {
           if (i.color && i.weight > 0) {
             const spool = spools.find(s => s.name === i.color);
@@ -849,6 +859,95 @@
         new QRCode(qrContainer, { text: trackingUrl, width: 70, height: 70 });
         window.print();
         printSec.classList.add('hidden');
+      }, 300);
+    }
+
+    function printInvoice(idx) {
+      const o = orders[idx];
+      const invSec = document.getElementById('invoiceSection');
+      const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
+      const invoiceNumber = `RE-${o.id.toString().slice(-6)}`;
+      
+      let itemsRows = '';
+      o.items.forEach(i => {
+        itemsRows += `
+          <tr>
+            <td style="padding: 10px; border-bottom: 1px solid #ddd;">${i.name} ${i.color ? '(' + i.color + ')' : ''}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
+            <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td>
+          </tr>`;
+      });
+
+      if (o.shippingCost > 0) {
+        itemsRows += `
+          <tr>
+            <td style="padding: 10px; border-bottom: 1px solid #ddd;">Versand- / Paketpauschale</td>
+            <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
+            <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
+          </tr>`;
+      }
+
+      const totalAmount = (o.price + o.shippingCost).toFixed(2).replace('.', ',');
+
+      invSec.innerHTML = `
+        <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; color: #000; font-size: 13px; line-height: 1.5; background: #fff; padding: 40px;">
+          <div style="display: flex; justify-content: space-between; align-items: start; border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+              <div style="background: #2563eb; color: #fff; width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold;">3D</div>
+              <div>
+                <h1 style="font-size: 24px; font-weight: bold; color: #2563eb; margin: 0 0 2px 0;">Sefas3DShop</h1>
+                <p style="margin: 0; color: #555; font-size: 11px;">Custom 3D Printing & Design</p>
+                <p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden</p>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <h2 style="font-size: 20px; font-weight: bold; color: #333; margin: 0 0 10px 0;">RECHNUNG</h2>
+              <p style="margin: 2px 0;"><strong>Rechnungsnummer:</strong> ${invoiceNumber}</p>
+              <p style="margin: 2px 0;"><strong>Datum:</strong> ${invoiceDate}</p>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 30px;">
+            <p style="font-size: 11px; color: #777; margin: 0 0 2px 0;">Rechnungsempfänger:</p>
+            <div style="font-weight: bold; font-size: 14px;">${o.customer}</div>
+            <div style="color: #444; white-space: pre-line;">${o.address || 'Keine Adresse angegeben'}</div>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+            <thead>
+              <tr style="background: #f1f5f9; text-align: left;">
+                <th style="padding: 10px; border-bottom: 2px solid #cbd5e1;">Beschreibung</th>
+                <th style="padding: 10px; border-bottom: 2px solid #cbd5e1; text-align: center;">Menge</th>
+                <th style="padding: 10px; border-bottom: 2px solid #cbd5e1; text-align: right;">Einzelpreis</th>
+                <th style="padding: 10px; border-bottom: 2px solid #cbd5e1; text-align: right;">Gesamt</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsRows}
+            </tbody>
+          </table>
+
+          <div style="display: flex; justify-content: flex-end; margin-bottom: 40px;">
+            <div style="width: 250px;">
+              <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #ddd;">
+                <span>Gesamtbetrag:</span>
+                <strong>${totalAmount} €</strong>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-top: 1px solid #cbd5e1; padding-top: 20px; font-size: 11px; color: #666; text-align: center;">
+            <p style="margin: 2px 0;">Kleinunternehmer gemäß § 19 UStG wird keine Umsatzsteuer berechnet.</p>
+            <p style="margin: 2px 0;">Vielen Dank für deinen Einkauf bei Sefas3DShop!</p>
+          </div>
+        </div>`;
+
+      invSec.classList.remove('hidden');
+      setTimeout(() => {
+        window.print();
+        invSec.classList.add('hidden');
       }, 300);
     }
 
@@ -1002,6 +1101,7 @@
               <td class="p-3 text-xs font-mono text-blue-400">${o.tracking}</td>
               <td class="p-3 text-right space-x-1">
                 ${archiveBtnHtml}
+                <button onclick="printInvoice(${idx})" title="Rechnung erstellen" class="text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded text-xs">📄 Rechnung</button>
                 <button onclick="printBoxLabel(${idx})" title="QR Etikett drucken" class="text-amber-300 bg-amber-500/10 px-2 py-1 rounded text-xs">🏷️ QR</button>
                 <button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-2 py-1 rounded text-xs">✏️</button>
                 <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
