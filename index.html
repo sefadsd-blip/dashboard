@@ -134,7 +134,7 @@
         <h2 class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-chart-pie mr-2 text-blue-400"></i> Statistik-Auswertung</h2>
         <div class="flex items-center space-x-2">
           <label class="text-xs text-slate-400">Monat wählen:</label>
-          <select id="statsMonthFilter" onchange="renderOrders()" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none">
+          <select id="statsMonthFilter" onchange="renderOrders(); renderExpenses();" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none">
             <option value="all">📅 Alle Monate (Gesamt)</option>
           </select>
         </div>
@@ -149,20 +149,20 @@
         </div>
         <div class="card p-4 rounded-2xl flex items-center justify-between">
           <div>
-            <p class="text-xs text-slate-400">Geschätzter Reingewinn</p>
+            <p class="text-xs text-slate-400">Gesamt-Ausgaben (Monat)</p>
+            <h3 id="statExpenses" class="text-2xl font-bold text-red-400">0,00 €</h3>
+          </div>
+        </div>
+        <div class="card p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Reingewinn (Einnahmen - Ausgaben)</p>
             <h3 id="statProfit" class="text-2xl font-bold text-blue-400">0,00 €</h3>
           </div>
         </div>
         <div class="card p-4 rounded-2xl flex items-center justify-between">
           <div>
-            <p class="text-xs text-slate-400">Offene Aufträge</p>
-            <h3 id="statOpenOrders" class="text-2xl font-bold text-yellow-400">0</h3>
-          </div>
-        </div>
-        <div class="card p-4 rounded-2xl flex items-center justify-between">
-          <div>
-            <p class="text-xs text-slate-400">Materialverbrauch (Monat)</p>
-            <h3 id="statFilament" class="text-2xl font-bold text-purple-400">0 g</h3>
+            <p class="text-xs text-slate-400">Offene Aufträge / Material</p>
+            <h3 id="statOpenOrders" class="text-xl font-bold text-yellow-400">0 <span class="text-xs text-slate-400 font-normal" id="statFilament">0g</span></h3>
           </div>
         </div>
       </div>
@@ -255,6 +255,42 @@
         </div>
         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl py-2.5 text-sm transition">Auftrag Speichern</button>
       </form>
+    </section>
+
+    <!-- AUSGABEN & EINKÄUFE VERWALTUNG -->
+    <section class="card p-5 rounded-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-700/60 pb-3">
+        <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-receipt mr-2 text-red-400"></i> Betriebsausgaben & Einkäufe</h2>
+      </div>
+
+      <form id="expenseForm" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+        <input type="text" id="expDesc" placeholder="Beschreibung (z.B. Filament Schwarz)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <option value="Filament">🧵 Filament</option>
+          <option value="DHL / Versand">📦 DHL / Versand</option>
+          <option value="Zubehör / Ersatzteile">⚙️ Zubehör & Ersatzteile</option>
+          <option value="Verpackung">📦 Verpackungsmaterial</option>
+          <option value="Sonstiges">🏷️ Sonstiges</option>
+        </select>
+        <input type="number" step="0.01" id="expAmount" placeholder="Betrag (€)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+        <input type="date" id="expDate" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+        <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl py-2 text-sm transition">+ Ausgabe eintragen</button>
+      </form>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
+            <tr>
+              <th class="p-3">Datum</th>
+              <th class="p-3">Kategorie</th>
+              <th class="p-3">Beschreibung</th>
+              <th class="p-3">Betrag</th>
+              <th class="p-3 text-right">Aktion</th>
+            </tr>
+          </thead>
+          <tbody id="expensesTableBody" class="divide-y divide-slate-700/50 text-slate-200"></tbody>
+        </table>
+      </div>
     </section>
 
     <!-- TABELLE -->
@@ -366,6 +402,7 @@
     let showingArchive = false;
     let orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
     let spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
+    let expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
     let telegramChatId = localStorage.getItem('sefas_telegram_chat_id') || '8316865010';
 
     if (orders.length === 0) {
@@ -383,12 +420,15 @@
     window.addEventListener('DOMContentLoaded', () => {
       const dateInput = document.getElementById('orderDate');
       if (dateInput) dateInput.value = todayStr;
+      const expDateInput = document.getElementById('expDate');
+      if (expDateInput) expDateInput.value = todayStr;
     });
 
     function saveLocalOnly() {
       try {
         localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
         localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
+        localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
         localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
         localStorage.setItem('sefas_telegram_chat_id', telegramChatId);
       } catch(e) {}
@@ -416,11 +456,13 @@
               if (!o.shipDate) o.shipDate = "";
             });
             if (Array.isArray(json.spools)) spools = json.spools;
+            if (Array.isArray(json.expenses)) expenses = json.expenses;
             if (Array.isArray(json.printers)) printers = json.printers;
             if (json.telegramChatId) { telegramChatId = json.telegramChatId; }
             saveLocalOnly();
             renderOrders();
             renderSpools();
+            renderExpenses();
             renderPrinters();
             updateCustomerDropdowns();
             alert("✅ Daten erfolgreich von der Cloud abgerufen!");
@@ -439,7 +481,7 @@
         const res = await fetch(NPOINT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orders, spools, printers, telegramChatId })
+          body: JSON.stringify({ orders, spools, expenses, printers, telegramChatId })
         });
         if (res.ok) {
           alert("✅ Daten erfolgreich in der Cloud gespeichert!");
@@ -455,14 +497,68 @@
       saveLocalOnly();
       renderOrders();
       renderSpools();
+      renderExpenses();
       renderPrinters();
       updateCustomerDropdowns();
       
       fetch(NPOINT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orders, spools, printers, telegramChatId })
+        body: JSON.stringify({ orders, spools, expenses, printers, telegramChatId })
       }).catch(e => console.log("Hintergrund-Sync fehlgeschlagen", e));
+    }
+
+    function addExpense(e) {
+      e.preventDefault();
+      const desc = document.getElementById('expDesc').value.trim();
+      const cat = document.getElementById('expCategory').value;
+      const amount = parseFloat(document.getElementById('expAmount').value) || 0;
+      const date = document.getElementById('expDate').value || new Date().toISOString().slice(0, 10);
+
+      if (!desc || amount <= 0) return alert("Bitte Beschreibung und Betrag angeben!");
+
+      expenses.unshift({
+        id: Date.now(),
+        description: desc,
+        category: cat,
+        amount: amount,
+        date: date
+      });
+
+      saveAllData();
+      document.getElementById('expDesc').value = '';
+      document.getElementById('expAmount').value = '';
+      document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
+    }
+
+    function deleteExpense(id) {
+      if (confirm("Diese Ausgabe wirklich löschen?")) {
+        expenses = expenses.filter(ex => ex.id !== id);
+        saveAllData();
+      }
+    }
+
+    function renderExpenses() {
+      const tbody = document.getElementById('expensesTableBody');
+      const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      expenses.forEach(ex => {
+        if (selectedMonth !== 'all' && (!ex.date || !ex.date.startsWith(selectedMonth))) return;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-800/40 border-b border-slate-800">
+            <td class="p-3 text-xs text-slate-300">${ex.date || '-'}</td>
+            <td class="p-3 text-xs"><span class="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-purple-300">${ex.category}</span></td>
+            <td class="p-3 text-xs font-medium text-white">${ex.description}</td>
+            <td class="p-3 text-xs text-red-400 font-bold">-${ex.amount.toFixed(2).replace('.', ',')} €</td>
+            <td class="p-3 text-right">
+              <button onclick="deleteExpense(${ex.id})" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>`;
+      });
+      updateStats();
     }
 
     async function sendTelegramMessage(text) {
@@ -554,6 +650,7 @@
         updateMonthFilterDropdown();
         renderOrders();
         renderSpools();
+        renderExpenses();
         updateCustomerDropdowns();
         checkSpoolTelegramNotifications();
       } else {
@@ -1121,6 +1218,9 @@
         if (o.orderDate) monthsSet.add(o.orderDate.slice(0, 7));
         if (o.shipDate) monthsSet.add(o.shipDate.slice(0, 7));
       });
+      expenses.forEach(ex => {
+        if (ex.date) monthsSet.add(ex.date.slice(0, 7));
+      });
 
       let sortedMonths = Array.from(monthsSet).sort().reverse();
       
@@ -1274,7 +1374,7 @@
 
     function updateStats() {
       const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
-      let totalRev = 0, totalW = 0, openC = 0;
+      let totalRev = 0, totalExp = 0, totalW = 0, openC = 0;
 
       orders.forEach(o => {
         let orderTotalWeight = 0;
@@ -1297,8 +1397,17 @@
         }
       });
 
+      expenses.forEach(ex => {
+        if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) {
+          totalExp += ex.amount;
+        }
+      });
+
+      let netProfit = totalRev - totalExp;
+
       if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = (totalRev * 0.6).toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerText = openC;
       if (document.getElementById('statFilament')) document.getElementById('statFilament').innerText = totalW + ' g';
     }
