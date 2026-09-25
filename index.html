@@ -56,14 +56,28 @@
 </head>
 <body class="p-4 md:p-6 min-h-screen">
 
+  <!-- LOGIN MODAL -->
+  <div id="loginModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div class="card p-6 rounded-2xl max-w-md w-full shadow-2xl text-center space-y-4">
+      <div class="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center mx-auto text-2xl border border-blue-500/20 font-bold overflow-hidden p-2">
+        <img src="https://api.npoint.io/6c03644a2096b02db81f" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%230044cc\'/><text x=\'50\' y=\'65\' font-size=\'40\' fill=\'white\' text-anchor=\'middle\' font-weight=\'bold\'>3D</text></svg>'" alt="Logo" class="w-full h-full object-contain">
+      </div>
+      <h2 class="text-2xl font-bold text-white">Sefas3DShop Dashboard</h2>
+      <p class="text-slate-400 text-sm">Bitte gib deinen PIN ein, um auf das Dashboard zuzugreifen.</p>
+      <input type="password" id="pinInput" placeholder="PIN eingeben" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-center text-xl text-white focus:outline-none focus:border-blue-500">
+      <button onclick="checkPin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition">Verbinden</button>
+      <p id="loginError" class="text-red-400 text-xs hidden">Falscher PIN! Bitte erneut versuchen.</p>
+    </div>
+  </div>
+
   <!-- DRUCK-BEREICH FÜR QR-ETIKETTEN -->
   <div id="printSection" class="hidden"></div>
 
   <!-- DRUCK-BEREICH FÜR RECHNUNGEN -->
   <div id="invoiceSection" class="hidden"></div>
 
-  <!-- MAIN APP (DIREKT SICHTBAR) -->
-  <div id="mainApp" class="max-w-[1700px] mx-auto space-y-6">
+  <!-- MAIN APP -->
+  <div id="mainApp" class="max-w-[1700px] mx-auto space-y-6 hidden">
     
     <!-- HEADER -->
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800 p-4 rounded-2xl border border-slate-700 gap-4">
@@ -93,20 +107,23 @@
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <button onclick="printAllInvoices()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
+        <button onclick="printAllInvoices()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center shadow-lg">
           <i class="fa-solid fa-print mr-1.5"></i> 🖨️ Alle Rechnungen drucken
         </button>
-        <button onclick="setTodayForAllExisting()" class="bg-amber-600 hover:bg-amber-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
+        <button onclick="setTodayForAllExisting()" class="bg-amber-600 hover:bg-amber-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center shadow-lg">
           <i class="fa-solid fa-calendar-day mr-1.5"></i> 📅 Alle auf heute setzen
         </button>
-        <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer">
+        <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center">
           <i class="fa-solid fa-box-archive mr-1.5"></i> 📂 Archiv anzeigen
         </button>
-        <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer">
+        <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center">
           <i class="fa-solid fa-rotate mr-1.5"></i> 🔄 Cloud abrufen
         </button>
-        <button onclick="pushToCloudManual()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer">
+        <button onclick="pushToCloudManual()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center">
           <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> 📤 In Cloud speichern
+        </button>
+        <button onclick="lockApp()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 rounded-xl text-xs font-medium">
+          <i class="fa-solid fa-right-from-bracket mr-1"></i> Sperren
         </button>
       </div>
     </header>
@@ -160,7 +177,7 @@
       <section class="card p-4 rounded-2xl space-y-3">
         <div class="flex justify-between items-center">
           <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-layer-group mr-2 text-purple-400"></i> Filament-Lager</h2>
-          <button onclick="addSpoolPrompt()" class="bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs px-2.5 py-1 rounded-lg border border-purple-500/35 cursor-pointer">+ Spule</button>
+          <button onclick="addSpoolPrompt()" class="bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs px-2.5 py-1 rounded-lg border border-purple-500/30">+ Spule</button>
         </div>
         <div id="spoolWarningBanner" class="hidden bg-red-500/10 border border-red-500/40 p-3 rounded-xl text-xs flex items-start gap-2.5 text-red-300"></div>
         <div id="spoolsList" class="space-y-2 max-h-[220px] overflow-y-auto pr-1"></div>
@@ -216,16 +233,16 @@
         <div class="border-t border-slate-700/60 pt-3 space-y-2">
           <div class="flex justify-between items-center">
             <label class="text-xs font-semibold text-slate-300">Artikel, Farbe & Gewicht (g):</label>
-            <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-lg text-xs cursor-pointer">+ Artikel</button>
+            <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-lg text-xs">+ Artikel</button>
           </div>
 
           <div class="flex flex-wrap gap-1.5 py-1">
             <span class="text-[11px] text-slate-400 self-center mr-1">Schnell:</span>
-            <button type="button" onclick="addPresetArticle('Einkaufswagenlöser')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ Einkaufswagenlöser</button>
-            <button type="button" onclick="addPresetArticle('Tannenzapfen')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ Tannenzapfen</button>
-            <button type="button" onclick="addPresetArticle('Küchenrollenhalter')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ Küchenrollenhalter</button>
-            <button type="button" onclick="addPresetArticle('Vase')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ Vase</button>
-            <button type="button" onclick="addPresetArticle('Akkuhalter')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ Akkuhalter</button>
+            <button type="button" onclick="addPresetArticle('Einkaufswagenlöser')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700">+ Einkaufswagenlöser</button>
+            <button type="button" onclick="addPresetArticle('Tannenzapfen')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700">+ Tannenzapfen</button>
+            <button type="button" onclick="addPresetArticle('Küchenrollenhalter')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700">+ Küchenrollenhalter</button>
+            <button type="button" onclick="addPresetArticle('Vase')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700">+ Vase</button>
+            <button type="button" onclick="addPresetArticle('Akkuhalter')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700">+ Akkuhalter</button>
           </div>
 
           <div id="articleInputRows" class="space-y-2">
@@ -236,7 +253,7 @@
             </div>
           </div>
         </div>
-        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl py-2.5 text-sm transition cursor-pointer">Auftrag Speichern</button>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl py-2.5 text-sm transition">Auftrag Speichern</button>
       </form>
     </section>
 
@@ -257,7 +274,7 @@
         </select>
         <input type="number" step="0.01" id="expAmount" placeholder="Betrag (€)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
         <input type="date" id="expDate" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-        <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl py-2 text-sm transition cursor-pointer">+ Ausgabe eintragen</button>
+        <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl py-2 text-sm transition">+ Ausgabe eintragen</button>
       </form>
 
       <div class="overflow-x-auto">
@@ -319,7 +336,7 @@
           <div>
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs font-bold text-emerald-400">1. Zahlung erhalten</span>
-              <button onclick="copyTemplate(1)" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-lg text-xs cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
+              <button onclick="copyTemplate(1)" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-lg text-xs"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
             </div>
             <textarea id="templateText1" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.</textarea>
           </div>
@@ -329,7 +346,7 @@
           <div>
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs font-bold text-yellow-400">2. Zahlungserinnerung</span>
-              <button onclick="copyTemplate(2)" class="bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-300 border border-yellow-500/40 px-2.5 py-1 rounded-lg text-xs cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
+              <button onclick="copyTemplate(2)" class="bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-300 border border-yellow-500/40 px-2.5 py-1 rounded-lg text-xs"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
             </div>
             <textarea id="templateText2" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!</textarea>
           </div>
@@ -339,7 +356,7 @@
           <div>
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs font-bold text-blue-400">3. Druck gestartet</span>
-              <button onclick="copyTemplate(3)" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/40 px-2.5 py-1 rounded-lg text-xs cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
+              <button onclick="copyTemplate(3)" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/40 px-2.5 py-1 rounded-lg text-xs"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
             </div>
             <textarea id="templateText3" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.</textarea>
           </div>
@@ -349,7 +366,7 @@
           <div>
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs font-bold text-purple-400">4. Paket unterwegs</span>
-              <button onclick="copyTemplate(4)" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/40 px-2.5 py-1 rounded-lg text-xs cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
+              <button onclick="copyTemplate(4)" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/40 px-2.5 py-1 rounded-lg text-xs"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
             </div>
             <textarea id="templateText4" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n[Sendungsnummer]\n\nLink: https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=[Sendungsnummer]\n\nViel Freude damit!</textarea>
           </div>
@@ -360,6 +377,7 @@
   </div>
 
   <script>
+    const DEFAULT_PIN = "1234";
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
     const TELEGRAM_TOKEN = '8918418759:AAHEyb2eJYwvY8OTyb0lEWjin7MstbsEdMM';
 
@@ -373,7 +391,7 @@
       {"id":2,"name":"PETG Weiß","remainingGrams":650,"notifiedCount":0,"lastNotifiedDate":""}
     ];
 
-    let printers = [
+    let printers = JSON.parse(localStorage.getItem('sefas_shop_printers')) || [
       { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
       { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
       { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
@@ -382,25 +400,12 @@
 
     let editingIndex = -1;
     let showingArchive = false;
-    let orders = [];
-    let spools = [];
-    let expenses = [];
-    let telegramChatId = '8316865010';
+    let orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
+    let spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
+    let expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
+    let telegramChatId = localStorage.getItem('sefas_telegram_chat_id') || '8316865010';
 
-    try {
-      orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
-      spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
-      expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
-      const savedPrinters = JSON.parse(localStorage.getItem('sefas_shop_printers'));
-      if (Array.isArray(savedPrinters)) printers = savedPrinters;
-      telegramChatId = localStorage.getItem('sefas_telegram_chat_id') || '8316865010';
-    } catch(e) {
-      orders = [];
-      spools = [];
-      expenses = [];
-    }
-
-    if (!Array.isArray(orders) || orders.length === 0) {
+    if (orders.length === 0) {
       orders = BACKUP_ORDERS;
       spools = BACKUP_SPOOLS;
     }
@@ -410,19 +415,13 @@
       if (!o.orderDate) o.orderDate = todayStr;
       if (!o.shipDate) o.shipDate = "";
     });
+    saveLocalOnly();
 
     window.addEventListener('DOMContentLoaded', () => {
       const dateInput = document.getElementById('orderDate');
       if (dateInput) dateInput.value = todayStr;
       const expDateInput = document.getElementById('expDate');
       if (expDateInput) expDateInput.value = todayStr;
-
-      renderPrinters();
-      updateMonthFilterDropdown();
-      renderOrders();
-      renderSpools();
-      renderExpenses();
-      updateCustomerDropdowns();
     });
 
     function saveLocalOnly() {
@@ -555,11 +554,41 @@
             <td class="p-3 text-xs font-medium text-white">${ex.description}</td>
             <td class="p-3 text-xs text-red-400 font-bold">-${ex.amount.toFixed(2).replace('.', ',')} €</td>
             <td class="p-3 text-right">
-              <button onclick="deleteExpense(${ex.id})" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+              <button onclick="deleteExpense(${ex.id})" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
             </td>
           </tr>`;
       });
       updateStats();
+    }
+
+    async function sendTelegramMessage(text) {
+      if (!telegramChatId) return;
+      try {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: telegramChatId, text: text })
+        });
+      } catch(e) {}
+    }
+
+    function checkSpoolTelegramNotifications() {
+      if (!telegramChatId) return;
+      const todayStr = new Date().toDateString();
+
+      spools.forEach(s => {
+        if (s.remainingGrams < 250) {
+          if (s.lastNotifiedDate !== todayStr) {
+            s.lastNotifiedDate = todayStr;
+            s.notifiedCount = 0;
+          }
+          if (s.notifiedCount < 3) {
+            sendTelegramMessage(`⚠️ Filament-Alarm bei Sefas3DShop!\n\nSpule "${s.name}" hat nur noch ${s.remainingGrams}g übrig!`);
+            s.notifiedCount++;
+            saveLocalOnly();
+          }
+        }
+      });
     }
 
     function updatePrinterStatus(index, newStatus) {
@@ -590,11 +619,11 @@
       const title = document.getElementById('tableTitle');
       if (showingArchive) {
         btn.innerHTML = '<i class="fa-solid fa-list-check mr-1.5"></i> 📋 Aktive Aufträge';
-        btn.className = "bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer";
+        btn.className = "bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center";
         title.innerHTML = '<i class="fa-solid fa-box-archive mr-2 text-purple-400"></i> Bestellungen (Archiv)';
       } else {
         btn.innerHTML = '<i class="fa-solid fa-box-archive mr-1.5"></i> 📂 Archiv anzeigen';
-        btn.className = "bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer";
+        btn.className = "bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center";
         title.innerHTML = '<i class="fa-solid fa-list-check mr-2 text-blue-400"></i> Bestellungen (Aktiv)';
       }
       renderOrders();
@@ -610,6 +639,29 @@
         }
         saveAllData();
       }
+    }
+
+    function checkPin() {
+      const pin = document.getElementById("pinInput").value;
+      if (pin === DEFAULT_PIN || pin === "sefa") {
+        document.getElementById("loginModal").classList.add("hidden");
+        document.getElementById("mainApp").classList.remove("hidden");
+        renderPrinters();
+        updateMonthFilterDropdown();
+        renderOrders();
+        renderSpools();
+        renderExpenses();
+        updateCustomerDropdowns();
+        checkSpoolTelegramNotifications();
+      } else {
+        document.getElementById("loginError").classList.add("hidden");
+      }
+    }
+
+    function lockApp() {
+      document.getElementById("mainApp").classList.add("hidden");
+      document.getElementById("loginModal").classList.remove("hidden");
+      document.getElementById("pinInput").value = "";
     }
 
     function updateCustomerDropdowns() {
@@ -687,8 +739,8 @@
             <span class="font-semibold text-white">${s.name}</span>
             <div class="flex items-center space-x-2">
               <span onclick="editSpoolGrams(${idx})" class="${isLow ? 'text-red-400 font-bold' : 'text-slate-300'} cursor-pointer hover:underline" title="Klicken zum Bearbeiten">${s.remainingGrams}g</span>
-              <button onclick="editSpoolGrams(${idx})" class="text-slate-400 hover:text-white px-1 cursor-pointer" title="Gewicht ändern"><i class="fa-solid fa-pen text-[10px]"></i></button>
-              <button onclick="deleteSpool(${idx})" class="text-red-400 px-1 cursor-pointer" title="Spule löschen"><i class="fa-solid fa-xmark"></i></button>
+              <button onclick="editSpoolGrams(${idx})" class="text-slate-400 hover:text-white px-1" title="Gewicht ändern"><i class="fa-solid fa-pen text-[10px]"></i></button>
+              <button onclick="deleteSpool(${idx})" class="text-red-400 px-1" title="Spule löschen"><i class="fa-solid fa-xmark"></i></button>
             </div>
           </div>`;
       });
@@ -696,6 +748,7 @@
       if (lowSpools.length > 0) {
         banner.classList.remove('hidden');
         banner.innerHTML = `<i class="fa-solid fa-bell text-red-400"></i> Spulen-Alarm: ${lowSpools.map(s => `${s.name} (${s.remainingGrams}g)`).join(', ')} unter 250g!`;
+        checkSpoolTelegramNotifications();
       } else { 
         banner.classList.add('hidden'); 
       }
@@ -749,7 +802,7 @@
         <input type="text" placeholder="Artikelbezeichnung" value="${nameVal}" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
         <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-52 focus:outline-none">${optionsHtml}</select>
         <input type="number" placeholder="Gramm (g)" value="${weightVal}" class="art-weight bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-28 focus:outline-none">
-        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>`;
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2"><i class="fa-solid fa-xmark"></i></button>`;
       container.appendChild(div);
     }
 
@@ -770,7 +823,7 @@
         <input type="text" placeholder="Artikelbezeichnung" value="${name}" required class="edit-art-name bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
         <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-40 focus:outline-none">${optionsHtml}</select>
         <input type="number" placeholder="Gramm" value="${weight}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-20 focus:outline-none">
-        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>`;
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2"><i class="fa-solid fa-xmark"></i></button>`;
       container.appendChild(div);
     }
 
@@ -968,6 +1021,7 @@
       const totalAmountNum = o.price + o.shippingCost;
       const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
 
+      // SEPA QR-Code String (EPC Standard)
       const sepaPayload = `BCD\002\001\tag\SCT\1DE20100101780592679808\Sefa Demir\EUR${totalAmountNum.toFixed(2)}\\${invoiceNumber}\nRechnung ${invoiceNumber}`;
 
       invSec.innerHTML = `
@@ -1063,7 +1117,7 @@
       const invSec = document.getElementById('invoiceSection');
       invSec.innerHTML = '';
 
-      activeOrders.forEach((o) => {
+      activeOrders.forEach((o, index) => {
         const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
         const invoiceNumber = generateInvoiceNumber(o);
         const trackingText = (o.tracking && o.tracking !== '-') ? o.tracking : 'Wird nachgereicht';
@@ -1230,10 +1284,10 @@
                 <input type="text" placeholder="Artikelbezeichnung" value="${i.name}" required class="edit-art-name bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
                 <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-40 focus:outline-none">${optionsHtml}</select>
                 <input type="number" placeholder="Gramm" value="${i.weight || ''}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-20 focus:outline-none">
-                <button type="button" onclick="this.parentElement.remove()" class="text-red-400 text-xs px-2 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" onclick="this.parentElement.remove()" class="text-red-400 text-xs px-2"><i class="fa-solid fa-xmark"></i></button>
               </div>`;
           });
-          editItemsHtml += `</div><button type="button" onclick="addEditArticleRow()" class="bg-slate-800 hover:bg-slate-700 text-blue-400 text-xs px-2 py-1 rounded border border-blue-500/30 cursor-pointer">+ Artikel hinzufügen</button>`;
+          editItemsHtml += `</div><button type="button" onclick="addEditArticleRow()" class="bg-slate-800 hover:bg-slate-700 text-blue-400 text-xs px-2 py-1 rounded border border-blue-500/30">+ Artikel hinzufügen</button>`;
 
           tbody.innerHTML += `
             <tr class="border-b border-slate-800 bg-slate-900/90">
@@ -1277,8 +1331,8 @@
               </td>
               <td class="p-3"><input type="text" id="edit-track-${idx}" value="${o.tracking}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-20"></td>
               <td class="p-3 text-right">
-                <button onclick="saveEdit(${idx})" class="bg-green-600 text-white px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-check"></i></button>
-                <button onclick="cancelEdit()" class="bg-slate-700 text-white px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="saveEdit(${idx})" class="bg-green-600 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-check"></i></button>
+                <button onclick="cancelEdit()" class="bg-slate-700 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-xmark"></i></button>
               </td>
             </tr>`;
         } else {
@@ -1289,8 +1343,8 @@
           itemsHtml += '</div>';
 
           let archiveBtnHtml = o.archived 
-            ? `<button onclick="toggleArchiveOrder(${o.id})" title="Aus Archiv wiederherstellen" class="text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded text-xs cursor-pointer">📥 Aktivieren</button>`
-            : `<button onclick="toggleArchiveOrder(${o.id})" title="Ins Archiv verschieben" class="text-purple-300 bg-purple-500/10 px-2 py-1 rounded text-xs cursor-pointer">📦 Archiv</button>`;
+            ? `<button onclick="toggleArchiveOrder(${o.id})" title="Aus Archiv wiederherstellen" class="text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded text-xs">📥 Aktivieren</button>`
+            : `<button onclick="toggleArchiveOrder(${o.id})" title="Ins Archiv verschieben" class="text-purple-300 bg-purple-500/10 px-2 py-1 rounded text-xs">📦 Archiv</button>`;
 
           tbody.innerHTML += `
             <tr class="hover:bg-slate-800/40 border-b border-slate-800">
@@ -1332,10 +1386,10 @@
               <td class="p-3 text-xs font-mono text-blue-400">${o.tracking}</td>
               <td class="p-3 text-right space-x-1">
                 ${archiveBtnHtml}
-                <button onclick="printInvoice(${idx})" title="Rechnung erstellen" class="text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded text-xs cursor-pointer">📄 Rechnung</button>
-                <button onclick="printBoxLabel(${idx})" title="QR Etikett drucken" class="text-amber-300 bg-amber-500/10 px-2 py-1 rounded text-xs cursor-pointer">🏷️ QR</button>
-                <button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-2 py-1 rounded text-xs cursor-pointer">✏️</button>
-                <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+                <button onclick="printInvoice(${idx})" title="Rechnung erstellen" class="text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded text-xs">📄 Rechnung</button>
+                <button onclick="printBoxLabel(${idx})" title="QR Etikett drucken" class="text-amber-300 bg-amber-500/10 px-2 py-1 rounded text-xs">🏷️ QR</button>
+                <button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-2 py-1 rounded text-xs">✏️</button>
+                <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
               </td>
             </tr>`;
         }
@@ -1361,7 +1415,7 @@
           if (o.status !== 'Fertig') openC++;
         } else {
           let targetDate = o.shipDate || o.orderDate || '';
-          if (selectedMonth === 'all' || (targetDate && targetDate.startsWith(selectedMonth))) {
+          if (selectedMonth === 'all' || (targetDate && targetDate.startsWith(selectedMonth)))  {
             totalRev += (o.price + o.shippingCost);
             totalW += orderTotalWeight;
           }
@@ -1406,6 +1460,8 @@
           </div>`;
       });
     }
+
+    document.getElementById("pinInput").value = "1234";
   </script>
 </body>
 </html>
