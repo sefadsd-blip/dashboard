@@ -654,7 +654,7 @@
         updateCustomerDropdowns();
         checkSpoolTelegramNotifications();
       } else {
-        document.getElementById("loginError").classList.add("hidden");
+        document.getElementById("loginError").classList.remove("hidden");
       }
     }
 
@@ -1021,7 +1021,6 @@
       const totalAmountNum = o.price + o.shippingCost;
       const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
 
-      // SEPA QR-Code String (EPC Standard)
       const sepaPayload = `BCD\002\001\tag\SCT\1DE20100101780592679808\Sefa Demir\EUR${totalAmountNum.toFixed(2)}\\${invoiceNumber}\nRechnung ${invoiceNumber}`;
 
       invSec.innerHTML = `
@@ -1117,7 +1116,7 @@
       const invSec = document.getElementById('invoiceSection');
       invSec.innerHTML = '';
 
-      activeOrders.forEach((o, index) => {
+      activeOrders.forEach((o) => {
         const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
         const invoiceNumber = generateInvoiceNumber(o);
         const trackingText = (o.tracking && o.tracking !== '-') ? o.tracking : 'Wird nachgereicht';
@@ -1415,7 +1414,7 @@
           if (o.status !== 'Fertig') openC++;
         } else {
           let targetDate = o.shipDate || o.orderDate || '';
-          if (selectedMonth === 'all' || (targetDate && targetDate.startsWith(selectedMonth)))  {
+          if (selectedMonth === 'all' || (targetDate && targetDate.startsWith(selectedMonth))) {
             totalRev += (o.price + o.shippingCost);
             totalW += orderTotalWeight;
           }
@@ -1460,8 +1459,6 @@
           </div>`;
       });
     }
-
-    document.getElementById("pinInput").value = "1234";
   </script>
 </body>
 </html>
