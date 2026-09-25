@@ -982,14 +982,19 @@
       }, 300);
     }
 
+    function generateInvoiceNumber(order) {
+      const orderYear = order.orderDate ? order.orderDate.slice(0, 4) : new Date().getFullYear().toString();
+      const sortedForInvoice = [...orders].reverse();
+      const shopIndex = sortedForInvoice.findIndex(item => item.id === order.id) + 1;
+      return `RE-${orderYear}-${shopIndex.toString().padStart(4, '0')}`;
+    }
+
     function printInvoice(idx) {
       const o = orders[idx];
       const invSec = document.getElementById('invoiceSection');
       const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
       
-      const sortedForInvoice = [...orders].reverse();
-      const shopIndex = sortedForInvoice.findIndex(item => item.id === o.id) + 1;
-      const invoiceNumber = `RE-${shopIndex.toString().padStart(4, '0')}`;
+      const invoiceNumber = generateInvoiceNumber(o);
       const trackingText = (o.tracking && o.tracking !== '-') ? o.tracking : 'Wird nachgereicht';
       
       let itemsRows = '';
@@ -1100,12 +1105,10 @@
 
       const invSec = document.getElementById('invoiceSection');
       invSec.innerHTML = '';
-      const sortedForInvoice = [...orders].reverse();
 
       activeOrders.forEach(o => {
         const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
-        const shopIndex = sortedForInvoice.findIndex(item => item.id === o.id) + 1;
-        const invoiceNumber = `RE-${shopIndex.toString().padStart(4, '0')}`;
+        const invoiceNumber = generateInvoiceNumber(o);
         const trackingText = (o.tracking && o.tracking !== '-') ? o.tracking : 'Wird nachgereicht';
         
         let itemsRows = '';
