@@ -6,7 +6,6 @@
   <title>Sefas3DShop - Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <!-- qrcodejs wird für Box-Label beibehalten, Rechnungen nutzen jetzt direktes SVG -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
@@ -937,13 +936,22 @@
       return `RE-${orderYear}-${shopIndex.toString().padStart(4, '0')}`;
     }
 
-    // Direkter QR-Code Generator als SVG (zuverlässig ohne externe Abhängigkeiten & unsichtbare Container)
-    function generateSvgQrCode(text, size = 75) {
+    // Erzeugt den QR-Code direkt im Browser über die qrcode.min.js Bibliothek
+    function renderLocalQrCode(containerId, text) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = '';
       try {
-        // Nutzt einen einfachen öffentlichen reinen SVG-Endpoint für QR-Codes (funktioniert immer)
-        return `<img src="https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}" alt="QR" style="width:${size}px; height:${size}px; display:block;" />`;
+        new QRCode(container, {
+          text: text,
+          width: 75,
+          height: 75,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
       } catch(e) {
-        return `<div style="font-size:9px; color:red;">QR Fehler</div>`;
+        container.innerHTML = "QR Fehler";
       }
     }
 
@@ -979,8 +987,8 @@
       const totalAmountNum = o.price + o.shippingCost;
       const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
 
-      const sepaPayload = "BCD\n002\n1\nSCT\nDE20100101780592679808\nSefa Demir\nEUR" + totalAmountNum.toFixed(2) + "\nREVODEB2\nSefas3DShop " + invoiceNumber + "\nRechnung " + invoiceNumber;
-      const qrCodeImgHtml = generateSvgQrCode(sepaPayload, 75);
+      // Exakter SEPA GiroCode Standard String
+      const sepaPayload = "BCD\n002\n1\nSCT\nDE20100101780592679808\nSefa Demir\nEUR" + totalAmountNum.toFixed(2) + "\nREVODEB2\n\n";
 
       invSec.innerHTML = `
         <div style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px;">
@@ -1046,9 +1054,7 @@
               <p style="margin: 1px 0;">Bank: Revolut Bank UAB, Zweigniederlassung</p>
               <p style="margin: 2px 0 0 0; color: #2563eb; font-weight: bold;">💡 Mit Banking-App scannen & bezahlen!</p>
             </div>
-            <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; display: inline-block;">
-              ${qrCodeImgHtml}
-            </div>
+            <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; display: inline-block;" id="sepaQrCodeTarget"></div>
           </div>
 
           <div style="border-top: 1px solid #cbd5e1; padding-top: 10px; font-size: 9px; color: #666; text-align: center;">
@@ -1059,6 +1065,7 @@
 
       invSec.classList.remove('hidden');
       setTimeout(() => {
+        renderLocalQrCode('sepaQrCodeTarget', sepaPayload);
         window.print();
         invSec.classList.add('hidden');
       }, 300);
@@ -1074,7 +1081,7 @@
       const invSec = document.getElementById('invoiceSection');
       invSec.innerHTML = '';
 
-      activeOrders.forEach(o => {
+      activeOrders.forEach((o, index) => {
         const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
         const invoiceNumber = generateInvoiceNumber(o);
         const trackingText = (o.tracking && o.tracking !== '-') ? o.tracking : 'Wird nachgereicht';
@@ -1102,8 +1109,6 @@
 
         const totalAmountNum = o.price + o.shippingCost;
         const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
-        const sepaPayload = "BCD\n002\n1\nSCT\nDE20100101780592679808\nSefa Demir\nEUR" + totalAmountNum.toFixed(2) + "\nREVODEB2\nSefas3DShop " + invoiceNumber + "\nRechnung " + invoiceNumber;
-        const qrCodeImgHtml = generateSvgQrCode(sepaPayload, 75);
 
         invSec.innerHTML += `
           <div class="page-break-container" style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px;">
@@ -1169,9 +1174,7 @@
                 <p style="margin: 1px 0;">Bank: Revolut Bank UAB, Zweigniederlassung</p>
                 <p style="margin: 2px 0 0 0; color: #2563eb; font-weight: bold;">💡 Mit Banking-App scannen & bezahlen!</p>
               </div>
-              <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; display: inline-block;">
-                ${qrCodeImgHtml}
-              </div>
+              <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; display: inline-block;" id="batchSepaQr_${index}"></div>
             </div>
 
             <div style="border-top: 1px solid #cbd5e1; padding-top: 10px; font-size: 9px; color: #666; text-align: center;">
@@ -1183,6 +1186,11 @@
 
       invSec.classList.remove('hidden');
       setTimeout(() => {
+        activeOrders.forEach((o, index) => {
+          const totalAmountNum = o.price + o.shippingCost;
+          const sepaPayload = "BCD\n002\n1\nSCT\nDE20100101780592679808\nSefa Demir\nEUR" + totalAmountNum.toFixed(2) + "\nREVODEB2\n\n";
+          renderLocalQrCode(`batchSepaQr_${index}`, sepaPayload);
+        });
         window.print();
         invSec.classList.add('hidden');
       }, 400);
