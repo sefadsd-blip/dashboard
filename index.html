@@ -968,17 +968,8 @@
       const totalAmountNum = o.price + o.shippingCost;
       const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
 
-      // Generierung des EPC-QR-Code Payloads (GiroCode Standard) mit den C24 Bank Daten
-      const sepaPayload = `BCD
-002
-1
-SCT
-DE20100101780592679808
-Sefa Demir
-EUR${totalAmountNum.toFixed(2)}
-REVODEB2
-Sefas3DShop ${invoiceNumber}
-Rechnung ${invoiceNumber}`;
+      // EPC-QR-Code (GiroCode) für Revolut
+      const sepaPayload = "BCD\n002\n1\nSCT\nDE20100101780592679808\nSefa Demir\nEUR" + totalAmountNum.toFixed(2) + "\nREVODEB2\nSefas3DShop " + invoiceNumber + "\nRechnung " + invoiceNumber;
 
       invSec.innerHTML = `
         <div style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px;">
@@ -1041,7 +1032,7 @@ Rechnung ${invoiceNumber}`;
               <p style="margin: 1px 0;">Empfänger: Sefa Demir</p>
               <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08</p>
               <p style="margin: 1px 0;">BIC: REVODEB2</p>
-              <p style="margin: 1px 0;">Bank: C24 Bank</p>
+              <p style="margin: 1px 0;">Bank: Revolut Bank UAB, Zweigniederlassung</p>
               <p style="margin: 2px 0 0 0; color: #2563eb; font-weight: bold;">💡 Mit Banking-App scannen & bezahlen!</p>
             </div>
             <div id="sepaQrContainer" style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;"></div>
@@ -1101,7 +1092,7 @@ Rechnung ${invoiceNumber}`;
 
         const totalAmountNum = o.price + o.shippingCost;
         const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
-        const sepaPayload = `BCD\n002\n1\nSCT\nDE20100101780592679808\nSefa Demir\nEUR${totalAmountNum.toFixed(2)}\nREVODEB2\nSefas3DShop ${invoiceNumber}\nRechnung ${invoiceNumber}`;
+        const sepaPayload = "BCD\n002\n1\nSCT\nDE20100101780592679808\nSefa Demir\nEUR" + totalAmountNum.toFixed(2) + "\nREVODEB2\nSefas3DShop " + invoiceNumber + "\nRechnung " + invoiceNumber;
 
         invSec.innerHTML += `
           <div class="page-break-container" style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px;">
@@ -1164,7 +1155,7 @@ Rechnung ${invoiceNumber}`;
                 <p style="margin: 1px 0;">Empfänger: Sefa Demir</p>
                 <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08</p>
                 <p style="margin: 1px 0;">BIC: REVODEB2</p>
-                <p style="margin: 1px 0;">Bank: C24 Bank</p>
+                <p style="margin: 1px 0;">Bank: Revolut Bank UAB, Zweigniederlassung</p>
                 <p style="margin: 2px 0 0 0; color: #2563eb; font-weight: bold;">💡 Mit Banking-App scannen & bezahlen!</p>
               </div>
               <div class="batch-sepa-qr" data-payload="${encodeURIComponent(sepaPayload)}" style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; width: 85px; height: 85px;"></div>
@@ -1388,7 +1379,7 @@ Rechnung ${invoiceNumber}`;
 
       if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statProfit')) document.getElementById('statProfit'].innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerText = openC;
       if (document.getElementById('statFilament')) document.getElementById('statFilament').innerText = totalW + ' g';
     }
