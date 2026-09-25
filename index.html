@@ -400,12 +400,23 @@
 
     let editingIndex = -1;
     let showingArchive = false;
-    let orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
-    let spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
-    let expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
-    let telegramChatId = localStorage.getItem('sefas_telegram_chat_id') || '8316865010';
+    let orders = [];
+    let spools = [];
+    let expenses = [];
+    let telegramChatId = '8316865010';
 
-    if (orders.length === 0) {
+    try {
+      orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
+      spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
+      expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
+      telegramChatId = localStorage.getItem('sefas_telegram_chat_id') || '8316865010';
+    } catch(e) {
+      orders = [];
+      spools = [];
+      expenses = [];
+    }
+
+    if (!Array.isArray(orders) || orders.length === 0) {
       orders = BACKUP_ORDERS;
       spools = BACKUP_SPOOLS;
     }
@@ -1431,7 +1442,7 @@
 
       if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statProfit')) document.getElementById('statProfit'].innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerText = openC;
       if (document.getElementById('statFilament')) document.getElementById('statFilament').innerText = totalW + ' g';
     }
