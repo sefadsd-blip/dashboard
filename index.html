@@ -56,28 +56,14 @@
 </head>
 <body class="p-4 md:p-6 min-h-screen">
 
-  <!-- LOGIN MODAL -->
-  <div id="loginModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
-    <div class="card p-6 rounded-2xl max-w-md w-full shadow-2xl text-center space-y-4">
-      <div class="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center mx-auto text-2xl border border-blue-500/20 font-bold overflow-hidden p-2">
-        <img src="https://api.npoint.io/6c03644a2096b02db81f" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%230044cc\'/><text x=\'50\' y=\'65\' font-size=\'40\' fill=\'white\' text-anchor=\'middle\' font-weight=\'bold\'>3D</text></svg>'" alt="Logo" class="w-full h-full object-contain">
-      </div>
-      <h2 class="text-2xl font-bold text-white">Sefas3DShop Dashboard</h2>
-      <p class="text-slate-400 text-sm">Bitte gib deinen PIN ein, um auf das Dashboard zuzugreifen.</p>
-      <input type="password" id="pinInput" placeholder="PIN eingeben (1234)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-center text-xl text-white focus:outline-none focus:border-blue-500">
-      <button onclick="checkPin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition cursor-pointer">Verbinden</button>
-      <p id="loginError" class="text-red-400 text-xs hidden">Falscher PIN! Bitte erneut versuchen.</p>
-    </div>
-  </div>
-
   <!-- DRUCK-BEREICH FÜR QR-ETIKETTEN -->
   <div id="printSection" class="hidden"></div>
 
   <!-- DRUCK-BEREICH FÜR RECHNUNGEN -->
   <div id="invoiceSection" class="hidden"></div>
 
-  <!-- MAIN APP -->
-  <div id="mainApp" class="max-w-[1700px] mx-auto space-y-6 hidden">
+  <!-- MAIN APP (DIREKT SICHTBAR) -->
+  <div id="mainApp" class="max-w-[1700px] mx-auto space-y-6">
     
     <!-- HEADER -->
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800 p-4 rounded-2xl border border-slate-700 gap-4">
@@ -121,9 +107,6 @@
         </button>
         <button onclick="pushToCloudManual()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> 📤 In Cloud speichern
-        </button>
-        <button onclick="lockApp()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 rounded-xl text-xs font-medium cursor-pointer">
-          <i class="fa-solid fa-right-from-bracket mr-1"></i> Sperren
         </button>
       </div>
     </header>
@@ -377,7 +360,6 @@
   </div>
 
   <script>
-    const DEFAULT_PIN = "1234";
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
     const TELEGRAM_TOKEN = '8918418759:AAHEyb2eJYwvY8OTyb0lEWjin7MstbsEdMM';
 
@@ -435,13 +417,12 @@
       const expDateInput = document.getElementById('expDate');
       if (expDateInput) expDateInput.value = todayStr;
 
-      // Enter-Taste im PIN-Feld erlauben
-      const pinField = document.getElementById('pinInput');
-      if (pinField) {
-        pinField.addEventListener('keypress', function(e) {
-          if (e.key === 'Enter') checkPin();
-        });
-      }
+      renderPrinters();
+      updateMonthFilterDropdown();
+      renderOrders();
+      renderSpools();
+      renderExpenses();
+      updateCustomerDropdowns();
     });
 
     function saveLocalOnly() {
@@ -452,31 +433,6 @@
         localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
         localStorage.setItem('sefas_telegram_chat_id', telegramChatId);
       } catch(e) {}
-    }
-
-    function checkPin() {
-      const pinVal = document.getElementById("pinInput").value;
-      if (pinVal === DEFAULT_PIN || pinVal === "sefa") {
-        document.getElementById("loginModal").classList.add("hidden");
-        document.getElementById("mainApp").classList.remove("hidden");
-        renderPrinters();
-        updateMonthFilterDropdown();
-        renderOrders();
-        renderSpools();
-        renderExpenses();
-        updateCustomerDropdowns();
-        checkSpoolTelegramNotifications();
-      } else {
-        const err = document.getElementById("loginError");
-        err.classList.remove("hidden");
-      }
-    }
-
-    function lockApp() {
-      document.getElementById("mainApp").classList.add("hidden");
-      document.getElementById("loginModal").classList.remove("hidden");
-      document.getElementById("pinInput").value = "";
-      document.getElementById("loginError").classList.add("hidden");
     }
 
     function setTodayForAllExisting() {
@@ -604,36 +560,6 @@
           </tr>`;
       });
       updateStats();
-    }
-
-    async function sendTelegramMessage(text) {
-      if (!telegramChatId) return;
-      try {
-        await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: telegramChatId, text: text })
-        });
-      } catch(e) {}
-    }
-
-    function checkSpoolTelegramNotifications() {
-      if (!telegramChatId) return;
-      const todayStr = new Date().toDateString();
-
-      spools.forEach(s => {
-        if (s.remainingGrams < 250) {
-          if (s.lastNotifiedDate !== todayStr) {
-            s.lastNotifiedDate = todayStr;
-            s.notifiedCount = 0;
-          }
-          if (s.notifiedCount < 3) {
-            sendTelegramMessage(`⚠️ Filament-Alarm bei Sefas3DShop!\n\nSpule "${s.name}" hat nur noch ${s.remainingGrams}g übrig!`);
-            s.notifiedCount++;
-            saveLocalOnly();
-          }
-        }
-      });
     }
 
     function updatePrinterStatus(index, newStatus) {
@@ -770,7 +696,6 @@
       if (lowSpools.length > 0) {
         banner.classList.remove('hidden');
         banner.innerHTML = `<i class="fa-solid fa-bell text-red-400"></i> Spulen-Alarm: ${lowSpools.map(s => `${s.name} (${s.remainingGrams}g)`).join(', ')} unter 250g!`;
-        checkSpoolTelegramNotifications();
       } else { 
         banner.classList.add('hidden'); 
       }
