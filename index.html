@@ -391,7 +391,7 @@
       {"id":2,"name":"PETG Weiß","remainingGrams":650,"notifiedCount":0,"lastNotifiedDate":""}
     ];
 
-    let printers = JSON.parse(localStorage.getItem('sefas_shop_printers')) || [
+    let printers = [
       { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
       { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
       { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
@@ -409,6 +409,8 @@
       orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
       spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
       expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
+      const savedPrinters = JSON.parse(localStorage.getItem('sefas_shop_printers'));
+      if (Array.isArray(savedPrinters)) printers = savedPrinters;
       telegramChatId = localStorage.getItem('sefas_telegram_chat_id') || '8316865010';
     } catch(e) {
       orders = [];
@@ -1442,7 +1444,7 @@
 
       if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statProfit')) document.getElementById('statProfit'].innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerText = openC;
       if (document.getElementById('statFilament')) document.getElementById('statFilament').innerText = totalW + ' g';
     }
