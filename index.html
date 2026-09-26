@@ -10,74 +10,172 @@
   <style>
     body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
     .card { background-color: #1e293b; border: 1px solid #334155; }
+    @keyframes pulse-red {
+      0%, 100% { border-color: rgba(239, 68, 68, 0.4); }
+      50% { border-color: rgba(239, 68, 68, 0.9); }
+    }
+    .pulse-low-spool { animation: pulse-red 2s infinite; }
+    
     @media print {
       body * { visibility: hidden !important; }
       #printSection, #printSection *, #invoiceSection, #invoiceSection * { visibility: visible !important; }
-      #printSection { position: fixed !important; left: 0; top: 0; width: 100vw; height: 100vh; background: #fff; color: #000; display: flex; justify-content: center; align-items: center; }
-      #invoiceSection { position: absolute !important; left: 0; top: 0; width: 100%; background: #fff; color: #000; padding: 10px; display: block; }
-      @page { size: auto; margin: 5mm; }
+      #printSection { 
+        position: fixed !important; 
+        left: 0 !important; 
+        top: 0 !important; 
+        width: 100vw !important; 
+        height: 100vh !important; 
+        color: #000 !important; 
+        background: #fff !important; 
+        padding: 5px !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+      }
+      #invoiceSection {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        color: #000 !important; 
+        background: #fff !important; 
+        padding: 10px !important;
+        display: block !important;
+      }
+      .page-break-container {
+        page-break-after: always;
+        break-after: page;
+        margin-bottom: 20px;
+      }
+      @page { 
+        size: auto; 
+        margin: 5mm; 
+      }
     }
   </style>
 </head>
 <body class="p-4 md:p-6 min-h-screen">
 
+  <!-- DRUCK-BEREICH FÜR QR-ETIKETTEN -->
   <div id="printSection" class="hidden"></div>
+
+  <!-- DRUCK-BEREICH FÜR RECHNUNGEN -->
   <div id="invoiceSection" class="hidden"></div>
 
-  <div class="max-w-[1700px] mx-auto space-y-6">
+  <!-- MAIN APP -->
+  <div id="mainApp" class="max-w-[1700px] mx-auto space-y-6">
     
     <!-- HEADER -->
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800 p-4 rounded-2xl border border-slate-700 gap-4">
-      <div>
-        <h1 class="text-xl font-bold text-white">Sefas<span class="text-cyan-400">3d</span>shop</h1>
-        <p class="text-slate-400 text-xs">Dashboard aktiv & stabil</p>
+      <div class="flex items-center space-x-3">
+        <div class="bg-slate-900 p-2 rounded-xl border border-blue-500/30 flex items-center justify-center shadow-lg">
+          <svg class="w-10 h-10 text-cyan-400" viewBox="0 0 100 100" fill="currentColor">
+            <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="url(#blueGrad)" stroke-width="8"/>
+            <polyline points="50,10 50,50 90,30" fill="none" stroke="url(#blueGrad)" stroke-width="6"/>
+            <polyline points="50,50 10,30" fill="none" stroke="url(#blueGrad)" stroke-width="6"/>
+            <polyline points="50,50 50,90" fill="none" stroke="url(#blueGrad)" stroke-width="6"/>
+            <defs>
+              <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#38bdf8"/>
+                <stop offset="100%" stop-color="#1e40af"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-white flex items-center gap-2">
+            Sefas<span class="text-cyan-400">3d</span>shop
+          </h1>
+          <p class="text-slate-400 text-xs flex items-center gap-1.5">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500"></span> 
+            <span id="syncStatus">Mit Cloud verbunden</span>
+          </p>
+        </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <button onclick="exportAccountingCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer">📊 CSV Export</button>
-        <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 text-purple-300 border border-purple-500/50 px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer">📂 Archiv anzeigen</button>
-        <button onclick="loadCloudData()" class="bg-blue-600/20 text-blue-300 border border-blue-500/50 px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer">🔄 Cloud abrufen</button>
-        <button onclick="pushToCloudManual()" class="bg-emerald-600/20 text-emerald-300 border border-emerald-500/50 px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer">📤 In Cloud speichern</button>
+        <button onclick="exportAccountingCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
+          <i class="fa-solid fa-file-excel mr-1.5"></i> 📊 CSV Export (Buchhaltung)
+        </button>
+        <button onclick="printAllInvoices()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
+          <i class="fa-solid fa-print mr-1.5"></i> 🖨️ Alle Rechnungen drucken
+        </button>
+        <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer">
+          <i class="fa-solid fa-box-archive mr-1.5"></i> 📂 Archiv anzeigen
+        </button>
+        <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer">
+          <i class="fa-solid fa-rotate mr-1.5"></i> 🔄 Cloud abrufen
+        </button>
+        <button onclick="pushToCloudManual()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer">
+          <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> 📤 In Cloud speichern
+        </button>
       </div>
     </header>
 
-    <!-- STATISTIK -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="card p-4 rounded-2xl">
-        <p class="text-xs text-slate-400">Gesamt-Umsatz</p>
-        <h3 id="statRevenue" class="text-2xl font-bold text-emerald-400">0,00 €</h3>
+    <!-- STATISTIK & MONATS-FILTER -->
+    <section class="space-y-3">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800/60 p-3 rounded-2xl border border-slate-700 gap-3">
+        <h2 class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-chart-pie mr-2 text-blue-400"></i> Statistik-Auswertung</h2>
+        <div class="flex items-center space-x-2">
+          <label class="text-xs text-slate-400">Monat wählen:</label>
+          <select id="statsMonthFilter" onchange="renderOrders(); renderExpenses();" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none">
+            <option value="all">📅 Alle Monate (Gesamt)</option>
+          </select>
+        </div>
       </div>
-      <div class="card p-4 rounded-2xl">
-        <p class="text-xs text-slate-400">Gesamt-Ausgaben</p>
-        <h3 id="statExpenses" class="text-2xl font-bold text-red-400">0,00 €</h3>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Gesamt-Umsatz (Monat)</p>
+            <h3 id="statRevenue" class="text-2xl font-bold text-emerald-400">0,00 €</h3>
+          </div>
+        </div>
+        <div class="card p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Gesamt-Ausgaben (Monat)</p>
+            <h3 id="statExpenses" class="text-2xl font-bold text-red-400">0,00 €</h3>
+          </div>
+        </div>
+        <div class="card p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Reingewinn (Einnahmen - Ausgaben)</p>
+            <h3 id="statProfit" class="text-2xl font-bold text-blue-400">0,00 €</h3>
+          </div>
+        </div>
+        <div class="card p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Offene Aufträge / Material</p>
+            <h3 id="statOpenOrders" class="text-xl font-bold text-yellow-400">0 <span class="text-xs text-slate-400 font-normal" id="statFilament">0g</span></h3>
+          </div>
+        </div>
       </div>
-      <div class="card p-4 rounded-2xl">
-        <p class="text-xs text-slate-400">Reingewinn</p>
-        <h3 id="statProfit" class="text-2xl font-bold text-blue-400">0,00 €</h3>
-      </div>
-      <div class="card p-4 rounded-2xl">
-        <p class="text-xs text-slate-400">Offene Aufträge / Material</p>
-        <h3 id="statOpenOrders" class="text-xl font-bold text-yellow-400">0 <span class="text-xs font-normal text-slate-400" id="statFilament">0g</span></h3>
-      </div>
-    </div>
+    </section>
 
     <!-- DRUCKER & FILAMENT -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <section class="lg:col-span-2 space-y-3">
-        <h2 class="text-md font-semibold text-slate-300">Drucker-Übersicht</h2>
+        <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-print mr-2 text-blue-400"></i> Drucker-Übersicht</h2>
         <div id="printersGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
       </section>
       <section class="card p-4 rounded-2xl space-y-3">
         <div class="flex justify-between items-center">
-          <h2 class="text-md font-semibold text-slate-300">Filament-Lager</h2>
-          <button onclick="addSpoolPrompt()" class="bg-slate-800 text-purple-300 text-xs px-2.5 py-1 rounded border border-purple-500/35 cursor-pointer">+ Spule</button>
+          <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-layer-group mr-2 text-purple-400"></i> Filament-Lager</h2>
+          <button onclick="addSpoolPrompt()" class="bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs px-2.5 py-1 rounded-lg border border-purple-500/35 cursor-pointer">+ Spule</button>
         </div>
-        <div id="spoolsList" class="space-y-2 max-h-[220px] overflow-y-auto"></div>
+        <div id="spoolWarningBanner" class="hidden bg-red-500/10 border border-red-500/40 p-3 rounded-xl text-xs flex items-start gap-2.5 text-red-300"></div>
+        <div id="spoolsList" class="space-y-2 max-h-[220px] overflow-y-auto pr-1"></div>
       </section>
     </div>
 
     <!-- NEUEN AUFTRAG ANLEGEN -->
     <section class="card p-5 rounded-2xl space-y-4">
-      <h2 class="text-md font-semibold text-slate-300">Neuen Auftrag anlegen</h2>
+      <div class="flex justify-between items-center">
+        <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-plus-circle mr-2 text-blue-400"></i> Neuen Auftrag anlegen</h2>
+        <select id="existingCustomerSelect" onchange="autofillCustomerData(this.value)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none">
+          <option value="">📋 Bestehenden Kunden laden...</option>
+        </select>
+      </div>
+
       <form id="orderForm" onsubmit="addOrder(event)" class="space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
@@ -91,34 +189,119 @@
           <select id="shipping" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
             <option value="7.00" selected>📦 Paketpauschale (7,00 €)</option>
             <option value="5.00">📦 Paketpauschale (5,00 €)</option>
-            <option value="2.50">✉️ Warenpost (2,50 €)</option>
+            <option value="2.50">✉️ Brief / Warenpost (2,50 €)</option>
             <option value="0.00">🤝 Selbstabholung (0,00 €)</option>
           </select>
-          <input type="date" id="orderDate" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          
+          <div class="flex flex-col">
+            <label class="text-[10px] text-slate-400 mb-0.5">Erstellungsdatum:</label>
+            <input type="date" id="orderDate" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none">
+          </div>
+
+          <select id="label" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none self-end">
+            <option value="✅ Ja">Label: ✅ Ja</option>
+            <option value="❌ Nein">Label: ❌ Nein</option>
+          </select>
+          <select id="packed" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none self-end">
+            <option value="❌ Nein">Verpackt: ❌ Nein</option>
+            <option value="✅ Ja">Verpackt: ✅ Ja</option>
+          </select>
+          <input type="text" id="tracking" placeholder="Tracking-Nummer" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none self-end">
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <input type="text" id="address" placeholder="Lieferadresse" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-          <input type="text" id="tracking" placeholder="Tracking-Nummer" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-          <input type="text" id="artName" placeholder="Artikelbezeichnung" value="3D-Druck Artikel" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <input type="text" id="notes" placeholder="Notizen" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <div class="flex flex-col">
+            <label class="text-[10px] text-slate-400 mb-0.5">Zahlungseingang (Datum):</label>
+            <input type="date" id="paymentDate" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none">
+          </div>
+        </div>
+
+        <div class="border-t border-slate-700/60 pt-3 space-y-2">
+          <div class="flex justify-between items-center">
+            <label class="text-xs font-semibold text-slate-300">Artikel, Farbe & Gewicht (g):</label>
+            <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-lg text-xs cursor-pointer">+ Artikel</button>
+          </div>
+
+          <div class="flex flex-wrap gap-1.5 py-1">
+            <span class="text-[11px] text-slate-400 self-center mr-1">Schnell:</span>
+            <button type="button" onclick="addPresetArticle('Einkaufswagenlöser')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ Einkaufswagenlöser</button>
+            <button type="button" onclick="addPresetArticle('Tannenzapfen')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ Tannenzapfen</button>
+            <button type="button" onclick="addPresetArticle('Küchenrollenhalter')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ Küchenrollenhalter</button>
+            <button type="button" onclick="addPresetArticle('Vase')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ Vase</button>
+            <button type="button" onclick="addPresetArticle('Akkuhalter')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ Akkuhalter</button>
+          </div>
+
+          <div id="articleInputRows" class="space-y-2">
+            <div class="flex gap-2 items-center article-row">
+              <input type="text" placeholder="Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
+              <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-52 focus:outline-none"><option value="">-- Farbe --</option></select>
+              <input type="number" placeholder="Gramm (g)" class="art-weight bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-28 focus:outline-none">
+            </div>
+          </div>
         </div>
         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl py-2.5 text-sm transition cursor-pointer">Auftrag Speichern</button>
       </form>
     </section>
 
+    <!-- AUSGABEN & EINKÄUFE VERWALTUNG -->
+    <section class="card p-5 rounded-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-700/60 pb-3">
+        <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-receipt mr-2 text-red-400"></i> Betriebsausgaben & Einkäufe</h2>
+      </div>
+
+      <form id="expenseForm" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+        <input type="text" id="expDesc" placeholder="Beschreibung (z.B. Filament Schwarz)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <option value="Filament">🧵 Filament</option>
+          <option value="DHL / Versand">📦 DHL / Versand</option>
+          <option value="Zubehör / Ersatzteile">⚙️ Zubehör & Ersatzteile</option>
+          <option value="Verpackung">📦 Verpackungsmaterial</option>
+          <option value="Sonstiges">🏷️ Sonstiges</option>
+        </select>
+        <input type="number" step="0.01" id="expAmount" placeholder="Betrag (€)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+        <input type="date" id="expDate" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+        <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl py-2 text-sm transition cursor-pointer">+ Ausgabe eintragen</button>
+      </form>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
+            <tr>
+              <th class="p-3">Datum</th>
+              <th class="p-3">Kategorie</th>
+              <th class="p-3">Beschreibung</th>
+              <th class="p-3">Betrag</th>
+              <th class="p-3 text-right">Aktion</th>
+            </tr>
+          </thead>
+          <tbody id="expensesTableBody" class="divide-y divide-slate-700/50 text-slate-200"></tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- TABELLE -->
     <section class="card p-5 rounded-2xl space-y-4">
-      <div class="flex justify-between items-center">
-        <h2 id="tableTitle" class="text-md font-semibold text-slate-300">Bestellungen (Aktiv)</h2>
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div class="flex items-center space-x-3">
+          <h2 id="tableTitle" class="text-md font-semibold text-slate-300"><i class="fa-solid fa-list-check mr-2 text-blue-400"></i> Bestellungen (Aktiv)</h2>
+        </div>
+        <input type="text" id="searchInput" oninput="renderOrders()" placeholder="Suchen..." class="bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white w-64 focus:outline-none">
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-sm">
           <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
             <tr>
-              <th class="p-3">Kunde</th>
+              <th class="p-3">Kunde & Adresse</th>
               <th class="p-3">Rechnung-Nr.</th>
-              <th class="p-3">Artikel</th>
+              <th class="p-3">Artikel, Farbe & Gewicht</th>
               <th class="p-3">Drucker</th>
-              <th class="p-3">Datum</th>
+              <th class="p-3">Datum (Erstellt / Zahlung)</th>
               <th class="p-3">Status</th>
               <th class="p-3">Preis</th>
+              <th class="p-3">Label</th>
+              <th class="p-3">Verpackt</th>
+              <th class="p-3">Tracking</th>
               <th class="p-3 text-right">Aktionen</th>
             </tr>
           </thead>
@@ -127,67 +310,138 @@
       </div>
     </section>
 
+    <!-- KUNDEN-NACHRICHTEN VORLAGEN -->
+    <section class="card p-5 rounded-2xl space-y-4">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-700/60 pb-3">
+        <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-comments mr-2 text-blue-400"></i> Kleinanzeigen & Kunden-Vorlagen</h2>
+        <select id="templateCustomerSelect" onchange="updateTemplatePreview()" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none w-full sm:w-72">
+          <option value="">👤 Kunden auswählen (zieht Sendungsnummer)...</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-emerald-400">1. Zahlung erhalten</span>
+              <button onclick="copyTemplate(1)" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-lg text-xs cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
+            </div>
+            <textarea id="templateText1" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.</textarea>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-yellow-400">2. Zahlungserinnerung</span>
+              <button onclick="copyTemplate(2)" class="bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-300 border border-yellow-500/40 px-2.5 py-1 rounded-lg text-xs cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
+            </div>
+            <textarea id="templateText2" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!</textarea>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-blue-400">3. Druck gestartet</span>
+              <button onclick="copyTemplate(3)" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/40 px-2.5 py-1 rounded-lg text-xs cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
+            </div>
+            <textarea id="templateText3" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.</textarea>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-purple-400">4. Paket unterwegs</span>
+              <button onclick="copyTemplate(4)" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/40 px-2.5 py-1 rounded-lg text-xs cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
+            </div>
+            <textarea id="templateText4" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n[Sendungsnummer]\n\nLink: https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=[Sendungsnummer]\n\nViel Freude damit!</textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
 
   <script>
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
+    const TELEGRAM_TOKEN = '8918418759:AAHEyb2eJYwvY8OTyb0lEWjin7MstbsEdMM';
 
-    const FIXED_ORDERS = [
-      { id: 1, customer: "Paul Hartmann", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-01", invoiceNumber: "RE-2026-0001", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
-      { id: 2, customer: "Gabi Thomas", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-02", invoiceNumber: "RE-2026-0002", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
-      { id: 3, customer: "Antje", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-03", invoiceNumber: "RE-2026-0003", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
-      { id: 4, customer: "Tobias", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-04", invoiceNumber: "RE-2026-0004", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
-      { id: 5, customer: "Dunja", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-05", invoiceNumber: "RE-2026-0005", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
-      { id: 6, customer: "Sabine Beeween", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-06", invoiceNumber: "RE-2026-0006", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
-      { id: 7, customer: "Ralf Hartmann", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-07", invoiceNumber: "RE-2026-0007", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
-      { id: 8, customer: "Renate", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-08", invoiceNumber: "RE-2026-0008", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
-      { id: 9, customer: "Tchoffo", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-09", invoiceNumber: "RE-2026-0009", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
-      { id: 10, customer: "Silke Schwarzer", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-10", invoiceNumber: "RE-2026-0010", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
-      { id: 11, customer: "Iris", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-11", invoiceNumber: "RE-2026-0011", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] }
+    const BACKUP_ORDERS = [
+      {"id":1789933732086,"customer":"Silke Schwarzer","address":"Gartenweg 10d 04862 Mockrehna","notes":"","printer":"Ender 3 V3","status":"Offen","label":"🟡 Wartet auf Zahlung","packed":"❌ Nein","price":20,"shippingCost":5,"tracking":"-","orderDate":"2026-02-10","paymentDate":"","invoiceNumber":"RE-2026-0001","shipDate":"","archived":false,"items":[{"name":"2x Tannenzapfen","color":"PLA Schwarz","weight":60,"durationMin":60,"status":"Offen","endTime":null}]},
+      {"id":1789933658205,"customer":"Familie Tchoffo","address":"Prämienstraße 62 52428 Jülich","notes":"","printer":"CR-10 Smart Pro #1","status":"Offen","label":"✅ Ja","packed":"❌ Nein","price":10,"shippingCost":5,"tracking":"-","orderDate":"2026-02-12","paymentDate":"","invoiceNumber":"RE-2026-0002","shipDate":"","archived":false,"items":[{"name":"Küchenrollnhalter 2X","color":"PETG Weiß","weight":460,"durationMin":60,"status":"Offen","endTime":null}]}
     ];
 
-    let orders = [];
-    let spools = [{ id: 1, name: "PLA Schwarz", remainingGrams: 4160 }];
+    const BACKUP_SPOOLS = [
+      {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":2,"name":"PETG Weiß","remainingGrams":650,"notifiedCount":0,"lastNotifiedDate":""}
+    ];
+
     let printers = [
       { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
       { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
       { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
       { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
     ];
-    let expenses = [];
-    let showingArchive = false;
 
-    function init() {
-      try {
-        let saved = JSON.parse(localStorage.getItem('sefas_stable_v4'));
-        if (saved && Array.isArray(saved.orders) && saved.orders.length > 0) {
-          orders = saved.orders;
-          spools = saved.spools || spools;
-          expenses = saved.expenses || expenses;
-          printers = saved.printers || printers;
-        } else {
-          orders = FIXED_ORDERS;
-        }
-        FIXED_ORDERS.forEach(f => {
-          if (!orders.some(o => o.invoiceNumber === f.invoiceNumber)) {
-            orders.push(f);
-          }
-        });
-      } catch(e) {
-        orders = FIXED_ORDERS;
-      }
-      orders.sort((a, b) => (a.invoiceNumber || "").localeCompare(b.invoiceNumber || ""));
+    let editingIndex = -1;
+    let showingArchive = false;
+    let orders = [];
+    let spools = [];
+    let expenses = [];
+    let telegramChatId = '8316865010';
+
+    try {
+      orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
+      spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
+      expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
+      const savedPrinters = JSON.parse(localStorage.getItem('sefas_shop_printers'));
+      if (Array.isArray(savedPrinters)) printers = savedPrinters;
+      telegramChatId = localStorage.getItem('sefas_telegram_chat_id') || '8316865010';
+    } catch(e) {
+      orders = [];
+      spools = [];
+      expenses = [];
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
-      init();
-      renderAll();
+    if (!Array.isArray(orders) || orders.length === 0) {
+      orders = BACKUP_ORDERS;
+      spools = BACKUP_SPOOLS;
+    }
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    orders.forEach(o => {
+      if (!o.orderDate) o.orderDate = todayStr;
+      if (!o.shipDate) o.shipDate = "";
+      if (!o.paymentDate) o.paymentDate = "";
+      if (!o.invoiceNumber) {
+        o.invoiceNumber = generateInvoiceNumberForExisting(o);
+      }
     });
 
-    function save() {
-      localStorage.setItem('sefas_stable_v4', JSON.stringify({ orders, spools, expenses, printers }));
-      renderAll();
+    window.addEventListener('DOMContentLoaded', () => {
+      const dateInput = document.getElementById('orderDate');
+      if (dateInput) dateInput.value = todayStr;
+      const expDateInput = document.getElementById('expDate');
+      if (expDateInput) expDateInput.value = todayStr;
+
+      renderPrinters();
+      updateMonthFilterDropdown();
+      renderOrders();
+      renderSpools();
+      renderExpenses();
+      updateCustomerDropdowns();
+    });
+
+    function saveLocalOnly() {
+      try {
+        localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
+        localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
+        localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
+        localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
+        localStorage.setItem('sefas_telegram_chat_id', telegramChatId);
+      } catch(e) {}
     }
 
     async function loadCloudData() {
@@ -195,181 +449,1059 @@
         const res = await fetch(NPOINT_URL, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
-          if (json && Array.isArray(json.orders)) {
+          if (json && Array.isArray(json.orders) && json.orders.length > 0) {
             orders = json.orders;
+            const currentToday = new Date().toISOString().slice(0, 10);
+            orders.forEach(o => {
+              if (!o.orderDate) o.orderDate = currentToday;
+              if (!o.shipDate) o.shipDate = "";
+              if (!o.paymentDate) o.paymentDate = "";
+              if (!o.invoiceNumber) o.invoiceNumber = generateInvoiceNumberForExisting(o);
+            });
             if (Array.isArray(json.spools)) spools = json.spools;
             if (Array.isArray(json.expenses)) expenses = json.expenses;
             if (Array.isArray(json.printers)) printers = json.printers;
-            FIXED_ORDERS.forEach(f => {
-              if (!orders.some(o => o.invoiceNumber === f.invoiceNumber)) orders.push(f);
-            });
-            save();
-            alert("✅ Cloud-Daten erfolgreich geladen!");
+            if (json.telegramChatId) { telegramChatId = json.telegramChatId; }
+            saveLocalOnly();
+            renderOrders();
+            renderSpools();
+            renderExpenses();
+            renderPrinters();
+            updateCustomerDropdowns();
+            alert("✅ Daten erfolgreich von der Cloud abgerufen!");
+          } else {
+            alert("Die Cloud ist leer.");
           }
         }
       } catch(e) {
-        alert("❌ Fehler beim Laden aus der Cloud.");
+        alert("Hinweis: Cloud konnte nicht erreicht werden.");
       }
     }
 
     async function pushToCloudManual() {
-      save();
+      saveLocalOnly();
       try {
         const res = await fetch(NPOINT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orders, spools, expenses, printers })
+          body: JSON.stringify({ orders, spools, expenses, printers, telegramChatId })
         });
-        if (res.ok) alert("✅ Erfolgreich in der Cloud gespeichert!");
-        else alert("⚠️ Cloud hat das Speichern abgelehnt.");
-      } catch(e) {
-        alert("❌ Netzwerkfehler beim Speichern.");
-      }
-    }
-
-    function generateInvoiceNumber(dateStr) {
-      const year = dateStr ? dateStr.slice(0, 4) : new Date().getFullYear().toString();
-      let max = 11;
-      orders.forEach(o => {
-        if (o.invoiceNumber && o.invoiceNumber.startsWith(`RE-${year}-`)) {
-          let n = parseInt(o.invoiceNumber.split('-')[2]) || 0;
-          if (n > max) max = n;
+        if (res.ok) {
+          alert("✅ Daten erfolgreich in der Cloud gespeichert!");
+        } else {
+          alert("⚠️ Server-Fehler: Die Cloud hat den Speichervorgang abgelehnt.");
         }
-      });
-      return `RE-${year}-${(max + 1).toString().padStart(4, '0')}`;
+      } catch(e) {
+        alert("❌ Netzwerkfehler: Cloud konnte nicht erreicht werden.");
+      }
     }
 
-    function addOrder(e) {
+    function saveAllData() {
+      saveLocalOnly();
+      renderOrders();
+      renderSpools();
+      renderExpenses();
+      renderPrinters();
+      updateCustomerDropdowns();
+      
+      fetch(NPOINT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orders, spools, expenses, printers, telegramChatId })
+      }).catch(e => console.log("Hintergrund-Sync fehlgeschlagen", e));
+    }
+
+    function addExpense(e) {
       e.preventDefault();
-      const customer = document.getElementById('customer').value;
-      const price = parseFloat(document.getElementById('price').value) || 0;
-      const shippingCost = parseFloat(document.getElementById('shipping').value) || 0;
-      const orderDate = document.getElementById('orderDate').value;
-      const address = document.getElementById('address').value;
-      const tracking = document.getElementById('tracking').value || '-';
-      const printer = document.getElementById('printer').value;
-      const artName = document.getElementById('artName').value;
-      const invoiceNumber = generateInvoiceNumber(orderDate);
+      const desc = document.getElementById('expDesc').value.trim();
+      const cat = document.getElementById('expCategory').value;
+      const amount = parseFloat(document.getElementById('expAmount').value) || 0;
+      const date = document.getElementById('expDate').value || new Date().toISOString().slice(0, 10);
 
-      orders.unshift({
-        id: Date.now(), customer, price, shippingCost, orderDate, address, tracking, printer, invoiceNumber,
-        status: "Offen", archived: false, items: [{ name: artName, color: 'Standard', weight: 50 }]
+      if (!desc || amount <= 0) return alert("Bitte Beschreibung und Betrag angeben!");
+
+      expenses.unshift({
+        id: Date.now(),
+        description: desc,
+        category: cat,
+        amount: amount,
+        date: date
       });
 
-      save();
-      document.getElementById('orderForm').reset();
-      document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
-      document.getElementById('artName').value = "3D-Druck Artikel";
+      saveAllData();
+      document.getElementById('expDesc').value = '';
+      document.getElementById('expAmount').value = '';
+      document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
     }
 
-    function deleteOrder(id) {
-      if (confirm("Auftrag löschen?")) {
-        orders = orders.filter(o => o.id !== id);
-        save();
+    function deleteExpense(id) {
+      if (confirm("Diese Ausgabe wirklich löschen?")) {
+        expenses = expenses.filter(ex => ex.id !== id);
+        saveAllData();
       }
     }
 
-    function toggleArchiveOrder(id) {
-      const o = orders.find(x => x.id === id);
-      if (o) {
-        o.archived = !o.archived;
-        save();
+    function renderExpenses() {
+      const tbody = document.getElementById('expensesTableBody');
+      const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      expenses.forEach(ex => {
+        if (selectedMonth !== 'all' && (!ex.date || !ex.date.startsWith(selectedMonth))) return;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-800/40 border-b border-slate-800">
+            <td class="p-3 text-xs text-slate-300">${ex.date || '-'}</td>
+            <td class="p-3 text-xs"><span class="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-purple-300">${ex.category}</span></td>
+            <td class="p-3 text-xs font-medium text-white">${ex.description}</td>
+            <td class="p-3 text-xs text-red-400 font-bold">-${ex.amount.toFixed(2).replace('.', ',')} €</td>
+            <td class="p-3 text-right">
+              <button onclick="deleteExpense(${ex.id})" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>`;
+      });
+      updateStats();
+    }
+
+    function updatePrinterStatus(index, newStatus) {
+      printers[index].status = newStatus;
+      saveAllData();
+    }
+
+    function updateField(id, field, value) {
+      const order = orders.find(o => o.id === id);
+      if (!order) return;
+
+      if (field === 'status') {
+        order.status = value;
+      } else if (field === 'printer') {
+        order.printer = value;
+      } else if (field === 'label') {
+        order.label = value;
+      } else if (field === 'packed') {
+        order.packed = value;
+      } else if (field === 'paymentDate') {
+        order.paymentDate = value;
       }
+
+      saveAllData();
     }
 
     function toggleArchiveView() {
       showingArchive = !showingArchive;
-      document.getElementById('headerArchiveBtn').innerText = showingArchive ? "📋 Aktive Aufträge" : "📂 Archiv anzeigen";
-      document.getElementById('tableTitle').innerText = showingArchive ? "Bestellungen (Archiv)" : "Bestellungen (Aktiv)";
+      const btn = document.getElementById('headerArchiveBtn');
+      const title = document.getElementById('tableTitle');
+      if (showingArchive) {
+        btn.innerHTML = '<i class="fa-solid fa-list-check mr-1.5"></i> 📋 Aktive Aufträge';
+        btn.className = "bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer";
+        title.innerHTML = '<i class="fa-solid fa-box-archive mr-2 text-purple-400"></i> Bestellungen (Archiv)';
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-box-archive mr-1.5"></i> 📂 Archiv anzeigen';
+        btn.className = "bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer";
+        title.innerHTML = '<i class="fa-solid fa-list-check mr-2 text-blue-400"></i> Bestellungen (Aktiv)';
+      }
       renderOrders();
     }
 
-    function addSpoolPrompt() {
-      const name = prompt("Spulen-Name (z.B. PLA Rot):");
-      if (!name) return;
-      const grams = parseInt(prompt("Gramm:", "1000")) || 1000;
-      spools.push({ id: Date.now(), name, remainingGrams: grams });
-      save();
+    function toggleArchiveOrder(id) {
+      const order = orders.find(o => o.id === id);
+      if (order) {
+        order.archived = !order.archived;
+        const todayStr = new Date().toISOString().slice(0,10);
+        if (order.archived) {
+          if (!order.shipDate) order.shipDate = todayStr;
+        }
+        saveAllData();
+      }
     }
 
-    function deleteSpool(idx) {
-      spools.splice(idx, 1);
-      save();
+    function updateCustomerDropdowns() {
+      const sel1 = document.getElementById('existingCustomerSelect');
+      const sel2 = document.getElementById('templateCustomerSelect');
+      
+      if (sel1) {
+        sel1.innerHTML = '<option value="">📋 Bestehenden Kunden laden...</option>';
+        orders.forEach(o => {
+          sel1.innerHTML += `<option value="${o.id}">${o.customer} (${o.tracking && o.tracking !== '-' ? o.tracking : 'Keine Tracking'})</option>`;
+        });
+      }
+
+      if (sel2) {
+        sel2.innerHTML = '<option value="">👤 Kunden auswählen (zieht Sendungsnummer)...</option>';
+        orders.forEach(o => {
+          sel2.innerHTML += `<option value="${o.id}">${o.customer} (${o.tracking && o.tracking !== '-' ? o.tracking : 'Keine Tracking'})</option>`;
+        });
+      }
     }
 
-    function renderAll() {
-      renderOrders();
-      renderSpools();
-      renderPrinters();
-      updateStats();
+    function autofillCustomerData(orderId) {
+      if (!orderId) return;
+      const order = orders.find(o => o.id == orderId);
+      if (!order) return;
+
+      document.getElementById('customer').value = order.customer || '';
+      document.getElementById('address').value = order.address || '';
+      document.getElementById('tracking').value = (order.tracking && order.tracking !== '-') ? order.tracking : '';
+      document.getElementById('printer').value = order.printer || 'CR-10 Smart Pro #1';
+      document.getElementById('price').value = order.price || '';
+      document.getElementById('shipping').value = order.shippingCost || '7.00';
+      document.getElementById('label').value = order.label || '✅ Ja';
+      document.getElementById('packed').value = order.packed || '❌ Nein';
+      document.getElementById('notes').value = order.notes || '';
+      if (order.orderDate) document.getElementById('orderDate').value = order.orderDate;
+      if (order.paymentDate) document.getElementById('paymentDate').value = order.paymentDate;
     }
 
-    function renderOrders() {
-      const tbody = document.getElementById('ordersTableBody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
+    function updateTemplatePreview() {
+      const orderId = document.getElementById('templateCustomerSelect').value;
+      if (!orderId) return;
+      const o = orders.find(item => item.id == orderId);
+      if (!o) return;
 
-      orders.forEach(o => {
-        if (Boolean(o.archived) !== showingArchive) return;
-        const archiveBtn = o.archived ? `<button onclick="toggleArchiveOrder(${o.id})" class="text-emerald-300">Aktivieren</button>` : `<button onclick="toggleArchiveOrder(${o.id})" class="text-purple-300">Archiv</button>`;
+      const track = (o.tracking && o.tracking !== '-') ? o.tracking : '[Sendungsnummer einfügen]';
 
-        tbody.innerHTML += `
-          <tr class="border-b border-slate-800 hover:bg-slate-800/40 text-xs">
-            <td class="p-3 text-white font-medium">${o.customer}</td>
-            <td class="p-3 font-mono text-cyan-300 font-bold">${o.invoiceNumber || '-'}</td>
-            <td class="p-3 text-white">${o.items?.[0]?.name || '-'}</td>
-            <td class="p-3">${o.printer || '-'}</td>
-            <td class="p-3">${o.orderDate || '-'}</td>
-            <td class="p-3 text-yellow-300">${o.status}</td>
-            <td class="p-3 text-emerald-400 font-bold">${((o.price || 0) + (o.shippingCost || 0)).toFixed(2).replace('.', ',')} €</td>
-            <td class="p-3 text-right space-x-2">
-              ${archiveBtn}
-              <button onclick="deleteOrder(${o.id})" class="text-red-400"><i class="fa-solid fa-trash"></i></button>
-            </td>
-          </tr>`;
+      document.getElementById('templateText1').value = `Hallo ${o.customer},\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.`;
+      document.getElementById('templateText2').value = `Hallo ${o.customer},\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!`;
+      document.getElementById('templateText3').value = `Hallo ${o.customer},\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.`;
+      document.getElementById('templateText4').value = `Hallo ${o.customer},\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n${track}\n\nLink: https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${track}\n\nViel Freude damit!`;
+    }
+
+    function copyTemplate(num) {
+      const text = document.getElementById(`templateText${num}`).value;
+      navigator.clipboard.writeText(text).then(() => {
+        alert(`✅ Nachricht-Vorlage ${num} wurde in die Zwischenablage kopiert!`);
+      }).catch(() => {
+        alert("Fehler beim Kopieren.");
       });
     }
 
     function renderSpools() {
-      const list = document.getElementById('spoolsList');
-      if (!list) return;
-      list.innerHTML = '';
+      const container = document.getElementById('spoolsList');
+      const banner = document.getElementById('spoolWarningBanner');
+      if (!container) return;
+      container.innerHTML = '';
+      let lowSpools = [];
+
       spools.forEach((s, idx) => {
-        list.innerHTML += `<div class="p-2 rounded bg-slate-900 border border-slate-700 text-xs flex justify-between items-center"><span class="text-white">${s.name}</span><span class="text-slate-300">${s.remainingGrams}g</span><button onclick="deleteSpool(${idx})" class="text-red-400">❌</button></div>`;
+        const isLow = s.remainingGrams < 250;
+        if (isLow) lowSpools.push(s);
+
+        container.innerHTML += `
+          <div class="p-2.5 rounded-xl border text-xs flex justify-between items-center ${isLow ? 'bg-red-950/40 border-red-500/60 pulse-low-spool' : 'bg-slate-900 border-slate-700/60'}">
+            <span class="font-semibold text-white">${s.name}</span>
+            <div class="flex items-center space-x-2">
+              <span onclick="editSpoolGrams(${idx})" class="${isLow ? 'text-red-400 font-bold' : 'text-slate-300'} cursor-pointer hover:underline" title="Klicken zum Bearbeiten">${s.remainingGrams}g</span>
+              <button onclick="editSpoolGrams(${idx})" class="text-slate-400 hover:text-white px-1 cursor-pointer" title="Gewicht ändern"><i class="fa-solid fa-pen text-[10px]"></i></button>
+              <button onclick="deleteSpool(${idx})" class="text-red-400 px-1 cursor-pointer" title="Spule löschen"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          </div>`;
       });
+
+      if (lowSpools.length > 0) {
+        banner.classList.remove('hidden');
+        banner.innerHTML = `<i class="fa-solid fa-bell text-red-400"></i> Spulen-Alarm: ${lowSpools.map(s => `${s.name} (${s.remainingGrams}g)`).join(', ')} unter 250g!`;
+      } else { 
+        banner.classList.add('hidden'); 
+      }
+      updateSpoolDropdowns();
+    }
+
+    function addSpoolPrompt() {
+      const name = prompt("Name/Farbe der Spule (z.B. PLA Rot):");
+      if (!name) return;
+      const grams = parseInt(prompt("Gewicht in Gramm (z.B. 1000):", "1000")) || 1000;
+      spools.push({ id: Date.now(), name, remainingGrams: grams, notifiedCount: 0, lastNotifiedDate: "" });
+      saveAllData();
+    }
+
+    function editSpoolGrams(idx) {
+      const current = spools[idx];
+      const newGrams = prompt(`Neues Gewicht für "${current.name}" in Gramm:`, current.remainingGrams);
+      if (newGrams !== null && !isNaN(parseInt(newGrams))) {
+        spools[idx].remainingGrams = parseInt(newGrams);
+        if (spools[idx].remainingGrams >= 250) {
+          spools[idx].notifiedCount = 0;
+        }
+        saveAllData();
+      }
+    }
+
+    function deleteSpool(idx) {
+      if (confirm(`Spule "${spools[idx].name}" wirklich löschen?`)) {
+        spools.splice(idx, 1);
+        saveAllData();
+      }
+    }
+
+    function updateSpoolDropdowns() {
+      document.querySelectorAll('.art-color, .edit-art-color').forEach(select => {
+        const current = select.value;
+        select.innerHTML = '<option value="">-- Farbe --</option>';
+        spools.forEach(s => {
+          select.innerHTML += `<option value="${s.name}" ${s.name === current ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`;
+        });
+      });
+    }
+
+    function addArticleInputRow(nameVal = '', colorVal = '', weightVal = '') {
+      const container = document.getElementById('articleInputRows');
+      const div = document.createElement('div');
+      div.className = "flex gap-2 items-center article-row";
+      let optionsHtml = '<option value="">-- Farbe --</option>';
+      spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === colorVal ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
+      div.innerHTML = `
+        <input type="text" placeholder="Artikelbezeichnung" value="${nameVal}" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
+        <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-52 focus:outline-none">${optionsHtml}</select>
+        <input type="number" placeholder="Gramm (g)" value="${weightVal}" class="art-weight bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-28 focus:outline-none">
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>`;
+      container.appendChild(div);
+    }
+
+    function addPresetArticle(presetName) {
+      addArticleInputRow(presetName);
+    }
+
+    function addEditArticleRow(name = '', color = '', weight = '') {
+      const container = document.getElementById('editArticleRows');
+      if (!container) return;
+      const div = document.createElement('div');
+      div.className = "flex gap-2 items-center edit-article-row bg-slate-950 p-2 rounded-xl border border-slate-800";
+      let optionsHtml = '<option value="">-- Farbe --</option>';
+      spools.forEach(s => {
+        optionsHtml += `<option value="${s.name}" ${s.name === color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`;
+      });
+      div.innerHTML = `
+        <input type="text" placeholder="Artikelbezeichnung" value="${name}" required class="edit-art-name bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
+        <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-40 focus:outline-none">${optionsHtml}</select>
+        <input type="number" placeholder="Gramm" value="${weight}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-20 focus:outline-none">
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>`;
+      container.appendChild(div);
+    }
+
+    function generateNewInvoiceNumber(orderDateStr) {
+      const year = orderDateStr ? orderDateStr.slice(0, 4) : new Date().getFullYear().toString();
+      let maxNum = 0;
+      orders.forEach(o => {
+        if (o.invoiceNumber && o.invoiceNumber.startsWith(`RE-${year}-`)) {
+          let parts = o.invoiceNumber.split('-');
+          let num = parseInt(parts[2]) || 0;
+          if (num > maxNum) maxNum = num;
+        }
+      });
+      const nextNum = maxNum + 1;
+      return `RE-${year}-${nextNum.toString().padStart(4, '0')}`;
+    }
+
+    function generateInvoiceNumberForExisting(order) {
+      if (order.invoiceNumber) return order.invoiceNumber;
+      return generateNewInvoiceNumber(order.orderDate);
+    }
+
+    function addOrder(e) {
+      e.preventDefault();
+      const nameInputs = document.querySelectorAll('.art-name');
+      const colorInputs = document.querySelectorAll('.art-color');
+      const weightInputs = document.querySelectorAll('.art-weight');
+      const itemsList = [];
+
+      nameInputs.forEach((inp, idx) => {
+        const val = inp.value.trim();
+        if (val) {
+          const w = parseInt(weightInputs[idx].value) || 0;
+          const col = colorInputs[idx].value;
+          itemsList.push({ name: val, color: col, weight: w });
+
+          if (col && w > 0) {
+            const spool = spools.find(s => s.name === col);
+            if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - w);
+          }
+        }
+      });
+      if (itemsList.length === 0) return alert("Bitte Artikel eintragen!");
+      
+      const customDate = document.getElementById('orderDate').value || new Date().toISOString().slice(0,10);
+      const payDate = document.getElementById('paymentDate').value || '';
+      const fixedInvoiceNum = generateNewInvoiceNumber(customDate);
+
+      orders.unshift({
+        id: Date.now(),
+        customer: document.getElementById('customer').value,
+        address: document.getElementById('address').value || '',
+        printer: document.getElementById('printer').value,
+        status: "Offen",
+        label: document.getElementById('label').value,
+        packed: document.getElementById('packed').value,
+        price: parseFloat(document.getElementById('price').value) || 0,
+        shippingCost: parseFloat(document.getElementById('shipping').value) || 0,
+        tracking: document.getElementById('tracking').value || '-',
+        orderDate: customDate,
+        paymentDate: payDate,
+        invoiceNumber: fixedInvoiceNum,
+        shipDate: '',
+        archived: false,
+        items: itemsList
+      });
+      saveAllData();
+      document.getElementById('orderForm').reset();
+      document.getElementById('orderDate').value = new Date().toISOString().slice(0,10);
+      document.getElementById('existingCustomerSelect').value = "";
+    }
+
+    function startEdit(idx) {
+      editingIndex = idx;
+      renderOrders();
+    }
+
+    function cancelEdit() {
+      editingIndex = -1;
+      renderOrders();
+    }
+
+    function saveEdit(idx) {
+      const nameInputs = document.querySelectorAll('.edit-art-name');
+      const colorInputs = document.querySelectorAll('.edit-art-color');
+      const weightInputs = document.querySelectorAll('.edit-art-weight');
+      const updatedItems = [];
+
+      const oldOrder = orders[idx];
+
+      nameInputs.forEach((inp, i) => {
+        const val = inp.value.trim();
+        if (val) {
+          const w = parseInt(weightInputs[i].value) || 0;
+          const col = colorInputs[i].value;
+          updatedItems.push({ name: val, color: col, weight: w });
+        }
+      });
+
+      if (updatedItems.length === 0) return alert("Ein Auftrag muss mindestens einen Artikel haben!");
+
+      if (oldOrder.items) {
+        oldOrder.items.forEach(oldItem => {
+          if (oldItem.color && oldItem.weight > 0) {
+            const spool = spools.find(s => s.name === oldItem.color);
+            if (spool) spool.remainingGrams += oldItem.weight;
+          }
+        });
+      }
+
+      updatedItems.forEach(newItem => {
+        if (newItem.color && newItem.weight > 0) {
+          const spool = spools.find(s => s.name === newItem.color);
+          if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - newItem.weight);
+        }
+      });
+
+      orders[idx].customer = document.getElementById(`edit-cust-${idx}`).value;
+      orders[idx].address = document.getElementById(`edit-addr-${idx}`).value;
+      orders[idx].printer = document.getElementById(`edit-print-${idx}`).value;
+      orders[idx].status = document.getElementById(`edit-stat-${idx}`).value;
+      orders[idx].label = document.getElementById(`edit-label-${idx}`).value;
+      orders[idx].packed = document.getElementById(`edit-packed-${idx}`).value;
+      orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
+      orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value || '-';
+      orders[idx].orderDate = document.getElementById(`edit-date-${idx}`).value || orders[idx].orderDate;
+      orders[idx].paymentDate = document.getElementById(`edit-pay-${idx}`).value || '';
+      orders[idx].shipDate = document.getElementById(`edit-ship-${idx}`).value || orders[idx].shipDate || '';
+      orders[idx].items = updatedItems;
+
+      editingIndex = -1;
+      saveAllData();
+    }
+
+    function deleteOrder(id) {
+      const order = orders.find(o => o.id === id);
+      if (order && order.items) {
+        order.items.forEach(i => {
+          if (i.color && i.weight > 0) {
+            const spool = spools.find(s => s.name === i.color);
+            if (spool) spool.remainingGrams += i.weight;
+          }
+        });
+      }
+      orders = orders.filter(o => o.id !== id);
+      saveAllData();
+    }
+
+    function printBoxLabel(idx) {
+      const o = orders[idx];
+      const printSec = document.getElementById('printSection');
+      let itemsSummary = o.items.map(i => `${i.name} (${i.color || 'Standard'}, ${i.weight || 0}g)`).join("<br>• ");
+      const trackingUrl = (o.tracking && o.tracking !== '-') ? `https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${o.tracking}` : `Sefas3DShop - ${o.customer}`;
+
+      printSec.innerHTML = `
+        <div style="font-family: Arial, sans-serif; border: 2px solid #000; padding: 10px; width: 340px; background: #fff; border-radius: 6px;">
+          <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px;">
+            <strong>Sefas3DShop</strong>
+            <span style="font-size: 10px; background: #000; color: #fff; padding: 2px 4px;">KARTON-ETIKETT</span>
+          </div>
+          <div style="margin-top: 8px; font-size: 12px;">
+            <p style="margin: 2px 0;"><strong>Empfänger:</strong> ${o.customer}</p>
+            <p style="margin: 2px 0; font-size: 11px; color: #444;">${o.address || ''}</p>
+          </div>
+          <div style="margin-top: 8px; border-top: 1px dashed #666; padding-top: 5px; font-size: 11px;">
+            <strong>Inhalt:</strong><br>• ${itemsSummary}
+          </div>
+          <div style="margin-top: 8px; border-top: 1px dashed #666; padding-top: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+            <div><strong>Tracking:</strong> ${o.tracking}</div>
+            <div id="qrcodeContainer"></div>
+          </div>
+        </div>`;
+      printSec.classList.remove('hidden');
+      setTimeout(() => {
+        const qrContainer = document.getElementById('qrcodeContainer');
+        qrContainer.innerHTML = '';
+        new QRCode(qrContainer, { text: trackingUrl, width: 60, height: 60 });
+        window.print();
+        printSec.classList.add('hidden');
+      }, 300);
+    }
+
+    function renderLocalQrCode(containerId, text) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = '';
+      try {
+        new QRCode(container, {
+          text: text,
+          width: 75,
+          height: 75,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch(e) {
+        container.innerHTML = "QR Fehler";
+      }
+    }
+
+    function printInvoice(idx) {
+      const o = orders[idx];
+      const invSec = document.getElementById('invoiceSection');
+      const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
+      
+      const invoiceNumber = generateInvoiceNumberForExisting(o);
+      const trackingText = (o.tracking && o.tracking !== '-') ? o.tracking : 'Wird nachgereicht';
+      
+      let itemsRows = '';
+      o.items.forEach(i => {
+        itemsRows += `
+          <tr>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name} ${i.color ? '(' + i.color + ')' : ''}</td>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td>
+          </tr>`;
+      });
+
+      if (o.shippingCost > 0) {
+        itemsRows += `
+          <tr>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd;">Versand- / Paketpauschale</td>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
+          </tr>`;
+      }
+
+      const totalAmountNum = o.price + o.shippingCost;
+      const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
+
+      const sepaPayload = [
+        "BCD",
+        "002",
+        "1",
+        "SCT",
+        "REVODEB2",
+        "Sefa Demir",
+        "DE20100101780592679808",
+        "EUR" + totalAmountNum.toFixed(2),
+        "",
+        "",
+        "Rechnung " + invoiceNumber
+      ].join("\n");
+
+      invSec.innerHTML = `
+        <div style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: start; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 15px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <svg style="width: 36px; height: 36px; color: #2563eb;" viewBox="0 0 100 100" fill="currentColor">
+                <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/>
+                <polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/>
+                <polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/>
+                <polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/>
+              </svg>
+              <div>
+                <h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0 0 2px 0;">Sefas3DShop</h1>
+                <p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden</p>
+                <p style="margin: 1px 0 0 0; color: #555;">Steuernummer: 52063271982</p>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 0 0 4px 0;">RECHNUNG</h2>
+              <p style="margin: 1px 0;"><strong>Rechnungsnummer:</strong> ${invoiceNumber}</p>
+              <p style="margin: 1px 0;"><strong>Datum:</strong> ${invoiceDate}</p>
+              <p style="margin: 1px 0;"><strong>Sendungsnummer:</strong> ${trackingText}</p>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <p style="font-size: 9px; color: #777; margin: 0 0 2px 0;">Rechnungsempfänger:</p>
+            <div style="font-weight: bold; font-size: 12px;">${o.customer}</div>
+            <div style="color: #444; white-space: pre-line;">${o.address || 'Keine Adresse angegeben'}</div>
+          </div>
+
+          <p style="font-size: 10px; color: #555; margin-bottom: 10px;">Das Lieferdatum entspricht dem Rechnungsdatum.</p>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+            <thead>
+              <tr style="background: #f1f5f9; text-align: left;">
+                <th style="padding: 6px; border-bottom: 2px solid #cbd5e1;">Beschreibung</th>
+                <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: center;">Menge</th>
+                <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: right;">Einzelpreis</th>
+                <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: right;">Gesamt</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsRows}
+            </tbody>
+          </table>
+
+          <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+            <div style="width: 210px;">
+              <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #ddd;">
+                <span>Gesamtbetrag:</span>
+                <strong>${totalAmountStr} €</strong>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px; margin-bottom: 15px;">
+            <div style="font-size: 10px;">
+              <p style="margin: 0 0 2px 0;"><strong>Zahlungsinformationen:</strong></p>
+              <p style="margin: 1px 0;">Empfänger: Sefa Demir</p>
+              <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08</p>
+              <p style="margin: 1px 0;">BIC: REVODEB2</p>
+              <p style="margin: 1px 0;">Bank: Revolut Bank UAB, Zweigniederlassung</p>
+              <p style="margin: 2px 0 0 0; color: #2563eb; font-weight: bold;">💡 Mit Banking-App scannen & bezahlen!</p>
+            </div>
+            <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; display: inline-block;" id="sepaQrCodeTarget"></div>
+          </div>
+
+          <div style="border-top: 1px solid #cbd5e1; padding-top: 10px; font-size: 9px; color: #666; text-align: center;">
+            <p style="margin: 1px 0;">Kleinunternehmer gemäß § 19 UStG wird keine Umsatzsteuer berechnet.</p>
+            <p style="margin: 1px 0;">Vielen Dank für deinen Einkauf bei Sefas3DShop!</p>
+          </div>
+        </div>`;
+
+      invSec.classList.remove('hidden');
+      setTimeout(() => {
+        renderLocalQrCode('sepaQrCodeTarget', sepaPayload);
+        window.print();
+        invSec.classList.add('hidden');
+      }, 300);
+    }
+
+    function printAllInvoices() {
+      const activeOrders = orders.filter(o => Boolean(o.archived) === showingArchive);
+      if (activeOrders.length === 0) {
+        alert("Keine Aufträge in dieser Ansicht vorhanden!");
+        return;
+      }
+
+      const invSec = document.getElementById('invoiceSection');
+      invSec.innerHTML = '';
+
+      activeOrders.forEach((o, index) => {
+        const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
+        const invoiceNumber = generateInvoiceNumberForExisting(o);
+        const trackingText = (o.tracking && o.tracking !== '-') ? o.tracking : 'Wird nachgereicht';
+        
+        let itemsRows = '';
+        o.items.forEach(i => {
+          itemsRows += `
+            <tr>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name} ${i.color ? '(' + i.color + ')' : ''}</td>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td>
+            </tr>`;
+        });
+
+        if (o.shippingCost > 0) {
+          itemsRows += `
+            <tr>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd;">Versand- / Paketpauschale</td>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
+            </tr>`;
+        }
+
+        const totalAmountNum = o.price + o.shippingCost;
+        const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
+
+        invSec.innerHTML += `
+          <div class="page-break-container" style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 15px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <svg style="width: 36px; height: 36px; color: #2563eb;" viewBox="0 0 100 100" fill="currentColor">
+                  <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/>
+                  <polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/>
+                  <polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/>
+                  <polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/>
+                </svg>
+                <div>
+                  <h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0 0 2px 0;">Sefas3DShop</h1>
+                  <p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden</p>
+                  <p style="margin: 1px 0 0 0; color: #555;">Steuernummer: 52063271982</p>
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 0 0 4px 0;">RECHNUNG</h2>
+                <p style="margin: 1px 0;"><strong>Rechnungsnummer:</strong> ${invoiceNumber}</p>
+                <p style="margin: 1px 0;"><strong>Datum:</strong> ${invoiceDate}</p>
+                <p style="margin: 1px 0;"><strong>Sendungsnummer:</strong> ${trackingText}</p>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+              <p style="font-size: 9px; color: #777; margin: 0 0 2px 0;">Rechnungsempfänger:</p>
+              <div style="font-weight: bold; font-size: 12px;">${o.customer}</div>
+              <div style="color: #444; white-space: pre-line;">${o.address || 'Keine Adresse angegeben'}</div>
+            </div>
+
+            <p style="font-size: 10px; color: #555; margin-bottom: 10px;">Das Lieferdatum entspricht dem Rechnungsdatum.</p>
+
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+              <thead>
+                <tr style="background: #f1f5f9; text-align: left;">
+                  <th style="padding: 6px; border-bottom: 2px solid #cbd5e1;">Beschreibung</th>
+                  <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: center;">Menge</th>
+                  <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: right;">Einzelpreis</th>
+                  <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: right;">Gesamt</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsRows}
+              </tbody>
+            </table>
+
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+              <div style="width: 210px;">
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #ddd;">
+                  <span>Gesamtbetrag:</span>
+                  <strong>${totalAmountStr} €</strong>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px; margin-bottom: 15px;">
+              <div style="font-size: 10px;">
+                <p style="margin: 0 0 2px 0;"><strong>Zahlungsinformationen:</strong></p>
+                <p style="margin: 1px 0;">Empfänger: Sefa Demir</p>
+                <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08</p>
+                <p style="margin: 1px 0;">BIC: REVODEB2</p>
+                <p style="margin: 1px 0;">Bank: Revolut Bank UAB, Zweigniederlassung</p>
+                <p style="margin: 2px 0 0 0; color: #2563eb; font-weight: bold;">💡 Mit Banking-App scannen & bezahlen!</p>
+              </div>
+              <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; display: inline-block;" id="batchSepaQr_${index}"></div>
+            </div>
+
+            <div style="border-top: 1px solid #cbd5e1; padding-top: 10px; font-size: 9px; color: #666; text-align: center;">
+              <p style="margin: 1px 0;">Kleinunternehmer gemäß § 19 UStG wird keine Umsatzsteuer berechnet.</p>
+              <p style="margin: 1px 0;">Vielen Dank für deinen Einkauf bei Sefas3DShop!</p>
+            </div>
+          </div>`;
+      });
+
+      invSec.classList.remove('hidden');
+      setTimeout(() => {
+        activeOrders.forEach((o, index) => {
+          const totalAmountNum = o.price + o.shippingCost;
+          const invoiceNumber = generateInvoiceNumberForExisting(o);
+          const sepaPayload = [
+            "BCD",
+            "002",
+            "1",
+            "SCT",
+            "REVODEB2",
+            "Sefa Demir",
+            "DE20100101780592679808",
+            "EUR" + totalAmountNum.toFixed(2),
+            "",
+            "",
+            "Rechnung " + invoiceNumber
+          ].join("\n");
+          
+          renderLocalQrCode(`batchSepaQr_${index}`, sepaPayload);
+        });
+        window.print();
+        invSec.classList.add('hidden');
+      }, 400);
+    }
+
+    function exportAccountingCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+      csvContent += "Typ;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Betrag (€);Zahlungsdatum\n";
+
+      orders.forEach(o => {
+        let total = o.price + o.shippingCost;
+        let type = o.archived ? "Einnahme (Archiviert)" : "Einnahme (Aktiv)";
+        let date = o.orderDate || "";
+        let inv = generateInvoiceNumberForExisting(o);
+        let cust = o.customer.replace(/;/g, ",");
+        // Wenn kein separates Zahlungsdatum eingetragen ist, wird das Erstellungsdatum als Zahlungsdatum genommen
+        let pay = o.paymentDate ? o.paymentDate : (o.orderDate || "");
+        csvContent += `${type};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${pay}\n`;
+      });
+
+      expenses.forEach(ex => {
+        let desc = ex.description.replace(/;/g, ",");
+        csvContent += `Ausgabe;${ex.date || ""};${desc};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')};${ex.date || ""}\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Sefas3DShop_Buchhaltung_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function updateMonthFilterDropdown() {
+      const select = document.getElementById('statsMonthFilter');
+      if (!select) return;
+      const currentSelection = select.value;
+      
+      let monthsSet = new Set();
+      orders.forEach(o => {
+        if (o.orderDate) monthsSet.add(o.orderDate.slice(0, 7));
+        if (o.shipDate) monthsSet.add(o.shipDate.slice(0, 7));
+      });
+      expenses.forEach(ex => {
+        if (ex.date) monthsSet.add(ex.date.slice(0, 7));
+      });
+
+      let sortedMonths = Array.from(monthsSet).sort().reverse();
+      
+      select.innerHTML = '<option value="all">📅 Alle Monate (Gesamt)</option>';
+      sortedMonths.forEach(m => {
+        let parts = m.split('-');
+        let formattedName = `${parts[1]}.${parts[0]}`;
+        select.innerHTML += `<option value="${m}">${formattedName}</option>`;
+      });
+
+      if ([...select.options].some(opt => opt.value === currentSelection)) {
+        select.value = currentSelection;
+      }
+    }
+
+    function renderOrders() {
+      updateMonthFilterDropdown();
+      const tbody = document.getElementById('ordersTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
+
+      orders.forEach((o, idx) => {
+        if (Boolean(o.archived) !== showingArchive) return;
+        if (query && !o.customer.toLowerCase().includes(query) && !o.tracking.toLowerCase().includes(query)) return;
+
+        const fixedInvNum = generateInvoiceNumberForExisting(o);
+
+        if (editingIndex === idx) {
+          let editItemsHtml = `<div id="editArticleRows" class="space-y-2 my-2">`;
+          o.items.forEach(i => {
+            let optionsHtml = '<option value="">-- Farbe --</option>';
+            spools.forEach(s => {
+              optionsHtml += `<option value="${s.name}" ${s.name === i.color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`;
+            });
+            editItemsHtml += `
+              <div class="flex gap-2 items-center edit-article-row bg-slate-950 p-2 rounded-xl border border-slate-800">
+                <input type="text" placeholder="Artikelbezeichnung" value="${i.name}" required class="edit-art-name bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
+                <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-40 focus:outline-none">${optionsHtml}</select>
+                <input type="number" placeholder="Gramm" value="${i.weight || ''}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-20 focus:outline-none">
+                <button type="button" onclick="this.parentElement.remove()" class="text-red-400 text-xs px-2 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+              </div>`;
+          });
+          editItemsHtml += `</div><button type="button" onclick="addEditArticleRow()" class="bg-slate-800 hover:bg-slate-700 text-blue-400 text-xs px-2 py-1 rounded border border-blue-500/30 cursor-pointer">+ Artikel hinzufügen</button>`;
+
+          tbody.innerHTML += `
+            <tr class="border-b border-slate-800 bg-slate-900/90">
+              <td class="p-3 space-y-1">
+                <input type="text" id="edit-cust-${idx}" value="${o.customer}" placeholder="Kundenname" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-full">
+                <input type="text" id="edit-addr-${idx}" value="${o.address || ''}" placeholder="Lieferadresse..." class="bg-slate-950 border border-blue-500 rounded p-1 text-[11px] text-white w-full">
+              </td>
+              <td class="p-3 text-xs font-mono text-cyan-400">${fixedInvNum}</td>
+              <td class="p-3">${editItemsHtml}</td>
+              <td class="p-3">
+                <select id="edit-print-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
+                  <option ${o.printer==='CR-10 Smart Pro #1'?'selected':''}>CR-10 Smart Pro #1</option>
+                  <option ${o.printer==='Ender 3 V3'?'selected':''}>Ender 3 V3</option>
+                  <option ${o.printer==='Anycubic Kobra'?'selected':''}>Anycubic Kobra</option>
+                  <option ${o.printer==='CR-10 Smart Pro #2'?'selected':''}>CR-10 Smart Pro #2</option>
+                </select>
+              </td>
+              <td class="p-3 space-y-1 text-xs">
+                <div>Erst: <input type="date" id="edit-date-${idx}" value="${o.orderDate || ''}" class="bg-slate-950 border border-blue-500 rounded p-0.5 text-white"></div>
+                <div>Zahl: <input type="date" id="edit-pay-${idx}" value="${o.paymentDate || ''}" class="bg-slate-950 border border-blue-500 rounded p-0.5 text-white" title="Zahlungseingang"></div>
+                <div>Vers: <input type="date" id="edit-ship-${idx}" value="${o.shipDate || ''}" class="bg-slate-950 border border-blue-500 rounded p-0.5 text-white"></div>
+              </td>
+              <td class="p-3">
+                <select id="edit-stat-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
+                  <option ${o.status==='Offen'?'selected':''}>Offen</option>
+                  <option ${o.status==='In Arbeit'?'selected':''}>In Arbeit</option>
+                  <option ${o.status==='Fertig'?'selected':''}>Fertig</option>
+                </select>
+              </td>
+              <td class="p-3"><input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-20"></td>
+              <td class="p-3">
+                <select id="edit-label-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
+                  <option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>✅ Ja</option>
+                  <option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>❌ Nein</option>
+                  <option value="🟡 Wartet auf Zahlung" ${o.label==='🟡 Wartet auf Zahlung'?'selected':''}>🟡 Wartet auf Zahlung</option>
+                </select>
+              </td>
+              <td class="p-3">
+                <select id="edit-packed-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
+                  <option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>✅ Ja</option>
+                  <option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>❌ Nein</option>
+                </select>
+              </td>
+              <td class="p-3"><input type="text" id="edit-track-${idx}" value="${o.tracking}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-20"></td>
+              <td class="p-3 text-right">
+                <button onclick="saveEdit(${idx})" class="bg-green-600 text-white px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-check"></i></button>
+                <button onclick="cancelEdit()" class="bg-slate-700 text-white px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+              </td>
+            </tr>`;
+        } else {
+          let itemsHtml = '<div class="space-y-1">';
+          o.items.forEach(i => {
+            itemsHtml += `<div class="text-xs text-white">• ${i.name} <span class="text-purple-300">(${i.color || 'Std'}, ${i.weight || 0}g)</span></div>`;
+          });
+          itemsHtml += '</div>';
+
+          let archiveBtnHtml = o.archived 
+            ? `<button onclick="toggleArchiveOrder(${o.id})" title="Aus Archiv wiederherstellen" class="text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded text-xs cursor-pointer">📥 Aktivieren</button>`
+            : `<button onclick="toggleArchiveOrder(${o.id})" title="Ins Archiv verschieben" class="text-purple-300 bg-purple-500/10 px-2 py-1 rounded text-xs cursor-pointer">📦 Archiv</button>`;
+
+          tbody.innerHTML += `
+            <tr class="hover:bg-slate-800/40 border-b border-slate-800">
+              <td class="p-3 font-medium text-white">${o.customer}<div class="text-[10px] text-slate-400">${o.address || ''}</div></td>
+              <td class="p-3 text-xs font-mono text-cyan-300 font-bold">${fixedInvNum}</td>
+              <td class="p-3">${itemsHtml}</td>
+              <td class="p-3">
+                <select onchange="updateField(${o.id}, 'printer', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none">
+                  <option value="CR-10 Smart Pro #1" ${o.printer === 'CR-10 Smart Pro #1' ? 'selected' : ''}>CR-10 Smart Pro #1</option>
+                  <option value="Ender 3 V3" ${o.printer === 'Ender 3 V3' ? 'selected' : ''}>Ender 3 V3</option>
+                  <option value="Anycubic Kobra" ${o.printer === 'Anycubic Kobra' ? 'selected' : ''}>Anycubic Kobra</option>
+                  <option value="CR-10 Smart Pro #2" ${o.printer === 'CR-10 Smart Pro #2' ? 'selected' : ''}>CR-10 Smart Pro #2</option>
+                </select>
+              </td>
+              <td class="p-3 text-xs text-slate-300 space-y-1">
+                <div>📥 ${o.orderDate || '-'}</div>
+                <div>💶 <input type="date" value="${o.paymentDate || ''}" onchange="updateField(${o.id}, 'paymentDate', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1 text-[11px] text-white" title="Zahlungseingangsdatum"></div>
+              </td>
+              <td class="p-3">
+                <select onchange="updateField(${o.id}, 'status', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-yellow-300 focus:outline-none">
+                  <option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option>
+                  <option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option>
+                  <option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option>
+                </select>
+              </td>
+              <td class="p-3 text-xs text-emerald-400 font-bold">${(o.price + o.shippingCost).toFixed(2).replace('.', ',')} €</td>
+              <td class="p-3">
+                <select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none">
+                  <option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
+                  <option value="❌ Nein" ${o.label === '❌ Nein' ? 'selected' : ''}>❌ Nein</option>
+                  <option value="🟡 Wartet auf Zahlung" ${o.label === '🟡 Wartet auf Zahlung' ? 'selected' : ''}>🟡 Wartet auf Zahlung</option>
+                </select>
+              </td>
+              <td class="p-3">
+                <select onchange="updateField(${o.id}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none">
+                  <option value="✅ Ja" ${o.packed === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
+                  <option value="❌ Nein" ${o.packed === '❌ Nein' ? 'selected' : ''}>❌ Nein</option>
+                </select>
+              </td>
+              <td class="p-3 text-xs font-mono text-blue-400">${o.tracking}</td>
+              <td class="p-3 text-right space-x-1">
+                ${archiveBtnHtml}
+                <button onclick="printInvoice(${idx})" title="Rechnung erstellen" class="text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded text-xs cursor-pointer">📄 Rechnung</button>
+                <button onclick="printBoxLabel(${idx})" title="QR Etikett drucken" class="text-amber-300 bg-amber-500/10 px-2 py-1 rounded text-xs cursor-pointer">🏷️ QR</button>
+                <button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-2 py-1 rounded text-xs cursor-pointer">✏️</button>
+                <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+              </td>
+            </tr>`;
+        }
+      });
+      updateStats();
+    }
+
+    function updateStats() {
+      const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
+      let totalRev = 0, totalExp = 0, totalW = 0, openC = 0;
+
+      orders.forEach(o => {
+        let orderTotalWeight = 0;
+        if (o.items && Array.isArray(o.items)) {
+          o.items.forEach(i => orderTotalWeight += (i.weight || 0));
+        }
+
+        if (!o.archived) {
+          if (selectedMonth === 'all' || (o.orderDate && o.orderDate.startsWith(selectedMonth))) {
+            totalRev += (o.price + o.shippingCost);
+            totalW += orderTotalWeight;
+          }
+          if (o.status !== 'Fertig') openC++;
+        } else {
+          let targetDate = o.shipDate || o.orderDate || '';
+          if (selectedMonth === 'all' || (targetDate && targetDate.startsWith(selectedMonth))) {
+            totalRev += (o.price + o.shippingCost);
+            totalW += orderTotalWeight;
+          }
+        }
+      });
+
+      expenses.forEach(ex => {
+        if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) {
+          totalExp += ex.amount;
+        }
+      });
+
+      let netProfit = totalRev - totalExp;
+
+      if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerText = openC;
+      if (document.getElementById('statFilament')) document.getElementById('statFilament').innerText = totalW + ' g';
     }
 
     function renderPrinters() {
       const grid = document.getElementById('printersGrid');
       if (!grid) return;
       grid.innerHTML = '';
-      printers.forEach(p => {
-        grid.innerHTML += `<div class="card p-4 rounded-2xl space-y-1"><h3 class="font-bold text-white text-sm">${p.name}</h3><p class="text-xs text-slate-400">${p.desc} (${p.status})</p></div>`;
-      });
-    }
+      printers.forEach((p, idx) => {
+        let statusColor = 'text-blue-400';
+        if (p.status === 'In Arbeit') statusColor = 'text-yellow-400 font-bold';
+        if (p.status === 'Außer Betrieb') statusColor = 'text-red-400 font-bold';
 
-    function updateStats() {
-      let rev = 0, openC = 0, totalW = 0;
-      orders.forEach(o => {
-        if (!o.archived) {
-          rev += ((o.price || 0) + (o.shippingCost || 0));
-          if (o.status !== 'Fertig') openC++;
-        }
-        o.items?.forEach(i => totalW += (i.weight || 0));
+        grid.innerHTML += `
+          <div class="card p-4 rounded-2xl space-y-3">
+            <div class="flex justify-between items-center">
+              <h3 class="font-bold text-white text-sm">${p.name}</h3>
+              <select onchange="updatePrinterStatus(${idx}, this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs ${statusColor} focus:outline-none">
+                <option value="Frei" ${p.status === 'Frei' ? 'selected' : ''}>🟢 Frei</option>
+                <option value="In Arbeit" ${p.status === 'In Arbeit' ? 'selected' : ''}>🟡 In Arbeit</option>
+                <option value="Außer Betrieb" ${p.status === 'Außer Betrieb' ? 'selected' : ''}>🔴 Außer Betrieb</option>
+              </select>
+            </div>
+            <p class="text-xs text-slate-400">${p.desc}</p>
+          </div>`;
       });
-      document.getElementById('statRevenue').innerText = rev.toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('statProfit').innerText = rev.toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('statOpenOrders').innerText = openC;
-      document.getElementById('statFilament').innerText = totalW + 'g';
-    }
-
-    function exportAccountingCSV() {
-      let csv = "data:text/csv;charset=utf-8,\uFEFFRechnung;Kunde;Datum;Betrag\n";
-      orders.forEach(o => { csv += `${o.invoiceNumber};${o.customer};${o.orderDate};${((o.price||0)+(o.shippingCost||0)).toFixed(2)}\n`; });
-      const link = document.createElement("a");
-      link.setAttribute("href", encodeURI(csv));
-      link.setAttribute("download", "Buchhaltung.csv");
-      document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
   </script>
 </body>
