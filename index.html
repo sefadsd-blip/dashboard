@@ -88,7 +88,7 @@
           </h1>
           <p class="text-slate-400 text-xs flex items-center gap-1.5">
             <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500"></span> 
-            <span id="syncStatus">Mit Cloud verbunden</span>
+            <span id="syncStatus">Lokal & Cloud bereit</span>
           </p>
         </div>
       </div>
@@ -368,8 +368,8 @@
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
     const TELEGRAM_TOKEN = '8918418759:AAHEyb2eJYwvY8OTyb0lEWjin7MstbsEdMM';
 
-    // Fest eingetragene exakte Kunden 1 bis 11
-    const FIXED_INITIAL_ORDERS = [
+    // Garantiert feste Basis-Kunden 1 bis 11
+    const GUARANTEED_CUSTOMERS = [
       {"id":1, "customer":"Paul Hartmann", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-01", "paymentDate":"2026-02-01", "invoiceNumber":"RE-2026-0001", "shipDate":"2026-02-01", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
       {"id":2, "customer":"Gabi Thomas", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-02", "paymentDate":"2026-02-02", "invoiceNumber":"RE-2026-0002", "shipDate":"2026-02-02", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
       {"id":3, "customer":"Antje", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-03", "paymentDate":"2026-02-03", "invoiceNumber":"RE-2026-0003", "shipDate":"2026-02-03", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
@@ -403,16 +403,15 @@
     let telegramChatId = '8316865010';
 
     try {
-      // 1. Zwingt den Speicher, die ersten 11 Kunden immer mit exakt diesen Namen und Nummern zu laden
-      let loadedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
-      if (!Array.isArray(loadedOrders) || loadedOrders.length === 0) {
-        orders = FIXED_INITIAL_ORDERS;
+      let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
+      if (!Array.isArray(savedOrders) || savedOrders.length === 0) {
+        orders = GUARANTEED_CUSTOMERS;
       } else {
-        // Sicherstellen, dass die ersten 11 ID-Slots immer mit den korrekten Namen überschrieben werden falls verschoben
-        orders = loadedOrders;
-        FIXED_INITIAL_ORDERS.forEach((fixedItem, idx) => {
-          if (!orders.some(o => o.invoiceNumber === fixedItem.invoiceNumber)) {
-            orders.push(fixedItem);
+        orders = savedOrders;
+        // Fehlende Basis-Kunden automatisch ergänzen falls nicht vorhanden
+        GUARANTEED_CUSTOMERS.forEach(g => {
+          if (!orders.some(o => o.invoiceNumber === g.invoiceNumber)) {
+            orders.push(g);
           }
         });
       }
@@ -423,12 +422,11 @@
       if (Array.isArray(savedPrinters)) printers = savedPrinters;
       telegramChatId = localStorage.getItem('sefas_telegram_chat_id') || '8316865010';
     } catch(e) {
-      orders = FIXED_INITIAL_ORDERS;
+      orders = GUARANTEED_CUSTOMERS;
       spools = BACKUP_SPOOLS;
       expenses = [];
     }
 
-    // Sortiert die Liste so, dass RE-2026-0001 bis 0011 immer korrekt an erster Stelle stehen
     orders.sort((a, b) => (a.invoiceNumber || "").localeCompare(b.invoiceNumber || ""));
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -462,6 +460,12 @@
           const json = await res.json();
           if (json && Array.isArray(json.orders) && json.orders.length > 0) {
             orders = json.orders;
+            // Sicherstellen dass die ersten 11 da bleiben
+            GUARANTEED_CUSTOMERS.forEach(g => {
+              if (!orders.some(o => o.invoiceNumber === g.invoiceNumber)) {
+                orders.push(g);
+              }
+            });
             if (Array.isArray(json.spools)) spools = json.spools;
             if (Array.isArray(json.expenses)) expenses = json.expenses;
             if (Array.isArray(json.printers)) printers = json.printers;
@@ -474,11 +478,11 @@
             updateCustomerDropdowns();
             alert("✅ Daten erfolgreich von der Cloud abgerufen!");
           } else {
-            alert("Die Cloud ist leer.");
+            alert("⚠️ Die Cloud enthält keine gültigen Bestelldaten.");
           }
         }
       } catch(e) {
-        alert("Hinweis: Cloud konnte nicht erreicht werden.");
+        alert("❌ Cloud konnte nicht erreicht werden (Netzwerkfehler).");
       }
     }
 
@@ -1478,7 +1482,7 @@
 
       if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statProfit')) document.getElementById('statProfit'].innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerText = openC;
       if (document.getElementById('statFilament')) document.getElementById('statFilament').innerText = totalW + ' g';
     }
