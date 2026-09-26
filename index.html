@@ -15,7 +15,6 @@
       #printSection, #printSection *, #invoiceSection, #invoiceSection * { visibility: visible !important; }
       #printSection { position: fixed !important; left: 0; top: 0; width: 100vw; height: 100vh; background: #fff; color: #000; display: flex; justify-content: center; align-items: center; }
       #invoiceSection { position: absolute !important; left: 0; top: 0; width: 100%; background: #fff; color: #000; padding: 10px; display: block; }
-      .page-break-container { page-break-after: always; break-after: page; }
       @page { size: auto; margin: 5mm; }
     }
   </style>
@@ -29,11 +28,9 @@
     
     <!-- HEADER -->
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800 p-4 rounded-2xl border border-slate-700 gap-4">
-      <div class="flex items-center space-x-3">
-        <div>
-          <h1 class="text-xl font-bold text-white">Sefas<span class="text-cyan-400">3d</span>shop</h1>
-          <p class="text-slate-400 text-xs">Dashboard v3 aktiv</p>
-        </div>
+      <div>
+        <h1 class="text-xl font-bold text-white">Sefas<span class="text-cyan-400">3d</span>shop</h1>
+        <p class="text-slate-400 text-xs">Dashboard aktiv & stabil</p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <button onclick="exportAccountingCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer">📊 CSV Export</button>
@@ -136,21 +133,21 @@
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
 
     const FIXED_ORDERS = [
-      {"id":1, "customer":"Paul Hartmann", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-01", "invoiceNumber":"RE-2026-0001", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":2, "customer":"Gabi Thomas", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-02", "invoiceNumber":"RE-2026-0002", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":3, "customer":"Antje", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-03", "invoiceNumber":"RE-2026-0003", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":4, "customer":"Tobias", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-04", "invoiceNumber":"RE-2026-0004", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":5, "customer":"Dunja", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-05", "invoiceNumber":"RE-2026-0005", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":6, "customer":"Sabine Beeween", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-06", "invoiceNumber":"RE-2026-0006", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":7, "customer":"Ralf Hartmann", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-07", "invoiceNumber":"RE-2026-0007", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":8, "customer":"Renate", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-08", "invoiceNumber":"RE-2026-0008", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":9, "customer":"Tchoffo", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-09", "invoiceNumber":"RE-2026-0009", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":10,"customer":"Silke Schwarzer", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-10", "invoiceNumber":"RE-2026-0010", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":11,"customer":"Iris", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-11", "invoiceNumber":"RE-2026-0011", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]}
+      { id: 1, customer: "Paul Hartmann", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-01", invoiceNumber: "RE-2026-0001", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
+      { id: 2, customer: "Gabi Thomas", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-02", invoiceNumber: "RE-2026-0002", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
+      { id: 3, customer: "Antje", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-03", invoiceNumber: "RE-2026-0003", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
+      { id: 4, customer: "Tobias", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-04", invoiceNumber: "RE-2026-0004", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
+      { id: 5, customer: "Dunja", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-05", invoiceNumber: "RE-2026-0005", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
+      { id: 6, customer: "Sabine Beeween", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-06", invoiceNumber: "RE-2026-0006", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
+      { id: 7, customer: "Ralf Hartmann", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-07", invoiceNumber: "RE-2026-0007", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
+      { id: 8, customer: "Renate", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-08", invoiceNumber: "RE-2026-0008", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
+      { id: 9, customer: "Tchoffo", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-09", invoiceNumber: "RE-2026-0009", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
+      { id: 10, customer: "Silke Schwarzer", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-10", invoiceNumber: "RE-2026-0010", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] },
+      { id: 11, customer: "Iris", address: "Rahden", printer: "Ender 3 V3", status: "Fertig", price: 10, shippingCost: 7, tracking: "-", orderDate: "2026-02-11", invoiceNumber: "RE-2026-0011", archived: true, items: [{ name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50 }] }
     ];
 
     let orders = [];
-    let spools = [{"id":1,"name":"PLA Schwarz","remainingGrams":4160}];
+    let spools = [{ id: 1, name: "PLA Schwarz", remainingGrams: 4160 }];
     let printers = [
       { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
       { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
@@ -162,7 +159,7 @@
 
     function init() {
       try {
-        let saved = JSON.parse(localStorage.getItem('sefas_final_v3'));
+        let saved = JSON.parse(localStorage.getItem('sefas_stable_v4'));
         if (saved && Array.isArray(saved.orders) && saved.orders.length > 0) {
           orders = saved.orders;
           spools = saved.spools || spools;
@@ -171,7 +168,6 @@
         } else {
           orders = FIXED_ORDERS;
         }
-        // Garantiere, dass die 11 festen Kunden immer vorhanden sind
         FIXED_ORDERS.forEach(f => {
           if (!orders.some(o => o.invoiceNumber === f.invoiceNumber)) {
             orders.push(f);
@@ -190,7 +186,7 @@
     });
 
     function save() {
-      localStorage.setItem('sefas_final_v3', JSON.stringify({ orders, spools, expenses, printers }));
+      localStorage.setItem('sefas_stable_v4', JSON.stringify({ orders, spools, expenses, printers }));
       renderAll();
     }
 
