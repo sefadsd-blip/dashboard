@@ -781,7 +781,6 @@
 
     function generateNewInvoiceNumber(orderDateStr) {
       const year = orderDateStr ? orderDateStr.slice(0, 4) : new Date().getFullYear().toString();
-      // Finde alle Rechnungen für dieses Jahr
       let maxNum = 0;
       orders.forEach(o => {
         if (o.invoiceNumber && o.invoiceNumber.startsWith(`RE-${year}-`)) {
@@ -1253,7 +1252,8 @@
         let date = o.orderDate || "";
         let inv = generateInvoiceNumberForExisting(o);
         let cust = o.customer.replace(/;/g, ",");
-        let pay = o.paymentDate || "Offen";
+        // Wenn kein separates Zahlungsdatum eingetragen ist, wird das Erstellungsdatum als Zahlungsdatum genommen
+        let pay = o.paymentDate ? o.paymentDate : (o.orderDate || "");
         csvContent += `${type};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${pay}\n`;
       });
 
