@@ -88,7 +88,7 @@
           </h1>
           <p class="text-slate-400 text-xs flex items-center gap-1.5">
             <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500"></span> 
-            <span id="syncStatus">Lokal & Cloud bereit</span>
+            <span id="syncStatus">Bereit</span>
           </p>
         </div>
       </div>
@@ -366,10 +366,8 @@
 
   <script>
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
-    const TELEGRAM_TOKEN = '8918418759:AAHEyb2eJYwvY8OTyb0lEWjin7MstbsEdMM';
 
-    // Garantiert feste Basis-Kunden 1 bis 11
-    const GUARANTEED_CUSTOMERS = [
+    const INITIAL_CUSTOMERS = [
       {"id":1, "customer":"Paul Hartmann", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-01", "paymentDate":"2026-02-01", "invoiceNumber":"RE-2026-0001", "shipDate":"2026-02-01", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
       {"id":2, "customer":"Gabi Thomas", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-02", "paymentDate":"2026-02-02", "invoiceNumber":"RE-2026-0002", "shipDate":"2026-02-02", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
       {"id":3, "customer":"Antje", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-03", "paymentDate":"2026-02-03", "invoiceNumber":"RE-2026-0003", "shipDate":"2026-02-03", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
@@ -383,7 +381,7 @@
       {"id":11,"customer":"Iris", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-11", "paymentDate":"2026-02-11", "invoiceNumber":"RE-2026-0011", "shipDate":"2026-02-11", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]}
     ];
 
-    const BACKUP_SPOOLS = [
+    const INITIAL_SPOOLS = [
       {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notifiedCount":0,"lastNotifiedDate":""},
       {"id":2,"name":"PETG Weiß","remainingGrams":650,"notifiedCount":0,"lastNotifiedDate":""}
     ];
@@ -402,28 +400,27 @@
     let expenses = [];
     let telegramChatId = '8316865010';
 
+    // Einmaliges Initialisieren oder Laden
     try {
-      let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
+      let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_v2'));
       if (!Array.isArray(savedOrders) || savedOrders.length === 0) {
-        orders = GUARANTEED_CUSTOMERS;
+        orders = INITIAL_CUSTOMERS;
       } else {
         orders = savedOrders;
-        // Fehlende Basis-Kunden automatisch ergänzen falls nicht vorhanden
-        GUARANTEED_CUSTOMERS.forEach(g => {
-          if (!orders.some(o => o.invoiceNumber === g.invoiceNumber)) {
-            orders.push(g);
+        INITIAL_CUSTOMERS.forEach(ic => {
+          if (!orders.some(o => o.invoiceNumber === ic.invoiceNumber)) {
+            orders.push(ic);
           }
         });
       }
 
-      spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || BACKUP_SPOOLS;
-      expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
-      const savedPrinters = JSON.parse(localStorage.getItem('sefas_shop_printers'));
+      spools = JSON.parse(localStorage.getItem('sefas_shop_spools_v2')) || INITIAL_SPOOLS;
+      expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_v2')) || [];
+      let savedPrinters = JSON.parse(localStorage.getItem('sefas_shop_printers_v2'));
       if (Array.isArray(savedPrinters)) printers = savedPrinters;
-      telegramChatId = localStorage.getItem('sefas_telegram_chat_id') || '8316865010';
     } catch(e) {
-      orders = GUARANTEED_CUSTOMERS;
-      spools = BACKUP_SPOOLS;
+      orders = INITIAL_CUSTOMERS;
+      spools = INITIAL_SPOOLS;
       expenses = [];
     }
 
@@ -445,11 +442,10 @@
 
     function saveLocalOnly() {
       try {
-        localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
-        localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
-        localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
-        localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
-        localStorage.setItem('sefas_telegram_chat_id', telegramChatId);
+        localStorage.setItem('sefas_shop_orders_v2', JSON.stringify(orders));
+        localStorage.setItem('sefas_shop_spools_v2', JSON.stringify(spools));
+        localStorage.setItem('sefas_shop_expenses_v2', JSON.stringify(expenses));
+        localStorage.setItem('sefas_shop_printers_v2', JSON.stringify(printers));
       } catch(e) {}
     }
 
@@ -460,29 +456,27 @@
           const json = await res.json();
           if (json && Array.isArray(json.orders) && json.orders.length > 0) {
             orders = json.orders;
-            // Sicherstellen dass die ersten 11 da bleiben
-            GUARANTEED_CUSTOMERS.forEach(g => {
-              if (!orders.some(o => o.invoiceNumber === g.invoiceNumber)) {
-                orders.push(g);
+            INITIAL_CUSTOMERS.forEach(ic => {
+              if (!orders.some(o => o.invoiceNumber === ic.invoiceNumber)) {
+                orders.push(ic);
               }
             });
             if (Array.isArray(json.spools)) spools = json.spools;
             if (Array.isArray(json.expenses)) expenses = json.expenses;
             if (Array.isArray(json.printers)) printers = json.printers;
-            if (json.telegramChatId) { telegramChatId = json.telegramChatId; }
             saveLocalOnly();
             renderOrders();
             renderSpools();
             renderExpenses();
             renderPrinters();
             updateCustomerDropdowns();
-            alert("✅ Daten erfolgreich von der Cloud abgerufen!");
+            alert("✅ Daten erfolgreich von der Cloud geladen!");
           } else {
-            alert("⚠️ Die Cloud enthält keine gültigen Bestelldaten.");
+            alert("⚠️ Cloud-Datenformat ungültig.");
           }
         }
       } catch(e) {
-        alert("❌ Cloud konnte nicht erreicht werden (Netzwerkfehler).");
+        alert("❌ Fehler beim Laden aus der Cloud.");
       }
     }
 
@@ -495,12 +489,12 @@
           body: JSON.stringify({ orders, spools, expenses, printers, telegramChatId })
         });
         if (res.ok) {
-          alert("✅ Daten erfolgreich in der Cloud gespeichert!");
+          alert("✅ Erfolgreich in der Cloud gespeichert!");
         } else {
-          alert("⚠️ Server-Fehler: Die Cloud hat den Speichervorgang abgelehnt.");
+          alert("⚠️ Cloud hat das Speichern abgelehnt.");
         }
       } catch(e) {
-        alert("❌ Netzwerkfehler: Cloud konnte nicht erreicht werden.");
+        alert("❌ Netzwerkfehler beim Speichern.");
       }
     }
 
@@ -516,7 +510,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orders, spools, expenses, printers, telegramChatId })
-      }).catch(e => console.log("Hintergrund-Sync fehlgeschlagen", e));
+      }).catch(e => console.log("Hintergrund-Sync Fehler", e));
     }
 
     function addExpense(e) {
@@ -528,22 +522,14 @@
 
       if (!desc || amount <= 0) return alert("Bitte Beschreibung und Betrag angeben!");
 
-      expenses.unshift({
-        id: Date.now(),
-        description: desc,
-        category: cat,
-        amount: amount,
-        date: date
-      });
-
+      expenses.unshift({ id: Date.now(), description: desc, category: cat, amount: amount, date: date });
       saveAllData();
       document.getElementById('expDesc').value = '';
       document.getElementById('expAmount').value = '';
-      document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
     }
 
     function deleteExpense(id) {
-      if (confirm("Diese Ausgabe wirklich löschen?")) {
+      if (confirm("Ausgabe löschen?")) {
         expenses = expenses.filter(ex => ex.id !== id);
         saveAllData();
       }
@@ -557,7 +543,6 @@
 
       expenses.forEach(ex => {
         if (selectedMonth !== 'all' && (!ex.date || !ex.date.startsWith(selectedMonth))) return;
-
         tbody.innerHTML += `
           <tr class="hover:bg-slate-800/40 border-b border-slate-800">
             <td class="p-3 text-xs text-slate-300">${ex.date || '-'}</td>
@@ -580,19 +565,11 @@
     function updateField(id, field, value) {
       const order = orders.find(o => o.id === id);
       if (!order) return;
-
-      if (field === 'status') {
-        order.status = value;
-      } else if (field === 'printer') {
-        order.printer = value;
-      } else if (field === 'label') {
-        order.label = value;
-      } else if (field === 'packed') {
-        order.packed = value;
-      } else if (field === 'paymentDate') {
-        order.paymentDate = value;
-      }
-
+      if (field === 'status') order.status = value;
+      else if (field === 'printer') order.printer = value;
+      else if (field === 'label') order.label = value;
+      else if (field === 'packed') order.packed = value;
+      else if (field === 'paymentDate') order.paymentDate = value;
       saveAllData();
     }
 
@@ -616,10 +593,7 @@
       const order = orders.find(o => o.id === id);
       if (order) {
         order.archived = !order.archived;
-        const todayStr = new Date().toISOString().slice(0,10);
-        if (order.archived) {
-          if (!order.shipDate) order.shipDate = todayStr;
-        }
+        if (order.archived && !order.shipDate) order.shipDate = new Date().toISOString().slice(0,10);
         saveAllData();
       }
     }
@@ -627,19 +601,13 @@
     function updateCustomerDropdowns() {
       const sel1 = document.getElementById('existingCustomerSelect');
       const sel2 = document.getElementById('templateCustomerSelect');
-      
       if (sel1) {
         sel1.innerHTML = '<option value="">📋 Bestehenden Kunden laden...</option>';
-        orders.forEach(o => {
-          sel1.innerHTML += `<option value="${o.id}">${o.customer} (${o.tracking && o.tracking !== '-' ? o.tracking : 'Keine Tracking'})</option>`;
-        });
+        orders.forEach(o => { sel1.innerHTML += `<option value="${o.id}">${o.customer}</option>`; });
       }
-
       if (sel2) {
         sel2.innerHTML = '<option value="">👤 Kunden auswählen (zieht Sendungsnummer)...</option>';
-        orders.forEach(o => {
-          sel2.innerHTML += `<option value="${o.id}">${o.customer} (${o.tracking && o.tracking !== '-' ? o.tracking : 'Keine Tracking'})</option>`;
-        });
+        orders.forEach(o => { sel2.innerHTML += `<option value="${o.id}">${o.customer}</option>`; });
       }
     }
 
@@ -647,7 +615,6 @@
       if (!orderId) return;
       const order = orders.find(o => o.id == orderId);
       if (!order) return;
-
       document.getElementById('customer').value = order.customer || '';
       document.getElementById('address').value = order.address || '';
       document.getElementById('tracking').value = (order.tracking && order.tracking !== '-') ? order.tracking : '';
@@ -666,7 +633,6 @@
       if (!orderId) return;
       const o = orders.find(item => item.id == orderId);
       if (!o) return;
-
       const track = (o.tracking && o.tracking !== '-') ? o.tracking : '[Sendungsnummer einfügen]';
 
       document.getElementById('templateText1').value = `Hallo ${o.customer},\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.`;
@@ -677,11 +643,7 @@
 
     function copyTemplate(num) {
       const text = document.getElementById(`templateText${num}`).value;
-      navigator.clipboard.writeText(text).then(() => {
-        alert(`✅ Nachricht-Vorlage ${num} wurde in die Zwischenablage kopiert!`);
-      }).catch(() => {
-        alert("Fehler beim Kopieren.");
-      });
+      navigator.clipboard.writeText(text).then(() => alert(`✅ Vorlage ${num} kopiert!`));
     }
 
     function renderSpools() {
@@ -694,14 +656,13 @@
       spools.forEach((s, idx) => {
         const isLow = s.remainingGrams < 250;
         if (isLow) lowSpools.push(s);
-
         container.innerHTML += `
           <div class="p-2.5 rounded-xl border text-xs flex justify-between items-center ${isLow ? 'bg-red-950/40 border-red-500/60 pulse-low-spool' : 'bg-slate-900 border-slate-700/60'}">
             <span class="font-semibold text-white">${s.name}</span>
             <div class="flex items-center space-x-2">
-              <span onclick="editSpoolGrams(${idx})" class="${isLow ? 'text-red-400 font-bold' : 'text-slate-300'} cursor-pointer hover:underline" title="Klicken zum Bearbeiten">${s.remainingGrams}g</span>
-              <button onclick="editSpoolGrams(${idx})" class="text-slate-400 hover:text-white px-1 cursor-pointer" title="Gewicht ändern"><i class="fa-solid fa-pen text-[10px]"></i></button>
-              <button onclick="deleteSpool(${idx})" class="text-red-400 px-1 cursor-pointer" title="Spule löschen"><i class="fa-solid fa-xmark"></i></button>
+              <span onclick="editSpoolGrams(${idx})" class="${isLow ? 'text-red-400 font-bold' : 'text-slate-300'} cursor-pointer hover:underline">${s.remainingGrams}g</span>
+              <button onclick="editSpoolGrams(${idx})" class="text-slate-400 hover:text-white px-1 cursor-pointer"><i class="fa-solid fa-pen text-[10px]"></i></button>
+              <button onclick="deleteSpool(${idx})" class="text-red-400 px-1 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
             </div>
           </div>`;
       });
@@ -709,16 +670,14 @@
       if (lowSpools.length > 0) {
         banner.classList.remove('hidden');
         banner.innerHTML = `<i class="fa-solid fa-bell text-red-400"></i> Spulen-Alarm: ${lowSpools.map(s => `${s.name} (${s.remainingGrams}g)`).join(', ')} unter 250g!`;
-      } else { 
-        banner.classList.add('hidden'); 
-      }
+      } else { banner.classList.add('hidden'); }
       updateSpoolDropdowns();
     }
 
     function addSpoolPrompt() {
-      const name = prompt("Name/Farbe der Spule (z.B. PLA Rot):");
+      const name = prompt("Name/Farbe der Spule:");
       if (!name) return;
-      const grams = parseInt(prompt("Gewicht in Gramm (z.B. 1000):", "1000")) || 1000;
+      const grams = parseInt(prompt("Gramm:", "1000")) || 1000;
       spools.push({ id: Date.now(), name, remainingGrams: grams, notifiedCount: 0, lastNotifiedDate: "" });
       saveAllData();
     }
@@ -728,15 +687,12 @@
       const newGrams = prompt(`Neues Gewicht für "${current.name}" in Gramm:`, current.remainingGrams);
       if (newGrams !== null && !isNaN(parseInt(newGrams))) {
         spools[idx].remainingGrams = parseInt(newGrams);
-        if (spools[idx].remainingGrams >= 250) {
-          spools[idx].notifiedCount = 0;
-        }
         saveAllData();
       }
     }
 
     function deleteSpool(idx) {
-      if (confirm(`Spule "${spools[idx].name}" wirklich löschen?`)) {
+      if (confirm("Spule löschen?")) {
         spools.splice(idx, 1);
         saveAllData();
       }
@@ -766,9 +722,7 @@
       container.appendChild(div);
     }
 
-    function addPresetArticle(presetName) {
-      addArticleInputRow(presetName);
-    }
+    function addPresetArticle(presetName) { addArticleInputRow(presetName); }
 
     function addEditArticleRow(name = '', color = '', weight = '') {
       const container = document.getElementById('editArticleRows');
@@ -776,9 +730,7 @@
       const div = document.createElement('div');
       div.className = "flex gap-2 items-center edit-article-row bg-slate-950 p-2 rounded-xl border border-slate-800";
       let optionsHtml = '<option value="">-- Farbe --</option>';
-      spools.forEach(s => {
-        optionsHtml += `<option value="${s.name}" ${s.name === color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`;
-      });
+      spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
       div.innerHTML = `
         <input type="text" placeholder="Artikelbezeichnung" value="${name}" required class="edit-art-name bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
         <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-40 focus:outline-none">${optionsHtml}</select>
@@ -797,7 +749,7 @@
           if (num > maxNum) maxNum = num;
         }
       });
-      const nextNum = Math.max(12, maxNum + 1);
+      const nextNum = Math.max(11, maxNum + 1);
       return `RE-${year}-${nextNum.toString().padStart(4, '0')}`;
     }
 
@@ -819,7 +771,6 @@
           const w = parseInt(weightInputs[idx].value) || 0;
           const col = colorInputs[idx].value;
           itemsList.push({ name: val, color: col, weight: w });
-
           if (col && w > 0) {
             const spool = spools.find(s => s.name === col);
             if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - w);
@@ -829,7 +780,6 @@
       if (itemsList.length === 0) return alert("Bitte Artikel eintragen!");
       
       const customDate = document.getElementById('orderDate').value || new Date().toISOString().slice(0,10);
-      const payDate = document.getElementById('paymentDate').value || '';
       const fixedInvoiceNum = generateNewInvoiceNumber(customDate);
 
       orders.unshift({
@@ -844,7 +794,7 @@
         shippingCost: parseFloat(document.getElementById('shipping').value) || 0,
         tracking: document.getElementById('tracking').value || '-',
         orderDate: customDate,
-        paymentDate: payDate,
+        paymentDate: document.getElementById('paymentDate').value || '',
         invoiceNumber: fixedInvoiceNum,
         shipDate: '',
         archived: false,
@@ -853,25 +803,16 @@
       saveAllData();
       document.getElementById('orderForm').reset();
       document.getElementById('orderDate').value = new Date().toISOString().slice(0,10);
-      document.getElementById('existingCustomerSelect').value = "";
     }
 
-    function startEdit(idx) {
-      editingIndex = idx;
-      renderOrders();
-    }
-
-    function cancelEdit() {
-      editingIndex = -1;
-      renderOrders();
-    }
+    function startEdit(idx) { editingIndex = idx; renderOrders(); }
+    function cancelEdit() { editingIndex = -1; renderOrders(); }
 
     function saveEdit(idx) {
       const nameInputs = document.querySelectorAll('.edit-art-name');
       const colorInputs = document.querySelectorAll('.edit-art-color');
       const weightInputs = document.querySelectorAll('.edit-art-weight');
       const updatedItems = [];
-
       const oldOrder = orders[idx];
 
       nameInputs.forEach((inp, i) => {
@@ -883,7 +824,7 @@
         }
       });
 
-      if (updatedItems.length === 0) return alert("Ein Auftrag muss mindestens einen Artikel haben!");
+      if (updatedItems.length === 0) return alert("Mindestens ein Artikel erforderlich!");
 
       if (oldOrder.items) {
         oldOrder.items.forEach(oldItem => {
@@ -971,135 +912,58 @@
       if (!container) return;
       container.innerHTML = '';
       try {
-        new QRCode(container, {
-          text: text,
-          width: 75,
-          height: 75,
-          colorDark: "#000000",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.M
-        });
-      } catch(e) {
-        container.innerHTML = "QR Fehler";
-      }
+        new QRCode(container, { text: text, width: 75, height: 75, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+      } catch(e) {}
     }
 
     function printInvoice(idx) {
       const o = orders[idx];
       const invSec = document.getElementById('invoiceSection');
       const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
-      
       const invoiceNumber = generateInvoiceNumberForExisting(o);
       const trackingText = (o.tracking && o.tracking !== '-') ? o.tracking : 'Wird nachgereicht';
       
       let itemsRows = '';
       o.items.forEach(i => {
-        itemsRows += `
-          <tr>
-            <td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name} ${i.color ? '(' + i.color + ')' : ''}</td>
-            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
-            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td>
-            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td>
-          </tr>`;
+        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name} ${i.color ? '(' + i.color + ')' : ''}</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td></tr>`;
       });
-
       if (o.shippingCost > 0) {
-        itemsRows += `
-          <tr>
-            <td style="padding: 6px; border-bottom: 1px solid #ddd;">Versand- / Paketpauschale</td>
-            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
-            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
-            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
-          </tr>`;
+        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">Versandpauschale</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td></tr>`;
       }
 
       const totalAmountNum = o.price + o.shippingCost;
-      const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
-
-      const sepaPayload = [
-        "BCD",
-        "002",
-        "1",
-        "SCT",
-        "REVODEB2",
-        "Sefa Demir",
-        "DE20100101780592679808",
-        "EUR" + totalAmountNum.toFixed(2),
-        "",
-        "",
-        "Rechnung " + invoiceNumber
-      ].join("\n");
+      const sepaPayload = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
 
       invSec.innerHTML = `
         <div style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px;">
           <div style="display: flex; justify-content: space-between; align-items: start; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 15px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <svg style="width: 36px; height: 36px; color: #2563eb;" viewBox="0 0 100 100" fill="currentColor">
-                <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/>
-                <polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/>
-                <polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/>
-                <polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/>
-              </svg>
-              <div>
-                <h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0 0 2px 0;">Sefas3DShop</h1>
-                <p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden</p>
-                <p style="margin: 1px 0 0 0; color: #555;">Steuernummer: 52063271982</p>
-              </div>
+            <div>
+              <h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0 0 2px 0;">Sefas3DShop</h1>
+              <p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden</p>
             </div>
             <div style="text-align: right;">
               <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 0 0 4px 0;">RECHNUNG</h2>
               <p style="margin: 1px 0;"><strong>Rechnungsnummer:</strong> ${invoiceNumber}</p>
               <p style="margin: 1px 0;"><strong>Datum:</strong> ${invoiceDate}</p>
-              <p style="margin: 1px 0;"><strong>Sendungsnummer:</strong> ${trackingText}</p>
             </div>
           </div>
-
           <div style="margin-bottom: 15px;">
-            <p style="font-size: 9px; color: #777; margin: 0 0 2px 0;">Rechnungsempfänger:</p>
             <div style="font-weight: bold; font-size: 12px;">${o.customer}</div>
-            <div style="color: #444; white-space: pre-line;">${o.address || 'Keine Adresse angegeben'}</div>
+            <div style="color: #444; white-space: pre-line;">${o.address || ''}</div>
           </div>
-
-          <p style="font-size: 10px; color: #555; margin-bottom: 10px;">Das Lieferdatum entspricht dem Rechnungsdatum.</p>
-
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
-            <thead>
-              <tr style="background: #f1f5f9; text-align: left;">
-                <th style="padding: 6px; border-bottom: 2px solid #cbd5e1;">Beschreibung</th>
-                <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: center;">Menge</th>
-                <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: right;">Einzelpreis</th>
-                <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: right;">Gesamt</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsRows}
-            </tbody>
+            <thead><tr style="background: #f1f5f9; text-align: left;"><th style="padding: 6px; border-bottom: 2px solid #cbd5e1;">Beschreibung</th><th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: center;">Menge</th><th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: right;">Einzelpreis</th><th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: right;">Gesamt</th></tr></thead>
+            <tbody>${itemsRows}</tbody>
           </table>
-
           <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
-            <div style="width: 210px;">
-              <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #ddd;">
-                <span>Gesamtbetrag:</span>
-                <strong>${totalAmountStr} €</strong>
-              </div>
-            </div>
+            <div style="width: 210px; display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #ddd;"><span>Gesamtbetrag:</span><strong>${totalAmountNum.toFixed(2).replace('.', ',')} €</strong></div>
           </div>
-
           <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px; margin-bottom: 15px;">
             <div style="font-size: 10px;">
               <p style="margin: 0 0 2px 0;"><strong>Zahlungsinformationen:</strong></p>
-              <p style="margin: 1px 0;">Empfänger: Sefa Demir</p>
-              <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08</p>
-              <p style="margin: 1px 0;">BIC: REVODEB2</p>
-              <p style="margin: 1px 0;">Bank: Revolut Bank UAB, Zweigniederlassung</p>
-              <p style="margin: 2px 0 0 0; color: #2563eb; font-weight: bold;">💡 Mit Banking-App scannen & bezahlen!</p>
+              <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08 | BIC: REVODEB2</p>
             </div>
-            <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; display: inline-block;" id="sepaQrCodeTarget"></div>
-          </div>
-
-          <div style="border-top: 1px solid #cbd5e1; padding-top: 10px; font-size: 9px; color: #666; text-align: center;">
-            <p style="margin: 1px 0;">Kleinunternehmer gemäß § 19 UStG wird keine Umsatzsteuer berechnet.</p>
-            <p style="margin: 1px 0;">Vielen Dank für deinen Einkauf bei Sefas3DShop!</p>
+            <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;" id="sepaQrCodeTarget"></div>
           </div>
         </div>`;
 
@@ -1113,113 +977,37 @@
 
     function printAllInvoices() {
       const activeOrders = orders.filter(o => Boolean(o.archived) === showingArchive);
-      if (activeOrders.length === 0) {
-        alert("Keine Aufträge in dieser Ansicht vorhanden!");
-        return;
-      }
-
+      if (activeOrders.length === 0) return alert("Keine Aufträge vorhanden!");
       const invSec = document.getElementById('invoiceSection');
       invSec.innerHTML = '';
 
       activeOrders.forEach((o, index) => {
         const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
         const invoiceNumber = generateInvoiceNumberForExisting(o);
-        const trackingText = (o.tracking && o.tracking !== '-') ? o.tracking : 'Wird nachgereicht';
-        
         let itemsRows = '';
         o.items.forEach(i => {
-          itemsRows += `
-            <tr>
-              <td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name} ${i.color ? '(' + i.color + ')' : ''}</td>
-              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
-              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td>
-              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td>
-            </tr>`;
+          itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name} ${i.color ? '(' + i.color + ')' : ''}</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td></tr>`;
         });
-
         if (o.shippingCost > 0) {
-          itemsRows += `
-            <tr>
-              <td style="padding: 6px; border-bottom: 1px solid #ddd;">Versand- / Paketpauschale</td>
-              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
-              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
-              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
-            </tr>`;
+          itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">Versandpauschale</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td></tr>`;
         }
-
         const totalAmountNum = o.price + o.shippingCost;
-        const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
 
         invSec.innerHTML += `
           <div class="page-break-container" style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: start; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 15px;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <svg style="width: 36px; height: 36px; color: #2563eb;" viewBox="0 0 100 100" fill="currentColor">
-                  <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/>
-                  <polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/>
-                  <polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/>
-                  <polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/>
-                </svg>
-                <div>
-                  <h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0 0 2px 0;">Sefas3DShop</h1>
-                  <p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden</p>
-                  <p style="margin: 1px 0 0 0; color: #555;">Steuernummer: 52063271982</p>
-                </div>
-              </div>
-              <div style="text-align: right;">
-                <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 0 0 4px 0;">RECHNUNG</h2>
-                <p style="margin: 1px 0;"><strong>Rechnungsnummer:</strong> ${invoiceNumber}</p>
-                <p style="margin: 1px 0;"><strong>Datum:</strong> ${invoiceDate}</p>
-                <p style="margin: 1px 0;"><strong>Sendungsnummer:</strong> ${trackingText}</p>
-              </div>
+              <div><h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0;">Sefas3DShop</h1></div>
+              <div style="text-align: right;"><h2 style="font-size: 16px; font-weight: bold; margin: 0;">RECHNUNG</h2><p style="margin: 1px 0;">${invoiceNumber}</p></div>
             </div>
-
-            <div style="margin-bottom: 15px;">
-              <p style="font-size: 9px; color: #777; margin: 0 0 2px 0;">Rechnungsempfänger:</p>
-              <div style="font-weight: bold; font-size: 12px;">${o.customer}</div>
-              <div style="color: #444; white-space: pre-line;">${o.address || 'Keine Adresse angegeben'}</div>
-            </div>
-
-            <p style="font-size: 10px; color: #555; margin-bottom: 10px;">Das Lieferdatum entspricht dem Rechnungsdatum.</p>
-
+            <div style="margin-bottom: 15px;"><strong>${o.customer}</strong><br>${o.address || ''}</div>
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
-              <thead>
-                <tr style="background: #f1f5f9; text-align: left;">
-                  <th style="padding: 6px; border-bottom: 2px solid #cbd5e1;">Beschreibung</th>
-                  <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: center;">Menge</th>
-                  <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: right;">Einzelpreis</th>
-                  <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: right;">Gesamt</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${itemsRows}
-              </tbody>
+              <thead><tr style="background: #f1f5f9; text-align: left;"><th style="padding: 6px;">Beschreibung</th><th style="padding: 6px; text-align: center;">Menge</th><th style="padding: 6px; text-align: right;">Einzelpreis</th><th style="padding: 6px; text-align: right;">Gesamt</th></tr></thead>
+              <tbody>${itemsRows}</tbody>
             </table>
-
-            <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
-              <div style="width: 210px;">
-                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #ddd;">
-                  <span>Gesamtbetrag:</span>
-                  <strong>${totalAmountStr} €</strong>
-                </div>
-              </div>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px; margin-bottom: 15px;">
-              <div style="font-size: 10px;">
-                <p style="margin: 0 0 2px 0;"><strong>Zahlungsinformationen:</strong></p>
-                <p style="margin: 1px 0;">Empfänger: Sefa Demir</p>
-                <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08</p>
-                <p style="margin: 1px 0;">BIC: REVODEB2</p>
-                <p style="margin: 1px 0;">Bank: Revolut Bank UAB, Zweigniederlassung</p>
-                <p style="margin: 2px 0 0 0; color: #2563eb; font-weight: bold;">💡 Mit Banking-App scannen & bezahlen!</p>
-              </div>
-              <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; display: inline-block;" id="batchSepaQr_${index}"></div>
-            </div>
-
-            <div style="border-top: 1px solid #cbd5e1; padding-top: 10px; font-size: 9px; color: #666; text-align: center;">
-              <p style="margin: 1px 0;">Kleinunternehmer gemäß § 19 UStG wird keine Umsatzsteuer berechnet.</p>
-              <p style="margin: 1px 0;">Vielen Dank für deinen Einkauf bei Sefas3DShop!</p>
+            <div style="text-align: right; margin-bottom: 15px;"><strong>Gesamt: ${totalAmountNum.toFixed(2).replace('.', ',')} €</strong></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px;">
+              <div>IBAN: DE20 1001 0178 0592 6798 08</div>
+              <div style="background: white; padding: 4px;" id="batchSepaQr_${index}"></div>
             </div>
           </div>`;
       });
@@ -1229,20 +1017,7 @@
         activeOrders.forEach((o, index) => {
           const totalAmountNum = o.price + o.shippingCost;
           const invoiceNumber = generateInvoiceNumberForExisting(o);
-          const sepaPayload = [
-            "BCD",
-            "002",
-            "1",
-            "SCT",
-            "REVODEB2",
-            "Sefa Demir",
-            "DE20100101780592679808",
-            "EUR" + totalAmountNum.toFixed(2),
-            "",
-            "",
-            "Rechnung " + invoiceNumber
-          ].join("\n");
-          
+          const sepaPayload = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
           renderLocalQrCode(`batchSepaQr_${index}`, sepaPayload);
         });
         window.print();
@@ -1252,27 +1027,17 @@
 
     function exportAccountingCSV() {
       let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-      csvContent += "Typ;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Betrag (€);Zahlungsdatum\n";
-
+      csvContent += "Typ;Datum;Rechnungsnummer;Kunde;Betrag (€)\n";
       orders.forEach(o => {
         let total = o.price + o.shippingCost;
-        let type = o.archived ? "Einnahme (Archiviert)" : "Einnahme (Aktiv)";
-        let date = o.orderDate || "";
-        let inv = generateInvoiceNumberForExisting(o);
-        let cust = o.customer.replace(/;/g, ",");
-        let pay = o.paymentDate ? o.paymentDate : (o.orderDate || "");
-        csvContent += `${type};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${pay}\n`;
+        csvContent += `${o.archived ? "Archiv" : "Aktiv"};${o.orderDate || ""};${generateInvoiceNumberForExisting(o)};${o.customer.replace(/;/g, ",")};${total.toFixed(2).replace('.', ',')}\n`;
       });
-
       expenses.forEach(ex => {
-        let desc = ex.description.replace(/;/g, ",");
-        csvContent += `Ausgabe;${ex.date || ""};${desc};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')};${ex.date || ""}\n`;
+        csvContent += `Ausgabe;${ex.date || ""};${ex.description.replace(/;/g, ",")};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')}\n`;
       });
-
-      const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `Sefas3DShop_Buchhaltung_${new Date().toISOString().slice(0,10)}.csv`);
+      link.setAttribute("href", encodeURI(csvContent));
+      link.setAttribute("download", `Sefas3DShop_Buchhaltung.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1282,28 +1047,17 @@
       const select = document.getElementById('statsMonthFilter');
       if (!select) return;
       const currentSelection = select.value;
-      
       let monthsSet = new Set();
-      orders.forEach(o => {
-        if (o.orderDate) monthsSet.add(o.orderDate.slice(0, 7));
-        if (o.shipDate) monthsSet.add(o.shipDate.slice(0, 7));
-      });
-      expenses.forEach(ex => {
-        if (ex.date) monthsSet.add(ex.date.slice(0, 7));
-      });
-
+      orders.forEach(o => { if (o.orderDate) monthsSet.add(o.orderDate.slice(0, 7)); });
+      expenses.forEach(ex => { if (ex.date) monthsSet.add(ex.date.slice(0, 7)); });
       let sortedMonths = Array.from(monthsSet).sort().reverse();
       
       select.innerHTML = '<option value="all">📅 Alle Monate (Gesamt)</option>';
       sortedMonths.forEach(m => {
         let parts = m.split('-');
-        let formattedName = `${parts[1]}.${parts[0]}`;
-        select.innerHTML += `<option value="${m}">${formattedName}</option>`;
+        select.innerHTML += `<option value="${m}">${parts[1]}.${parts[0]}</option>`;
       });
-
-      if ([...select.options].some(opt => opt.value === currentSelection)) {
-        select.value = currentSelection;
-      }
+      if ([...select.options].some(opt => opt.value === currentSelection)) select.value = currentSelection;
     }
 
     function renderOrders() {
@@ -1316,131 +1070,53 @@
       orders.forEach((o, idx) => {
         if (Boolean(o.archived) !== showingArchive) return;
         if (query && !o.customer.toLowerCase().includes(query) && !o.tracking.toLowerCase().includes(query)) return;
-
         const fixedInvNum = generateInvoiceNumberForExisting(o);
 
         if (editingIndex === idx) {
           let editItemsHtml = `<div id="editArticleRows" class="space-y-2 my-2">`;
           o.items.forEach(i => {
             let optionsHtml = '<option value="">-- Farbe --</option>';
-            spools.forEach(s => {
-              optionsHtml += `<option value="${s.name}" ${s.name === i.color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`;
-            });
-            editItemsHtml += `
-              <div class="flex gap-2 items-center edit-article-row bg-slate-950 p-2 rounded-xl border border-slate-800">
-                <input type="text" placeholder="Artikelbezeichnung" value="${i.name}" required class="edit-art-name bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
-                <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-40 focus:outline-none">${optionsHtml}</select>
-                <input type="number" placeholder="Gramm" value="${i.weight || ''}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-20 focus:outline-none">
-                <button type="button" onclick="this.parentElement.remove()" class="text-red-400 text-xs px-2 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
-              </div>`;
+            spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === i.color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
+            editItemsHtml += `<div class="flex gap-2 items-center edit-article-row bg-slate-950 p-2 rounded-xl border border-slate-800"><input type="text" value="${i.name}" class="edit-art-name bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1"><select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-40">${optionsHtml}</select><input type="number" value="${i.weight || ''}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-20"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2"><i class="fa-solid fa-xmark"></i></button></div>`;
           });
-          editItemsHtml += `</div><button type="button" onclick="addEditArticleRow()" class="bg-slate-800 hover:bg-slate-700 text-blue-400 text-xs px-2 py-1 rounded border border-blue-500/30 cursor-pointer">+ Artikel hinzufügen</button>`;
+          editItemsHtml += `</div><button type="button" onclick="addEditArticleRow()" class="bg-slate-800 text-blue-400 text-xs px-2 py-1 rounded">+ Artikel</button>`;
 
           tbody.innerHTML += `
             <tr class="border-b border-slate-800 bg-slate-900/90">
-              <td class="p-3 space-y-1">
-                <input type="text" id="edit-cust-${idx}" value="${o.customer}" placeholder="Kundenname" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-full">
-                <input type="text" id="edit-addr-${idx}" value="${o.address || ''}" placeholder="Lieferadresse..." class="bg-slate-950 border border-blue-500 rounded p-1 text-[11px] text-white w-full">
-              </td>
+              <td class="p-3 space-y-1"><input type="text" id="edit-cust-${idx}" value="${o.customer}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-full"><input type="text" id="edit-addr-${idx}" value="${o.address || ''}" class="bg-slate-950 border border-blue-500 rounded p-1 text-[11px] text-white w-full"></td>
               <td class="p-3 text-xs font-mono text-cyan-400">${fixedInvNum}</td>
               <td class="p-3">${editItemsHtml}</td>
-              <td class="p-3">
-                <select id="edit-print-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
-                  <option ${o.printer==='CR-10 Smart Pro #1'?'selected':''}>CR-10 Smart Pro #1</option>
-                  <option ${o.printer==='Ender 3 V3'?'selected':''}>Ender 3 V3</option>
-                  <option ${o.printer==='Anycubic Kobra'?'selected':''}>Anycubic Kobra</option>
-                  <option ${o.printer==='CR-10 Smart Pro #2'?'selected':''}>CR-10 Smart Pro #2</option>
-                </select>
-              </td>
-              <td class="p-3 space-y-1 text-xs">
-                <div>Erst: <input type="date" id="edit-date-${idx}" value="${o.orderDate || ''}" class="bg-slate-950 border border-blue-500 rounded p-0.5 text-white"></div>
-                <div>Zahl: <input type="date" id="edit-pay-${idx}" value="${o.paymentDate || ''}" class="bg-slate-950 border border-blue-500 rounded p-0.5 text-white" title="Zahlungseingang"></div>
-                <div>Vers: <input type="date" id="edit-ship-${idx}" value="${o.shipDate || ''}" class="bg-slate-950 border border-blue-500 rounded p-0.5 text-white"></div>
-              </td>
-              <td class="p-3">
-                <select id="edit-stat-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
-                  <option ${o.status==='Offen'?'selected':''}>Offen</option>
-                  <option ${o.status==='In Arbeit'?'selected':''}>In Arbeit</option>
-                  <option ${o.status==='Fertig'?'selected':''}>Fertig</option>
-                </select>
-              </td>
+              <td class="p-3"><select id="edit-print-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white"><option ${o.printer==='CR-10 Smart Pro #1'?'selected':''}>CR-10 Smart Pro #1</option><option ${o.printer==='Ender 3 V3'?'selected':''}>Ender 3 V3</option><option ${o.printer==='Anycubic Kobra'?'selected':''}>Anycubic Kobra</option><option ${o.printer==='CR-10 Smart Pro #2'?'selected':''}>CR-10 Smart Pro #2</option></select></td>
+              <td class="p-3 space-y-1 text-xs"><div><input type="date" id="edit-date-${idx}" value="${o.orderDate || ''}" class="bg-slate-950 border border-blue-500 rounded text-white"></div><div><input type="date" id="edit-pay-${idx}" value="${o.paymentDate || ''}" class="bg-slate-950 border border-blue-500 rounded text-white"></div></td>
+              <td class="p-3"><select id="edit-stat-${idx}" class="bg-slate-950 border border-blue-500 rounded text-xs text-white"><option ${o.status==='Offen'?'selected':''}>Offen</option><option ${o.status==='In Arbeit'?'selected':''}>In Arbeit</option><option ${o.status==='Fertig'?'selected':''}>Fertig</option></select></td>
               <td class="p-3"><input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-20"></td>
-              <td class="p-3">
-                <select id="edit-label-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
-                  <option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>✅ Ja</option>
-                  <option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>❌ Nein</option>
-                  <option value="🟡 Wartet auf Zahlung" ${o.label==='🟡 Wartet auf Zahlung'?'selected':''}>🟡 Wartet auf Zahlung</option>
-                </select>
-              </td>
-              <td class="p-3">
-                <select id="edit-packed-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
-                  <option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>✅ Ja</option>
-                  <option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>❌ Nein</option>
-                </select>
-              </td>
+              <td class="p-3"><select id="edit-label-${idx}" class="bg-slate-950 border border-blue-500 rounded text-xs text-white"><option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>❌ Nein</option></select></td>
+              <td class="p-3"><select id="edit-packed-${idx}" class="bg-slate-950 border border-blue-500 rounded text-xs text-white"><option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>❌ Nein</option></select></td>
               <td class="p-3"><input type="text" id="edit-track-${idx}" value="${o.tracking}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-20"></td>
-              <td class="p-3 text-right">
-                <button onclick="saveEdit(${idx})" class="bg-green-600 text-white px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-check"></i></button>
-                <button onclick="cancelEdit()" class="bg-slate-700 text-white px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
-              </td>
+              <td class="p-3 text-right"><button onclick="saveEdit(${idx})" class="bg-green-600 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-check"></i></button><button onclick="cancelEdit()" class="bg-slate-700 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-xmark"></i></button></td>
             </tr>`;
         } else {
           let itemsHtml = '<div class="space-y-1">';
-          o.items.forEach(i => {
-            itemsHtml += `<div class="text-xs text-white">• ${i.name} <span class="text-purple-300">(${i.color || 'Std'}, ${i.weight || 0}g)</span></div>`;
-          });
+          o.items.forEach(i => { itemsHtml += `<div class="text-xs text-white">• ${i.name} <span class="text-purple-300">(${i.color || 'Std'}, ${i.weight || 0}g)</span></div>`; });
           itemsHtml += '</div>';
 
           let archiveBtnHtml = o.archived 
-            ? `<button onclick="toggleArchiveOrder(${o.id})" title="Aus Archiv wiederherstellen" class="text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded text-xs cursor-pointer">📥 Aktivieren</button>`
-            : `<button onclick="toggleArchiveOrder(${o.id})" title="Ins Archiv verschieben" class="text-purple-300 bg-purple-500/10 px-2 py-1 rounded text-xs cursor-pointer">📦 Archiv</button>`;
+            ? `<button onclick="toggleArchiveOrder(${o.id})" class="text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded text-xs">📥 Aktivieren</button>`
+            : `<button onclick="toggleArchiveOrder(${o.id})" class="text-purple-300 bg-purple-500/10 px-2 py-1 rounded text-xs">📦 Archiv</button>`;
 
           tbody.innerHTML += `
             <tr class="hover:bg-slate-800/40 border-b border-slate-800">
               <td class="p-3 font-medium text-white">${o.customer}<div class="text-[10px] text-slate-400">${o.address || ''}</div></td>
               <td class="p-3 text-xs font-mono text-cyan-300 font-bold">${fixedInvNum}</td>
               <td class="p-3">${itemsHtml}</td>
-              <td class="p-3">
-                <select onchange="updateField(${o.id}, 'printer', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none">
-                  <option value="CR-10 Smart Pro #1" ${o.printer === 'CR-10 Smart Pro #1' ? 'selected' : ''}>CR-10 Smart Pro #1</option>
-                  <option value="Ender 3 V3" ${o.printer === 'Ender 3 V3' ? 'selected' : ''}>Ender 3 V3</option>
-                  <option value="Anycubic Kobra" ${o.printer === 'Anycubic Kobra' ? 'selected' : ''}>Anycubic Kobra</option>
-                  <option value="CR-10 Smart Pro #2" ${o.printer === 'CR-10 Smart Pro #2' ? 'selected' : ''}>CR-10 Smart Pro #2</option>
-                </select>
-              </td>
-              <td class="p-3 text-xs text-slate-300 space-y-1">
-                <div>📥 ${o.orderDate || '-'}</div>
-                <div>💶 <input type="date" value="${o.paymentDate || ''}" onchange="updateField(${o.id}, 'paymentDate', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1 text-[11px] text-white" title="Zahlungseingangsdatum"></div>
-              </td>
-              <td class="p-3">
-                <select onchange="updateField(${o.id}, 'status', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-yellow-300 focus:outline-none">
-                  <option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option>
-                  <option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option>
-                  <option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option>
-                </select>
-              </td>
+              <td class="p-3"><select onchange="updateField(${o.id}, 'printer', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300"><option value="CR-10 Smart Pro #1" ${o.printer === 'CR-10 Smart Pro #1' ? 'selected' : ''}>CR-10 Smart Pro #1</option><option value="Ender 3 V3" ${o.printer === 'Ender 3 V3' ? 'selected' : ''}>Ender 3 V3</option><option value="Anycubic Kobra" ${o.printer === 'Anycubic Kobra' ? 'selected' : ''}>Anycubic Kobra</option><option value="CR-10 Smart Pro #2" ${o.printer === 'CR-10 Smart Pro #2' ? 'selected' : ''}>CR-10 Smart Pro #2</option></select></td>
+              <td class="p-3 text-xs text-slate-300 space-y-1"><div>📥 ${o.orderDate || '-'}</div><div>💶 <input type="date" value="${o.paymentDate || ''}" onchange="updateField(${o.id}, 'paymentDate', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1 text-[11px] text-white"></div></td>
+              <td class="p-3"><select onchange="updateField(${o.id}, 'status', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-yellow-300"><option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option><option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option><option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option></select></td>
               <td class="p-3 text-xs text-emerald-400 font-bold">${(o.price + o.shippingCost).toFixed(2).replace('.', ',')} €</td>
-              <td class="p-3">
-                <select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none">
-                  <option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
-                  <option value="❌ Nein" ${o.label === '❌ Nein' ? 'selected' : ''}>❌ Nein</option>
-                  <option value="🟡 Wartet auf Zahlung" ${o.label === '🟡 Wartet auf Zahlung' ? 'selected' : ''}>🟡 Wartet auf Zahlung</option>
-                </select>
-              </td>
-              <td class="p-3">
-                <select onchange="updateField(${o.id}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none">
-                  <option value="✅ Ja" ${o.packed === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
-                  <option value="❌ Nein" ${o.packed === '❌ Nein' ? 'selected' : ''}>❌ Nein</option>
-                </select>
-              </td>
+              <td class="p-3"><select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300"><option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.label === '❌ Nein' ? 'selected' : ''}>❌ Nein</option></select></td>
+              <td class="p-3"><select onchange="updateField(${o.id}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300"><option value="✅ Ja" ${o.packed === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.packed === '❌ Nein' ? 'selected' : ''}>❌ Nein</option></select></td>
               <td class="p-3 text-xs font-mono text-blue-400">${o.tracking}</td>
-              <td class="p-3 text-right space-x-1">
-                ${archiveBtnHtml}
-                <button onclick="printInvoice(${idx})" title="Rechnung erstellen" class="text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded text-xs cursor-pointer">📄 Rechnung</button>
-                <button onclick="printBoxLabel(${idx})" title="QR Etikett drucken" class="text-amber-300 bg-amber-500/10 px-2 py-1 rounded text-xs cursor-pointer">🏷️ QR</button>
-                <button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-2 py-1 rounded text-xs cursor-pointer">✏️</button>
-                <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button>
-              </td>
+              <td class="p-3 text-right space-x-1">${archiveBtnHtml}<button onclick="printInvoice(${idx})" class="text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded text-xs">📄 Rechnung</button><button onclick="printBoxLabel(${idx})" class="text-amber-300 bg-amber-500/10 px-2 py-1 rounded text-xs">🏷️ QR</button><button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-2 py-1 rounded text-xs">✏️</button><button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs"><i class="fa-solid fa-trash"></i></button></td>
             </tr>`;
         }
       });
@@ -1453,9 +1129,7 @@
 
       orders.forEach(o => {
         let orderTotalWeight = 0;
-        if (o.items && Array.isArray(o.items)) {
-          o.items.forEach(i => orderTotalWeight += (i.weight || 0));
-        }
+        if (o.items && Array.isArray(o.items)) o.items.forEach(i => orderTotalWeight += (i.weight || 0));
 
         if (!o.archived) {
           if (selectedMonth === 'all' || (o.orderDate && o.orderDate.startsWith(selectedMonth))) {
@@ -1473,13 +1147,10 @@
       });
 
       expenses.forEach(ex => {
-        if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) {
-          totalExp += ex.amount;
-        }
+        if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) totalExp += ex.amount;
       });
 
       let netProfit = totalRev - totalExp;
-
       if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
@@ -1492,22 +1163,7 @@
       if (!grid) return;
       grid.innerHTML = '';
       printers.forEach((p, idx) => {
-        let statusColor = 'text-blue-400';
-        if (p.status === 'In Arbeit') statusColor = 'text-yellow-400 font-bold';
-        if (p.status === 'Außer Betrieb') statusColor = 'text-red-400 font-bold';
-
-        grid.innerHTML += `
-          <div class="card p-4 rounded-2xl space-y-3">
-            <div class="flex justify-between items-center">
-              <h3 class="font-bold text-white text-sm">${p.name}</h3>
-              <select onchange="updatePrinterStatus(${idx}, this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs ${statusColor} focus:outline-none">
-                <option value="Frei" ${p.status === 'Frei' ? 'selected' : ''}>🟢 Frei</option>
-                <option value="In Arbeit" ${p.status === 'In Arbeit' ? 'selected' : ''}>🟡 In Arbeit</option>
-                <option value="Außer Betrieb" ${p.status === 'Außer Betrieb' ? 'selected' : ''}>🔴 Außer Betrieb</option>
-              </select>
-            </div>
-            <p class="text-xs text-slate-400">${p.desc}</p>
-          </div>`;
+        grid.innerHTML += `<div class="card p-4 rounded-2xl space-y-3"><div class="flex justify-between items-center"><h3 class="font-bold text-white text-sm">${p.name}</h3><select onchange="updatePrinterStatus(${idx}, this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs"><option value="Frei" ${p.status==='Frei'?'selected':''}>🟢 Frei</option><option value="In Arbeit" ${p.status==='In Arbeit'?'selected':''}>🟡 In Arbeit</option><option value="Außer Betrieb" ${p.status==='Außer Betrieb'?'selected':''}>🔴 Außer Betrieb</option></select></div><p class="text-xs text-slate-400">${p.desc}</p></div>`;
       });
     }
   </script>
