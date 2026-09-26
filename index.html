@@ -369,8 +369,17 @@
     const TELEGRAM_TOKEN = '8918418759:AAHEyb2eJYwvY8OTyb0lEWjin7MstbsEdMM';
 
     const BACKUP_ORDERS = [
-      {"id":1789933732086,"customer":"Silke Schwarzer","address":"Gartenweg 10d 04862 Mockrehna","notes":"","printer":"Ender 3 V3","status":"Offen","label":"🟡 Wartet auf Zahlung","packed":"❌ Nein","price":20,"shippingCost":5,"tracking":"-","orderDate":"2026-02-10","paymentDate":"","invoiceNumber":"RE-2026-0001","shipDate":"","archived":false,"items":[{"name":"2x Tannenzapfen","color":"PLA Schwarz","weight":60,"durationMin":60,"status":"Offen","endTime":null}]},
-      {"id":1789933658205,"customer":"Familie Tchoffo","address":"Prämienstraße 62 52428 Jülich","notes":"","printer":"CR-10 Smart Pro #1","status":"Offen","label":"✅ Ja","packed":"❌ Nein","price":10,"shippingCost":5,"tracking":"-","orderDate":"2026-02-12","paymentDate":"","invoiceNumber":"RE-2026-0002","shipDate":"","archived":false,"items":[{"name":"Küchenrollnhalter 2X","color":"PETG Weiß","weight":460,"durationMin":60,"status":"Offen","endTime":null}]}
+      {"id":1, "customer":"Paul Hartmann", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-01", "paymentDate":"2026-02-01", "invoiceNumber":"RE-2026-0001", "shipDate":"2026-02-01", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":2, "customer":"Gabi Thomas", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-02", "paymentDate":"2026-02-02", "invoiceNumber":"RE-2026-0002", "shipDate":"2026-02-02", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":3, "customer":"Antje", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-03", "paymentDate":"2026-02-03", "invoiceNumber":"RE-2026-0003", "shipDate":"2026-02-03", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":4, "customer":"Tobias", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-04", "paymentDate":"2026-02-04", "invoiceNumber":"RE-2026-0004", "shipDate":"2026-02-04", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":5, "customer":"Dunja", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-05", "paymentDate":"2026-02-05", "invoiceNumber":"RE-2026-0005", "shipDate":"2026-02-05", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":6, "customer":"Sabine Beeween", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-06", "paymentDate":"2026-02-06", "invoiceNumber":"RE-2026-0006", "shipDate":"2026-02-06", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":7, "customer":"Ralf Hartmann", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-07", "paymentDate":"2026-02-07", "invoiceNumber":"RE-2026-0007", "shipDate":"2026-02-07", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":8, "customer":"Renate", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-08", "paymentDate":"2026-02-08", "invoiceNumber":"RE-2026-0008", "shipDate":"2026-02-08", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":9, "customer":"Tchoffo", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-09", "paymentDate":"2026-02-09", "invoiceNumber":"RE-2026-0009", "shipDate":"2026-02-09", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":10,"customer":"Silke Schwarzer", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-10", "paymentDate":"2026-02-10", "invoiceNumber":"RE-2026-0010", "shipDate":"2026-02-10", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":11,"customer":"Iris", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-11", "paymentDate":"2026-02-11", "invoiceNumber":"RE-2026-0011", "shipDate":"2026-02-11", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]}
     ];
 
     const BACKUP_SPOOLS = [
@@ -408,6 +417,12 @@
     if (!Array.isArray(orders) || orders.length === 0) {
       orders = BACKUP_ORDERS;
       spools = BACKUP_SPOOLS;
+    } else {
+      BACKUP_ORDERS.forEach(b => {
+        if (!orders.some(o => o.invoiceNumber === b.invoiceNumber)) {
+          orders.push(b);
+        }
+      });
     }
 
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -451,6 +466,9 @@
           const json = await res.json();
           if (json && Array.isArray(json.orders) && json.orders.length > 0) {
             orders = json.orders;
+            BACKUP_ORDERS.forEach(b => {
+              if (!orders.some(o => o.invoiceNumber === b.invoiceNumber)) orders.push(b);
+            });
             const currentToday = new Date().toISOString().slice(0, 10);
             orders.forEach(o => {
               if (!o.orderDate) o.orderDate = currentToday;
@@ -789,7 +807,7 @@
           if (num > maxNum) maxNum = num;
         }
       });
-      const nextNum = maxNum + 1;
+      const nextNum = Math.max(11, maxNum) + 1;
       return `RE-${year}-${nextNum.toString().padStart(4, '0')}`;
     }
 
@@ -904,6 +922,12 @@
       orders[idx].orderDate = document.getElementById(`edit-date-${idx}`).value || orders[idx].orderDate;
       orders[idx].paymentDate = document.getElementById(`edit-pay-${idx}`).value || '';
       orders[idx].shipDate = document.getElementById(`edit-ship-${idx}`).value || orders[idx].shipDate || '';
+      
+      const newInvInput = document.getElementById(`edit-inv-${idx}`);
+      if (newInvInput && newInvInput.value.trim()) {
+        orders[idx].invoiceNumber = newInvInput.value.trim();
+      }
+
       orders[idx].items = updatedItems;
 
       editingIndex = -1;
@@ -1034,7 +1058,7 @@
               </svg>
               <div>
                 <h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0 0 2px 0;">Sefas3DShop</h1>
-                <p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden</p>
+                <p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 42 | 32369 Rahden</p>
                 <p style="margin: 1px 0 0 0; color: #555;">Steuernummer: 52063271982</p>
               </div>
             </div>
@@ -1083,7 +1107,7 @@
               <p style="margin: 1px 0;">Empfänger: Sefa Demir</p>
               <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08</p>
               <p style="margin: 1px 0;">BIC: REVODEB2</p>
-              <p style="margin: 1px 0;">Bank: Revolut Bank UAB, Zweigniederlassung</p>
+              <p style="margin: 1px 0;">Bank: C24 Bank</p>
               <p style="margin: 2px 0 0 0; color: #2563eb; font-weight: bold;">💡 Mit Banking-App scannen & bezahlen!</p>
             </div>
             <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; display: inline-block;" id="sepaQrCodeTarget"></div>
@@ -1154,7 +1178,7 @@
                 </svg>
                 <div>
                   <h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0 0 2px 0;">Sefas3DShop</h1>
-                  <p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden</p>
+                  <p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 42 | 32369 Rahden</p>
                   <p style="margin: 1px 0 0 0; color: #555;">Steuernummer: 52063271982</p>
                 </div>
               </div>
@@ -1203,7 +1227,7 @@
                 <p style="margin: 1px 0;">Empfänger: Sefa Demir</p>
                 <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08</p>
                 <p style="margin: 1px 0;">BIC: REVODEB2</p>
-                <p style="margin: 1px 0;">Bank: Revolut Bank UAB, Zweigniederlassung</p>
+                <p style="margin: 1px 0;">Bank: C24 Bank</p>
                 <p style="margin: 2px 0 0 0; color: #2563eb; font-weight: bold;">💡 Mit Banking-App scannen & bezahlen!</p>
               </div>
               <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; display: inline-block;" id="batchSepaQr_${index}"></div>
@@ -1252,7 +1276,6 @@
         let date = o.orderDate || "";
         let inv = generateInvoiceNumberForExisting(o);
         let cust = o.customer.replace(/;/g, ",");
-        // Wenn kein separates Zahlungsdatum eingetragen ist, wird das Erstellungsdatum als Zahlungsdatum genommen
         let pay = o.paymentDate ? o.paymentDate : (o.orderDate || "");
         csvContent += `${type};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${pay}\n`;
       });
@@ -1335,7 +1358,9 @@
                 <input type="text" id="edit-cust-${idx}" value="${o.customer}" placeholder="Kundenname" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-full">
                 <input type="text" id="edit-addr-${idx}" value="${o.address || ''}" placeholder="Lieferadresse..." class="bg-slate-950 border border-blue-500 rounded p-1 text-[11px] text-white w-full">
               </td>
-              <td class="p-3 text-xs font-mono text-cyan-400">${fixedInvNum}</td>
+              <td class="p-3">
+                <input type="text" id="edit-inv-${idx}" value="${fixedInvNum}" placeholder="RE-2026-XXXX" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs font-mono text-cyan-400 w-28">
+              </td>
               <td class="p-3">${editItemsHtml}</td>
               <td class="p-3">
                 <select id="edit-print-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
