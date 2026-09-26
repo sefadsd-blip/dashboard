@@ -368,19 +368,19 @@
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
     const TELEGRAM_TOKEN = '8918418759:AAHEyb2eJYwvY8OTyb0lEWjin7MstbsEdMM';
 
-    // Vorkonfigurierte Kunden von 1 bis 11 (Paul Hartmann bis Iris) im Archiv, damit ab 12 gezählt wird
-    const BACKUP_ORDERS = [
-      {"id":1,"customer":"Paul Hartmann","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-01","paymentDate":"2026-02-01","invoiceNumber":"RE-2026-0001","shipDate":"2026-02-01","archived":true,"items":[{"name":"Beispielartikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
-      {"id":2,"customer":"Gabi Thomas","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-02","paymentDate":"2026-02-02","invoiceNumber":"RE-2026-0002","shipDate":"2026-02-02","archived":true,"items":[{"name":"Beispielartikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
-      {"id":3,"customer":"Antje","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-03","paymentDate":"2026-02-03","invoiceNumber":"RE-2026-0003","shipDate":"2026-02-03","archived":true,"items":[{"name":"Beispielartikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
-      {"id":4,"customer":"Tobias","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-04","paymentDate":"2026-02-04","invoiceNumber":"RE-2026-0004","shipDate":"2026-02-04","archived":true,"items":[{"name":"Beispielartikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
-      {"id":5,"customer":"Dunja","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-05","paymentDate":"2026-02-05","invoiceNumber":"RE-2026-0005","shipDate":"2026-02-05","archived":true,"items":[{"name":"Beispielartikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
-      {"id":6,"customer":"Sabine Beeween","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-06","paymentDate":"2026-02-06","invoiceNumber":"RE-2026-0006","shipDate":"2026-02-06","archived":true,"items":[{"name":"Beispielartikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
-      {"id":7,"customer":"Ralf Hartmann","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-07","paymentDate":"2026-02-07","invoiceNumber":"RE-2026-0007","shipDate":"2026-02-07","archived":true,"items":[{"name":"Beispielartikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
-      {"id":8,"customer":"Renate","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-08","paymentDate":"2026-02-08","invoiceNumber":"RE-2026-0008","shipDate":"2026-02-08","archived":true,"items":[{"name":"Beispielartikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
-      {"id":9,"customer":"Tchoffo","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-09","paymentDate":"2026-02-09","invoiceNumber":"RE-2026-0009","shipDate":"2026-02-09","archived":true,"items":[{"name":"Beispielartikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
-      {"id":10,"customer":"Silke Schwarzer","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-10","paymentDate":"2026-02-10","invoiceNumber":"RE-2026-0010","shipDate":"2026-02-10","archived":true,"items":[{"name":"Beispielartikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
-      {"id":11,"customer":"Iris","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-11","paymentDate":"2026-02-11","invoiceNumber":"RE-2026-0011","shipDate":"2026-02-11","archived":true,"items":[{"name":"Beispielartikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]}
+    // Exakte Vorbelegung deiner 11 Kunden (1 bis 11 im Archiv, damit der 12. Kunde exakt RE-2026-0012 erhält)
+    const INITIAL_CUSTOMERS = [
+      {"id":1,"customer":"Paul Hartmann","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-01","paymentDate":"2026-02-01","invoiceNumber":"RE-2026-0001","shipDate":"2026-02-01","archived":true,"items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
+      {"id":2,"customer":"Gabi Thomas","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-02","paymentDate":"2026-02-02","invoiceNumber":"RE-2026-0002","shipDate":"2026-02-02","archived":true,"items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
+      {"id":3,"customer":"Antje","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-03","paymentDate":"2026-02-03","invoiceNumber":"RE-2026-0003","shipDate":"2026-02-03","archived":true,"items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
+      {"id":4,"customer":"Tobias","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-04","paymentDate":"2026-02-04","invoiceNumber":"RE-2026-0004","shipDate":"2026-02-04","archived":true,"items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
+      {"id":5,"customer":"Dunja","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-05","paymentDate":"2026-02-05","invoiceNumber":"RE-2026-0005","shipDate":"2026-02-05","archived":true,"items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
+      {"id":6,"customer":"Sabine Beeween","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-06","paymentDate":"2026-02-06","invoiceNumber":"RE-2026-0006","shipDate":"2026-02-06","archived":true,"items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
+      {"id":7,"customer":"Ralf Hartmann","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-07","paymentDate":"2026-02-07","invoiceNumber":"RE-2026-0007","shipDate":"2026-02-07","archived":true,"items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
+      {"id":8,"customer":"Renate","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-08","paymentDate":"2026-02-08","invoiceNumber":"RE-2026-0008","shipDate":"2026-02-08","archived":true,"items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
+      {"id":9,"customer":"Tchoffo","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-09","paymentDate":"2026-02-09","invoiceNumber":"RE-2026-0009","shipDate":"2026-02-09","archived":true,"items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
+      {"id":10,"customer":"Silke Schwarzer","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-10","paymentDate":"2026-02-10","invoiceNumber":"RE-2026-0010","shipDate":"2026-02-10","archived":true,"items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]},
+      {"id":11,"customer":"Iris","address":"Rahden","printer":"Ender 3 V3","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":10,"shippingCost":7,"tracking":"-","orderDate":"2026-02-11","paymentDate":"2026-02-11","invoiceNumber":"RE-2026-0011","shipDate":"2026-02-11","archived":true,"items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50,"durationMin":30,"status":"Fertig","endTime":null}]}
     ];
 
     const BACKUP_SPOOLS = [
@@ -403,21 +403,22 @@
     let telegramChatId = '8316865010';
 
     try {
-      orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
-      spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
+      const savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
+      if (Array.isArray(savedOrders) && savedOrders.length > 0) {
+        orders = savedOrders;
+      } else {
+        orders = INITIAL_CUSTOMERS;
+      }
+      
+      spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || BACKUP_SPOOLS;
       expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
       const savedPrinters = JSON.parse(localStorage.getItem('sefas_shop_printers'));
       if (Array.isArray(savedPrinters)) printers = savedPrinters;
       telegramChatId = localStorage.getItem('sefas_telegram_chat_id') || '8316865010';
     } catch(e) {
-      orders = [];
-      spools = [];
-      expenses = [];
-    }
-
-    if (!Array.isArray(orders) || orders.length === 0) {
-      orders = BACKUP_ORDERS;
+      orders = INITIAL_CUSTOMERS;
       spools = BACKUP_SPOOLS;
+      expenses = [];
     }
 
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -792,7 +793,7 @@
     function generateNewInvoiceNumber(orderDateStr) {
       const year = orderDateStr ? orderDateStr.slice(0, 4) : new Date().getFullYear().toString();
       let maxNum = 0;
-      // Durchsucht alle Aufträge im gesamten System (auch im Archiv mit den Nummern 1-11), um lückenlos ab 12 fortzuführen
+      // Scannt alle Rechnungsnummern im gesamten System, ermittelt die höchste Zahl und zählt exakt um 1 hoch (startet nach der 11 somit bei 12)
       orders.forEach(o => {
         if (o.invoiceNumber && o.invoiceNumber.startsWith(`RE-${year}-`)) {
           let parts = o.invoiceNumber.split('-');
