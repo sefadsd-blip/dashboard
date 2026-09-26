@@ -368,19 +368,19 @@
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
     const TELEGRAM_TOKEN = '8918418759:AAHEyb2eJYwvY8OTyb0lEWjin7MstbsEdMM';
 
-    // Exakte Liste deiner 11 Kunden von RE-2026-0001 bis RE-2026-0011 im Archiv
-    const EXACT_CUSTOMERS_1_TO_11 = [
-      {"id":1, "customer":"Paul Hartmann", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-01", "paymentDate":"2026-02-01", "invoiceNumber":"RE-2026-0001", "shipDate":"2026-02-01", "archived":true, "items":[{"name":"Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":2, "customer":"Gabi Thomas", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-02", "paymentDate":"2026-02-02", "invoiceNumber":"RE-2026-0002", "shipDate":"2026-02-02", "archived":true, "items":[{"name":"Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":3, "customer":"Antje", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-03", "paymentDate":"2026-02-03", "invoiceNumber":"RE-2026-0003", "shipDate":"2026-02-03", "archived":true, "items":[{"name":"Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":4, "customer":"Tobias", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-04", "paymentDate":"2026-02-04", "invoiceNumber":"RE-2026-0004", "shipDate":"2026-02-04", "archived":true, "items":[{"name":"Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":5, "customer":"Dunja", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-05", "paymentDate":"2026-02-05", "invoiceNumber":"RE-2026-0005", "shipDate":"2026-02-05", "archived":true, "items":[{"name":"Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":6, "customer":"Sabine Beeween", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-06", "paymentDate":"2026-02-06", "invoiceNumber":"RE-2026-0006", "shipDate":"2026-02-06", "archived":true, "items":[{"name":"Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":7, "customer":"Ralf Hartmann", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-07", "paymentDate":"2026-02-07", "invoiceNumber":"RE-2026-0007", "shipDate":"2026-02-07", "archived":true, "items":[{"name":"Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":8, "customer":"Renate", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-08", "paymentDate":"2026-02-08", "invoiceNumber":"RE-2026-0008", "shipDate":"2026-02-08", "archived":true, "items":[{"name":"Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":9, "customer":"Tchoffo", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-09", "paymentDate":"2026-02-09", "invoiceNumber":"RE-2026-0009", "shipDate":"2026-02-09", "archived":true, "items":[{"name":"Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":10,"customer":"Silke Schwarzer", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-10", "paymentDate":"2026-02-10", "invoiceNumber":"RE-2026-0010", "shipDate":"2026-02-10", "archived":true, "items":[{"name":"Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":11,"customer":"Iris", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-11", "paymentDate":"2026-02-11", "invoiceNumber":"RE-2026-0011", "shipDate":"2026-02-11", "archived":true, "items":[{"name":"Artikel","color":"PLA Schwarz","weight":50}]}
+    // Fest eingetragene exakte Kunden 1 bis 11
+    const FIXED_INITIAL_ORDERS = [
+      {"id":1, "customer":"Paul Hartmann", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-01", "paymentDate":"2026-02-01", "invoiceNumber":"RE-2026-0001", "shipDate":"2026-02-01", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":2, "customer":"Gabi Thomas", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-02", "paymentDate":"2026-02-02", "invoiceNumber":"RE-2026-0002", "shipDate":"2026-02-02", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":3, "customer":"Antje", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-03", "paymentDate":"2026-02-03", "invoiceNumber":"RE-2026-0003", "shipDate":"2026-02-03", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":4, "customer":"Tobias", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-04", "paymentDate":"2026-02-04", "invoiceNumber":"RE-2026-0004", "shipDate":"2026-02-04", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":5, "customer":"Dunja", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-05", "paymentDate":"2026-02-05", "invoiceNumber":"RE-2026-0005", "shipDate":"2026-02-05", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":6, "customer":"Sabine Beeween", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-06", "paymentDate":"2026-02-06", "invoiceNumber":"RE-2026-0006", "shipDate":"2026-02-06", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":7, "customer":"Ralf Hartmann", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-07", "paymentDate":"2026-02-07", "invoiceNumber":"RE-2026-0007", "shipDate":"2026-02-07", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":8, "customer":"Renate", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-08", "paymentDate":"2026-02-08", "invoiceNumber":"RE-2026-0008", "shipDate":"2026-02-08", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":9, "customer":"Tchoffo", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-09", "paymentDate":"2026-02-09", "invoiceNumber":"RE-2026-0009", "shipDate":"2026-02-09", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":10,"customer":"Silke Schwarzer", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-10", "paymentDate":"2026-02-10", "invoiceNumber":"RE-2026-0010", "shipDate":"2026-02-10", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":11,"customer":"Iris", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-11", "paymentDate":"2026-02-11", "invoiceNumber":"RE-2026-0011", "shipDate":"2026-02-11", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]}
     ];
 
     const BACKUP_SPOOLS = [
@@ -403,14 +403,18 @@
     let telegramChatId = '8316865010';
 
     try {
-      // Erzwingt beim ersten Laden die exakte korrekte Liste (1 bis 11), damit Gabi Thomas & Co. stimmen
-      const forceResetCheck = localStorage.getItem('sefas_shop_fixed_v2');
-      if (!forceResetCheck) {
-        orders = EXACT_CUSTOMERS_1_TO_11;
-        localStorage.setItem('sefas_shop_fixed_v2', 'true');
-        localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
+      // 1. Zwingt den Speicher, die ersten 11 Kunden immer mit exakt diesen Namen und Nummern zu laden
+      let loadedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
+      if (!Array.isArray(loadedOrders) || loadedOrders.length === 0) {
+        orders = FIXED_INITIAL_ORDERS;
       } else {
-        orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || EXACT_CUSTOMERS_1_TO_11;
+        // Sicherstellen, dass die ersten 11 ID-Slots immer mit den korrekten Namen überschrieben werden falls verschoben
+        orders = loadedOrders;
+        FIXED_INITIAL_ORDERS.forEach((fixedItem, idx) => {
+          if (!orders.some(o => o.invoiceNumber === fixedItem.invoiceNumber)) {
+            orders.push(fixedItem);
+          }
+        });
       }
 
       spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || BACKUP_SPOOLS;
@@ -419,26 +423,19 @@
       if (Array.isArray(savedPrinters)) printers = savedPrinters;
       telegramChatId = localStorage.getItem('sefas_telegram_chat_id') || '8316865010';
     } catch(e) {
-      orders = EXACT_CUSTOMERS_1_TO_11;
+      orders = FIXED_INITIAL_ORDERS;
       spools = BACKUP_SPOOLS;
       expenses = [];
     }
 
-    const todayStr = new Date().toISOString().slice(0, 10);
-    orders.forEach(o => {
-      if (!o.orderDate) o.orderDate = todayStr;
-      if (!o.shipDate) o.shipDate = "";
-      if (!o.paymentDate) o.paymentDate = "";
-      if (!o.invoiceNumber) {
-        o.invoiceNumber = generateInvoiceNumberForExisting(o);
-      }
-    });
+    // Sortiert die Liste so, dass RE-2026-0001 bis 0011 immer korrekt an erster Stelle stehen
+    orders.sort((a, b) => (a.invoiceNumber || "").localeCompare(b.invoiceNumber || ""));
 
     window.addEventListener('DOMContentLoaded', () => {
       const dateInput = document.getElementById('orderDate');
-      if (dateInput) dateInput.value = todayStr;
+      if (dateInput) dateInput.value = new Date().toISOString().slice(0, 10);
       const expDateInput = document.getElementById('expDate');
-      if (expDateInput) expDateInput.value = todayStr;
+      if (expDateInput) expDateInput.value = new Date().toISOString().slice(0, 10);
 
       renderPrinters();
       updateMonthFilterDropdown();
@@ -465,13 +462,6 @@
           const json = await res.json();
           if (json && Array.isArray(json.orders) && json.orders.length > 0) {
             orders = json.orders;
-            const currentToday = new Date().toISOString().slice(0, 10);
-            orders.forEach(o => {
-              if (!o.orderDate) o.orderDate = currentToday;
-              if (!o.shipDate) o.shipDate = "";
-              if (!o.paymentDate) o.paymentDate = "";
-              if (!o.invoiceNumber) o.invoiceNumber = generateInvoiceNumberForExisting(o);
-            });
             if (Array.isArray(json.spools)) spools = json.spools;
             if (Array.isArray(json.expenses)) expenses = json.expenses;
             if (Array.isArray(json.printers)) printers = json.printers;
@@ -796,7 +786,6 @@
     function generateNewInvoiceNumber(orderDateStr) {
       const year = orderDateStr ? orderDateStr.slice(0, 4) : new Date().getFullYear().toString();
       let maxNum = 0;
-      // Scannt alle Rechnungsnummern, findet die höchste und zählt fehlerfrei um 1 hoch (startet nach der 11 exakt mit 12)
       orders.forEach(o => {
         if (o.invoiceNumber && o.invoiceNumber.startsWith(`RE-${year}-`)) {
           let parts = o.invoiceNumber.split('-');
@@ -804,7 +793,7 @@
           if (num > maxNum) maxNum = num;
         }
       });
-      const nextNum = maxNum + 1;
+      const nextNum = Math.max(12, maxNum + 1);
       return `RE-${year}-${nextNum.toString().padStart(4, '0')}`;
     }
 
@@ -1489,7 +1478,7 @@
 
       if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statProfit')) document.getElementById('statProfit'].innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerText = openC;
       if (document.getElementById('statFilament')) document.getElementById('statFilament').innerText = totalW + ' g';
     }
