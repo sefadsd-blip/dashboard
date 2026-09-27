@@ -180,12 +180,24 @@
       </div>
 
       <form id="orderForm" onsubmit="addOrder(event)" class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
           <input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <select id="platform" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+            <option value="Kleinanzeigen">🛒 Kleinanzeigen</option>
+            <option value="eBay">🛍️ eBay</option>
+          </select>
+          <select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+            <option value="eBay">💳 eBay (Managed Payments)</option>
+            <option value="PayPal">🅿️ PayPal</option>
+            <option value="Überweisung">🏦 Überweisung</option>
+            <option value="Bar">💶 Bar (Abholung)</option>
+          </select>
           <select id="printer" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-            <!-- Dynamisch gefüllt via updatePrinterDropdowns() -->
+            <!-- Dynamisch gefüllt -->
           </select>
           <input type="number" step="0.01" id="price" placeholder="Artikelpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <input type="number" step="0.01" id="labelCost" placeholder="Porto / Etikett (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" title="Gekauftes Versandlabel (z.B. 5.49)">
+
           <select id="shipping" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
             <option value="7.00" selected>📦 Paketpauschale (7,00 €)</option>
             <option value="5.00">📦 Paketpauschale (5,00 €)</option>
@@ -199,22 +211,22 @@
           </div>
 
           <select id="label" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none self-end">
-            <option value="✅ Ja">Label: ✅ Ja</option>
-            <option value="❌ Nein">Label: ❌ Nein</option>
+            <option value="✅ Ja">Label gedruckt: ✅ Ja</option>
+            <option value="❌ Nein">Label gedruckt: ❌ Nein</option>
           </select>
           <select id="packed" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none self-end">
             <option value="❌ Nein">Verpackt: ❌ Nein</option>
             <option value="✅ Ja">Verpackt: ✅ Ja</option>
           </select>
           <input type="text" id="tracking" placeholder="Tracking-Nummer" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none self-end">
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <input type="text" id="address" placeholder="Lieferadresse" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-          <input type="text" id="notes" placeholder="Notizen" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-          <div class="flex flex-col">
-            <label class="text-[10px] text-slate-400 mb-0.5">Zahlungseingang (Datum):</label>
+          <div class="flex flex-col self-end">
+            <label class="text-[10px] text-slate-400 mb-0.5">Zahlungseingang / Auszahlung:</label>
             <input type="date" id="paymentDate" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none">
           </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <input type="text" id="address" placeholder="Lieferadresse" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <input type="text" id="notes" placeholder="Notizen" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
         </div>
 
         <div class="border-t border-slate-700/60 pt-3 space-y-2">
@@ -251,13 +263,13 @@
       </div>
 
       <form id="expenseForm" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-        <input type="text" id="expDesc" placeholder="Beschreibung (z.B. Filament Schwarz)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+        <input type="text" id="expDesc" placeholder="Beschreibung (z.B. eBay Gebühren)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
         <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
           <option value="Filament">🧵 Filament</option>
           <option value="DHL / Versand">📦 DHL / Versand</option>
           <option value="Zubehör / Ersatzteile">⚙️ Zubehör & Ersatzteile</option>
           <option value="Verpackung">📦 Verpackungsmaterial</option>
-          <option value="Sonstiges">🏷️ Sonstiges</option>
+          <option value="Sonstiges">🏷️ Sonstiges / eBay Gebühren</option>
         </select>
         <input type="number" step="0.01" id="expAmount" placeholder="Betrag (€)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
         <input type="date" id="expDate" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
@@ -292,13 +304,13 @@
         <table class="w-full text-left text-sm">
           <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
             <tr>
-              <th class="p-3">Kunde & Adresse</th>
+              <th class="p-3">Kunde & Plattform</th>
               <th class="p-3">Rechnung-Nr.</th>
               <th class="p-3">Artikel, Farbe & Gewicht</th>
               <th class="p-3">Drucker</th>
-              <th class="p-3">Datum (Erstellt / Zahlung)</th>
+              <th class="p-3">Zahlungsart</th>
               <th class="p-3">Status</th>
-              <th class="p-3">Preis</th>
+              <th class="p-3">Umsatz / Porto</th>
               <th class="p-3">Label</th>
               <th class="p-3">Verpackt</th>
               <th class="p-3">Tracking</th>
@@ -369,17 +381,17 @@
     const TELEGRAM_TOKEN = '8918418759:AAHEyb2eJYwvY8OTyb0lEWjin7MstbsEdMM';
 
     const BACKUP_ORDERS = [
-      {"id":1, "customer":"Paul Hartmann", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-01", "paymentDate":"2026-02-01", "invoiceNumber":"RE-2026-0001", "shipDate":"2026-02-01", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":2, "customer":"Gabi Thomas", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-02", "paymentDate":"2026-02-02", "invoiceNumber":"RE-2026-0002", "shipDate":"2026-02-02", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":3, "customer":"Antje", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-03", "paymentDate":"2026-02-03", "invoiceNumber":"RE-2026-0003", "shipDate":"2026-02-03", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":4, "customer":"Tobias", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-04", "paymentDate":"2026-02-04", "invoiceNumber":"RE-2026-0004", "shipDate":"2026-02-04", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":5, "customer":"Dunja", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-05", "paymentDate":"2026-02-05", "invoiceNumber":"RE-2026-0005", "shipDate":"2026-02-05", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":6, "customer":"Sabine Beeween", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-06", "paymentDate":"2026-02-06", "invoiceNumber":"RE-2026-0006", "shipDate":"2026-02-06", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":7, "customer":"Ralf Hartmann", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-07", "paymentDate":"2026-02-07", "invoiceNumber":"RE-2026-0007", "shipDate":"2026-02-07", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":8, "customer":"Renate", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-08", "paymentDate":"2026-02-08", "invoiceNumber":"RE-2026-0008", "shipDate":"2026-02-08", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":9, "customer":"Tchoffo", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-09", "paymentDate":"2026-02-09", "invoiceNumber":"RE-2026-0009", "shipDate":"2026-02-09", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":10,"customer":"Silke Schwarzer", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-10", "paymentDate":"2026-02-10", "invoiceNumber":"RE-2026-0010", "shipDate":"2026-02-10", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
-      {"id":11,"customer":"Iris", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "tracking":"-", "orderDate":"2026-02-11", "paymentDate":"2026-02-11", "invoiceNumber":"RE-2026-0011", "shipDate":"2026-02-11", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]}
+      {"id":1, "customer":"Paul Hartmann", "platform":"Kleinanzeigen", "paymentMethod":"Überweisung", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "labelCost":0, "tracking":"-", "orderDate":"2026-02-01", "paymentDate":"2026-02-01", "invoiceNumber":"RE-2026-0001", "shipDate":"2026-02-01", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":2, "customer":"Gabi Thomas", "platform":"Kleinanzeigen", "paymentMethod":"Überweisung", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "labelCost":0, "tracking":"-", "orderDate":"2026-02-02", "paymentDate":"2026-02-02", "invoiceNumber":"RE-2026-0002", "shipDate":"2026-02-02", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":3, "customer":"Antje", "platform":"Kleinanzeigen", "paymentMethod":"Überweisung", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "labelCost":0, "tracking":"-", "orderDate":"2026-02-03", "paymentDate":"2026-02-03", "invoiceNumber":"RE-2026-0003", "shipDate":"2026-02-03", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":4, "customer":"Tobias", "platform":"Kleinanzeigen", "paymentMethod":"Überweisung", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "labelCost":0, "tracking":"-", "orderDate":"2026-02-04", "paymentDate":"2026-02-04", "invoiceNumber":"RE-2026-0004", "shipDate":"2026-02-04", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":5, "customer":"Dunja", "platform":"Kleinanzeigen", "paymentMethod":"Überweisung", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "labelCost":0, "tracking":"-", "orderDate":"2026-02-05", "paymentDate":"2026-02-05", "invoiceNumber":"RE-2026-0005", "shipDate":"2026-02-05", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":6, "customer":"Sabine Beeween", "platform":"Kleinanzeigen", "paymentMethod":"Überweisung", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "labelCost":0, "tracking":"-", "orderDate":"2026-02-06", "paymentDate":"2026-02-06", "invoiceNumber":"RE-2026-0006", "shipDate":"2026-02-06", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":7, "customer":"Ralf Hartmann", "platform":"Kleinanzeigen", "paymentMethod":"Überweisung", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "labelCost":0, "tracking":"-", "orderDate":"2026-02-07", "paymentDate":"2026-02-07", "invoiceNumber":"RE-2026-0007", "shipDate":"2026-02-07", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":8, "customer":"Renate", "platform":"Kleinanzeigen", "paymentMethod":"Überweisung", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "labelCost":0, "tracking":"-", "orderDate":"2026-02-08", "paymentDate":"2026-02-08", "invoiceNumber":"RE-2026-0008", "shipDate":"2026-02-08", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":9, "customer":"Tchoffo", "platform":"Kleinanzeigen", "paymentMethod":"Überweisung", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "labelCost":0, "tracking":"-", "orderDate":"2026-02-09", "paymentDate":"2026-02-09", "invoiceNumber":"RE-2026-0009", "shipDate":"2026-02-09", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":10,"customer":"Silke Schwarzer", "platform":"Kleinanzeigen", "paymentMethod":"Überweisung", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "labelCost":0, "tracking":"-", "orderDate":"2026-02-10", "paymentDate":"2026-02-10", "invoiceNumber":"RE-2026-0010", "shipDate":"2026-02-10", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]},
+      {"id":11,"customer":"Iris", "platform":"Kleinanzeigen", "paymentMethod":"Überweisung", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "labelCost":0, "tracking":"-", "orderDate":"2026-02-11", "paymentDate":"2026-02-11", "invoiceNumber":"RE-2026-0011", "shipDate":"2026-02-11", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]}
     ];
 
     const BACKUP_SPOOLS = [
@@ -433,6 +445,9 @@
 
     const todayStr = new Date().toISOString().slice(0, 10);
     orders.forEach(o => {
+      if (!o.platform) o.platform = "Kleinanzeigen";
+      if (!o.paymentMethod) o.paymentMethod = "Überweisung";
+      if (o.labelCost === undefined) o.labelCost = 0;
       if (!o.orderDate) o.orderDate = todayStr;
       if (!o.shipDate) o.shipDate = "";
       if (!o.paymentDate) o.paymentDate = "";
@@ -478,6 +493,9 @@
             });
             const currentToday = new Date().toISOString().slice(0, 10);
             orders.forEach(o => {
+              if (!o.platform) o.platform = "Kleinanzeigen";
+              if (!o.paymentMethod) o.paymentMethod = "Überweisung";
+              if (o.labelCost === undefined) o.labelCost = 0;
               if (!o.orderDate) o.orderDate = currentToday;
               if (!o.shipDate) o.shipDate = "";
               if (!o.paymentDate) o.paymentDate = "";
@@ -631,6 +649,10 @@
 
       if (field === 'status') {
         order.status = value;
+      } else if (field === 'platform') {
+        order.platform = value;
+      } else if (field === 'paymentMethod') {
+        order.paymentMethod = value;
       } else if (field === 'printer') {
         order.printer = value;
       } else if (field === 'label') {
@@ -697,14 +719,16 @@
       if (!order) return;
 
       document.getElementById('customer').value = order.customer || '';
+      document.getElementById('platform').value = order.platform || 'Kleinanzeigen';
+      document.getElementById('paymentMethod').value = order.paymentMethod || 'Überweisung';
       document.getElementById('address').value = order.address || '';
       document.getElementById('tracking').value = (order.tracking && order.tracking !== '-') ? order.tracking : '';
       if (order.printer) document.getElementById('printer').value = order.printer;
       document.getElementById('price').value = order.price || '';
+      document.getElementById('labelCost').value = order.labelCost !== undefined ? order.labelCost : 0;
       document.getElementById('shipping').value = order.shippingCost || '7.00';
       document.getElementById('label').value = order.label || '✅ Ja';
       document.getElementById('packed').value = order.packed || '❌ Nein';
-      document.getElementById('notes').value = order.notes || '';
       if (order.orderDate) document.getElementById('orderDate').value = order.orderDate;
       if (order.paymentDate) document.getElementById('paymentDate').value = order.paymentDate;
     }
@@ -879,10 +903,15 @@
       const customDate = document.getElementById('orderDate').value || new Date().toISOString().slice(0,10);
       const payDate = document.getElementById('paymentDate').value || '';
       const fixedInvoiceNum = generateNewInvoiceNumber(customDate);
+      const plat = document.getElementById('platform').value;
+      const payMethod = document.getElementById('paymentMethod').value;
+      const labelC = parseFloat(document.getElementById('labelCost').value) || 0;
 
       orders.unshift({
         id: Date.now(),
         customer: document.getElementById('customer').value,
+        platform: plat,
+        paymentMethod: payMethod,
         address: document.getElementById('address').value || '',
         printer: document.getElementById('printer').value,
         status: "Offen",
@@ -890,6 +919,7 @@
         packed: document.getElementById('packed').value,
         price: parseFloat(document.getElementById('price').value) || 0,
         shippingCost: parseFloat(document.getElementById('shipping').value) || 0,
+        labelCost: labelC,
         tracking: document.getElementById('tracking').value || '-',
         orderDate: customDate,
         paymentDate: payDate,
@@ -901,6 +931,7 @@
       saveAllData();
       document.getElementById('orderForm').reset();
       document.getElementById('orderDate').value = new Date().toISOString().slice(0,10);
+      document.getElementById('labelCost').value = "0.00";
       document.getElementById('existingCustomerSelect').value = "";
     }
 
@@ -950,12 +981,15 @@
       });
 
       orders[idx].customer = document.getElementById(`edit-cust-${idx}`).value;
+      orders[idx].platform = document.getElementById(`edit-plat-${idx}`).value;
+      orders[idx].paymentMethod = document.getElementById(`edit-paymeth-${idx}`).value;
       orders[idx].address = document.getElementById(`edit-addr-${idx}`).value;
       orders[idx].printer = document.getElementById(`edit-print-${idx}`).value;
       orders[idx].status = document.getElementById(`edit-stat-${idx}`).value;
       orders[idx].label = document.getElementById(`edit-label-${idx}`).value;
       orders[idx].packed = document.getElementById(`edit-packed-${idx}`).value;
       orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
+      orders[idx].labelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
       orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value || '-';
       orders[idx].orderDate = document.getElementById(`edit-date-${idx}`).value || orders[idx].orderDate;
       orders[idx].paymentDate = document.getElementById(`edit-pay-${idx}`).value || '';
@@ -1045,6 +1079,7 @@
       
       const invoiceNumber = generateInvoiceNumberForExisting(o);
       const trackingText = (o.tracking && o.tracking !== '-') ? o.tracking : 'Wird nachgereicht';
+      const paymentMethodText = o.paymentMethod || 'Überweisung';
       
       let itemsRows = '';
       o.items.forEach(i => {
@@ -1105,6 +1140,7 @@
               <p style="margin: 1px 0;"><strong>Rechnungsnummer:</strong> ${invoiceNumber}</p>
               <p style="margin: 1px 0;"><strong>Datum:</strong> ${invoiceDate}</p>
               <p style="margin: 1px 0;"><strong>Sendungsnummer:</strong> ${trackingText}</p>
+              <p style="margin: 1px 0; color: #2563eb; font-weight: bold;">Zahlungsart: ${paymentMethodText}</p>
             </div>
           </div>
 
@@ -1145,7 +1181,7 @@
               <p style="margin: 1px 0;">Empfänger: Sefa Demir</p>
               <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08</p>
               <p style="margin: 1px 0;">BIC: REVODEB2</p>
-              <p style="margin: 1px 0;">Bank: C24 Bank</p>
+              <p style="margin: 1px 0;">Bank: Revolut</p>
               <p style="margin: 2px 0 0 0; color: #2563eb; font-weight: bold;">💡 Mit Banking-App scannen & bezahlen!</p>
             </div>
             <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; display: inline-block;" id="sepaQrCodeTarget"></div>
@@ -1179,6 +1215,7 @@
         const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
         const invoiceNumber = generateInvoiceNumberForExisting(o);
         const trackingText = (o.tracking && o.tracking !== '-') ? o.tracking : 'Wird nachgereicht';
+        const paymentMethodText = o.paymentMethod || 'Überweisung';
         
         let itemsRows = '';
         o.items.forEach(i => {
@@ -1225,6 +1262,7 @@
                 <p style="margin: 1px 0;"><strong>Rechnungsnummer:</strong> ${invoiceNumber}</p>
                 <p style="margin: 1px 0;"><strong>Datum:</strong> ${invoiceDate}</p>
                 <p style="margin: 1px 0;"><strong>Sendungsnummer:</strong> ${trackingText}</p>
+                <p style="margin: 1px 0; color: #2563eb; font-weight: bold;">Zahlungsart: ${paymentMethodText}</p>
               </div>
             </div>
 
@@ -1265,7 +1303,7 @@
                 <p style="margin: 1px 0;">Empfänger: Sefa Demir</p>
                 <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08</p>
                 <p style="margin: 1px 0;">BIC: REVODEB2</p>
-                <p style="margin: 1px 0;">Bank: C24 Bank</p>
+                <p style="margin: 1px 0;">Bank: Revolut</p>
                 <p style="margin: 2px 0 0 0; color: #2563eb; font-weight: bold;">💡 Mit Banking-App scannen & bezahlen!</p>
               </div>
               <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; display: inline-block;" id="batchSepaQr_${index}"></div>
@@ -1306,7 +1344,7 @@
 
     function exportAccountingCSV() {
       let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-      csvContent += "Typ;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Betrag (€);Zahlungsdatum\n";
+      csvContent += "Typ;Plattform;Zahlungsart;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Umsatz (€);Porto-Ausgabe (€);Zahlungsdatum\n";
 
       orders.forEach(o => {
         let total = o.price + o.shippingCost;
@@ -1315,12 +1353,13 @@
         let inv = generateInvoiceNumberForExisting(o);
         let cust = o.customer.replace(/;/g, ",");
         let pay = o.paymentDate ? o.paymentDate : (o.orderDate || "");
-        csvContent += `${type};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${pay}\n`;
+        let lCost = (o.labelCost || 0).toFixed(2).replace('.', ',');
+        csvContent += `${type};${o.platform || 'Kleinanzeigen'};${o.paymentMethod || 'Überweisung'};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${lCost};${pay}\n`;
       });
 
       expenses.forEach(ex => {
         let desc = ex.description.replace(/;/g, ",");
-        csvContent += `Ausgabe;${ex.date || ""};${desc};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')};${ex.date || ""}\n`;
+        csvContent += `Ausgabe;Shop;Gebühr;${ex.date || ""};${desc};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')};0,00;${ex.date || ""}\n`;
       });
 
       const encodedUri = encodeURI(csvContent);
@@ -1372,6 +1411,7 @@
         if (query && !o.customer.toLowerCase().includes(query) && !o.tracking.toLowerCase().includes(query)) return;
 
         const fixedInvNum = generateInvoiceNumberForExisting(o);
+        const lCostVal = o.labelCost !== undefined ? o.labelCost : 0;
 
         if (editingIndex === idx) {
           let editItemsHtml = `<div id="editArticleRows" class="space-y-2 my-2">`;
@@ -1399,6 +1439,10 @@
             <tr class="border-b border-slate-800 bg-slate-900/90">
               <td class="p-3 space-y-1">
                 <input type="text" id="edit-cust-${idx}" value="${o.customer}" placeholder="Kundenname" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-full">
+                <select id="edit-plat-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-[11px] text-cyan-300 w-full">
+                  <option value="Kleinanzeigen" ${o.platform==='Kleinanzeigen'?'selected':''}>🛒 Kleinanzeigen</option>
+                  <option value="eBay" ${o.platform==='eBay'?'selected':''}>🛍️ eBay</option>
+                </select>
                 <input type="text" id="edit-addr-${idx}" value="${o.address || ''}" placeholder="Lieferadresse..." class="bg-slate-950 border border-blue-500 rounded p-1 text-[11px] text-white w-full">
               </td>
               <td class="p-3">
@@ -1410,19 +1454,26 @@
                   ${printerOptionsEdit}
                 </select>
               </td>
-              <td class="p-3 space-y-1 text-xs">
-                <div>Erst: <input type="date" id="edit-date-${idx}" value="${o.orderDate || ''}" class="bg-slate-950 border border-blue-500 rounded p-0.5 text-white"></div>
-                <div>Zahl: <input type="date" id="edit-pay-${idx}" value="${o.paymentDate || ''}" class="bg-slate-950 border border-blue-500 rounded p-0.5 text-white" title="Zahlungseingang"></div>
-                <div>Vers: <input type="date" id="edit-ship-${idx}" value="${o.shipDate || ''}" class="bg-slate-950 border border-blue-500 rounded p-0.5 text-white"></div>
+              <td class="p-3">
+                <select id="edit-paymeth-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
+                  <option value="eBay" ${o.paymentMethod==='eBay'?'selected':''}>eBay</option>
+                  <option value="PayPal" ${o.paymentMethod==='PayPal'?'selected':''}>PayPal</option>
+                  <option value="Überweisung" ${o.paymentMethod==='Überweisung'?'selected':''}>Überweisung</option>
+                  <option value="Bar" ${o.paymentMethod==='Bar'?'selected':''}>Bar</option>
+                </select>
               </td>
               <td class="p-3">
                 <select id="edit-stat-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
                   <option ${o.status==='Offen'?'selected':''}>Offen</option>
+                  <option ${o.status==='eBay Guthaben'?'selected':''}>eBay Guthaben</option>
                   <option ${o.status==='In Arbeit'?'selected':''}>In Arbeit</option>
                   <option ${o.status==='Fertig'?'selected':''}>Fertig</option>
                 </select>
               </td>
-              <td class="p-3"><input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-20"></td>
+              <td class="p-3 space-y-1">
+                <div>Umsatz: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-20"></div>
+                <div>Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCostVal}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-red-300 w-20" title="Porto / Etikett"></div>
+              </td>
               <td class="p-3">
                 <select id="edit-label-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
                   <option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>✅ Ja</option>
@@ -1458,9 +1509,13 @@
             printerOptionsTable += `<option value="${p.name}" ${p.name === o.printer ? 'selected' : ''}>${p.name}</option>`;
           });
 
+          let platBadge = o.platform === 'eBay' 
+            ? '<span class="bg-blue-500/20 text-blue-300 border border-blue-500/40 px-1.5 py-0.5 rounded text-[10px] font-bold">eBay</span>'
+            : '<span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.5 rounded text-[10px]">Kleinanzeigen</span>';
+
           tbody.innerHTML += `
             <tr class="hover:bg-slate-800/40 border-b border-slate-800">
-              <td class="p-3 font-medium text-white">${o.customer}<div class="text-[10px] text-slate-400">${o.address || ''}</div></td>
+              <td class="p-3 font-medium text-white">${o.customer}<div class="flex items-center gap-1.5 mt-0.5">${platBadge}</div><div class="text-[10px] text-slate-400">${o.address || ''}</div></td>
               <td class="p-3 text-xs font-mono text-cyan-300 font-bold">${fixedInvNum}</td>
               <td class="p-3">${itemsHtml}</td>
               <td class="p-3">
@@ -1468,18 +1523,26 @@
                   ${printerOptionsTable}
                 </select>
               </td>
-              <td class="p-3 text-xs text-slate-300 space-y-1">
-                <div>📥 ${o.orderDate || '-'}</div>
-                <div>💶 <input type="date" value="${o.paymentDate || ''}" onchange="updateField(${o.id}, 'paymentDate', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1 text-[11px] text-white" title="Zahlungseingangsdatum"></div>
+              <td class="p-3">
+                <select onchange="updateField(${o.id}, 'paymentMethod', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-cyan-300 focus:outline-none">
+                  <option value="eBay" ${o.paymentMethod === 'eBay' ? 'selected' : ''}>💳 eBay</option>
+                  <option value="PayPal" ${o.paymentMethod === 'PayPal' ? 'selected' : ''}>🅿️ PayPal</option>
+                  <option value="Überweisung" ${o.paymentMethod === 'Überweisung' ? 'selected' : ''}>🏦 Überweisung</option>
+                  <option value="Bar" ${o.paymentMethod === 'Bar' ? 'selected' : ''}>💶 Bar</option>
+                </select>
               </td>
               <td class="p-3">
                 <select onchange="updateField(${o.id}, 'status', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-yellow-300 focus:outline-none">
                   <option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option>
+                  <option value="eBay Guthaben" ${o.status === 'eBay Guthaben' ? 'selected' : ''}>eBay Guthaben</option>
                   <option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option>
                   <option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option>
                 </select>
               </td>
-              <td class="p-3 text-xs text-emerald-400 font-bold">${(o.price + o.shippingCost).toFixed(2).replace('.', ',')} €</td>
+              <td class="p-3 text-xs">
+                <div class="text-emerald-400 font-bold">${(o.price + o.shippingCost).toFixed(2).replace('.', ',')} €</div>
+                <div class="text-red-400">Porto: -${lCostVal.toFixed(2).replace('.', ',')} €</div>
+              </td>
               <td class="p-3">
                 <select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none">
                   <option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
@@ -1520,6 +1583,7 @@
         if (!o.archived) {
           if (selectedMonth === 'all' || (o.orderDate && o.orderDate.startsWith(selectedMonth))) {
             totalRev += (o.price + o.shippingCost);
+            totalExp += (o.labelCost || 0);
             totalW += orderTotalWeight;
           }
           if (o.status !== 'Fertig') openC++;
@@ -1527,6 +1591,7 @@
           let targetDate = o.shipDate || o.orderDate || '';
           if (selectedMonth === 'all' || (targetDate && targetDate.startsWith(selectedMonth))) {
             totalRev += (o.price + o.shippingCost);
+            totalExp += (o.labelCost || 0);
             totalW += orderTotalWeight;
           }
         }
