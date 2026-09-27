@@ -210,10 +210,10 @@
           </select>
           <input type="number" step="0.01" id="price" placeholder="Artikelpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
           
-          <!-- EBay Porto -->
+          <!-- EBay Porto (nur aktiv bei eBay) -->
           <input type="number" step="0.01" id="labelCost" placeholder="Echtes Porto (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" title="Von eBay abgezogenes echtes Etikett (z.B. 5.19)">
 
-          <!-- Kleinanzeigen Versandpauschale -->
+          <!-- Kleinanzeigen Versandpauschale (nur aktiv bei Kleinanzeigen) -->
           <select id="shipping" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
             <option value="7.00" selected>📦 Paketpauschale (7,00 €)</option>
             <option value="5.00">📦 Paketpauschale (5,00 €)</option>
@@ -542,7 +542,7 @@
         if (res.ok) {
           alert("✅ Daten erfolgreich in der Cloud gespeichert!");
         } else {
-          alert("⚠️ Server-Fehler: Die Cloud hat abgelehnt.");
+          alert("⚠️ Server-Fehler: Die Cloud has abgelehnt.");
         }
       } catch(e) {
         alert("❌ Netzwerkfehler: Cloud konnte nicht erreicht werden.");
@@ -955,7 +955,15 @@
 
       let ebayBalStatus = plat === 'eBay' ? '⏳ Bei eBay' : 'N/A';
 
-      // HIER KEINE AUTOMATISCHE AUSGABE MEHR ERZEUGEN -> Volle Kontrolle für dich!
+      if (labelC > 0) {
+        expenses.unshift({
+          id: Date.now() + 1,
+          description: `Porto / Label: ${custName} (${fixedInvoiceNum})`,
+          category: 'DHL / Versand',
+          amount: labelC,
+          date: customDate
+        });
+      }
 
       orders.unshift({
         id: Date.now(),
@@ -1046,7 +1054,17 @@
       
       if (orders[idx].platform === 'eBay') {
         orders[idx].shippingCost = 0;
-        orders[idx].labelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
+        const newLabelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
+        if (newLabelCost > 0 && newLabelCost !== (oldOrder.labelCost || 0)) {
+          expenses.unshift({
+            id: Date.now() + 1,
+            description: `Porto / Label (Bearbeitet): ${orders[idx].customer} (${orders[idx].invoiceNumber})`,
+            category: 'DHL / Versand',
+            amount: newLabelCost,
+            date: orders[idx].orderDate || new Date().toISOString().slice(0,10)
+          });
+        }
+        orders[idx].labelCost = newLabelCost;
       } else {
         orders[idx].shippingCost = parseFloat(document.getElementById(`edit-shipcost-${idx}`).value) || 0;
         orders[idx].labelCost = 0;
@@ -1153,7 +1171,7 @@
           </tr>`;
       });
 
-      if (o.platform === 'Kleinanzeigen' && o.shippingCost > 0) {
+      if (o.shippingCost > 0) {
         itemsRows += `
           <tr>
             <td style="padding: 6px; border-bottom: 1px solid #ddd;">Versand- / Paketpauschale</td>
@@ -1289,7 +1307,7 @@
             </tr>`;
         });
 
-        if (o.platform === 'Kleinanzeigen' && o.shippingCost > 0) {
+        if (o.shippingCost > 0) {
           itemsRows += `
             <tr>
               <td style="padding: 6px; border-bottom: 1px solid #ddd;">Versand- / Paketpauschale</td>
