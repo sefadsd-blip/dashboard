@@ -164,14 +164,12 @@
     <script>
         const initialData = {
             orders: [
-                // Aktive Bestellungen (aus deiner CSV)[cite: 2]
                 { id: "RE-2026-0014", date: "2026-09-27", customer: "Thomas Siepmann", platform: "eBay", revenue: 15.18, paid: true, status: "Aktiv", porto: 5.19 },
                 { id: "RE-2026-0013", date: "2026-09-27", customer: "Jennifer Habenicht", platform: "Kleinanzeigen", revenue: 15.00, paid: true, status: "Aktiv", porto: 0.00 },
                 { id: "RE-2026-00012", date: "2026-09-26", customer: "Annett Hanitzsch", platform: "Kleinanzeigen", revenue: 13.00, paid: true, status: "Aktiv", porto: 0.00 },
                 { id: "RE-2026-0005", date: "2026-09-24", customer: "Dunja marcinkowski", platform: "Kleinanzeigen", revenue: 0.00, paid: false, status: "Aktiv", porto: 0.00 },
                 { id: "RE-2026-0002", date: "2026-09-24", customer: "Gabi Thomas", platform: "Kleinanzeigen", revenue: 0.00, paid: true, status: "Aktiv", porto: 0.00 },
                 
-                // Archivierte Bestellungen (exakt alle 11 aus der CSV)[cite: 2]
                 { id: "RE-2026-00011", date: "2026-09-24", customer: "Iris Diekmann", platform: "Kleinanzeigen", revenue: 23.00, paid: false, status: "Archiviert", porto: 0.00 },
                 { id: "RE-2026-0010", date: "2026-09-24", customer: "Silke Schwarzer", platform: "Kleinanzeigen", revenue: 20.00, paid: false, status: "Archiviert", porto: 0.00 },
                 { id: "RE-2026-0009", date: "2026-09-24", customer: "Familie Tchoffo", platform: "Kleinanzeigen", revenue: 10.00, paid: false, status: "Archiviert", porto: 0.00 },
@@ -195,8 +193,8 @@
             ]
         };
 
-        let appData = initialData;
-        localStorage.setItem('sefas3d_data', JSON.stringify(appData));
+        let savedData = localStorage.getItem('sefas3d_data');
+        let appData = savedData ? JSON.parse(savedData) : initialData;
 
         function saveData() {
             localStorage.setItem('sefas3d_data', JSON.stringify(appData));
@@ -204,7 +202,7 @@
         }
 
         function resetToDefaultData() {
-            if (confirm("Wirklich auf Original-Daten der CSV zurücksetzen?")) {
+            if (confirm("Wirklich auf Original-Daten zurücksetzen?")) {
                 appData = JSON.parse(JSON.stringify(initialData));
                 saveData();
             }
@@ -237,20 +235,20 @@
                 totalRevenue += Number(order.revenue) || 0;
                 
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-750 transition border-b border-gray-700/50";
+                tr.className = "hover:bg-gray-800/50 transition border-b border-gray-700/50";
                 tr.innerHTML = `
                     <td class="p-4 text-gray-300">${order.date || '-'}</td>
                     <td class="p-4 font-mono font-semibold text-cyan-300">${order.id}</td>
-                    <td class="p-4"><span class="px-2 py-1 rounded text-xs ${order.platform === 'eBay' ? 'bg-blue-500/20 text-blue-400' : 'bg-orange-500/20 text-orange-400'}">${order.platform}</span></td>
-                    <td class="p-4 font-medium">${order.customer}</td>
+                    <td class="p-4"><span class="px-2.5 py-1 rounded-md text-xs font-medium ${order.platform === 'eBay' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">${order.platform}</span></td>
+                    <td class="p-4 font-medium text-gray-200">${order.customer}</td>
                     <td class="p-4 font-bold text-emerald-400">${Number(order.revenue).toFixed(2).replace('.', ',')} €</td>
-                    <td class="p-4">${order.paid ? '<span class="text-emerald-400 font-semibold">✅ Ja</span>' : '<span class="text-rose-400 font-semibold">❌ Nein</span>'}</td>
-                    <td class="p-4 text-right space-x-2">
-                        <button onclick="toggleArchive(${index})" class="text-yellow-400 hover:text-yellow-300 p-1" title="${order.status === 'Aktiv' ? 'Archivieren' : 'Aktivieren'}">
-                            <i class="fa-solid ${order.status === 'Aktiv' ? 'fa-box-archive' : 'fa-box-open'}"></i>
+                    <td class="p-4">${order.paid ? '<span class="text-emerald-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> Ja</span>' : '<span class="text-rose-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-circle-xmark"></i> Nein</span>'}</td>
+                    <td class="p-4 text-right space-x-3">
+                        <button onclick="toggleArchive(${index})" class="text-amber-400 hover:text-amber-300 p-1.5 transition" title="${order.status === 'Aktiv' ? 'Archivieren' : 'Aktivieren'}">
+                            <i class="fa-solid ${order.status === 'Aktiv' ? 'fa-box-archive' : 'fa-box-open'} text-base"></i>
                         </button>
-                        <button onclick="deleteOrder(${index})" class="text-rose-400 hover:text-rose-300 p-1" title="Löschen">
-                            <i class="fa-solid fa-trash"></i>
+                        <button onclick="deleteOrder(${index})" class="text-rose-400 hover:text-rose-300 p-1.5 transition" title="Löschen">
+                            <i class="fa-solid fa-trash text-base"></i>
                         </button>
                     </td>
                 `;
@@ -267,14 +265,14 @@
             appData.expenses.forEach((exp, index) => {
                 totalExpenses += Number(exp.amount) || 0;
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-750 transition border-b border-gray-700/50";
+                tr.className = "hover:bg-gray-800/50 transition border-b border-gray-700/50";
                 tr.innerHTML = `
-                    <td class="p-4 font-medium">${exp.desc}</td>
+                    <td class="p-4 font-medium text-gray-200">${exp.desc}</td>
                     <td class="p-4 text-gray-400">${exp.category || 'Sonstiges'}</td>
                     <td class="p-4 font-bold text-rose-400">-${Number(exp.amount).toFixed(2).replace('.', ',')} €</td>
                     <td class="p-4 text-right">
-                        <button onclick="deleteExpense(${index})" class="text-rose-400 hover:text-rose-300 p-1" title="Löschen">
-                            <i class="fa-solid fa-trash"></i>
+                        <button onclick="deleteExpense(${index})" class="text-rose-400 hover:text-rose-300 p-1.5 transition" title="Löschen">
+                            <i class="fa-solid fa-trash text-base"></i>
                         </button>
                     </td>
                 `;
@@ -388,9 +386,9 @@
                     const platform = cols[1];
                     const paid = cols[2].includes('Ja');
                     const date = cols[5];
-                    const idOrDesc = cols[6];
-                    const customerOrCat = cols[7];
-                    let umsatz = parseFloat(cols[8].replace('.', '').replace(',', '.')) || 0;
+                    const idOrDesc = cols.length > 6 ? cols[6] : '';
+                    const customerOrCat = cols.length > 7 ? cols[7] : '';
+                    let umsatz = cols.length > 8 ? parseFloat(cols[8].replace('.', '').replace(',', '.')) || 0 : 0;
 
                     if (typ.startsWith('Einnahme')) {
                         newOrders.push({
