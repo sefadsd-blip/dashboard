@@ -194,7 +194,9 @@
             ]
         };
 
-        let appData = JSON.parse(localStorage.getItem('sefas3d_data')) || initialData;
+        // Erzwinge das Laden der kompletten Originaldaten (löscht alten Cache)
+        let appData = initialData;
+        localStorage.setItem('sefas3d_data', JSON.stringify(appData));
 
         function saveData() {
             localStorage.setItem('sefas3d_data', JSON.stringify(appData));
