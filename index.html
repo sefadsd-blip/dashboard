@@ -406,6 +406,38 @@
       { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
     ];
 
+    // Exakte initialData direkt aus deiner Buchhaltungs-CSV
+    const INITIAL_CSV_ORDERS = [
+      { id: 1, customer: "Thomas Siepmann", platform: "eBay", paymentMethod: "eBay", isPaid: "✅ Ja", ebayBalancePaid: "⏳ Bei eBay", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 15.18, shippingCost: 0, labelCost: 5.19, tracking: "-", orderDate: "2026-09-27", invoiceNumber: "RE-2026-0014", shipDate: "2026-09-27", archived: false, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 2, customer: "Jennifer Habenicht", platform: "Kleinanzeigen", paymentMethod: "PayPal", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 15.00, shippingCost: 0, labelCost: 0, tracking: "-", orderDate: "2026-09-27", invoiceNumber: "RE-2026-0013", shipDate: "2026-09-27", archived: false, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 3, customer: "Annett Hanitzsch", platform: "Kleinanzeigen", paymentMethod: "PayPal", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 13.00, shippingCost: 0, labelCost: 0, tracking: "-", orderDate: "2026-09-26", invoiceNumber: "RE-2026-00012", shipDate: "2026-09-26", archived: false, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 4, customer: "Dunja marcinkowski", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Offen", label: "❌ Nein", packed: "❌ Nein", price: 0.00, shippingCost: 7.00, labelCost: 0, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0005", shipDate: "", archived: false, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 5, customer: "Gabi Thomas", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Offen", label: "✅ Ja", packed: "❌ Nein", price: 0.00, shippingCost: 7.00, labelCost: 0, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0002", shipDate: "", archived: false, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      
+      // Archivierte Aufträge aus der CSV
+      { id: 6, customer: "Iris Diekmann", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 23.00, shippingCost: 0, labelCost: 0, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-00011", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 7, customer: "Silke Schwarzer", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 20.00, shippingCost: 0, labelCost: 0, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0010", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 8, customer: "Familie Tchoffo", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 10.00, shippingCost: 0, labelCost: 0, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0009", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 9, customer: "Renate Evelin - Veere", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 43.00, shippingCost: 0, labelCost: 0, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0008", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 10, customer: "Ralf Hartmann", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 34.00, shippingCost: 0, labelCost: 0, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0007", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 11, customer: "Sabine Beewen", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 9.50, shippingCost: 0, labelCost: 0, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0006", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 12, customer: "Tobias von der Famile Ulm", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 33.00, shippingCost: 0, labelCost: 0, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0004", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 13, customer: "Antje Nanninga", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 9.00, shippingCost: 0, labelCost: 0, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0003", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 14, customer: "Paul Hartmann", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 14.00, shippingCost: 0, labelCost: 0, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-001", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 15, customer: "Paul Hartmann", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 10.00, shippingCost: 0, labelCost: 0, tracking: "-", orderDate: "2026-02-01", invoiceNumber: "RE-2026-0001", shipDate: "2026-02-01", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 16, customer: "Iris", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 10.00, shippingCost: 0, labelCost: 0, tracking: "-", orderDate: "2026-02-11", invoiceNumber: "RE-2026-0011", shipDate: "2026-02-11", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] }
+    ];
+
+    const INITIAL_CSV_EXPENSES = [
+      { id: 101, description: "Porto / Label (Bearbeitet): Thomas Siepmann (RE-2026-0014)", category: "DHL / Versand", amount: 5.19, date: "2026-09-27" },
+      { id: 102, description: "2 kg - Päckchen M", category: "DHL / Versand", amount: 5.19, date: "2026-09-27" },
+      { id: 103, description: "Werbeanzeige kleinanzeigen", category: "Sonstiges", amount: 3.49, date: "2026-09-26" },
+      { id: 104, description: "DHl Paket 2k", category: "DHL / Versand", amount: 6.19, date: "2026-09-26" },
+      { id: 105, description: "anycubic kobra Reperatur", category: "Sonstiges", amount: 50.00, date: "2026-09-26" },
+      { id: 106, description: "2x SD-Karten für Drucker", category: "Zubehör / Ersatzteile", amount: 17.90, date: "2026-09-25" },
+      { id: 107, description: "2x Druckerwartung CR-10 SP", category: "Sonstiges", amount: 99.98, date: "2026-09-25" }
+    ];
+
     let editingIndex = -1;
     let showingArchive = false;
     let orders = [];
@@ -415,41 +447,28 @@
     let telegramChatId = '8316865010';
 
     try {
-      orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
-      spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
-      expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
+      const savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
+      orders = (Array.isArray(savedOrders) && savedOrders.length > 0) ? savedOrders : INITIAL_CSV_ORDERS;
+
+      const savedSpools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent'));
+      spools = (Array.isArray(savedSpools) && savedSpools.length > 0) ? savedSpools : BACKUP_SPOOLS;
+
+      const savedExpenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent'));
+      expenses = (Array.isArray(savedExpenses) && savedExpenses.length > 0) ? savedExpenses : INITIAL_CSV_EXPENSES;
+
       const savedPrinters = JSON.parse(localStorage.getItem('sefas_shop_printers'));
       if (Array.isArray(savedPrinters) && savedPrinters.length > 0) printers = savedPrinters;
       telegramChatId = localStorage.getItem('sefas_telegram_chat_id') || '8316865010';
     } catch(e) {
-      orders = [];
-      spools = [];
-      expenses = [];
-      printers = [];
-    }
-
-    if (!Array.isArray(printers) || printers.length === 0) {
+      orders = INITIAL_CSV_ORDERS;
+      spools = BACKUP_SPOOLS;
+      expenses = INITIAL_CSV_EXPENSES;
       printers = BACKUP_PRINTERS;
     }
 
-    if (!Array.isArray(spools) || spools.length === 0) {
-      spools = BACKUP_SPOOLS;
-    }
+    if (!Array.isArray(printers) || printers.length === 0) printers = BACKUP_PRINTERS;
 
     const todayStr = new Date().toISOString().slice(0, 10);
-    orders.forEach(o => {
-      if (!o.platform) o.platform = "Kleinanzeigen";
-      if (!o.paymentMethod) o.paymentMethod = "Überweisung";
-      if (!o.isPaid) o.isPaid = "❌ Nein";
-      if (!o.ebayBalancePaid) o.ebayBalancePaid = o.platform === 'eBay' ? '⏳ Bei eBay' : 'N/A';
-      if (o.labelCost === undefined) o.labelCost = 0;
-      if (o.shippingCost === undefined) o.shippingCost = o.platform === 'Kleinanzeigen' ? 7.00 : 0;
-      if (!o.orderDate) o.orderDate = todayStr;
-      if (!o.shipDate) o.shipDate = "";
-      if (!o.invoiceNumber) {
-        o.invoiceNumber = generateInvoiceNumberForExisting(o);
-      }
-    });
 
     window.addEventListener('DOMContentLoaded', () => {
       const dateInput = document.getElementById('orderDate');
@@ -498,18 +517,6 @@
           const json = await res.json();
           if (json && Array.isArray(json.orders)) {
             orders = json.orders;
-            const currentToday = new Date().toISOString().slice(0, 10);
-            orders.forEach(o => {
-              if (!o.platform) o.platform = "Kleinanzeigen";
-              if (!o.paymentMethod) o.paymentMethod = "Überweisung";
-              if (!o.isPaid) o.isPaid = "❌ Nein";
-              if (!o.ebayBalancePaid) o.ebayBalancePaid = o.platform === 'eBay' ? '⏳ Bei eBay' : 'N/A';
-              if (o.labelCost === undefined) o.labelCost = 0;
-              if (o.shippingCost === undefined) o.shippingCost = o.platform === 'Kleinanzeigen' ? 7.00 : 0;
-              if (!o.orderDate) o.orderDate = currentToday;
-              if (!o.shipDate) o.shipDate = "";
-              if (!o.invoiceNumber) o.invoiceNumber = generateInvoiceNumberForExisting(o);
-            });
             if (Array.isArray(json.spools)) spools = json.spools;
             if (Array.isArray(json.expenses)) expenses = json.expenses;
             if (Array.isArray(json.printers) && json.printers.length > 0) printers = json.printers;
@@ -954,8 +961,6 @@
       }
 
       let ebayBalStatus = plat === 'eBay' ? '⏳ Bei eBay' : 'N/A';
-
-      // HIER KEINE AUTOMATISCHE AUSGABE MEHR ERZEUGEN -> Volle Kontrolle für dich!
 
       orders.unshift({
         id: Date.now(),
