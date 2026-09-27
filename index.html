@@ -164,23 +164,25 @@
     <script>
         const initialData = {
             orders: [
-                // Aktive Bestellungen (aus der CSV)
+                // Aktive Bestellungen (aus deiner CSV)[cite: 2]
                 { id: "RE-2026-0014", date: "2026-09-27", customer: "Thomas Siepmann", platform: "eBay", revenue: 15.18, paid: true, status: "Aktiv", porto: 5.19 },
-                { id: "RE-2026-0013", date: "2026-09-27", customer: "Jennifer Habenicht", platform: "Kleinanzeigen", revenue: 15.00, paid: true, status: "Aktiv", porto: 0 },
-                { id: "RE-2026-00012", date: "2026-09-26", customer: "Annett Hanitzsch", platform: "Kleinanzeigen", revenue: 13.00, paid: true, status: "Aktiv", porto: 0 },
-                { id: "RE-2026-0005", date: "2026-09-24", customer: "Dunja marcinkowski", platform: "Kleinanzeigen", revenue: 0.00, paid: false, status: "Aktiv", porto: 0 },
-                { id: "RE-2026-0002", date: "2026-09-24", customer: "Gabi Thomas", platform: "Kleinanzeigen", revenue: 0.00, paid: true, status: "Aktiv", porto: 0 },
+                { id: "RE-2026-0013", date: "2026-09-27", customer: "Jennifer Habenicht", platform: "Kleinanzeigen", revenue: 15.00, paid: true, status: "Aktiv", porto: 0.00 },
+                { id: "RE-2026-00012", date: "2026-09-26", customer: "Annett Hanitzsch", platform: "Kleinanzeigen", revenue: 13.00, paid: true, status: "Aktiv", porto: 0.00 },
+                { id: "RE-2026-0005", date: "2026-09-24", customer: "Dunja marcinkowski", platform: "Kleinanzeigen", revenue: 0.00, paid: false, status: "Aktiv", porto: 0.00 },
+                { id: "RE-2026-0002", date: "2026-09-24", customer: "Gabi Thomas", platform: "Kleinanzeigen", revenue: 0.00, paid: true, status: "Aktiv", porto: 0.00 },
                 
-                // Archivierte Bestellungen (exakt aus der CSV, inkl. Renate)
-                { id: "RE-2026-0008", date: "2026-09-24", customer: "Renate Evelin - Veere", platform: "Kleinanzeigen", revenue: 43.00, paid: false, status: "Archiviert", porto: 0 },
-                { id: "RE-2026-00011", date: "2026-09-24", customer: "Iris Diekmann", platform: "Kleinanzeigen", revenue: 23.00, paid: false, status: "Archiviert", porto: 0 },
-                { id: "RE-2026-0010", date: "2026-09-24", customer: "Silke Schwarzer", platform: "Kleinanzeigen", revenue: 20.00, paid: false, status: "Archiviert", porto: 0 },
-                { id: "RE-2026-0009", date: "2026-09-24", customer: "Familie Tchoffo", platform: "Kleinanzeigen", revenue: 10.00, paid: false, status: "Archiviert", porto: 0 },
-                { id: "RE-2026-0007", date: "2026-09-24", customer: "Ralf Hartmann", platform: "Kleinanzeigen", revenue: 34.00, paid: false, status: "Archiviert", porto: 0 },
-                { id: "RE-2026-0006", date: "2026-09-24", customer: "Sabine Beewen", platform: "Kleinanzeigen", revenue: 9.50, paid: false, status: "Archiviert", porto: 0 },
-                { id: "RE-2026-0004", date: "2026-09-24", customer: "Tobias von der Famile Ulm", platform: "Kleinanzeigen", revenue: 33.00, paid: false, status: "Archiviert", porto: 0 },
-                { id: "RE-2026-0003", date: "2026-09-24", customer: "Antje Nanninga", platform: "Kleinanzeigen", revenue: 9.00, paid: false, status: "Archiviert", porto: 0 },
-                { id: "RE-2026-0001", date: "2026-02-01", customer: "Paul Hartmann", platform: "Kleinanzeigen", revenue: 10.00, paid: false, status: "Archiviert", porto: 0 }
+                // Archivierte Bestellungen (exakt alle 11 aus der CSV)[cite: 2]
+                { id: "RE-2026-00011", date: "2026-09-24", customer: "Iris Diekmann", platform: "Kleinanzeigen", revenue: 23.00, paid: false, status: "Archiviert", porto: 0.00 },
+                { id: "RE-2026-0010", date: "2026-09-24", customer: "Silke Schwarzer", platform: "Kleinanzeigen", revenue: 20.00, paid: false, status: "Archiviert", porto: 0.00 },
+                { id: "RE-2026-0009", date: "2026-09-24", customer: "Familie Tchoffo", platform: "Kleinanzeigen", revenue: 10.00, paid: false, status: "Archiviert", porto: 0.00 },
+                { id: "RE-2026-0008", date: "2026-09-24", customer: "Renate Evelin - Veere", platform: "Kleinanzeigen", revenue: 43.00, paid: false, status: "Archiviert", porto: 0.00 },
+                { id: "RE-2026-0007", date: "2026-09-24", customer: "Ralf Hartmann", platform: "Kleinanzeigen", revenue: 34.00, paid: false, status: "Archiviert", porto: 0.00 },
+                { id: "RE-2026-0006", date: "2026-09-24", customer: "Sabine Beewen", platform: "Kleinanzeigen", revenue: 9.50, paid: false, status: "Archiviert", porto: 0.00 },
+                { id: "RE-2026-0004", date: "2026-09-24", customer: "Tobias von der Famile Ulm", platform: "Kleinanzeigen", revenue: 33.00, paid: false, status: "Archiviert", porto: 0.00 },
+                { id: "RE-2026-0003", date: "2026-09-24", customer: "Antje Nanninga", platform: "Kleinanzeigen", revenue: 9.00, paid: false, status: "Archiviert", porto: 0.00 },
+                { id: "RE-2026-001", date: "2026-09-24", customer: "Paul Hartmann", platform: "Kleinanzeigen", revenue: 14.00, paid: false, status: "Archiviert", porto: 0.00 },
+                { id: "RE-2026-0001", date: "2026-02-01", customer: "Paul Hartmann", platform: "Kleinanzeigen", revenue: 10.00, paid: false, status: "Archiviert", porto: 0.00 },
+                { id: "RE-2026-0011", date: "2026-02-11", customer: "Iris", platform: "Kleinanzeigen", revenue: 10.00, paid: false, status: "Archiviert", porto: 0.00 }
             ],
             expenses: [
                 { desc: "Porto / Label (Bearbeitet): Thomas Siepmann (RE-2026-0014)", category: "DHL / Versand", amount: 5.19 },
@@ -193,7 +195,6 @@
             ]
         };
 
-        // Direktes Erzwingen der exakten CSV-Daten im localStorage beim Laden
         let appData = initialData;
         localStorage.setItem('sefas3d_data', JSON.stringify(appData));
 
