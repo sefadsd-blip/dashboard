@@ -906,10 +906,22 @@
       const plat = document.getElementById('platform').value;
       const payMethod = document.getElementById('paymentMethod').value;
       const labelC = parseFloat(document.getElementById('labelCost').value) || 0;
+      const custName = document.getElementById('customer').value;
+
+      // Porto automatisch als Betriebsausgabe eintragen
+      if (labelC > 0) {
+        expenses.unshift({
+          id: Date.now() + 1,
+          description: `Porto / Label: ${custName} (${fixedInvoiceNum})`,
+          category: 'DHL / Versand',
+          amount: labelC,
+          date: customDate
+        });
+      }
 
       orders.unshift({
         id: Date.now(),
-        customer: document.getElementById('customer').value,
+        customer: custName,
         platform: plat,
         paymentMethod: payMethod,
         address: document.getElementById('address').value || '',
@@ -989,11 +1001,24 @@
       orders[idx].label = document.getElementById(`edit-label-${idx}`).value;
       orders[idx].packed = document.getElementById(`edit-packed-${idx}`).value;
       orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
-      orders[idx].labelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
+      
+      const newLabelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
+      // Wenn sich das Porto beim Bearbeiten geändert hat und größer als 0 ist, direkt als Ausgabe anlegen
+      if (newLabelCost > 0 && newLabelCost !== (oldOrder.labelCost || 0)) {
+        expenses.unshift({
+          id: Date.now() + 1,
+          description: `Porto / Label (Bearbeitet): ${orders[idx].customer} (${orders[idx].invoiceNumber})`,
+          category: 'DHL / Versand',
+          amount: newLabelCost,
+          date: orders[idx].orderDate || new Date().toISOString().slice(0,10)
+        });
+      }
+      orders[idx].labelCost = newLabelCost;
+
       orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value || '-';
-      orders[idx].orderDate = document.getElementById(`edit-date-${idx}`).value || orders[idx].orderDate;
-      orders[idx].paymentDate = document.getElementById(`edit-pay-${idx}`).value || '';
-      orders[idx].shipDate = document.getElementById(`edit-ship-${idx}`).value || orders[idx].shipDate || '';
+      orders[idx].orderDate = document.getElementById(`edit-date-${idx}`)?.value || orders[idx].orderDate;
+      orders[idx].paymentDate = '';
+      orders[idx].shipDate = orders[idx].shipDate || '';
       
       const newInvInput = document.getElementById(`edit-inv-${idx}`);
       if (newInvInput && newInvInput.value.trim()) {
