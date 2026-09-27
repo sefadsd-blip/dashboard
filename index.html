@@ -87,7 +87,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-gray-700/50 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
+                            <tr class="bg-gray-750 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
                                 <th class="p-4">Datum</th>
                                 <th class="p-4">Rechnung-Nr.</th>
                                 <th class="p-4">Plattform</th>
@@ -114,7 +114,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-gray-700/50 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
+                            <tr class="bg-gray-750 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
                                 <th class="p-4">Datum</th>
                                 <th class="p-4">Rechnung-Nr.</th>
                                 <th class="p-4">Plattform</th>
@@ -144,7 +144,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-gray-700/50 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
+                            <tr class="bg-gray-750 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
                                 <th class="p-4">Beschreibung / Zweck</th>
                                 <th class="p-4">Kategorie</th>
                                 <th class="p-4">Betrag (€)</th>
@@ -202,7 +202,7 @@
         }
 
         function resetToDefaultData() {
-            if (confirm("Wirklich auf Werkseinstellungen (alle Original-Kunden & Ausgaben) zurücksetzen?")) {
+            if (confirm("Wirklich auf Werkseinstellungen zurücksetzen?")) {
                 appData = JSON.parse(JSON.stringify(initialData));
                 saveData();
             }
@@ -235,7 +235,7 @@
                 totalRevenue += Number(order.revenue) || 0;
                 
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-800/50 transition border-b border-gray-700/50";
+                tr.className = "hover:bg-gray-750 transition border-b border-gray-700/50";
                 tr.innerHTML = `
                     <td class="p-4 text-gray-300">${order.date || '-'}</td>
                     <td class="p-4 font-mono font-semibold text-cyan-300">${order.id}</td>
@@ -265,7 +265,7 @@
             appData.expenses.forEach((exp, index) => {
                 totalExpenses += Number(exp.amount) || 0;
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-800/50 transition border-b border-gray-700/50";
+                tr.className = "hover:bg-gray-750 transition border-b border-gray-700/50";
                 tr.innerHTML = `
                     <td class="p-4 font-medium">${exp.desc}</td>
                     <td class="p-4 text-gray-400">${exp.category || 'Sonstiges'}</td>
@@ -425,4 +425,4 @@
         render();
     </script>
 </body>
-</html>
+</html> 
