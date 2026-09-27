@@ -191,7 +191,7 @@
       <form id="orderForm" onsubmit="addOrder(event)" class="space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
           <input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-          <select id="platform" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <select id="platform" onchange="togglePlatformFields()" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
             <option value="Kleinanzeigen">🛒 Kleinanzeigen</option>
             <option value="eBay">🛍️ eBay</option>
           </select>
@@ -208,11 +208,17 @@
           <select id="printer" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
             <!-- Dynamisch gefüllt -->
           </select>
-          <input type="number" step="0.01" id="price" placeholder="Gesamt-Umsatz (€)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" title="Was der Kunde bezahlt hat (inkl. evtl. Versand)">
-          <input type="number" step="0.01" id="labelCost" placeholder="Porto / Etikett (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" title="Gekauftes eBay-Versandlabel (z.B. 5.19)">
+          <input type="number" step="0.01" id="price" placeholder="Artikelpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          
+          <!-- EBay Porto (nur aktiv bei eBay) -->
+          <input type="number" step="0.01" id="labelCost" placeholder="Echtes Porto (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" title="Von eBay abgezogenes echtes Etikett (z.B. 5.19)">
 
-          <select id="shipping" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none hidden">
-            <option value="0.00" selected>0,00 €</option>
+          <!-- Kleinanzeigen Versandpauschale (nur aktiv bei Kleinanzeigen) -->
+          <select id="shipping" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+            <option value="7.00" selected>📦 Paketpauschale (7,00 €)</option>
+            <option value="5.00">📦 Paketpauschale (5,00 €)</option>
+            <option value="2.50">✉️ Brief / Warenpost (2,50 €)</option>
+            <option value="0.00">🤝 Selbstabholung (0,00 €)</option>
           </select>
           
           <div class="flex flex-col">
@@ -437,13 +443,12 @@
       if (!o.isPaid) o.isPaid = "❌ Nein";
       if (!o.ebayBalancePaid) o.ebayBalancePaid = o.platform === 'eBay' ? '⏳ Bei eBay' : 'N/A';
       if (o.labelCost === undefined) o.labelCost = 0;
+      if (o.shippingCost === undefined) o.shippingCost = o.platform === 'Kleinanzeigen' ? 7.00 : 0;
       if (!o.orderDate) o.orderDate = todayStr;
       if (!o.shipDate) o.shipDate = "";
       if (!o.invoiceNumber) {
         o.invoiceNumber = generateInvoiceNumberForExisting(o);
       }
-      // shippingCost fix auf 0 setzen, da Umsatz direkt den Gesamtbetrag darstellt
-      o.shippingCost = 0;
     });
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -459,7 +464,22 @@
       renderExpenses();
       updateCustomerDropdowns();
       updatePrinterDropdowns();
+      togglePlatformFields();
     });
+
+    function togglePlatformFields() {
+      const platform = document.getElementById('platform').value;
+      const labelCostInput = document.getElementById('labelCost');
+      const shippingSelect = document.getElementById('shipping');
+
+      if (platform === 'eBay') {
+        labelCostInput.classList.remove('hidden');
+        shippingSelect.classList.add('hidden');
+      } else {
+        labelCostInput.classList.add('hidden');
+        shippingSelect.classList.remove('hidden');
+      }
+    }
 
     function saveLocalOnly() {
       try {
@@ -485,10 +505,10 @@
               if (!o.isPaid) o.isPaid = "❌ Nein";
               if (!o.ebayBalancePaid) o.ebayBalancePaid = o.platform === 'eBay' ? '⏳ Bei eBay' : 'N/A';
               if (o.labelCost === undefined) o.labelCost = 0;
+              if (o.shippingCost === undefined) o.shippingCost = o.platform === 'Kleinanzeigen' ? 7.00 : 0;
               if (!o.orderDate) o.orderDate = currentToday;
               if (!o.shipDate) o.shipDate = "";
               if (!o.invoiceNumber) o.invoiceNumber = generateInvoiceNumberForExisting(o);
-              o.shippingCost = 0;
             });
             if (Array.isArray(json.spools)) spools = json.spools;
             if (Array.isArray(json.expenses)) expenses = json.expenses;
@@ -522,7 +542,7 @@
         if (res.ok) {
           alert("✅ Daten erfolgreich in der Cloud gespeichert!");
         } else {
-          alert("⚠️ Server-Fehler: Die Cloud hat den Speichervorgang abgelehnt.");
+          alert("⚠️ Server-Fehler: Die Cloud has abgelehnt.");
         }
       } catch(e) {
         alert("❌ Netzwerkfehler: Cloud konnte nicht erreicht werden.");
@@ -640,8 +660,13 @@
         order.status = value;
       } else if (field === 'platform') {
         order.platform = value;
-        if (value === 'eBay' && order.ebayBalancePaid === 'N/A') order.ebayBalancePaid = '⏳ Bei eBay';
-        if (value === 'Kleinanzeigen') order.ebayBalancePaid = 'N/A';
+        if (value === 'eBay') {
+          order.ebayBalancePaid = '⏳ Bei eBay';
+          order.shippingCost = 0;
+        } else {
+          order.ebayBalancePaid = 'N/A';
+          order.shippingCost = 7.00;
+        }
       } else if (field === 'paymentMethod') {
         order.paymentMethod = value;
       } else if (field === 'isPaid') {
@@ -729,6 +754,7 @@
 
       document.getElementById('customer').value = order.customer || '';
       document.getElementById('platform').value = order.platform || 'Kleinanzeigen';
+      togglePlatformFields();
       document.getElementById('paymentMethod').value = order.paymentMethod || 'Überweisung';
       document.getElementById('isPaid').value = order.isPaid || '❌ Nein';
       document.getElementById('address').value = order.address || '';
@@ -736,7 +762,7 @@
       if (order.printer) document.getElementById('printer').value = order.printer;
       document.getElementById('price').value = order.price || '';
       document.getElementById('labelCost').value = order.labelCost !== undefined ? order.labelCost : 0;
-      document.getElementById('shipping').value = "0.00";
+      document.getElementById('shipping').value = order.shippingCost || '7.00';
       document.getElementById('label').value = order.label || '✅ Ja';
       document.getElementById('packed').value = order.packed || '❌ Nein';
       if (order.orderDate) document.getElementById('orderDate').value = order.orderDate;
@@ -914,8 +940,18 @@
       const plat = document.getElementById('platform').value;
       const payMethod = document.getElementById('paymentMethod').value;
       const paidStatus = document.getElementById('isPaid').value;
-      const labelC = parseFloat(document.getElementById('labelCost').value) || 0;
       const custName = document.getElementById('customer').value;
+      
+      let labelC = 0;
+      let shipCost = 0;
+
+      if (plat === 'eBay') {
+        labelC = parseFloat(document.getElementById('labelCost').value) || 0;
+        shipCost = 0;
+      } else {
+        labelC = 0;
+        shipCost = parseFloat(document.getElementById('shipping').value) || 0;
+      }
 
       let ebayBalStatus = plat === 'eBay' ? '⏳ Bei eBay' : 'N/A';
 
@@ -942,7 +978,7 @@
         label: document.getElementById('label').value,
         packed: document.getElementById('packed').value,
         price: parseFloat(document.getElementById('price').value) || 0,
-        shippingCost: 0,
+        shippingCost: shipCost,
         labelCost: labelC,
         tracking: document.getElementById('tracking').value || '-',
         orderDate: customDate,
@@ -956,6 +992,7 @@
       document.getElementById('orderDate').value = new Date().toISOString().slice(0,10);
       document.getElementById('labelCost').value = "0.00";
       document.getElementById('existingCustomerSelect').value = "";
+      togglePlatformFields();
     }
 
     function startEdit(idx) {
@@ -1014,19 +1051,24 @@
       orders[idx].label = document.getElementById(`edit-label-${idx}`).value;
       orders[idx].packed = document.getElementById(`edit-packed-${idx}`).value;
       orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
-      orders[idx].shippingCost = 0;
       
-      const newLabelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
-      if (newLabelCost > 0 && newLabelCost !== (oldOrder.labelCost || 0)) {
-        expenses.unshift({
-          id: Date.now() + 1,
-          description: `Porto / Label (Bearbeitet): ${orders[idx].customer} (${orders[idx].invoiceNumber})`,
-          category: 'DHL / Versand',
-          amount: newLabelCost,
-          date: orders[idx].orderDate || new Date().toISOString().slice(0,10)
-        });
+      if (orders[idx].platform === 'eBay') {
+        orders[idx].shippingCost = 0;
+        const newLabelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
+        if (newLabelCost > 0 && newLabelCost !== (oldOrder.labelCost || 0)) {
+          expenses.unshift({
+            id: Date.now() + 1,
+            description: `Porto / Label (Bearbeitet): ${orders[idx].customer} (${orders[idx].invoiceNumber})`,
+            category: 'DHL / Versand',
+            amount: newLabelCost,
+            date: orders[idx].orderDate || new Date().toISOString().slice(0,10)
+          });
+        }
+        orders[idx].labelCost = newLabelCost;
+      } else {
+        orders[idx].shippingCost = parseFloat(document.getElementById(`edit-shipcost-${idx}`).value) || 0;
+        orders[idx].labelCost = 0;
       }
-      orders[idx].labelCost = newLabelCost;
 
       orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value || '-';
       orders[idx].orderDate = document.getElementById(`edit-date-${idx}`)?.value || orders[idx].orderDate;
@@ -1129,7 +1171,17 @@
           </tr>`;
       });
 
-      const totalAmountNum = o.price;
+      if (o.shippingCost > 0) {
+        itemsRows += `
+          <tr>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd;">Versand- / Paketpauschale</td>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
+          </tr>`;
+      }
+
+      const totalAmountNum = o.price + (o.platform === 'Kleinanzeigen' ? o.shippingCost : 0);
       const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
 
       const sepaPayload = [
@@ -1255,7 +1307,17 @@
             </tr>`;
         });
 
-        const totalAmountNum = o.price;
+        if (o.shippingCost > 0) {
+          itemsRows += `
+            <tr>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd;">Versand- / Paketpauschale</td>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
+            </tr>`;
+        }
+
+        const totalAmountNum = o.price + (o.platform === 'Kleinanzeigen' ? o.shippingCost : 0);
         const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
 
         invSec.innerHTML += `
@@ -1336,7 +1398,7 @@
       invSec.classList.remove('hidden');
       setTimeout(() => {
         activeOrders.forEach((o, index) => {
-          const totalAmountNum = o.price;
+          const totalAmountNum = o.price + (o.platform === 'Kleinanzeigen' ? o.shippingCost : 0);
           const invoiceNumber = generateInvoiceNumberForExisting(o);
           const sepaPayload = [
             "BCD",
@@ -1364,7 +1426,7 @@
       csvContent += "Typ;Plattform;Bezahlt?;Zahlungsart;eBay Guthaben Status;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Umsatz (€);Porto-Ausgabe (€)\n";
 
       orders.forEach(o => {
-        let total = o.price;
+        let total = o.price + (o.platform === 'Kleinanzeigen' ? o.shippingCost : 0);
         let type = o.archived ? "Einnahme (Archiviert)" : "Einnahme (Aktiv)";
         let date = o.orderDate || "";
         let inv = generateInvoiceNumberForExisting(o);
@@ -1429,6 +1491,7 @@
         const fixedInvNum = generateInvoiceNumberForExisting(o);
         const lCostVal = o.labelCost !== undefined ? o.labelCost : 0;
         const isEbay = o.platform === 'eBay';
+        const totalOrderRevenue = o.price + (isEbay ? 0 : (o.shippingCost || 0));
 
         if (editingIndex === idx) {
           let editItemsHtml = `<div id="editArticleRows" class="space-y-2 my-2">`;
@@ -1457,6 +1520,15 @@
               <option value="⏳ Bei eBay" ${o.ebayBalancePaid==='⏳ Bei eBay'?'selected':''}>⏳ Bei eBay</option>
               <option value="✅ Ausgezahlt" ${o.ebayBalancePaid==='✅ Ausgezahlt'?'selected':''}>✅ Ausgezahlt</option>
             </select>` : `<span class="text-slate-500 text-xs">N/A</span><input type="hidden" id="edit-ebaybal-${idx}" value="N/A">`;
+
+          let shippingEditField = isEbay ? 
+            `<div>Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCostVal}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-red-300 w-20" title="Echtes eBay Porto"></div>` :
+            `<div>Versand: <select id="edit-shipcost-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-24">
+              <option value="7.00" ${o.shippingCost===7?'selected':''}>7,00 €</option>
+              <option value="5.00" ${o.shippingCost===5?'selected':''}>5,00 €</option>
+              <option value="2.50" ${o.shippingCost===2.5?'selected':''}>2,50 €</option>
+              <option value="0.00" ${o.shippingCost===0?'selected':''}>0,00 €</option>
+            </select></div>`;
 
           tbody.innerHTML += `
             <tr class="border-b border-slate-800 bg-slate-900/90">
@@ -1501,7 +1573,7 @@
               </td>
               <td class="p-3 space-y-1">
                 <div>Umsatz: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-20"></div>
-                <div>Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCostVal}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-red-300 w-20" title="Porto / Etikett"></div>
+                ${shippingEditField}
               </td>
               <td class="p-3">
                 <select id="edit-label-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
@@ -1548,6 +1620,10 @@
               <option value="✅ Ausgezahlt" ${o.ebayBalancePaid === '✅ Ausgezahlt' ? 'selected' : ''}>✅ Ausgezahlt</option>
             </select>` : `<span class="text-slate-500 text-xs">-</span>`;
 
+          let orderPortoDisplay = isEbay 
+            ? `<div class="text-red-400">Porto: -${lCostVal.toFixed(2).replace('.', ',')} €</div>` 
+            : `<div class="text-slate-400">Versand: +${(o.shippingCost || 0).toFixed(2).replace('.', ',')} €</div>`;
+
           tbody.innerHTML += `
             <tr class="hover:bg-slate-800/40 border-b border-slate-800">
               <td class="p-3 font-medium text-white">${o.customer}<div class="flex items-center gap-1.5 mt-0.5">${platBadge}</div><div class="text-[10px] text-slate-400">${o.address || ''}</div></td>
@@ -1581,8 +1657,8 @@
                 </select>
               </td>
               <td class="p-3 text-xs">
-                <div class="text-emerald-400 font-bold">${o.price.toFixed(2).replace('.', ',')} €</div>
-                <div class="text-red-400">Porto: -${lCostVal.toFixed(2).replace('.', ',')} €</div>
+                <div class="text-emerald-400 font-bold">${totalOrderRevenue.toFixed(2).replace('.', ',')} €</div>
+                ${orderPortoDisplay}
               </td>
               <td class="p-3">
                 <select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none">
@@ -1621,11 +1697,12 @@
           o.items.forEach(i => orderTotalWeight += (i.weight || 0));
         }
 
-        let orderAmount = o.price;
-        let lCost = o.labelCost || 0;
+        let isEbay = o.platform === 'eBay';
+        let orderAmount = o.price + (isEbay ? 0 : (o.shippingCost || 0));
+        let lCost = isEbay ? (o.labelCost || 0) : 0;
 
-        if (o.platform === 'eBay' && o.ebayBalancePaid === '⏳ Bei eBay') {
-          let netOrderBalance = Math.round((orderAmount - lCost) * 100) / 100;
+        if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') {
+          let netOrderBalance = Math.round((o.price - lCost) * 100) / 100;
           ebayBalanceOpen += netOrderBalance;
         }
 
