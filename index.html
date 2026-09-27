@@ -208,14 +208,11 @@
           <select id="printer" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
             <!-- Dynamisch gefüllt -->
           </select>
-          <input type="number" step="0.01" id="price" placeholder="Artikelpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-          <input type="number" step="0.01" id="labelCost" placeholder="Porto / Etikett (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" title="Gekauftes Versandlabel (z.B. 5.49)">
+          <input type="number" step="0.01" id="price" placeholder="Gesamt-Umsatz (€)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" title="Was der Kunde bezahlt hat (inkl. evtl. Versand)">
+          <input type="number" step="0.01" id="labelCost" placeholder="Porto / Etikett (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" title="Gekauftes eBay-Versandlabel (z.B. 5.19)">
 
-          <select id="shipping" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-            <option value="7.00" selected>📦 Paketpauschale (7,00 €)</option>
-            <option value="5.00">📦 Paketpauschale (5,00 €)</option>
-            <option value="2.50">✉️ Brief / Warenpost (2,50 €)</option>
-            <option value="0.00">🤝 Selbstabholung (0,00 €)</option>
+          <select id="shipping" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none hidden">
+            <option value="0.00" selected>0,00 €</option>
           </select>
           
           <div class="flex flex-col">
@@ -391,10 +388,6 @@
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
     const TELEGRAM_TOKEN = '8918418759:AAHEyb2eJYwvY8OTyb0lEWjin7MstbsEdMM';
 
-    const BACKUP_ORDERS = [
-      {"id":1, "customer":"Paul Hartmann", "platform":"Kleinanzeigen", "isPaid":"✅ Ja", "paymentMethod":"Überweisung", "ebayBalancePaid":"✅ Ausgezahlt", "address":"Rahden", "printer":"Ender 3 V3", "status":"Fertig", "label":"✅ Ja", "packed":"✅ Ja", "price":10, "shippingCost":7, "labelCost":0, "tracking":"-", "orderDate":"2026-02-01", "invoiceNumber":"RE-2026-0001", "shipDate":"2026-02-01", "archived":true, "items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}]}
-    ];
-
     const BACKUP_SPOOLS = [
       {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notifiedCount":0,"lastNotifiedDate":""},
       {"id":2,"name":"PETG Weiß","remainingGrams":650,"notifiedCount":0,"lastNotifiedDate":""}
@@ -433,15 +426,8 @@
       printers = BACKUP_PRINTERS;
     }
 
-    if (!Array.isArray(orders) || orders.length === 0) {
-      orders = BACKUP_ORDERS;
+    if (!Array.isArray(spools) || spools.length === 0) {
       spools = BACKUP_SPOOLS;
-    } else {
-      BACKUP_ORDERS.forEach(b => {
-        if (!orders.some(o => o.invoiceNumber === b.invoiceNumber)) {
-          orders.push(b);
-        }
-      });
     }
 
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -456,6 +442,8 @@
       if (!o.invoiceNumber) {
         o.invoiceNumber = generateInvoiceNumberForExisting(o);
       }
+      // shippingCost fix auf 0 setzen, da Umsatz direkt den Gesamtbetrag darstellt
+      o.shippingCost = 0;
     });
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -488,11 +476,8 @@
         const res = await fetch(NPOINT_URL, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
-          if (json && Array.isArray(json.orders) && json.orders.length > 0) {
+          if (json && Array.isArray(json.orders)) {
             orders = json.orders;
-            BACKUP_ORDERS.forEach(b => {
-              if (!orders.some(o => o.invoiceNumber === b.invoiceNumber)) orders.push(b);
-            });
             const currentToday = new Date().toISOString().slice(0, 10);
             orders.forEach(o => {
               if (!o.platform) o.platform = "Kleinanzeigen";
@@ -503,6 +488,7 @@
               if (!o.orderDate) o.orderDate = currentToday;
               if (!o.shipDate) o.shipDate = "";
               if (!o.invoiceNumber) o.invoiceNumber = generateInvoiceNumberForExisting(o);
+              o.shippingCost = 0;
             });
             if (Array.isArray(json.spools)) spools = json.spools;
             if (Array.isArray(json.expenses)) expenses = json.expenses;
@@ -750,7 +736,7 @@
       if (order.printer) document.getElementById('printer').value = order.printer;
       document.getElementById('price').value = order.price || '';
       document.getElementById('labelCost').value = order.labelCost !== undefined ? order.labelCost : 0;
-      document.getElementById('shipping').value = order.shippingCost || '7.00';
+      document.getElementById('shipping').value = "0.00";
       document.getElementById('label').value = order.label || '✅ Ja';
       document.getElementById('packed').value = order.packed || '❌ Nein';
       if (order.orderDate) document.getElementById('orderDate').value = order.orderDate;
@@ -956,7 +942,7 @@
         label: document.getElementById('label').value,
         packed: document.getElementById('packed').value,
         price: parseFloat(document.getElementById('price').value) || 0,
-        shippingCost: parseFloat(document.getElementById('shipping').value) || 0,
+        shippingCost: 0,
         labelCost: labelC,
         tracking: document.getElementById('tracking').value || '-',
         orderDate: customDate,
@@ -1028,6 +1014,7 @@
       orders[idx].label = document.getElementById(`edit-label-${idx}`).value;
       orders[idx].packed = document.getElementById(`edit-packed-${idx}`).value;
       orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
+      orders[idx].shippingCost = 0;
       
       const newLabelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
       if (newLabelCost > 0 && newLabelCost !== (oldOrder.labelCost || 0)) {
@@ -1142,17 +1129,7 @@
           </tr>`;
       });
 
-      if (o.shippingCost > 0) {
-        itemsRows += `
-          <tr>
-            <td style="padding: 6px; border-bottom: 1px solid #ddd;">Versand- / Paketpauschale</td>
-            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
-            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
-            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
-          </tr>`;
-      }
-
-      const totalAmountNum = o.price + o.shippingCost;
+      const totalAmountNum = o.price;
       const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
 
       const sepaPayload = [
@@ -1278,17 +1255,7 @@
             </tr>`;
         });
 
-        if (o.shippingCost > 0) {
-          itemsRows += `
-            <tr>
-              <td style="padding: 6px; border-bottom: 1px solid #ddd;">Versand- / Paketpauschale</td>
-              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
-              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
-              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
-            </tr>`;
-        }
-
-        const totalAmountNum = o.price + o.shippingCost;
+        const totalAmountNum = o.price;
         const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
 
         invSec.innerHTML += `
@@ -1369,7 +1336,7 @@
       invSec.classList.remove('hidden');
       setTimeout(() => {
         activeOrders.forEach((o, index) => {
-          const totalAmountNum = o.price + o.shippingCost;
+          const totalAmountNum = o.price;
           const invoiceNumber = generateInvoiceNumberForExisting(o);
           const sepaPayload = [
             "BCD",
@@ -1397,7 +1364,7 @@
       csvContent += "Typ;Plattform;Bezahlt?;Zahlungsart;eBay Guthaben Status;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Umsatz (€);Porto-Ausgabe (€)\n";
 
       orders.forEach(o => {
-        let total = o.price + o.shippingCost;
+        let total = o.price;
         let type = o.archived ? "Einnahme (Archiviert)" : "Einnahme (Aktiv)";
         let date = o.orderDate || "";
         let inv = generateInvoiceNumberForExisting(o);
@@ -1614,7 +1581,7 @@
                 </select>
               </td>
               <td class="p-3 text-xs">
-                <div class="text-emerald-400 font-bold">${(o.price + o.shippingCost).toFixed(2).replace('.', ',')} €</div>
+                <div class="text-emerald-400 font-bold">${o.price.toFixed(2).replace('.', ',')} €</div>
                 <div class="text-red-400">Porto: -${lCostVal.toFixed(2).replace('.', ',')} €</div>
               </td>
               <td class="p-3">
@@ -1654,10 +1621,9 @@
           o.items.forEach(i => orderTotalWeight += (i.weight || 0));
         }
 
-        let orderAmount = (o.price + o.shippingCost);
+        let orderAmount = o.price;
         let lCost = o.labelCost || 0;
 
-        // Sauber gerundete eBay-Guthaben Netto Berechnung
         if (o.platform === 'eBay' && o.ebayBalancePaid === '⏳ Bei eBay') {
           let netOrderBalance = Math.round((orderAmount - lCost) * 100) / 100;
           ebayBalanceOpen += netOrderBalance;
