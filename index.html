@@ -71,7 +71,7 @@
                 <i class="fa-solid fa-box-archive mr-2"></i> Archiv (<span id="archiveCount">0</span>)
             </button>
             <button onclick="switchTab('expenses')" id="tabExpenses" class="pb-3 px-4 font-semibold text-gray-400 hover:text-gray-200 transition">
-                <i class="fa-solid fa-receipt mr-2"></i> Ausgaben
+                <i class="fa-solid fa-receipt mr-2"></i> Ausgaben & Kosten
             </button>
         </div>
 
@@ -171,13 +171,13 @@
                 { id: "RE-2026-0002", date: "2026-09-24", customer: "Gabi Thomas", platform: "Kleinanzeigen", revenue: 0.00, paid: true, status: "Aktiv", porto: 0 },
                 
                 // Archiviert (inkl. Renate)
-                { id: "RE-2026-0008", date: "2026-09-24", customer: "Renate Evelin-Veere", platform: "Kleinanzeigen", revenue: 43.00, paid: false, status: "Archiviert", porto: 0 },
+                { id: "RE-2026-0008", date: "2026-09-24", customer: "Renate Evelin - Veere", platform: "Kleinanzeigen", revenue: 43.00, paid: false, status: "Archiviert", porto: 0 },
                 { id: "RE-2026-00011", date: "2026-09-24", customer: "Iris Diekmann", platform: "Kleinanzeigen", revenue: 23.00, paid: false, status: "Archiviert", porto: 0 },
                 { id: "RE-2026-0010", date: "2026-09-24", customer: "Silke Schwarzer", platform: "Kleinanzeigen", revenue: 20.00, paid: false, status: "Archiviert", porto: 0 },
                 { id: "RE-2026-0009", date: "2026-09-24", customer: "Familie Tchoffo", platform: "Kleinanzeigen", revenue: 10.00, paid: false, status: "Archiviert", porto: 0 },
                 { id: "RE-2026-0007", date: "2026-09-24", customer: "Ralf Hartmann", platform: "Kleinanzeigen", revenue: 34.00, paid: false, status: "Archiviert", porto: 0 },
                 { id: "RE-2026-0006", date: "2026-09-24", customer: "Sabine Beewen", platform: "Kleinanzeigen", revenue: 9.50, paid: false, status: "Archiviert", porto: 0 },
-                { id: "RE-2026-0004", date: "2026-09-24", customer: "Tobias von der Familie Ulm", platform: "Kleinanzeigen", revenue: 33.00, paid: false, status: "Archiviert", porto: 0 },
+                { id: "RE-2026-0004", date: "2026-09-24", customer: "Tobias von der Famile Ulm", platform: "Kleinanzeigen", revenue: 33.00, paid: false, status: "Archiviert", porto: 0 },
                 { id: "RE-2026-0003", date: "2026-09-24", customer: "Antje Nanninga", platform: "Kleinanzeigen", revenue: 9.00, paid: false, status: "Archiviert", porto: 0 },
                 { id: "RE-2026-001", date: "2026-09-24", customer: "Paul Hartmann", platform: "Kleinanzeigen", revenue: 14.00, paid: false, status: "Archiviert", porto: 0 },
                 { id: "RE-2026-0001", date: "2026-09-24", customer: "Paul Hartmann", platform: "Kleinanzeigen", revenue: 10.00, paid: false, status: "Archiviert", porto: 0 },
@@ -194,9 +194,7 @@
             ]
         };
 
-        // Erzwinge das Laden der kompletten Originaldaten (löscht alten Cache)
-        let appData = initialData;
-        localStorage.setItem('sefas3d_data', JSON.stringify(appData));
+        let appData = JSON.parse(localStorage.getItem('sefas3d_data')) || initialData;
 
         function saveData() {
             localStorage.setItem('sefas3d_data', JSON.stringify(appData));
