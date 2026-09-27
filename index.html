@@ -1,428 +1,1754 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sefas3DShop - Buchhaltung & Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sefas3DShop - Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+    .card { background-color: #1e293b; border: 1px solid #334155; }
+    @keyframes pulse-red {
+      0%, 100% { border-color: rgba(239, 68, 68, 0.4); }
+      50% { border-color: rgba(239, 68, 68, 0.9); }
+    }
+    .pulse-low-spool { animation: pulse-red 2s infinite; }
+    
+    @media print {
+      body * { visibility: hidden !important; }
+      #printSection, #printSection *, #invoiceSection, #invoiceSection * { visibility: visible !important; }
+      #printSection { 
+        position: fixed !important; 
+        left: 0 !important; 
+        top: 0 !important; 
+        width: 100vw !important; 
+        height: 100vh !important; 
+        color: #000 !important; 
+        background: #fff !important; 
+        padding: 5px !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+      }
+      #invoiceSection {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        color: #000 !important; 
+        background: #fff !important; 
+        padding: 10px !important;
+        display: block !important;
+      }
+      .page-break-container {
+        page-break-after: always;
+        break-after: page;
+        margin-bottom: 20px;
+      }
+      @page { 
+        size: auto; 
+        margin: 5mm; 
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
-    <div class="container mx-auto px-4 py-8 max-w-7xl">
-        <!-- Header -->
-        <header class="flex flex-col md:flex-row justify-between items-center mb-8 bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-700">
-            <div>
-                <h1 class="text-3xl font-bold text-cyan-400 flex items-center gap-3">
-                    <i class="fa-solid fa-cube"></i> Sefas3DShop Buchhaltung
-                </h1>
-                <p class="text-gray-400 text-sm mt-1">Inh. Sefa Demir, Rahden | Dashboard & Finanztracking</p>
-            </div>
-            <div class="mt-4 md:mt-0 flex flex-wrap gap-3">
-                <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-lg flex items-center gap-2">
-                    <i class="fa-solid fa-download"></i> CSV Export
-                </button>
-                <label class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-lg flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-upload"></i> CSV Import
-                    <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="importCSV(event)">
-                </label>
-                <button onclick="resetToDefaultData()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-lg flex items-center gap-2">
-                    <i class="fa-solid fa-rotate-right"></i> Werkseinstellungen
-                </button>
-            </div>
-        </header>
+<body class="p-4 md:p-6 min-h-screen">
 
-        <!-- Financial Summary Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-xl flex items-center justify-between">
-                <div>
-                    <p class="text-gray-400 text-sm font-medium">Gesamt-Umsatz</p>
-                    <h2 id="totalRevenue" class="text-3xl font-extrabold text-emerald-400 mt-1">0,00 €</h2>
-                </div>
-                <div class="bg-emerald-500/10 p-4 rounded-xl text-emerald-400 text-2xl">
-                    <i class="fa-solid fa-arrow-trend-up"></i>
-                </div>
-            </div>
-            <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-xl flex items-center justify-between">
-                <div>
-                    <p class="text-gray-400 text-sm font-medium">Gesamt-Ausgaben</p>
-                    <h2 id="totalExpenses" class="text-3xl font-extrabold text-rose-400 mt-1">0,00 €</h2>
-                </div>
-                <div class="bg-rose-500/10 p-4 rounded-xl text-rose-400 text-2xl">
-                    <i class="fa-solid fa-arrow-trend-down"></i>
-                </div>
-            </div>
-            <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-xl flex items-center justify-between">
-                <div>
-                    <p class="text-gray-400 text-sm font-medium">Reingewinn (Netto)</p>
-                    <h2 id="netProfit" class="text-3xl font-extrabold text-cyan-400 mt-1">0,00 €</h2>
-                </div>
-                <div class="bg-cyan-500/10 p-4 rounded-xl text-cyan-400 text-2xl">
-                    <i class="fa-solid fa-wallet"></i>
-                </div>
-            </div>
-        </div>
+  <!-- DRUCK-BEREICH FÜR QR-ETIKETTEN -->
+  <div id="printSection" class="hidden"></div>
 
-        <!-- Navigation Tabs -->
-        <div class="flex border-b border-gray-700 mb-6 gap-4">
-            <button onclick="switchTab('active')" id="tabActive" class="pb-3 px-4 font-semibold text-cyan-400 border-b-2 border-cyan-400 transition">
-                <i class="fa-solid fa-list-check mr-2"></i> Aktive Bestellungen
-            </button>
-            <button onclick="switchTab('archive')" id="tabArchive" class="pb-3 px-4 font-semibold text-gray-400 hover:text-gray-200 transition">
-                <i class="fa-solid fa-box-archive mr-2"></i> Archiv (<span id="archiveCount">0</span>)
-            </button>
-            <button onclick="switchTab('expenses')" id="tabExpenses" class="pb-3 px-4 font-semibold text-gray-400 hover:text-gray-200 transition">
-                <i class="fa-solid fa-receipt mr-2"></i> Ausgaben & Kosten
-            </button>
-        </div>
+  <!-- DRUCK-BEREICH FÜR RECHNUNGEN -->
+  <div id="invoiceSection" class="hidden"></div>
 
-        <!-- Section: Active Orders -->
-        <div id="sectionActive" class="space-y-6">
-            <div class="flex justify-between items-center">
-                <h3 class="text-xl font-bold text-gray-200">Aktive Aufträge & Verkäufe</h3>
-                <button onclick="openOrderModal()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow flex items-center gap-2">
-                    <i class="fa-solid fa-plus"></i> Neuer Auftrag
-                </button>
-            </div>
-            <div class="bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-700">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-750 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
-                                <th class="p-4">Datum</th>
-                                <th class="p-4">Rechnung-Nr.</th>
-                                <th class="p-4">Plattform</th>
-                                <th class="p-4">Kunde</th>
-                                <th class="p-4">Umsatz (€)</th>
-                                <th class="p-4">Bezahlt?</th>
-                                <th class="p-4 text-right">Aktionen</th>
-                            </tr>
-                        </thead>
-                        <tbody id="activeOrdersTable" class="divide-y divide-gray-700 text-sm">
-                            <!-- Populated by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+  <!-- MAIN APP -->
+  <div id="mainApp" class="max-w-[1700px] mx-auto space-y-6">
+    
+    <!-- HEADER -->
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800 p-4 rounded-2xl border border-slate-700 gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-slate-900 p-2 rounded-xl border border-blue-500/30 flex items-center justify-center shadow-lg">
+          <svg class="w-10 h-10 text-cyan-400" viewBox="0 0 100 100" fill="currentColor">
+            <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="url(#blueGrad)" stroke-width="8"/>
+            <polyline points="50,10 50,50 90,30" fill="none" stroke="url(#blueGrad)" stroke-width="6"/>
+            <polyline points="50,50 10,30" fill="none" stroke="url(#blueGrad)" stroke-width="6"/>
+            <polyline points="50,50 50,90" fill="none" stroke="url(#blueGrad)" stroke-width="6"/>
+            <defs>
+              <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#38bdf8"/>
+                <stop offset="100%" stop-color="#1e40af"/>
+              </linearGradient>
+            </defs>
+          </svg>
         </div>
+        <div>
+          <h1 class="text-xl font-bold text-white flex items-center gap-2">
+            Sefas<span class="text-cyan-400">3d</span>shop
+          </h1>
+          <p class="text-slate-400 text-xs flex items-center gap-1.5">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500"></span> 
+            <span id="syncStatus">Mit Cloud verbunden</span>
+          </p>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="exportAccountingCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
+          <i class="fa-solid fa-file-excel mr-1.5"></i> 📊 CSV Export (Buchhaltung)
+        </button>
+        <button onclick="printAllInvoices()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
+          <i class="fa-solid fa-print mr-1.5"></i> 🖨️ Alle Rechnungen drucken
+        </button>
+        <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer">
+          <i class="fa-solid fa-box-archive mr-1.5"></i> 📂 Archiv anzeigen
+        </button>
+        <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer">
+          <i class="fa-solid fa-rotate mr-1.5"></i> 🔄 Cloud abrufen
+        </button>
+        <button onclick="pushToCloudManual()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer">
+          <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> 📤 In Cloud speichern
+        </button>
+      </div>
+    </header>
 
-        <!-- Section: Archive -->
-        <div id="sectionArchive" class="space-y-6 hidden">
-            <div class="flex justify-between items-center">
-                <h3 class="text-xl font-bold text-gray-200">Archivierte Aufträge</h3>
-            </div>
-            <div class="bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-700">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-750 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
-                                <th class="p-4">Datum</th>
-                                <th class="p-4">Rechnung-Nr.</th>
-                                <th class="p-4">Plattform</th>
-                                <th class="p-4">Kunde</th>
-                                <th class="p-4">Umsatz (€)</th>
-                                <th class="p-4">Bezahlt?</th>
-                                <th class="p-4 text-right">Aktionen</th>
-                            </tr>
-                        </thead>
-                        <tbody id="archiveOrdersTable" class="divide-y divide-gray-700 text-sm">
-                            <!-- Populated by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+    <!-- STATISTIK & MONATS-FILTER -->
+    <section class="space-y-3">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800/60 p-3 rounded-2xl border border-slate-700 gap-3">
+        <h2 class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-chart-pie mr-2 text-blue-400"></i> Statistik-Auswertung</h2>
+        <div class="flex items-center space-x-2">
+          <label class="text-xs text-slate-400">Monat wählen:</label>
+          <select id="statsMonthFilter" onchange="renderOrders(); renderExpenses();" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none">
+            <option value="all">📅 Alle Monate (Gesamt)</option>
+          </select>
         </div>
+      </div>
 
-        <!-- Section: Expenses -->
-        <div id="sectionExpenses" class="space-y-6 hidden">
-            <div class="flex justify-between items-center">
-                <h3 class="text-xl font-bold text-gray-200">Ausgaben & Betriebskosten</h3>
-                <button onclick="openExpenseModal()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow flex items-center gap-2">
-                    <i class="fa-solid fa-plus"></i> Neue Ausgabe
-                </button>
-            </div>
-            <div class="bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-700">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-750 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
-                                <th class="p-4">Beschreibung / Zweck</th>
-                                <th class="p-4">Kategorie</th>
-                                <th class="p-4">Betrag (€)</th>
-                                <th class="p-4 text-right">Aktionen</th>
-                            </tr>
-                        </thead>
-                        <tbody id="expensesTable" class="divide-y divide-gray-700 text-sm">
-                            <!-- Populated by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="card p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Gesamt-Umsatz (Monat)</p>
+            <h3 id="statRevenue" class="text-2xl font-bold text-emerald-400">0,00 €</h3>
+          </div>
         </div>
+        <div class="card p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Gesamt-Ausgaben (Monat)</p>
+            <h3 id="statExpenses" class="text-2xl font-bold text-red-400">0,00 €</h3>
+          </div>
+        </div>
+        <div class="card p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Reingewinn (Einnahmen - Ausgaben)</p>
+            <h3 id="statProfit" class="text-2xl font-bold text-blue-400">0,00 €</h3>
+          </div>
+        </div>
+        <div class="card p-4 rounded-2xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20">
+          <div>
+            <p class="text-xs text-cyan-300 font-medium" title="Umsatz minus Porto bei eBay">🛍️ eBay-Guthaben (Netto)</p>
+            <h3 id="statEbayBalance" class="text-xl font-bold text-cyan-400 mt-1">0,00 €</h3>
+          </div>
+          <button onclick="payoutAllEbayBalance()" class="mt-2 bg-cyan-600 hover:bg-cyan-500 text-white text-[11px] font-bold py-1 px-2 rounded-lg transition cursor-pointer">
+            <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt markieren
+          </button>
+        </div>
+        <div class="card p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Offene Aufträge / Material</p>
+            <h3 id="statOpenOrders" class="text-xl font-bold text-yellow-400">0 <span class="text-xs text-slate-400 font-normal" id="statFilament">0g</span></h3>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DRUCKER & FILAMENT -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <section class="lg:col-span-2 space-y-3">
+        <div class="flex justify-between items-center">
+          <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-print mr-2 text-blue-400"></i> Drucker-Übersicht</h2>
+          <button onclick="addPrinterPrompt()" class="bg-slate-800 hover:bg-slate-700 text-blue-300 text-xs px-2.5 py-1 rounded-lg border border-blue-500/35 cursor-pointer">+ Drucker</button>
+        </div>
+        <div id="printersGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+      </section>
+      <section class="card p-4 rounded-2xl space-y-3">
+        <div class="flex justify-between items-center">
+          <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-layer-group mr-2 text-purple-400"></i> Filament-Lager</h2>
+          <button onclick="addSpoolPrompt()" class="bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs px-2.5 py-1 rounded-lg border border-purple-500/35 cursor-pointer">+ Spule</button>
+        </div>
+        <div id="spoolWarningBanner" class="hidden bg-red-500/10 border border-red-500/40 p-3 rounded-xl text-xs flex items-start gap-2.5 text-red-300"></div>
+        <div id="spoolsList" class="space-y-2 max-h-[220px] overflow-y-auto pr-1"></div>
+      </section>
     </div>
 
-    <!-- JavaScript Application Logic -->
-    <script>
-        const initialData = {
-            orders: [
-                { id: "RE-2026-0014", date: "2026-09-27", customer: "Thomas Siepmann", platform: "eBay", revenue: 15.18, paid: true, status: "Aktiv", porto: 5.19 },
-                { id: "RE-2026-0013", date: "2026-09-27", customer: "Jennifer Habenicht", platform: "Kleinanzeigen", revenue: 15.00, paid: true, status: "Aktiv", porto: 0.00 },
-                { id: "RE-2026-00012", date: "2026-09-26", customer: "Annett Hanitzsch", platform: "Kleinanzeigen", revenue: 13.00, paid: true, status: "Aktiv", porto: 0.00 },
-                { id: "RE-2026-0005", date: "2026-09-24", customer: "Dunja marcinkowski", platform: "Kleinanzeigen", revenue: 0.00, paid: false, status: "Aktiv", porto: 0.00 },
-                { id: "RE-2026-0002", date: "2026-09-24", customer: "Gabi Thomas", platform: "Kleinanzeigen", revenue: 0.00, paid: true, status: "Aktiv", porto: 0.00 },
-                
-                { id: "RE-2026-00011", date: "2026-09-24", customer: "Iris Diekmann", platform: "Kleinanzeigen", revenue: 23.00, paid: false, status: "Archiviert", porto: 0.00 },
-                { id: "RE-2026-0010", date: "2026-09-24", customer: "Silke Schwarzer", platform: "Kleinanzeigen", revenue: 20.00, paid: false, status: "Archiviert", porto: 0.00 },
-                { id: "RE-2026-0009", date: "2026-09-24", customer: "Familie Tchoffo", platform: "Kleinanzeigen", revenue: 10.00, paid: false, status: "Archiviert", porto: 0.00 },
-                { id: "RE-2026-0008", date: "2026-09-24", customer: "Renate Evelin - Veere", platform: "Kleinanzeigen", revenue: 43.00, paid: false, status: "Archiviert", porto: 0.00 },
-                { id: "RE-2026-0007", date: "2026-09-24", customer: "Ralf Hartmann", platform: "Kleinanzeigen", revenue: 34.00, paid: false, status: "Archiviert", porto: 0.00 },
-                { id: "RE-2026-0006", date: "2026-09-24", customer: "Sabine Beewen", platform: "Kleinanzeigen", revenue: 9.50, paid: false, status: "Archiviert", porto: 0.00 },
-                { id: "RE-2026-0004", date: "2026-09-24", customer: "Tobias von der Famile Ulm", platform: "Kleinanzeigen", revenue: 33.00, paid: false, status: "Archiviert", porto: 0.00 },
-                { id: "RE-2026-0003", date: "2026-09-24", customer: "Antje Nanninga", platform: "Kleinanzeigen", revenue: 9.00, paid: false, status: "Archiviert", porto: 0.00 },
-                { id: "RE-2026-001", date: "2026-09-24", customer: "Paul Hartmann", platform: "Kleinanzeigen", revenue: 14.00, paid: false, status: "Archiviert", porto: 0.00 },
-                { id: "RE-2026-0001", date: "2026-02-01", customer: "Paul Hartmann", platform: "Kleinanzeigen", revenue: 10.00, paid: false, status: "Archiviert", porto: 0.00 },
-                { id: "RE-2026-0011", date: "2026-02-11", customer: "Iris", platform: "Kleinanzeigen", revenue: 10.00, paid: false, status: "Archiviert", porto: 0.00 }
-            ],
-            expenses: [
-                { desc: "Porto / Label (Bearbeitet): Thomas Siepmann (RE-2026-0014)", category: "DHL / Versand", amount: 5.19 },
-                { desc: "2 kg - Päckchen M", category: "DHL / Versand", amount: 5.19 },
-                { desc: "Werbeanzeige kleinanzeigen", category: "Sonstiges", amount: 3.49 },
-                { desc: "DHl Paket 2k", category: "DHL / Versand", amount: 6.19 },
-                { desc: "anycubic kobra Reperatur", category: "Sonstiges", amount: 50.00 },
-                { desc: "2x SD-Karten für Drucker", category: "Zubehör / Ersatzteile", amount: 17.90 },
-                { desc: "2x Druckerwartung CR-10 SP", category: "Sonstiges", amount: 99.98 }
-            ]
-        };
+    <!-- NEUEN AUFTRAG ANLEGEN -->
+    <section class="card p-5 rounded-2xl space-y-4">
+      <div class="flex justify-between items-center">
+        <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-plus-circle mr-2 text-blue-400"></i> Neuen Auftrag anlegen</h2>
+        <select id="existingCustomerSelect" onchange="autofillCustomerData(this.value)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none">
+          <option value="">📋 Bestehenden Kunden laden...</option>
+        </select>
+      </div>
 
-        let savedData = localStorage.getItem('sefas3d_data');
-        let appData = savedData ? JSON.parse(savedData) : initialData;
+      <form id="orderForm" onsubmit="addOrder(event)" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+          <input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <select id="platform" onchange="togglePlatformFields()" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+            <option value="Kleinanzeigen">🛒 Kleinanzeigen</option>
+            <option value="eBay">🛍️ eBay</option>
+          </select>
+          <select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+            <option value="eBay">💳 eBay</option>
+            <option value="PayPal">🅿️ PayPal</option>
+            <option value="Überweisung">🏦 Überweisung</option>
+            <option value="Bar">💶 Bar</option>
+          </select>
+          <select id="isPaid" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+            <option value="✅ Ja">Bezahlt: ✅ Ja</option>
+            <option value="❌ Nein" selected>Bezahlt: ❌ Nein</option>
+          </select>
+          <select id="printer" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+            <!-- Dynamisch gefüllt -->
+          </select>
+          <input type="number" step="0.01" id="price" placeholder="Artikelpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          
+          <!-- EBay Porto -->
+          <input type="number" step="0.01" id="labelCost" placeholder="Echtes Porto (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" title="Von eBay abgezogenes echtes Etikett (z.B. 5.19)">
 
-        function saveData() {
-            localStorage.setItem('sefas3d_data', JSON.stringify(appData));
-            render();
-        }
+          <!-- Kleinanzeigen Versandpauschale -->
+          <select id="shipping" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+            <option value="7.00" selected>📦 Paketpauschale (7,00 €)</option>
+            <option value="5.00">📦 Paketpauschale (5,00 €)</option>
+            <option value="2.50">✉️ Brief / Warenpost (2,50 €)</option>
+            <option value="0.00">🤝 Selbstabholung (0,00 €)</option>
+          </select>
+          
+          <div class="flex flex-col">
+            <label class="text-[10px] text-slate-400 mb-0.5">Erstellungsdatum:</label>
+            <input type="date" id="orderDate" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none">
+          </div>
 
-        function resetToDefaultData() {
-            if (confirm("Wirklich auf Original-Daten zurücksetzen?")) {
-                appData = JSON.parse(JSON.stringify(initialData));
-                saveData();
-            }
-        }
+          <select id="label" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none self-end">
+            <option value="✅ Ja">Label gedruckt: ✅ Ja</option>
+            <option value="❌ Nein">Label gedruckt: ❌ Nein</option>
+          </select>
+          <select id="packed" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none self-end">
+            <option value="❌ Nein">Verpackt: ❌ Nein</option>
+            <option value="✅ Ja">Verpackt: ✅ Ja</option>
+          </select>
+          <input type="text" id="tracking" placeholder="Tracking-Nummer" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none self-end">
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <input type="text" id="address" placeholder="Lieferadresse" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <input type="text" id="notes" placeholder="Notizen" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+        </div>
 
-        function switchTab(tab) {
-            ['Active', 'Archive', 'Expenses'].forEach(t => {
-                document.getElementById('section' + t).classList.add('hidden');
-                document.getElementById('tab' + t).classList.remove('text-cyan-400', 'border-b-2', 'border-cyan-400');
-                document.getElementById('tab' + t).classList.add('text-gray-400');
+        <div class="border-t border-slate-700/60 pt-3 space-y-2">
+          <div class="flex justify-between items-center">
+            <label class="text-xs font-semibold text-slate-300">Artikel, Farbe & Gewicht (g):</label>
+            <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-lg text-xs cursor-pointer">+ Artikel</button>
+          </div>
+
+          <div class="flex flex-wrap gap-1.5 py-1">
+            <span class="text-[11px] text-slate-400 self-center mr-1">Schnell:</span>
+            <button type="button" onclick="addPresetArticle('Einkaufswagenlöser')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ Einkaufswagenlöser</button>
+            <button type="button" onclick="addPresetArticle('Tannenzapfen')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ Tannenzapfen</button>
+            <button type="button" onclick="addPresetArticle('Küchenrollenhalter')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ Küchenrollenhalter</button>
+            <button type="button" onclick="addPresetArticle('Vase')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ Vase</button>
+            <button type="button" onclick="addPresetArticle('Akkuhalter')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ Akkuhalter</button>
+          </div>
+
+          <div id="articleInputRows" class="space-y-2">
+            <div class="flex gap-2 items-center article-row">
+              <input type="text" placeholder="Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
+              <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-52 focus:outline-none"><option value="">-- Farbe --</option></select>
+              <input type="number" placeholder="Gramm (g)" class="art-weight bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-28 focus:outline-none">
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl py-2.5 text-sm transition cursor-pointer">Auftrag Speichern</button>
+      </form>
+    </section>
+
+    <!-- AUSGABEN & EINKÄUFE VERWALTUNG -->
+    <section class="card p-5 rounded-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-700/60 pb-3">
+        <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-receipt mr-2 text-red-400"></i> Betriebsausgaben & Einkäufe</h2>
+      </div>
+
+      <form id="expenseForm" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+        <input type="text" id="expDesc" placeholder="Beschreibung (z.B. eBay Gebühren)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <option value="Filament">🧵 Filament</option>
+          <option value="DHL / Versand">📦 DHL / Versand</option>
+          <option value="Zubehör / Ersatzteile">⚙️ Zubehör & Ersatzteile</option>
+          <option value="Verpackung">📦 Verpackungsmaterial</option>
+          <option value="Sonstiges">🏷️ Sonstiges / eBay Gebühren</option>
+        </select>
+        <input type="number" step="0.01" id="expAmount" placeholder="Betrag (€)" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+        <input type="date" id="expDate" required class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+        <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl py-2 text-sm transition cursor-pointer">+ Ausgabe eintragen</button>
+      </form>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
+            <tr>
+              <th class="p-3">Datum</th>
+              <th class="p-3">Kategorie</th>
+              <th class="p-3">Beschreibung</th>
+              <th class="p-3">Betrag</th>
+              <th class="p-3 text-right">Aktion</th>
+            </tr>
+          </thead>
+          <tbody id="expensesTableBody" class="divide-y divide-slate-700/50 text-slate-200"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TABELLE -->
+    <section class="card p-5 rounded-2xl space-y-4">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div class="flex items-center space-x-3">
+          <h2 id="tableTitle" class="text-md font-semibold text-slate-300"><i class="fa-solid fa-list-check mr-2 text-blue-400"></i> Bestellungen (Aktiv)</h2>
+        </div>
+        <input type="text" id="searchInput" oninput="renderOrders()" placeholder="Suchen..." class="bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white w-64 focus:outline-none">
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
+            <tr>
+              <th class="p-3">Kunde & Plattform</th>
+              <th class="p-3">Rechnung-Nr.</th>
+              <th class="p-3">Artikel, Farbe & Gewicht</th>
+              <th class="p-3">Drucker</th>
+              <th class="p-3">Bezahlt?</th>
+              <th class="p-3">Zahlungsart</th>
+              <th class="p-3">eBay Guthaben?</th>
+              <th class="p-3">Status</th>
+              <th class="p-3">Umsatz / Porto</th>
+              <th class="p-3">Label</th>
+              <th class="p-3">Verpackt</th>
+              <th class="p-3">Tracking</th>
+              <th class="p-3 text-right">Aktionen</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody" class="divide-y divide-slate-700/50 text-slate-200"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- KUNDEN-NACHRICHTEN VORLAGEN -->
+    <section class="card p-5 rounded-2xl space-y-4">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-700/60 pb-3">
+        <h2 class="text-md font-semibold text-slate-300"><i class="fa-solid fa-comments mr-2 text-blue-400"></i> Kleinanzeigen & Kunden-Vorlagen</h2>
+        <select id="templateCustomerSelect" onchange="updateTemplatePreview()" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none w-full sm:w-72">
+          <option value="">👤 Kunden auswählen (zieht Sendungsnummer)...</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-emerald-400">1. Zahlung erhalten</span>
+              <button onclick="copyTemplate(1)" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-lg text-xs cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
+            </div>
+            <textarea id="templateText1" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.</textarea>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-yellow-400">2. Zahlungserinnerung</span>
+              <button onclick="copyTemplate(2)" class="bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-300 border border-yellow-500/40 px-2.5 py-1 rounded-lg text-xs cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
+            </div>
+            <textarea id="templateText2" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!</textarea>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-blue-400">3. Druck gestartet</span>
+              <button onclick="copyTemplate(3)" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/40 px-2.5 py-1 rounded-lg text-xs cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
+            </div>
+            <textarea id="templateText3" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.</textarea>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-purple-400">4. Paket unterwegs</span>
+              <button onclick="copyTemplate(4)" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/40 px-2.5 py-1 rounded-lg text-xs cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
+            </div>
+            <textarea id="templateText4" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n[Sendungsnummer]\n\nLink: https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=[Sendungsnummer]\n\nViel Freude damit!</textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
+    const TELEGRAM_TOKEN = '8918418759:AAHEyb2eJYwvY8OTyb0lEWjin7MstbsEdMM';
+
+    const BACKUP_SPOOLS = [
+      {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notifiedCount":0,"lastNotifiedDate":""},
+      {"id":2,"name":"PETG Weiß","remainingGrams":650,"notifiedCount":0,"lastNotifiedDate":""}
+    ];
+
+    const BACKUP_PRINTERS = [
+      { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
+      { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
+      { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
+      { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
+    ];
+
+    let editingIndex = -1;
+    let showingArchive = false;
+    let orders = [];
+    let spools = [];
+    let expenses = [];
+    let printers = [];
+    let telegramChatId = '8316865010';
+
+    try {
+      orders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent')) || [];
+      spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
+      expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
+      const savedPrinters = JSON.parse(localStorage.getItem('sefas_shop_printers'));
+      if (Array.isArray(savedPrinters) && savedPrinters.length > 0) printers = savedPrinters;
+      telegramChatId = localStorage.getItem('sefas_telegram_chat_id') || '8316865010';
+    } catch(e) {
+      orders = [];
+      spools = [];
+      expenses = [];
+      printers = [];
+    }
+
+    if (!Array.isArray(printers) || printers.length === 0) {
+      printers = BACKUP_PRINTERS;
+    }
+
+    if (!Array.isArray(spools) || spools.length === 0) {
+      spools = BACKUP_SPOOLS;
+    }
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    orders.forEach(o => {
+      if (!o.platform) o.platform = "Kleinanzeigen";
+      if (!o.paymentMethod) o.paymentMethod = "Überweisung";
+      if (!o.isPaid) o.isPaid = "❌ Nein";
+      if (!o.ebayBalancePaid) o.ebayBalancePaid = o.platform === 'eBay' ? '⏳ Bei eBay' : 'N/A';
+      if (o.labelCost === undefined) o.labelCost = 0;
+      if (o.shippingCost === undefined) o.shippingCost = o.platform === 'Kleinanzeigen' ? 7.00 : 0;
+      if (!o.orderDate) o.orderDate = todayStr;
+      if (!o.shipDate) o.shipDate = "";
+      if (!o.invoiceNumber) {
+        o.invoiceNumber = generateInvoiceNumberForExisting(o);
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const dateInput = document.getElementById('orderDate');
+      if (dateInput) dateInput.value = todayStr;
+      const expDateInput = document.getElementById('expDate');
+      if (expDateInput) expDateInput.value = todayStr;
+
+      renderPrinters();
+      updateMonthFilterDropdown();
+      renderOrders();
+      renderSpools();
+      renderExpenses();
+      updateCustomerDropdowns();
+      updatePrinterDropdowns();
+      togglePlatformFields();
+    });
+
+    function togglePlatformFields() {
+      const platform = document.getElementById('platform').value;
+      const labelCostInput = document.getElementById('labelCost');
+      const shippingSelect = document.getElementById('shipping');
+
+      if (platform === 'eBay') {
+        labelCostInput.classList.remove('hidden');
+        shippingSelect.classList.add('hidden');
+      } else {
+        labelCostInput.classList.add('hidden');
+        shippingSelect.classList.remove('hidden');
+      }
+    }
+
+    function saveLocalOnly() {
+      try {
+        localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
+        localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
+        localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
+        localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
+        localStorage.setItem('sefas_telegram_chat_id', telegramChatId);
+      } catch(e) {}
+    }
+
+    async function loadCloudData() {
+      try {
+        const res = await fetch(NPOINT_URL, { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && Array.isArray(json.orders)) {
+            orders = json.orders;
+            const currentToday = new Date().toISOString().slice(0, 10);
+            orders.forEach(o => {
+              if (!o.platform) o.platform = "Kleinanzeigen";
+              if (!o.paymentMethod) o.paymentMethod = "Überweisung";
+              if (!o.isPaid) o.isPaid = "❌ Nein";
+              if (!o.ebayBalancePaid) o.ebayBalancePaid = o.platform === 'eBay' ? '⏳ Bei eBay' : 'N/A';
+              if (o.labelCost === undefined) o.labelCost = 0;
+              if (o.shippingCost === undefined) o.shippingCost = o.platform === 'Kleinanzeigen' ? 7.00 : 0;
+              if (!o.orderDate) o.orderDate = currentToday;
+              if (!o.shipDate) o.shipDate = "";
+              if (!o.invoiceNumber) o.invoiceNumber = generateInvoiceNumberForExisting(o);
             });
-            document.getElementById('section' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
-            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('text-cyan-400', 'border-b-2', 'border-cyan-400');
-            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('text-gray-400');
+            if (Array.isArray(json.spools)) spools = json.spools;
+            if (Array.isArray(json.expenses)) expenses = json.expenses;
+            if (Array.isArray(json.printers) && json.printers.length > 0) printers = json.printers;
+            if (json.telegramChatId) { telegramChatId = json.telegramChatId; }
+            saveLocalOnly();
+            renderOrders();
+            renderSpools();
+            renderExpenses();
+            renderPrinters();
+            updateCustomerDropdowns();
+            updatePrinterDropdowns();
+            alert("✅ Daten erfolgreich von der Cloud abgerufen!");
+          } else {
+            alert("Die Cloud ist leer.");
+          }
+        }
+      } catch(e) {
+        alert("Hinweis: Cloud konnte nicht erreicht werden.");
+      }
+    }
+
+    async function pushToCloudManual() {
+      saveLocalOnly();
+      try {
+        const res = await fetch(NPOINT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orders, spools, expenses, printers, telegramChatId })
+        });
+        if (res.ok) {
+          alert("✅ Daten erfolgreich in der Cloud gespeichert!");
+        } else {
+          alert("⚠️ Server-Fehler: Die Cloud hat abgelehnt.");
+        }
+      } catch(e) {
+        alert("❌ Netzwerkfehler: Cloud konnte nicht erreicht werden.");
+      }
+    }
+
+    function saveAllData() {
+      saveLocalOnly();
+      renderOrders();
+      renderSpools();
+      renderExpenses();
+      renderPrinters();
+      updateCustomerDropdowns();
+      updatePrinterDropdowns();
+      
+      fetch(NPOINT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orders, spools, expenses, printers, telegramChatId })
+      }).catch(e => console.log("Hintergrund-Sync fehlgeschlagen", e));
+    }
+
+    function addPrinterPrompt() {
+      const name = prompt("Drucker-Name (z.B. Bambu Lab X1C):");
+      if (!name) return;
+      const desc = prompt("Beschreibung (z.B. CoreXY / High Speed):", "Standard");
+      printers.push({ name: name.trim(), desc: desc ? desc.trim() : "Standard", status: "Frei" });
+      saveAllData();
+    }
+
+    function deletePrinter(idx) {
+      if (printers.length <= 1) {
+        return alert("Du musst mindestens einen Drucker behalten!");
+      }
+      if (confirm(`Drucker "${printers[idx].name}" wirklich löschen?`)) {
+        printers.splice(idx, 1);
+        saveAllData();
+      }
+    }
+
+    function updatePrinterDropdowns() {
+      const printerSelects = document.querySelectorAll('#printer, [id^="edit-print-"]');
+      printerSelects.forEach(sel => {
+        const currentVal = sel.value;
+        sel.innerHTML = '';
+        printers.forEach(p => {
+          sel.innerHTML += `<option value="${p.name}" ${p.name === currentVal ? 'selected' : ''}>${p.name}</option>`;
+        });
+      });
+    }
+
+    function addExpense(e) {
+      e.preventDefault();
+      const desc = document.getElementById('expDesc').value.trim();
+      const cat = document.getElementById('expCategory').value;
+      const amount = parseFloat(document.getElementById('expAmount').value) || 0;
+      const date = document.getElementById('expDate').value || new Date().toISOString().slice(0, 10);
+
+      if (!desc || amount <= 0) return alert("Bitte Beschreibung und Betrag angeben!");
+
+      expenses.unshift({
+        id: Date.now(),
+        description: desc,
+        category: cat,
+        amount: amount,
+        date: date
+      });
+
+      saveAllData();
+      document.getElementById('expDesc').value = '';
+      document.getElementById('expAmount').value = '';
+      document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
+    }
+
+    function deleteExpense(id) {
+      if (confirm("Diese Ausgabe wirklich löschen?")) {
+        expenses = expenses.filter(ex => ex.id !== id);
+        saveAllData();
+      }
+    }
+
+    function renderExpenses() {
+      const tbody = document.getElementById('expensesTableBody');
+      const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      expenses.forEach(ex => {
+        if (selectedMonth !== 'all' && (!ex.date || !ex.date.startsWith(selectedMonth))) return;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-800/40 border-b border-slate-800">
+            <td class="p-3 text-xs text-slate-300">${ex.date || '-'}</td>
+            <td class="p-3 text-xs"><span class="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-purple-300">${ex.category}</span></td>
+            <td class="p-3 text-xs font-medium text-white">${ex.description}</td>
+            <td class="p-3 text-xs text-red-400 font-bold">-${ex.amount.toFixed(2).replace('.', ',')} €</td>
+            <td class="p-3 text-right">
+              <button onclick="deleteExpense(${ex.id})" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>`;
+      });
+      updateStats();
+    }
+
+    function updatePrinterStatus(index, newStatus) {
+      printers[index].status = newStatus;
+      saveAllData();
+    }
+
+    function updateField(id, field, value) {
+      const order = orders.find(o => o.id === id);
+      if (!order) return;
+
+      if (field === 'status') {
+        order.status = value;
+      } else if (field === 'platform') {
+        order.platform = value;
+        if (value === 'eBay') {
+          order.ebayBalancePaid = '⏳ Bei eBay';
+          order.shippingCost = 0;
+        } else {
+          order.ebayBalancePaid = 'N/A';
+          order.shippingCost = 7.00;
+        }
+      } else if (field === 'paymentMethod') {
+        order.paymentMethod = value;
+      } else if (field === 'isPaid') {
+        order.isPaid = value;
+      } else if (field === 'ebayBalancePaid') {
+        order.ebayBalancePaid = value;
+      } else if (field === 'printer') {
+        order.printer = value;
+      } else if (field === 'label') {
+        order.label = value;
+      } else if (field === 'packed') {
+        order.packed = value;
+      }
+
+      saveAllData();
+    }
+
+    function payoutAllEbayBalance() {
+      let count = 0;
+      orders.forEach(o => {
+        if (o.platform === 'eBay' && o.ebayBalancePaid === '⏳ Bei eBay') {
+          o.ebayBalancePaid = '✅ Ausgezahlt';
+          count++;
+        }
+      });
+      if (count > 0) {
+        saveAllData();
+        alert(`✅ ${count} eBay-Aufträge als "Ausgezahlt" markiert und zum Umsatz hinzugefügt!`);
+      } else {
+        alert("Es gibt aktuell keine offenen eBay-Guthaben, die ausgezahlt werden müssten.");
+      }
+    }
+
+    function toggleArchiveView() {
+      showingArchive = !showingArchive;
+      const btn = document.getElementById('headerArchiveBtn');
+      const title = document.getElementById('tableTitle');
+      if (showingArchive) {
+        btn.innerHTML = '<i class="fa-solid fa-list-check mr-1.5"></i> 📋 Aktive Aufträge';
+        btn.className = "bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer";
+        title.innerHTML = '<i class="fa-solid fa-box-archive mr-2 text-purple-400"></i> Bestellungen (Archiv)';
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-box-archive mr-1.5"></i> 📂 Archiv anzeigen';
+        btn.className = "bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer";
+        title.innerHTML = '<i class="fa-solid fa-list-check mr-2 text-blue-400"></i> Bestellungen (Aktiv)';
+      }
+      renderOrders();
+    }
+
+    function toggleArchiveOrder(id) {
+      const order = orders.find(o => o.id === id);
+      if (order) {
+        order.archived = !order.archived;
+        const todayStr = new Date().toISOString().slice(0,10);
+        if (order.archived) {
+          if (!order.shipDate) order.shipDate = todayStr;
+        }
+        saveAllData();
+      }
+    }
+
+    function updateCustomerDropdowns() {
+      const sel1 = document.getElementById('existingCustomerSelect');
+      const sel2 = document.getElementById('templateCustomerSelect');
+      
+      if (sel1) {
+        sel1.innerHTML = '<option value="">📋 Bestehenden Kunden laden...</option>';
+        orders.forEach(o => {
+          sel1.innerHTML += `<option value="${o.id}">${o.customer} (${o.tracking && o.tracking !== '-' ? o.tracking : 'Keine Tracking'})</option>`;
+        });
+      }
+
+      if (sel2) {
+        sel2.innerHTML = '<option value="">👤 Kunden auswählen (zieht Sendungsnummer)...</option>';
+        orders.forEach(o => {
+          sel2.innerHTML += `<option value="${o.id}">${o.customer} (${o.tracking && o.tracking !== '-' ? o.tracking : 'Keine Tracking'})</option>`;
+        });
+      }
+    }
+
+    function autofillCustomerData(orderId) {
+      if (!orderId) return;
+      const order = orders.find(o => o.id == orderId);
+      if (!order) return;
+
+      document.getElementById('customer').value = order.customer || '';
+      document.getElementById('platform').value = order.platform || 'Kleinanzeigen';
+      togglePlatformFields();
+      document.getElementById('paymentMethod').value = order.paymentMethod || 'Überweisung';
+      document.getElementById('isPaid').value = order.isPaid || '❌ Nein';
+      document.getElementById('address').value = order.address || '';
+      document.getElementById('tracking').value = (order.tracking && order.tracking !== '-') ? order.tracking : '';
+      if (order.printer) document.getElementById('printer').value = order.printer;
+      document.getElementById('price').value = order.price || '';
+      document.getElementById('labelCost').value = order.labelCost !== undefined ? order.labelCost : 0;
+      document.getElementById('shipping').value = order.shippingCost || '7.00';
+      document.getElementById('label').value = order.label || '✅ Ja';
+      document.getElementById('packed').value = order.packed || '❌ Nein';
+      if (order.orderDate) document.getElementById('orderDate').value = order.orderDate;
+    }
+
+    function updateTemplatePreview() {
+      const orderId = document.getElementById('templateCustomerSelect').value;
+      if (!orderId) return;
+      const o = orders.find(item => item.id == orderId);
+      if (!o) return;
+
+      const track = (o.tracking && o.tracking !== '-') ? o.tracking : '[Sendungsnummer einfügen]';
+
+      document.getElementById('templateText1').value = `Hallo ${o.customer},\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.`;
+      document.getElementById('templateText2').value = `Hallo ${o.customer},\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!`;
+      document.getElementById('templateText3').value = `Hallo ${o.customer},\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.`;
+      document.getElementById('templateText4').value = `Hallo ${o.customer},\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n${track}\n\nLink: https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${track}\n\nViel Freude damit!`;
+    }
+
+    function copyTemplate(num) {
+      const text = document.getElementById(`templateText${num}`).value;
+      navigator.clipboard.writeText(text).then(() => {
+        alert(`✅ Nachricht-Vorlage ${num} wurde in die Zwischenablage kopiert!`);
+      }).catch(() => {
+        alert("Fehler beim Kopieren.");
+      });
+    }
+
+    function renderSpools() {
+      const container = document.getElementById('spoolsList');
+      const banner = document.getElementById('spoolWarningBanner');
+      if (!container) return;
+      container.innerHTML = '';
+      let lowSpools = [];
+
+      spools.forEach((s, idx) => {
+        const isLow = s.remainingGrams < 250;
+        if (isLow) lowSpools.push(s);
+
+        container.innerHTML += `
+          <div class="p-2.5 rounded-xl border text-xs flex justify-between items-center ${isLow ? 'bg-red-950/40 border-red-500/60 pulse-low-spool' : 'bg-slate-900 border-slate-700/60'}">
+            <span class="font-semibold text-white">${s.name}</span>
+            <div class="flex items-center space-x-2">
+              <span onclick="editSpoolGrams(${idx})" class="${isLow ? 'text-red-400 font-bold' : 'text-slate-300'} cursor-pointer hover:underline" title="Klicken zum Bearbeiten">${s.remainingGrams}g</span>
+              <button onclick="editSpoolGrams(${idx})" class="text-slate-400 hover:text-white px-1 cursor-pointer" title="Gewicht ändern"><i class="fa-solid fa-pen text-[10px]"></i></button>
+              <button onclick="deleteSpool(${idx})" class="text-red-400 px-1 cursor-pointer" title="Spule löschen"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          </div>`;
+      });
+
+      if (lowSpools.length > 0) {
+        banner.classList.remove('hidden');
+        banner.innerHTML = `<i class="fa-solid fa-bell text-red-400"></i> Spulen-Alarm: ${lowSpools.map(s => `${s.name} (${s.remainingGrams}g)`).join(', ')} unter 250g!`;
+      } else { 
+        banner.classList.add('hidden'); 
+      }
+      updateSpoolDropdowns();
+    }
+
+    function addSpoolPrompt() {
+      const name = prompt("Name/Farbe der Spule (z.B. PLA Rot):");
+      if (!name) return;
+      const grams = parseInt(prompt("Gewicht in Gramm (z.B. 1000):", "1000")) || 1000;
+      spools.push({ id: Date.now(), name, remainingGrams: grams, notifiedCount: 0, lastNotifiedDate: "" });
+      saveAllData();
+    }
+
+    function editSpoolGrams(idx) {
+      const current = spools[idx];
+      const newGrams = prompt(`Neues Gewicht für "${current.name}" in Gramm:`, current.remainingGrams);
+      if (newGrams !== null && !isNaN(parseInt(newGrams))) {
+        spools[idx].remainingGrams = parseInt(newGrams);
+        if (spools[idx].remainingGrams >= 250) {
+          spools[idx].notifiedCount = 0;
+        }
+        saveAllData();
+      }
+    }
+
+    function deleteSpool(idx) {
+      if (confirm(`Spule "${spools[idx].name}" wirklich löschen?`)) {
+        spools.splice(idx, 1);
+        saveAllData();
+      }
+    }
+
+    function updateSpoolDropdowns() {
+      document.querySelectorAll('.art-color, .edit-art-color').forEach(select => {
+        const current = select.value;
+        select.innerHTML = '<option value="">-- Farbe --</option>';
+        spools.forEach(s => {
+          select.innerHTML += `<option value="${s.name}" ${s.name === current ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`;
+        });
+      });
+    }
+
+    function addArticleInputRow(nameVal = '', colorVal = '', weightVal = '') {
+      const container = document.getElementById('articleInputRows');
+      const div = document.createElement('div');
+      div.className = "flex gap-2 items-center article-row";
+      let optionsHtml = '<option value="">-- Farbe --</option>';
+      spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === colorVal ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
+      div.innerHTML = `
+        <input type="text" placeholder="Artikelbezeichnung" value="${nameVal}" required class="art-name bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white flex-1 focus:outline-none">
+        <select class="art-color bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-52 focus:outline-none">${optionsHtml}</select>
+        <input type="number" placeholder="Gramm (g)" value="${weightVal}" class="art-weight bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white w-28 focus:outline-none">
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>`;
+      container.appendChild(div);
+    }
+
+    function addPresetArticle(presetName) {
+      addArticleInputRow(presetName);
+    }
+
+    function addEditArticleRow(name = '', color = '', weight = '') {
+      const container = document.getElementById('editArticleRows');
+      if (!container) return;
+      const div = document.createElement('div');
+      div.className = "flex gap-2 items-center edit-article-row bg-slate-950 p-2 rounded-xl border border-slate-800";
+      let optionsHtml = '<option value="">-- Farbe --</option>';
+      spools.forEach(s => {
+        optionsHtml += `<option value="${s.name}" ${s.name === color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`;
+      });
+      div.innerHTML = `
+        <input type="text" placeholder="Artikelbezeichnung" value="${name}" required class="edit-art-name bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
+        <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-40 focus:outline-none">${optionsHtml}</select>
+        <input type="number" placeholder="Gramm" value="${weight}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-20 focus:outline-none">
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>`;
+      container.appendChild(div);
+    }
+
+    function generateNewInvoiceNumber(orderDateStr) {
+      const year = orderDateStr ? orderDateStr.slice(0, 4) : new Date().getFullYear().toString();
+      let maxNum = 0;
+      orders.forEach(o => {
+        if (o.invoiceNumber && o.invoiceNumber.startsWith(`RE-${year}-`)) {
+          let parts = o.invoiceNumber.split('-');
+          let num = parseInt(parts[2]) || 0;
+          if (num > maxNum) maxNum = num;
+        }
+      });
+      const nextNum = Math.max(11, maxNum) + 1;
+      return `RE-${year}-${nextNum.toString().padStart(4, '0')}`;
+    }
+
+    function generateInvoiceNumberForExisting(order) {
+      if (order.invoiceNumber) return order.invoiceNumber;
+      return generateNewInvoiceNumber(order.orderDate);
+    }
+
+    function addOrder(e) {
+      e.preventDefault();
+      const nameInputs = document.querySelectorAll('.art-name');
+      const colorInputs = document.querySelectorAll('.art-color');
+      const weightInputs = document.querySelectorAll('.art-weight');
+      const itemsList = [];
+
+      nameInputs.forEach((inp, idx) => {
+        const val = inp.value.trim();
+        if (val) {
+          const w = parseInt(weightInputs[idx].value) || 0;
+          const col = colorInputs[idx].value;
+          itemsList.push({ name: val, color: col, weight: w });
+
+          if (col && w > 0) {
+            const spool = spools.find(s => s.name === col);
+            if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - w);
+          }
+        }
+      });
+      if (itemsList.length === 0) return alert("Bitte Artikel eintragen!");
+      
+      const customDate = document.getElementById('orderDate').value || new Date().toISOString().slice(0,10);
+      const fixedInvoiceNum = generateNewInvoiceNumber(customDate);
+      const plat = document.getElementById('platform').value;
+      const payMethod = document.getElementById('paymentMethod').value;
+      const paidStatus = document.getElementById('isPaid').value;
+      const custName = document.getElementById('customer').value;
+      
+      let labelC = 0;
+      let shipCost = 0;
+
+      if (plat === 'eBay') {
+        labelC = parseFloat(document.getElementById('labelCost').value) || 0;
+        shipCost = 0;
+      } else {
+        labelC = 0;
+        shipCost = parseFloat(document.getElementById('shipping').value) || 0;
+      }
+
+      let ebayBalStatus = plat === 'eBay' ? '⏳ Bei eBay' : 'N/A';
+
+      // HIER KEINE AUTOMATISCHE AUSGABE MEHR ERZEUGEN -> Volle Kontrolle für dich!
+
+      orders.unshift({
+        id: Date.now(),
+        customer: custName,
+        platform: plat,
+        paymentMethod: payMethod,
+        isPaid: paidStatus,
+        ebayBalancePaid: ebayBalStatus,
+        address: document.getElementById('address').value || '',
+        printer: document.getElementById('printer').value,
+        status: "Offen",
+        label: document.getElementById('label').value,
+        packed: document.getElementById('packed').value,
+        price: parseFloat(document.getElementById('price').value) || 0,
+        shippingCost: shipCost,
+        labelCost: labelC,
+        tracking: document.getElementById('tracking').value || '-',
+        orderDate: customDate,
+        invoiceNumber: fixedInvoiceNum,
+        shipDate: '',
+        archived: false,
+        items: itemsList
+      });
+      saveAllData();
+      document.getElementById('orderForm').reset();
+      document.getElementById('orderDate').value = new Date().toISOString().slice(0,10);
+      document.getElementById('labelCost').value = "0.00";
+      document.getElementById('existingCustomerSelect').value = "";
+      togglePlatformFields();
+    }
+
+    function startEdit(idx) {
+      editingIndex = idx;
+      renderOrders();
+    }
+
+    function cancelEdit() {
+      editingIndex = -1;
+      renderOrders();
+    }
+
+    function saveEdit(idx) {
+      const nameInputs = document.querySelectorAll('.edit-art-name');
+      const colorInputs = document.querySelectorAll('.edit-art-color');
+      const weightInputs = document.querySelectorAll('.edit-art-weight');
+      const updatedItems = [];
+
+      const oldOrder = orders[idx];
+
+      nameInputs.forEach((inp, i) => {
+        const val = inp.value.trim();
+        if (val) {
+          const w = parseInt(weightInputs[i].value) || 0;
+          const col = colorInputs[i].value;
+          updatedItems.push({ name: val, color: col, weight: w });
+        }
+      });
+
+      if (updatedItems.length === 0) return alert("Ein Auftrag muss mindestens einen Artikel haben!");
+
+      if (oldOrder.items) {
+        oldOrder.items.forEach(oldItem => {
+          if (oldItem.color && oldItem.weight > 0) {
+            const spool = spools.find(s => s.name === oldItem.color);
+            if (spool) spool.remainingGrams += oldItem.weight;
+          }
+        });
+      }
+
+      updatedItems.forEach(newItem => {
+        if (newItem.color && newItem.weight > 0) {
+          const spool = spools.find(s => s.name === newItem.color);
+          if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - newItem.weight);
+        }
+      });
+
+      orders[idx].customer = document.getElementById(`edit-cust-${idx}`).value;
+      orders[idx].platform = document.getElementById(`edit-plat-${idx}`).value;
+      orders[idx].paymentMethod = document.getElementById(`edit-paymeth-${idx}`).value;
+      orders[idx].isPaid = document.getElementById(`edit-ispaid-${idx}`).value;
+      orders[idx].ebayBalancePaid = document.getElementById(`edit-ebaybal-${idx}`).value;
+      orders[idx].address = document.getElementById(`edit-addr-${idx}`).value;
+      orders[idx].printer = document.getElementById(`edit-print-${idx}`).value;
+      orders[idx].status = document.getElementById(`edit-stat-${idx}`).value;
+      orders[idx].label = document.getElementById(`edit-label-${idx}`).value;
+      orders[idx].packed = document.getElementById(`edit-packed-${idx}`).value;
+      orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
+      
+      if (orders[idx].platform === 'eBay') {
+        orders[idx].shippingCost = 0;
+        orders[idx].labelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
+      } else {
+        orders[idx].shippingCost = parseFloat(document.getElementById(`edit-shipcost-${idx}`).value) || 0;
+        orders[idx].labelCost = 0;
+      }
+
+      orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value || '-';
+      orders[idx].orderDate = document.getElementById(`edit-date-${idx}`)?.value || orders[idx].orderDate;
+      orders[idx].shipDate = orders[idx].shipDate || '';
+      
+      const newInvInput = document.getElementById(`edit-inv-${idx}`);
+      if (newInvInput && newInvInput.value.trim()) {
+        orders[idx].invoiceNumber = newInvInput.value.trim();
+      }
+
+      orders[idx].items = updatedItems;
+
+      editingIndex = -1;
+      saveAllData();
+    }
+
+    function deleteOrder(id) {
+      const order = orders.find(o => o.id === id);
+      if (order && order.items) {
+        order.items.forEach(i => {
+          if (i.color && i.weight > 0) {
+            const spool = spools.find(s => s.name === i.color);
+            if (spool) spool.remainingGrams += i.weight;
+          }
+        });
+      }
+      orders = orders.filter(o => o.id !== id);
+      saveAllData();
+    }
+
+    function printBoxLabel(idx) {
+      const o = orders[idx];
+      const printSec = document.getElementById('printSection');
+      let itemsSummary = o.items.map(i => `${i.name} (${i.color || 'Standard'}, ${i.weight || 0}g)`).join("<br>• ");
+      const trackingUrl = (o.tracking && o.tracking !== '-') ? `https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${o.tracking}` : `Sefas3DShop - ${o.customer}`;
+
+      printSec.innerHTML = `
+        <div style="font-family: Arial, sans-serif; border: 2px solid #000; padding: 10px; width: 340px; background: #fff; border-radius: 6px;">
+          <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px;">
+            <strong>Sefas3DShop</strong>
+            <span style="font-size: 10px; background: #000; color: #fff; padding: 2px 4px;">KARTON-ETIKETT</span>
+          </div>
+          <div style="margin-top: 8px; font-size: 12px;">
+            <p style="margin: 2px 0;"><strong>Empfänger:</strong> ${o.customer}</p>
+            <p style="margin: 2px 0; font-size: 11px; color: #444;">${o.address || ''}</p>
+          </div>
+          <div style="margin-top: 8px; border-top: 1px dashed #666; padding-top: 5px; font-size: 11px;">
+            <strong>Inhalt:</strong><br>• ${itemsSummary}
+          </div>
+          <div style="margin-top: 8px; border-top: 1px dashed #666; padding-top: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+            <div><strong>Tracking:</strong> ${o.tracking}</div>
+            <div id="qrcodeContainer"></div>
+          </div>
+        </div>`;
+      printSec.classList.remove('hidden');
+      setTimeout(() => {
+        const qrContainer = document.getElementById('qrcodeContainer');
+        qrContainer.innerHTML = '';
+        new QRCode(qrContainer, { text: trackingUrl, width: 60, height: 60 });
+        window.print();
+        printSec.classList.add('hidden');
+      }, 300);
+    }
+
+    function renderLocalQrCode(containerId, text) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = '';
+      try {
+        new QRCode(container, {
+          text: text,
+          width: 75,
+          height: 75,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch(e) {
+        container.innerHTML = "QR Fehler";
+      }
+    }
+
+    function printInvoice(idx) {
+      const o = orders[idx];
+      const invSec = document.getElementById('invoiceSection');
+      const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
+      
+      const invoiceNumber = generateInvoiceNumberForExisting(o);
+      const trackingText = (o.tracking && o.tracking !== '-') ? o.tracking : 'Wird nachgereicht';
+      const paymentMethodText = o.paymentMethod || 'Überweisung';
+      
+      let itemsRows = '';
+      o.items.forEach(i => {
+        itemsRows += `
+          <tr>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name} ${i.color ? '(' + i.color + ')' : ''}</td>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td>
+          </tr>`;
+      });
+
+      if (o.platform === 'Kleinanzeigen' && o.shippingCost > 0) {
+        itemsRows += `
+          <tr>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd;">Versand- / Paketpauschale</td>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
+          </tr>`;
+      }
+
+      const totalAmountNum = o.price + (o.platform === 'Kleinanzeigen' ? o.shippingCost : 0);
+      const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
+
+      const sepaPayload = [
+        "BCD",
+        "002",
+        "1",
+        "SCT",
+        "REVODEB2",
+        "Sefa Demir",
+        "DE20100101780592679808",
+        "EUR" + totalAmountNum.toFixed(2),
+        "",
+        "",
+        "Rechnung " + invoiceNumber
+      ].join("\n");
+
+      invSec.innerHTML = `
+        <div style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: start; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 15px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <svg style="width: 36px; height: 36px; color: #2563eb;" viewBox="0 0 100 100" fill="currentColor">
+                <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/>
+                <polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/>
+                <polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/>
+                <polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/>
+              </svg>
+              <div>
+                <h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0 0 2px 0;">Sefas3DShop</h1>
+                <p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 42 | 32369 Rahden</p>
+                <p style="margin: 1px 0 0 0; color: #555;">Steuernummer: 52063271982</p>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 0 0 4px 0;">RECHNUNG</h2>
+              <p style="margin: 1px 0;"><strong>Rechnungsnummer:</strong> ${invoiceNumber}</p>
+              <p style="margin: 1px 0;"><strong>Datum:</strong> ${invoiceDate}</p>
+              <p style="margin: 1px 0;"><strong>Sendungsnummer:</strong> ${trackingText}</p>
+              <p style="margin: 1px 0; color: #2563eb; font-weight: bold;">Zahlungsart: ${paymentMethodText}</p>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <p style="font-size: 9px; color: #777; margin: 0 0 2px 0;">Rechnungsempfänger:</p>
+            <div style="font-weight: bold; font-size: 12px;">${o.customer}</div>
+            <div style="color: #444; white-space: pre-line;">${o.address || 'Keine Adresse angegeben'}</div>
+          </div>
+
+          <p style="font-size: 10px; color: #555; margin-bottom: 10px;">Das Lieferdatum entspricht dem Rechnungsdatum.</p>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+            <thead>
+              <tr style="background: #f1f5f9; text-align: left;">
+                <th style="padding: 6px; border-bottom: 2px solid #cbd5e1;">Beschreibung</th>
+                <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: center;">Menge</th>
+                <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: right;">Einzelpreis</th>
+                <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: right;">Gesamt</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsRows}
+            </tbody>
+          </table>
+
+          <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+            <div style="width: 210px;">
+              <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #ddd;">
+                <span>Gesamtbetrag:</span>
+                <strong>${totalAmountStr} €</strong>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px; margin-bottom: 15px;">
+            <div style="font-size: 10px;">
+              <p style="margin: 0 0 2px 0;"><strong>Zahlungsinformationen:</strong></p>
+              <p style="margin: 1px 0;">Empfänger: Sefa Demir</p>
+              <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08</p>
+              <p style="margin: 1px 0;">BIC: REVODEB2</p>
+              <p style="margin: 1px 0;">Bank: Revolut</p>
+              <p style="margin: 2px 0 0 0; color: #2563eb; font-weight: bold;">💡 Mit Banking-App scannen & bezahlen!</p>
+            </div>
+            <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; display: inline-block;" id="sepaQrCodeTarget"></div>
+          </div>
+
+          <div style="border-top: 1px solid #cbd5e1; padding-top: 10px; font-size: 9px; color: #666; text-align: center;">
+            <p style="margin: 1px 0;">Kleinunternehmer gemäß § 19 UStG wird keine Umsatzsteuer berechnet.</p>
+            <p style="margin: 1px 0;">Vielen Dank für deinen Einkauf bei Sefas3DShop!</p>
+          </div>
+        </div>`;
+
+      invSec.classList.remove('hidden');
+      setTimeout(() => {
+        renderLocalQrCode('sepaQrCodeTarget', sepaPayload);
+        window.print();
+        invSec.classList.add('hidden');
+      }, 300);
+    }
+
+    function printAllInvoices() {
+      const activeOrders = orders.filter(o => Boolean(o.archived) === showingArchive);
+      if (activeOrders.length === 0) {
+        alert("Keine Aufträge in dieser Ansicht vorhanden!");
+        return;
+      }
+
+      const invSec = document.getElementById('invoiceSection');
+      invSec.innerHTML = '';
+
+      activeOrders.forEach((o, index) => {
+        const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
+        const invoiceNumber = generateInvoiceNumberForExisting(o);
+        const trackingText = (o.tracking && o.tracking !== '-') ? o.tracking : 'Wird nachgereicht';
+        const paymentMethodText = o.paymentMethod || 'Überweisung';
+        
+        let itemsRows = '';
+        o.items.forEach(i => {
+          itemsRows += `
+            <tr>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name} ${i.color ? '(' + i.color + ')' : ''}</td>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td>
+            </tr>`;
+        });
+
+        if (o.platform === 'Kleinanzeigen' && o.shippingCost > 0) {
+          itemsRows += `
+            <tr>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd;">Versand- / Paketpauschale</td>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
+              <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingCost.toFixed(2).replace('.', ',')} €</td>
+            </tr>`;
         }
 
-        function render() {
-            const activeTable = document.getElementById('activeOrdersTable');
-            const archiveTable = document.getElementById('archiveOrdersTable');
-            const expensesTable = document.getElementById('expensesTable');
+        const totalAmountNum = o.price + (o.platform === 'Kleinanzeigen' ? o.shippingCost : 0);
+        const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
 
-            activeTable.innerHTML = '';
-            archiveTable.innerHTML = '';
-            expensesTable.innerHTML = '';
+        invSec.innerHTML += `
+          <div class="page-break-container" style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 15px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <svg style="width: 36px; height: 36px; color: #2563eb;" viewBox="0 0 100 100" fill="currentColor">
+                  <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/>
+                  <polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/>
+                  <polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/>
+                  <polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/>
+                </svg>
+                <div>
+                  <h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0 0 2px 0;">Sefas3DShop</h1>
+                  <p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 42 | 32369 Rahden</p>
+                  <p style="margin: 1px 0 0 0; color: #555;">Steuernummer: 52063271982</p>
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 0 0 4px 0;">RECHNUNG</h2>
+                <p style="margin: 1px 0;"><strong>Rechnungsnummer:</strong> ${invoiceNumber}</p>
+                <p style="margin: 1px 0;"><strong>Datum:</strong> ${invoiceDate}</p>
+                <p style="margin: 1px 0;"><strong>Sendungsnummer:</strong> ${trackingText}</p>
+                <p style="margin: 1px 0; color: #2563eb; font-weight: bold;">Zahlungsart: ${paymentMethodText}</p>
+              </div>
+            </div>
 
-            let totalRevenue = 0;
-            let totalExpenses = 0;
+            <div style="margin-bottom: 15px;">
+              <p style="font-size: 9px; color: #777; margin: 0 0 2px 0;">Rechnungsempfänger:</p>
+              <div style="font-weight: bold; font-size: 12px;">${o.customer}</div>
+              <div style="color: #444; white-space: pre-line;">${o.address || 'Keine Adresse angegeben'}</div>
+            </div>
 
-            appData.orders.forEach((order, index) => {
-                totalRevenue += Number(order.revenue) || 0;
-                
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-800/50 transition border-b border-gray-700/50";
-                tr.innerHTML = `
-                    <td class="p-4 text-gray-300">${order.date || '-'}</td>
-                    <td class="p-4 font-mono font-semibold text-cyan-300">${order.id}</td>
-                    <td class="p-4"><span class="px-2.5 py-1 rounded-md text-xs font-medium ${order.platform === 'eBay' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">${order.platform}</span></td>
-                    <td class="p-4 font-medium text-gray-200">${order.customer}</td>
-                    <td class="p-4 font-bold text-emerald-400">${Number(order.revenue).toFixed(2).replace('.', ',')} €</td>
-                    <td class="p-4">${order.paid ? '<span class="text-emerald-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> Ja</span>' : '<span class="text-rose-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-circle-xmark"></i> Nein</span>'}</td>
-                    <td class="p-4 text-right space-x-3">
-                        <button onclick="toggleArchive(${index})" class="text-amber-400 hover:text-amber-300 p-1.5 transition" title="${order.status === 'Aktiv' ? 'Archivieren' : 'Aktivieren'}">
-                            <i class="fa-solid ${order.status === 'Aktiv' ? 'fa-box-archive' : 'fa-box-open'} text-base"></i>
-                        </button>
-                        <button onclick="deleteOrder(${index})" class="text-rose-400 hover:text-rose-300 p-1.5 transition" title="Löschen">
-                            <i class="fa-solid fa-trash text-base"></i>
-                        </button>
-                    </td>
-                `;
+            <p style="font-size: 10px; color: #555; margin-bottom: 10px;">Das Lieferdatum entspricht dem Rechnungsdatum.</p>
 
-                if (order.status === 'Archiviert') {
-                    archiveTable.appendChild(tr);
-                } else {
-                    activeTable.appendChild(tr);
-                }
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+              <thead>
+                <tr style="background: #f1f5f9; text-align: left;">
+                  <th style="padding: 6px; border-bottom: 2px solid #cbd5e1;">Beschreibung</th>
+                  <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: center;">Menge</th>
+                  <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: right;">Einzelpreis</th>
+                  <th style="padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: right;">Gesamt</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsRows}
+              </tbody>
+            </table>
+
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+              <div style="width: 210px;">
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #ddd;">
+                  <span>Gesamtbetrag:</span>
+                  <strong>${totalAmountStr} €</strong>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px; margin-bottom: 15px;">
+              <div style="font-size: 10px;">
+                <p style="margin: 0 0 2px 0;"><strong>Zahlungsinformationen:</strong></p>
+                <p style="margin: 1px 0;">Empfänger: Sefa Demir</p>
+                <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08</p>
+                <p style="margin: 1px 0;">BIC: REVODEB2</p>
+                <p style="margin: 1px 0;">Bank: Revolut</p>
+                <p style="margin: 2px 0 0 0; color: #2563eb; font-weight: bold;">💡 Mit Banking-App scannen & bezahlen!</p>
+              </div>
+              <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; display: inline-block;" id="batchSepaQr_${index}"></div>
+            </div>
+
+            <div style="border-top: 1px solid #cbd5e1; padding-top: 10px; font-size: 9px; color: #666; text-align: center;">
+              <p style="margin: 1px 0;">Kleinunternehmer gemäß § 19 UStG wird keine Umsatzsteuer berechnet.</p>
+              <p style="margin: 1px 0;">Vielen Dank für deinen Einkauf bei Sefas3DShop!</p>
+            </div>
+          </div>`;
+      });
+
+      invSec.classList.remove('hidden');
+      setTimeout(() => {
+        activeOrders.forEach((o, index) => {
+          const totalAmountNum = o.price + (o.platform === 'Kleinanzeigen' ? o.shippingCost : 0);
+          const invoiceNumber = generateInvoiceNumberForExisting(o);
+          const sepaPayload = [
+            "BCD",
+            "002",
+            "1",
+            "SCT",
+            "REVODEB2",
+            "Sefa Demir",
+            "DE20100101780592679808",
+            "EUR" + totalAmountNum.toFixed(2),
+            "",
+            "",
+            "Rechnung " + invoiceNumber
+          ].join("\n");
+          
+          renderLocalQrCode(`batchSepaQr_${index}`, sepaPayload);
+        });
+        window.print();
+        invSec.classList.add('hidden');
+      }, 400);
+    }
+
+    function exportAccountingCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+      csvContent += "Typ;Plattform;Bezahlt?;Zahlungsart;eBay Guthaben Status;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Umsatz (€);Porto-Ausgabe (€)\n";
+
+      orders.forEach(o => {
+        let total = o.price + (o.platform === 'Kleinanzeigen' ? o.shippingCost : 0);
+        let type = o.archived ? "Einnahme (Archiviert)" : "Einnahme (Aktiv)";
+        let date = o.orderDate || "";
+        let inv = generateInvoiceNumberForExisting(o);
+        let cust = o.customer.replace(/;/g, ",");
+        let lCost = (o.labelCost || 0);
+        csvContent += `${type};${o.platform || 'Kleinanzeigen'};${o.isPaid || '❌ Nein'};${o.paymentMethod || 'Überweisung'};${o.ebayBalancePaid || 'N/A'};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${lCost.toFixed(2).replace('.', ',')}\n`;
+      });
+
+      expenses.forEach(ex => {
+        let desc = ex.description.replace(/;/g, ",");
+        csvContent += `Ausgabe;Shop;✅ Ja;Gebühr;N/A;${ex.date || ""};${desc};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')};0,00\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Sefas3DShop_Buchhaltung_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function updateMonthFilterDropdown() {
+      const select = document.getElementById('statsMonthFilter');
+      if (!select) return;
+      const currentSelection = select.value;
+      
+      let monthsSet = new Set();
+      orders.forEach(o => {
+        if (o.orderDate) monthsSet.add(o.orderDate.slice(0, 7));
+        if (o.shipDate) monthsSet.add(o.shipDate.slice(0, 7));
+      });
+      expenses.forEach(ex => {
+        if (ex.date) monthsSet.add(ex.date.slice(0, 7));
+      });
+
+      let sortedMonths = Array.from(monthsSet).sort().reverse();
+      
+      select.innerHTML = '<option value="all">📅 Alle Monate (Gesamt)</option>';
+      sortedMonths.forEach(m => {
+        let parts = m.split('-');
+        let formattedName = `${parts[1]}.${parts[0]}`;
+        select.innerHTML += `<option value="${m}">${formattedName}</option>`;
+      });
+
+      if ([...select.options].some(opt => opt.value === currentSelection)) {
+        select.value = currentSelection;
+      }
+    }
+
+    function renderOrders() {
+      updateMonthFilterDropdown();
+      const tbody = document.getElementById('ordersTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
+
+      orders.forEach((o, idx) => {
+        if (Boolean(o.archived) !== showingArchive) return;
+        if (query && !o.customer.toLowerCase().includes(query) && !o.tracking.toLowerCase().includes(query)) return;
+
+        const fixedInvNum = generateInvoiceNumberForExisting(o);
+        const lCostVal = o.labelCost !== undefined ? o.labelCost : 0;
+        const isEbay = o.platform === 'eBay';
+        const totalOrderRevenue = o.price + (isEbay ? 0 : (o.shippingCost || 0));
+
+        if (editingIndex === idx) {
+          let editItemsHtml = `<div id="editArticleRows" class="space-y-2 my-2">`;
+          o.items.forEach(i => {
+            let optionsHtml = '<option value="">-- Farbe --</option>';
+            spools.forEach(s => {
+              optionsHtml += `<option value="${s.name}" ${s.name === i.color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`;
             });
+            editItemsHtml += `
+              <div class="flex gap-2 items-center edit-article-row bg-slate-950 p-2 rounded-xl border border-slate-800">
+                <input type="text" placeholder="Artikelbezeichnung" value="${i.name}" required class="edit-art-name bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white flex-1 focus:outline-none">
+                <select class="edit-art-color bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-40 focus:outline-none">${optionsHtml}</select>
+                <input type="number" placeholder="Gramm" value="${i.weight || ''}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-20 focus:outline-none">
+                <button type="button" onclick="this.parentElement.remove()" class="text-red-400 text-xs px-2 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+              </div>`;
+          });
+          editItemsHtml += `</div><button type="button" onclick="addEditArticleRow()" class="bg-slate-800 hover:bg-slate-700 text-blue-400 text-xs px-2 py-1 rounded border border-blue-500/30 cursor-pointer">+ Artikel hinzufügen</button>`;
 
-            document.getElementById('archiveCount').innerText = appData.orders.filter(o => o.status === 'Archiviert').length;
+          let printerOptionsEdit = '';
+          printers.forEach(p => {
+            printerOptionsEdit += `<option value="${p.name}" ${p.name === o.printer ? 'selected' : ''}>${p.name}</option>`;
+          });
 
-            appData.expenses.forEach((exp, index) => {
-                totalExpenses += Number(exp.amount) || 0;
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-800/50 transition border-b border-gray-700/50";
-                tr.innerHTML = `
-                    <td class="p-4 font-medium text-gray-200">${exp.desc}</td>
-                    <td class="p-4 text-gray-400">${exp.category || 'Sonstiges'}</td>
-                    <td class="p-4 font-bold text-rose-400">-${Number(exp.amount).toFixed(2).replace('.', ',')} €</td>
-                    <td class="p-4 text-right">
-                        <button onclick="deleteExpense(${index})" class="text-rose-400 hover:text-rose-300 p-1.5 transition" title="Löschen">
-                            <i class="fa-solid fa-trash text-base"></i>
-                        </button>
-                    </td>
-                `;
-                expensesTable.appendChild(tr);
-            });
+          let ebayBalSelectEdit = isEbay ? `
+            <select id="edit-ebaybal-${idx}" class="bg-slate-950 border border-cyan-500 rounded p-1 text-xs text-cyan-300 w-full">
+              <option value="⏳ Bei eBay" ${o.ebayBalancePaid==='⏳ Bei eBay'?'selected':''}>⏳ Bei eBay</option>
+              <option value="✅ Ausgezahlt" ${o.ebayBalancePaid==='✅ Ausgezahlt'?'selected':''}>✅ Ausgezahlt</option>
+            </select>` : `<span class="text-slate-500 text-xs">N/A</span><input type="hidden" id="edit-ebaybal-${idx}" value="N/A">`;
 
-            const netProfit = totalRevenue - totalExpenses;
-            document.getElementById('totalRevenue').innerText = totalRevenue.toFixed(2).replace('.', ',') + ' €';
-            document.getElementById('totalExpenses').innerText = totalExpenses.toFixed(2).replace('.', ',') + ' €';
-            
-            const profitEl = document.getElementById('netProfit');
-            profitEl.innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
-            profitEl.className = `text-3xl font-extrabold mt-1 ${netProfit >= 0 ? 'text-cyan-400' : 'text-rose-400'}`;
+          let shippingEditField = isEbay ? 
+            `<div>Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCostVal}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-red-300 w-20" title="Echtes eBay Porto"></div>` :
+            `<div>Versand: <select id="edit-shipcost-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-24">
+              <option value="7.00" ${o.shippingCost===7?'selected':''}>7,00 €</option>
+              <option value="5.00" ${o.shippingCost===5?'selected':''}>5,00 €</option>
+              <option value="2.50" ${o.shippingCost===2.5?'selected':''}>2,50 €</option>
+              <option value="0.00" ${o.shippingCost===0?'selected':''}>0,00 €</option>
+            </select></div>`;
+
+          tbody.innerHTML += `
+            <tr class="border-b border-slate-800 bg-slate-900/90">
+              <td class="p-3 space-y-1">
+                <input type="text" id="edit-cust-${idx}" value="${o.customer}" placeholder="Kundenname" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-full">
+                <select id="edit-plat-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-[11px] text-cyan-300 w-full">
+                  <option value="Kleinanzeigen" ${o.platform==='Kleinanzeigen'?'selected':''}>🛒 Kleinanzeigen</option>
+                  <option value="eBay" ${o.platform==='eBay'?'selected':''}>🛍️ eBay</option>
+                </select>
+                <input type="text" id="edit-addr-${idx}" value="${o.address || ''}" placeholder="Lieferadresse..." class="bg-slate-950 border border-blue-500 rounded p-1 text-[11px] text-white w-full">
+              </td>
+              <td class="p-3">
+                <input type="text" id="edit-inv-${idx}" value="${fixedInvNum}" placeholder="RE-2026-XXXX" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs font-mono text-cyan-400 w-28">
+              </td>
+              <td class="p-3">${editItemsHtml}</td>
+              <td class="p-3">
+                <select id="edit-print-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
+                  ${printerOptionsEdit}
+                </select>
+              </td>
+              <td class="p-3">
+                <select id="edit-ispaid-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
+                  <option value="✅ Ja" ${o.isPaid==='✅ Ja'?'selected':''}>✅ Ja</option>
+                  <option value="❌ Nein" ${o.isPaid==='❌ Nein'?'selected':''}>❌ Nein</option>
+                </select>
+              </td>
+              <td class="p-3">
+                <select id="edit-paymeth-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
+                  <option value="eBay" ${o.paymentMethod==='eBay'?'selected':''}>eBay</option>
+                  <option value="PayPal" ${o.paymentMethod==='PayPal'?'selected':''}>PayPal</option>
+                  <option value="Überweisung" ${o.paymentMethod==='Überweisung'?'selected':''}>Überweisung</option>
+                  <option value="Bar" ${o.paymentMethod==='Bar'?'selected':''}>Bar</option>
+                </select>
+              </td>
+              <td class="p-3">${ebayBalSelectEdit}</td>
+              <td class="p-3">
+                <select id="edit-stat-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
+                  <option ${o.status==='Offen'?'selected':''}>Offen</option>
+                  <option ${o.status==='In Arbeit'?'selected':''}>In Arbeit</option>
+                  <option ${o.status==='Fertig'?'selected':''}>Fertig</option>
+                </select>
+              </td>
+              <td class="p-3 space-y-1">
+                <div>Umsatz: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-20"></div>
+                ${shippingEditField}
+              </td>
+              <td class="p-3">
+                <select id="edit-label-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
+                  <option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>✅ Ja</option>
+                  <option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>❌ Nein</option>
+                  <option value="🟡 Wartet auf Zahlung" ${o.label==='🟡 Wartet auf Zahlung'?'selected':''}>🟡 Wartet auf Zahlung</option>
+                </select>
+              </td>
+              <td class="p-3">
+                <select id="edit-packed-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white">
+                  <option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>✅ Ja</option>
+                  <option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>❌ Nein</option>
+                </select>
+              </td>
+              <td class="p-3"><input type="text" id="edit-track-${idx}" value="${o.tracking}" class="bg-slate-950 border border-blue-500 rounded p-1 text-xs text-white w-20"></td>
+              <td class="p-3 text-right">
+                <button onclick="saveEdit(${idx})" class="bg-green-600 text-white px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-check"></i></button>
+                <button onclick="cancelEdit()" class="bg-slate-700 text-white px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+              </td>
+            </tr>`;
+        } else {
+          let itemsHtml = '<div class="space-y-1">';
+          o.items.forEach(i => {
+            itemsHtml += `<div class="text-xs text-white">• ${i.name} <span class="text-purple-300">(${i.color || 'Std'}, ${i.weight || 0}g)</span></div>`;
+          });
+          itemsHtml += '</div>';
+
+          let archiveBtnHtml = o.archived 
+            ? `<button onclick="toggleArchiveOrder(${o.id})" title="Aus Archiv wiederherstellen" class="text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded text-xs cursor-pointer">📥 Aktivieren</button>`
+            : `<button onclick="toggleArchiveOrder(${o.id})" title="Ins Archiv verschieben" class="text-purple-300 bg-purple-500/10 px-2 py-1 rounded text-xs cursor-pointer">📦 Archiv</button>`;
+
+          let printerOptionsTable = '';
+          printers.forEach(p => {
+            printerOptionsTable += `<option value="${p.name}" ${p.name === o.printer ? 'selected' : ''}>${p.name}</option>`;
+          });
+
+          let platBadge = isEbay 
+            ? '<span class="bg-blue-500/20 text-blue-300 border border-blue-500/40 px-1.5 py-0.5 rounded text-[10px] font-bold">eBay</span>'
+            : '<span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.5 rounded text-[10px]">Kleinanzeigen</span>';
+
+          let ebayBalanceCell = isEbay ? `
+            <select onchange="updateField(${o.id}, 'ebayBalancePaid', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs ${o.ebayBalancePaid === '✅ Ausgezahlt' ? 'text-emerald-400 font-bold' : 'text-cyan-300'} focus:outline-none">
+              <option value="⏳ Bei eBay" ${o.ebayBalancePaid === '⏳ Bei eBay' ? 'selected' : ''}>⏳ Bei eBay</option>
+              <option value="✅ Ausgezahlt" ${o.ebayBalancePaid === '✅ Ausgezahlt' ? 'selected' : ''}>✅ Ausgezahlt</option>
+            </select>` : `<span class="text-slate-500 text-xs">-</span>`;
+
+          let orderPortoDisplay = isEbay 
+            ? `<div class="text-red-400">Porto: -${lCostVal.toFixed(2).replace('.', ',')} €</div>` 
+            : `<div class="text-slate-400">Versand: +${(o.shippingCost || 0).toFixed(2).replace('.', ',')} €</div>`;
+
+          tbody.innerHTML += `
+            <tr class="hover:bg-slate-800/40 border-b border-slate-800">
+              <td class="p-3 font-medium text-white">${o.customer}<div class="flex items-center gap-1.5 mt-0.5">${platBadge}</div><div class="text-[10px] text-slate-400">${o.address || ''}</div></td>
+              <td class="p-3 text-xs font-mono text-cyan-300 font-bold">${fixedInvNum}</td>
+              <td class="p-3">${itemsHtml}</td>
+              <td class="p-3">
+                <select onchange="updateField(${o.id}, 'printer', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none">
+                  ${printerOptionsTable}
+                </select>
+              </td>
+              <td class="p-3">
+                <select onchange="updateField(${o.id}, 'isPaid', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-emerald-300 focus:outline-none">
+                  <option value="✅ Ja" ${o.isPaid === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
+                  <option value="❌ Nein" ${o.isPaid === '❌ Nein' ? 'selected' : ''}>❌ Nein</option>
+                </select>
+              </td>
+              <td class="p-3">
+                <select onchange="updateField(${o.id}, 'paymentMethod', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-cyan-300 focus:outline-none">
+                  <option value="eBay" ${o.paymentMethod === 'eBay' ? 'selected' : ''}>💳 eBay</option>
+                  <option value="PayPal" ${o.paymentMethod === 'PayPal' ? 'selected' : ''}>🅿️ PayPal</option>
+                  <option value="Überweisung" ${o.paymentMethod === 'Überweisung' ? 'selected' : ''}>🏦 Überweisung</option>
+                  <option value="Bar" ${o.paymentMethod === 'Bar' ? 'selected' : ''}>💶 Bar</option>
+                </select>
+              </td>
+              <td class="p-3">${ebayBalanceCell}</td>
+              <td class="p-3">
+                <select onchange="updateField(${o.id}, 'status', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-yellow-300 focus:outline-none">
+                  <option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option>
+                  <option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option>
+                  <option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option>
+                </select>
+              </td>
+              <td class="p-3 text-xs">
+                <div class="text-emerald-400 font-bold">${totalOrderRevenue.toFixed(2).replace('.', ',')} €</div>
+                ${orderPortoDisplay}
+              </td>
+              <td class="p-3">
+                <select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none">
+                  <option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
+                  <option value="❌ Nein" ${o.label === '❌ Nein' ? 'selected' : ''}>❌ Nein</option>
+                  <option value="🟡 Wartet auf Zahlung" ${o.label === '🟡 Wartet auf Zahlung' ? 'selected' : ''}>🟡 Wartet auf Zahlung</option>
+                </select>
+              </td>
+              <td class="p-3">
+                <select onchange="updateField(${o.id}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none">
+                  <option value="✅ Ja" ${o.packed === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
+                  <option value="❌ Nein" ${o.packed === '❌ Nein' ? 'selected' : ''}>❌ Nein</option>
+                </select>
+              </td>
+              <td class="p-3 text-xs font-mono text-blue-400">${o.tracking}</td>
+              <td class="p-3 text-right space-x-1">
+                ${archiveBtnHtml}
+                <button onclick="printInvoice(${idx})" title="Rechnung erstellen" class="text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded text-xs cursor-pointer">📄 Rechnung</button>
+                <button onclick="printBoxLabel(${idx})" title="QR Etikett drucken" class="text-amber-300 bg-amber-500/10 px-2 py-1 rounded text-xs cursor-pointer">🏷️ QR</button>
+                <button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-2 py-1 rounded text-xs cursor-pointer">✏️</button>
+                <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+              </td>
+            </tr>`;
+        }
+      });
+      updateStats();
+    }
+
+    function updateStats() {
+      const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
+      let totalRev = 0, totalExp = 0, totalW = 0, openC = 0, ebayBalanceOpen = 0;
+
+      orders.forEach(o => {
+        let orderTotalWeight = 0;
+        if (o.items && Array.isArray(o.items)) {
+          o.items.forEach(i => orderTotalWeight += (i.weight || 0));
         }
 
-        function toggleArchive(index) {
-            appData.orders[index].status = appData.orders[index].status === 'Aktiv' ? 'Archiviert' : 'Aktiv';
-            saveData();
+        let isEbay = o.platform === 'eBay';
+        let orderAmount = o.price + (isEbay ? 0 : (o.shippingCost || 0));
+        let lCost = isEbay ? (o.labelCost || 0) : 0;
+
+        if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') {
+          let netOrderBalance = Math.round((o.price - lCost) * 100) / 100;
+          ebayBalanceOpen += netOrderBalance;
         }
 
-        function deleteOrder(index) {
-            if (confirm("Diesen Auftrag wirklich löschen?")) {
-                appData.orders.splice(index, 1);
-                saveData();
-            }
+        if (!o.archived) {
+          if (selectedMonth === 'all' || (o.orderDate && o.orderDate.startsWith(selectedMonth))) {
+            totalRev += orderAmount;
+            totalExp += lCost;
+            totalW += orderTotalWeight;
+          }
+          if (o.status !== 'Fertig') openC++;
+        } else {
+          let targetDate = o.shipDate || o.orderDate || '';
+          if (selectedMonth === 'all' || (targetDate && targetDate.startsWith(selectedMonth))) {
+            totalRev += orderAmount;
+            totalExp += lCost;
+            totalW += orderTotalWeight;
+          }
         }
+      });
 
-        function deleteExpense(index) {
-            if (confirm("Diese Ausgabe wirklich löschen?")) {
-                appData.expenses.splice(index, 1);
-                saveData();
-            }
+      expenses.forEach(ex => {
+        if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) {
+          totalExp += ex.amount;
         }
+      });
 
-        function openOrderModal() {
-            const id = prompt("Rechnungsnummer (z.B. RE-2026-0015):", "RE-2026-0015");
-            if (!id) return;
-            const customer = prompt("Kundenname:", "");
-            if (!customer) return;
-            const platform = prompt("Plattform (eBay oder Kleinanzeigen):", "Kleinanzeigen");
-            const revenue = prompt("Umsatz in €:", "0.00");
-            const paidStr = prompt("Bezahlt? (j/n):", "j");
+      let netProfit = totalRev - totalExp;
+      ebayBalanceOpen = Math.round(ebayBalanceOpen * 100) / 100;
 
-            appData.orders.unshift({
-                id: id,
-                date: new Date().toISOString().split('T')[0],
-                customer: customer,
-                platform: platform,
-                revenue: parseFloat(revenue.replace(',', '.')) || 0,
-                paid: paidStr.toLowerCase() === 'j' || paidStr.toLowerCase() === 'ja',
-                status: "Aktiv",
-                porto: 0
-            });
-            saveData();
-        }
+      if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statEbayBalance')) document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerText = openC;
+      if (document.getElementById('statFilament')) document.getElementById('statFilament').innerText = totalW + ' g';
+    }
 
-        function openExpenseModal() {
-            const desc = prompt("Beschreibung / Zweck der Ausgabe:", "");
-            if (!desc) return;
-            const category = prompt("Kategorie (z.B. DHL / Versand, Zubehör / Ersatzteile, Sonstiges):", "Sonstiges");
-            const amount = prompt("Betrag in €:", "0.00");
+    function renderPrinters() {
+      const grid = document.getElementById('printersGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      printers.forEach((p, idx) => {
+        let statusColor = 'text-blue-400';
+        if (p.status === 'In Arbeit') statusColor = 'text-yellow-400 font-bold';
+        if (p.status === 'Außer Betrieb') statusColor = 'text-red-400 font-bold';
 
-            appData.expenses.push({
-                desc: desc,
-                category: category,
-                amount: parseFloat(amount.replace(',', '.')) || 0
-            });
-            saveData();
-        }
-
-        function exportCSV() {
-            let csv = "Typ;Plattform;Bezahlt?;Zahlungsart;eBay Guthaben Status;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Umsatz (€);Porto-Ausgabe (€)\n";
-            
-            appData.orders.forEach(o => {
-                const typStr = o.status === 'Archiviert' ? 'Einnahme (Archiviert)' : 'Einnahme (Aktiv)';
-                const bezahltStr = o.paid ? '✅ Ja' : '❌ Nein';
-                const zahlungsart = o.platform === 'eBay' ? 'eBay' : 'Überweisung';
-                const guthabenStatus = o.platform === 'eBay' ? '⏳ Bei eBay' : '';
-                csv += `${typStr};${o.platform};${bezahltStr};${zahlungsart};${guthabenStatus};${o.date};${o.id};${o.customer};${o.revenue.toFixed(2).replace('.', ',')};${(o.porto || 0).toFixed(2).replace('.', ',')}\n`;
-            });
-
-            appData.expenses.forEach(e => {
-                csv += `Ausgabe;Sonstiges;✅ Ja;Überweisung;;${new Date().toISOString().split('T')[0]};${e.desc};${e.category};-${e.amount.toFixed(2).replace('.', ',')};0,00\n`;
-            });
-
-            const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Sefas3DShop_Buchhaltung_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-        }
-
-        function importCSV(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const text = e.target.result;
-                const lines = text.split('\n');
-                let newOrders = [];
-                let newExpenses = [];
-
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if (!line) continue;
-                    const cols = line.split(';');
-                    if (cols.length < 9) continue;
-
-                    const typ = cols[0];
-                    const platform = cols[1];
-                    const paid = cols[2].includes('Ja');
-                    const date = cols[5];
-                    const idOrDesc = cols.length > 6 ? cols[6] : '';
-                    const customerOrCat = cols.length > 7 ? cols[7] : '';
-                    let umsatz = cols.length > 8 ? parseFloat(cols[8].replace('.', '').replace(',', '.')) || 0 : 0;
-
-                    if (typ.startsWith('Einnahme')) {
-                        newOrders.push({
-                            id: idOrDesc,
-                            date: date || '2026-09-27',
-                            customer: customerOrCat,
-                            platform: platform || 'Kleinanzeigen',
-                            revenue: Math.abs(umsatz),
-                            paid: paid,
-                            status: typ.includes('Archiviert') ? 'Archiviert' : 'Aktiv',
-                            porto: cols.length > 9 ? parseFloat(cols[9].replace('.', '').replace(',', '.')) || 0 : 0
-                        });
-                    } else if (typ === 'Ausgabe') {
-                        newExpenses.push({
-                            desc: idOrDesc,
-                            category: customerOrCat || 'Sonstiges',
-                            amount: Math.abs(umsatz)
-                        });
-                    }
-                }
-
-                if (newOrders.length > 0 || newExpenses.length > 0) {
-                    appData.orders = newOrders;
-                    appData.expenses = newExpenses;
-                    saveData();
-                    alert("CSV-Import erfolgreich abgeschlossen!");
-                } else {
-                    alert("Konnte keine gültigen Datensätze in der CSV finden.");
-                }
-            };
-            reader.readAsText(file, 'utf-8');
-        }
-
-        render();
-    </script>
+        grid.innerHTML += `
+          <div class="card p-4 rounded-2xl space-y-3 relative">
+            <div class="flex justify-between items-center">
+              <h3 class="font-bold text-white text-sm">${p.name}</h3>
+              <div class="flex items-center space-x-2">
+                <select onchange="updatePrinterStatus(${idx}, this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs ${statusColor} focus:outline-none">
+                  <option value="Frei" ${p.status === 'Frei' ? 'selected' : ''}>🟢 Frei</option>
+                  <option value="In Arbeit" ${p.status === 'In Arbeit' ? 'selected' : ''}>🟡 In Arbeit</option>
+                  <option value="Außer Betrieb" ${p.status === 'Außer Betrieb' ? 'selected' : ''}>🔴 Außer Betrieb</option>
+                </select>
+                <button onclick="deletePrinter(${idx})" class="text-red-400 hover:text-red-300 px-1 text-xs cursor-pointer" title="Drucker löschen">❌</button>
+              </div>
+            </div>
+            <p class="text-xs text-slate-400">${p.desc}</p>
+          </div>`;
+      });
+      updatePrinterDropdowns();
+    }
+  </script>
 </body>
 </html>
