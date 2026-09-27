@@ -1402,8 +1402,8 @@
         let date = o.orderDate || "";
         let inv = generateInvoiceNumberForExisting(o);
         let cust = o.customer.replace(/;/g, ",");
-        let lCost = (o.labelCost || 0).toFixed(2).replace('.', ',');
-        csvContent += `${type};${o.platform || 'Kleinanzeigen'};${o.isPaid || '❌ Nein'};${o.paymentMethod || 'Überweisung'};${o.ebayBalancePaid || 'N/A'};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${lCost}\n`;
+        let lCost = (o.labelCost || 0);
+        csvContent += `${type};${o.platform || 'Kleinanzeigen'};${o.isPaid || '❌ Nein'};${o.paymentMethod || 'Überweisung'};${o.ebayBalancePaid || 'N/A'};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${lCost.toFixed(2).replace('.', ',')}\n`;
       });
 
       expenses.forEach(ex => {
@@ -1657,9 +1657,10 @@
         let orderAmount = (o.price + o.shippingCost);
         let lCost = o.labelCost || 0;
 
-        // eBay-Guthaben Netto berechnen: (Umsatz + Versand) minus gekauftes Etikett (Porto)
+        // Sauber gerundete eBay-Guthaben Netto Berechnung
         if (o.platform === 'eBay' && o.ebayBalancePaid === '⏳ Bei eBay') {
-          ebayBalanceOpen += (orderAmount - lCost);
+          let netOrderBalance = Math.round((orderAmount - lCost) * 100) / 100;
+          ebayBalanceOpen += netOrderBalance;
         }
 
         if (!o.archived) {
@@ -1686,6 +1687,7 @@
       });
 
       let netProfit = totalRev - totalExp;
+      ebayBalanceOpen = Math.round(ebayBalanceOpen * 100) / 100;
 
       if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
