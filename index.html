@@ -532,6 +532,8 @@
         tracking: document.getElementById('tracking').value || '-',
         orderDate: document.getElementById('orderDate').value,
         status: "Offen",
+        label: document.getElementById('label').value,
+        packed: document.getElementById('packed').value,
         archived: false,
         invoiceNumber: invNum,
         ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A',
@@ -719,9 +721,9 @@
                 Versand: <input type="number" step="0.01" id="edit-shipfee-${o.id}" value="${o.shippingFee || 0}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
                 Porto: <input type="number" step="0.01" id="edit-labelcost-${o.id}" value="${lCost}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16">
               </td>
-              <td class="p-2">${o.label}</td>
-              <td class="p-2">${o.packed}</td>
-              <td class="p-2"><input type="text" id="edit-track-${o.id}" value="${o.tracking}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-20"></td>
+              <td class="p-2">${o.label || '❌ Nein'}</td>
+              <td class="p-2">${o.packed || '❌ Nein'}</td>
+              <td class="p-2"><input type="text" id="edit-track-${o.id}" value="${o.tracking || '-'}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-20"></td>
               <td class="p-2 text-right">
                 <button onclick="saveEdit(${o.id})" class="bg-green-600 text-white px-2 py-0.5 rounded text-[11px] mr-1">💾</button>
                 <button onclick="cancelEdit()" class="bg-slate-700 text-white px-2 py-0.5 rounded text-[11px]">❌</button>
@@ -749,9 +751,9 @@
                 <div class="text-[10px] text-slate-400">Versand: +${(o.shippingFee||0).toFixed(2).replace('.',',')} €</div>
                 <div class="text-[10px] text-red-400">Porto: -${lCost.toFixed(2).replace('.',',')} €</div>
               </td>
-              <td class="p-2">${o.label}</td>
-              <td class="p-2">${o.packed}</td>
-              <td class="p-2 font-mono">${o.tracking}</td>
+              <td class="p-2">${o.label || '❌ Nein'}</td>
+              <td class="p-2">${o.packed || '❌ Nein'}</td>
+              <td class="p-2 font-mono">${o.tracking || '-'}</td>
               <td class="p-2 text-right space-x-1">
                 <button onclick="printInvoice(${o.id})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button>
                 <button onclick="startEdit(${o.id})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏️</button>
