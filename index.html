@@ -597,7 +597,10 @@
       let itemsRows = '';
       let shippingFee = o.shippingFee || 0;
       let countItems = o.items.length || 1;
-      let itemShare = countItems > 0 ? (o.price - shippingFee) / countItems : o.price;
+      
+      // Bei eBay ist der Gesamtpreis oft inkl. Versand – wir teilen den Artikelwert auf
+      let goodsTotal = o.price - shippingFee;
+      let itemShare = countItems > 0 ? goodsTotal / countItems : goodsTotal;
 
       o.items.forEach(i => {
         let singlePrice = itemShare;
@@ -611,6 +614,7 @@
           </tr>`;
       });
 
+      // Versand/Paketpauschale als eigener Posten in der Tabelle
       if (shippingFee > 0) {
         itemsRows += `
           <tr>
