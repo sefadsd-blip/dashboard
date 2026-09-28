@@ -59,7 +59,7 @@
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
             <span id="cloudStatusIndicator" class="inline-block w-2 h-2 rounded-full bg-yellow-500"></span> 
-            <span id="cloudStatusText">Cloud wird geladen...</span>
+            <span id="cloudStatusText">Lade Daten...</span>
           </p>
         </div>
       </div>
@@ -304,12 +304,26 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
       document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
-      loadFromCloud();
+      loadData();
     });
 
-    async function loadFromCloud() {
+    async function loadData() {
       const indicator = document.getElementById('cloudStatusIndicator');
       const text = document.getElementById('cloudStatusText');
+      
+      // Erst lokal laden, damit sofort alles da ist
+      try {
+        let localOrders = localStorage.getItem('sefas_shop_orders_permanent');
+        if (localOrders) {
+          orders = JSON.parse(localOrders);
+          spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || spools;
+          expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || expenses;
+          printers = JSON.parse(localStorage.getItem('sefas_shop_printers')) || printers;
+          refreshEverything();
+        }
+      } catch(e) {}
+
+      // Dann versuchen aus der Cloud zu aktualisieren
       try {
         let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
           headers: { 'X-Master-Key': API_KEY }
@@ -319,24 +333,36 @@
           let record = data.record;
           if (record && Array.isArray(record.orders)) {
             orders = record.orders;
-            spools = record.spools || [];
-            expenses = record.expenses || [];
+            spools = record.spools || spools;
+            expenses = record.expenses || expenses;
             printers = record.printers || printers;
             indicator.className = "inline-block w-2 h-2 rounded-full bg-green-500";
             text.innerText = "Mit Cloud verbunden";
+            saveLocalBackup();
+            refreshEverything();
           }
         }
       } catch(e) {
-        indicator.className = "inline-block w-2 h-2 rounded-full bg-red-500";
-        text.innerText = "Cloud-Fehler (Lokal aktiv)";
+        indicator.className = "inline-block w-2 h-2 rounded-full bg-blue-500";
+        text.innerText = "Lokal aktiv (Offline-Modus)";
       }
-      refreshEverything();
+    }
+
+    function saveLocalBackup() {
+      try {
+        localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
+        localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
+        localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
+        localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
+      } catch(e) {}
     }
 
     async function syncToCloud() {
       const indicator = document.getElementById('cloudStatusIndicator');
       const text = document.getElementById('cloudStatusText');
       text.innerText = "Speichere...";
+      saveLocalBackup();
+      
       try {
         let payload = { orders, spools, expenses, printers };
         let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
@@ -350,14 +376,14 @@
         if (res.ok) {
           indicator.className = "inline-block w-2 h-2 rounded-full bg-green-500";
           text.innerText = "Gespeichert!";
-          alert("✅ Erfolgreich in der Cloud gespeichert!");
+          alert("✅ Erfolgreich in der Cloud & lokal gespeichert!");
         } else {
           throw new Error();
         }
       } catch(e) {
-        indicator.className = "inline-block w-2 h-2 rounded-full bg-red-500";
-        text.innerText = "Fehler beim Speichern";
-        alert("❌ Fehler beim Speichern in der Cloud.");
+        indicator.className = "inline-block w-2 h-2 rounded-full bg-blue-500";
+        text.innerText = "Lokal gespeichert";
+        alert("⚠️ Cloud nicht erreichbar, aber lokal auf dem Gerät gespeichert!");
       }
     }
 
