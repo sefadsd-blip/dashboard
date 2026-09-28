@@ -64,6 +64,9 @@
         <button onclick="saveToCloud()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
           <i class="fa-solid fa-cloud-arrow-up mr-1"></i> ☁️ Speichern
         </button>
+        <button onclick="exportAccountingCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
+          <i class="fa-solid fa-file-excel mr-1"></i> 📊 CSV Export
+        </button>
         <button onclick="printAllInvoices()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-print mr-1"></i> 🖨️ Alle Rechnungen
         </button>
@@ -402,6 +405,26 @@
       renderExpenses();
       updateCustomerDropdowns();
       updatePrinterDropdowns();
+    }
+
+    function exportAccountingCSV() {
+      let csv = "\uFEFFDatum;Typ;Rechnung;Kunde;Plattform;Kategorie/Artikel;Zahlungsart;Status;Betrag (€);Porto/Versand (€)\n";
+      orders.forEach(o => {
+        let inv = generateInvoiceNumberForExisting(o);
+        let itemsStr = o.items.map(i => i.name).join(" | ");
+        csv += `${o.orderDate || ''};Auftrag;${inv};"${o.customer}";${o.platform};"${itemsStr}";${o.paymentMethod};${o.status};${o.price.toString().replace('.',',')};${(o.shippingFee||0).toString().replace('.',',')}\n`;
+      });
+      expenses.forEach(ex => {
+        csv += `${ex.date || ''};Ausgabe;-;'-';'-';"${ex.description}";'-';'-';-${ex.amount.toString().replace('.',',')};0,00\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Sefas3DShop_Buchhaltung_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
 
     function addPrinterPrompt() {
