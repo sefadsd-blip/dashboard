@@ -87,8 +87,8 @@
             Sefas<span class="text-cyan-400">3d</span>shop
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
-            <span class="inline-block w-2 h-2 rounded-full bg-green-500" id="syncDot"></span> 
-            <span id="syncStatus">Mit Cloud verbunden</span>
+            <span class="inline-block w-2 h-2 rounded-full bg-yellow-500" id="syncDot"></span> 
+            <span id="syncStatus">Lade Cloud-Daten...</span>
           </p>
         </div>
       </div>
@@ -103,10 +103,10 @@
           <i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv
         </button>
         <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
-          <i class="fa-solid fa-rotate mr-1"></i> 🔄 Laden
+          <i class="fa-solid fa-rotate mr-1"></i> 🔄 Neu Laden
         </button>
         <button onclick="pushToCloudManual()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
-          <i class="fa-solid fa-cloud-arrow-up mr-1"></i> 📤 Speichern
+          <i class="fa-solid fa-cloud-arrow-up mr-1"></i> 📤 In Cloud speichern
         </button>
       </div>
     </header>
@@ -426,7 +426,7 @@
       const syncDot = document.getElementById('syncDot');
       
       try {
-        if (statusText) statusText.innerText = "Lade Daten aus der Cloud...";
+        if (statusText) statusText.innerText = "Lade Daten aus Cloud...";
         const res = await fetch(NPOINT_URL, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
@@ -443,13 +443,14 @@
 
             saveLocalOnly();
             refreshEverything();
-            if (statusText) statusText.innerText = "Cloud-Daten geladen & synchron";
+            if (statusText) statusText.innerText = "Mit Cloud verbunden";
             if (syncDot) syncDot.className = "inline-block w-2 h-2 rounded-full bg-green-500";
             return;
           }
         }
       } catch(e) {}
 
+      // Fallback auf LocalStorage falls Cloud kurzzeitig hängt
       try {
         let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
         if (Array.isArray(savedOrders)) {
@@ -458,7 +459,8 @@
           expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
           printers = JSON.parse(localStorage.getItem('sefas_shop_printers')) || [];
           refreshEverything();
-          if (statusText) statusText.innerText = "Lokal gespeichert (Cloud offline)";
+          if (statusText) statusText.innerText = "Lokal gespeichert";
+          if (syncDot) syncDot.className = "inline-block w-2 h-2 rounded-full bg-yellow-500";
           return;
         }
       } catch(e) {}
@@ -494,7 +496,7 @@
 
     async function loadCloudData() {
       await loadCloudDataOnStart();
-      alert("✅ Cloud-Daten erfolgreich aktualisiert!");
+      alert("✅ Cloud-Daten erfolgreich geladen!");
     }
 
     async function pushToCloudManual() {
@@ -508,10 +510,10 @@
         if (res.ok) {
           alert("✅ Daten erfolgreich in der Cloud gespeichert!");
         } else {
-          alert("⚠️ Server-Fehler: Die Cloud hat abgelehnt.");
+          alert("⚠️ Server-Fehler beim Speichern.");
         }
       } catch(e) {
-        alert("❌ Netzwerkfehler: Cloud konnte nicht erreicht werden.");
+        alert("❌ Netzwerkfehler beim Speichern.");
       }
     }
 
@@ -1294,7 +1296,7 @@
               <td class="p-2 text-[11px] font-mono text-cyan-300 font-bold">${fixedInvNum}</td>
               <td class="p-2">${itemsHtml}</td>
               <td class="p-2"><select onchange="updateField(${o.id}, 'printer', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300">${printerOptionsTable}</select></td>
-              <td class="p-2"><select onchange="updateField(${o.id}, 'isPaid", this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-emerald-300"><option value="✅ Ja" ${o.isPaid === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.isPaid === '❌ Nein' ? 'selected' : ''}>❌ Nein</option></select></td>
+              <td class="p-2"><select onchange="updateField(${o.id}, 'isPaid', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-emerald-300"><option value="✅ Ja" ${o.isPaid === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.isPaid === '❌ Nein' ? 'selected' : ''}>❌ Nein</option></select></td>
               <td class="p-2"><select onchange="updateField(${o.id}, 'paymentMethod', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-cyan-300"><option value="eBay" ${o.paymentMethod === 'eBay' ? 'selected' : ''}>eBay</option><option value="PayPal" ${o.paymentMethod === 'PayPal' ? 'selected' : ''}>PayPal</option><option value="Überweisung" ${o.paymentMethod === 'Überweisung' ? 'selected' : ''}>Überweisung</option><option value="Bar" ${o.paymentMethod === 'Bar' ? 'selected' : ''}>Bar</option></select></td>
               <td class="p-2">${ebayBalanceCell}</td>
               <td class="p-2"><select onchange="updateField(${o.id}, 'status', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-yellow-300"><option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option><option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option><option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option></select></td>
