@@ -296,6 +296,7 @@
       document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
       document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
       loadAllData();
+      addArticleInputRow();
     });
 
     function loadAllData() {
@@ -556,12 +557,25 @@
       const o = orders.find(x => x.id === id);
       if (o) {
         o.customer = document.getElementById(`edit-cust-${id}`).value;
+        o.platform = document.getElementById(`edit-plat-${id}`).value;
+        o.printer = document.getElementById(`edit-print-${id}`).value;
+        o.isPaid = document.getElementById(`edit-ispaid-${id}`).value;
+        o.paymentMethod = document.getElementById(`edit-paymeth-${id}`).value;
+        o.status = document.getElementById(`edit-status-${id}`).value;
         o.price = parseFloat(document.getElementById(`edit-price-${id}`).value) || 0;
         o.shippingFee = parseFloat(document.getElementById(`edit-shipfee-${id}`).value) || 0;
         o.labelCost = parseFloat(document.getElementById(`edit-labelcost-${id}`).value) || 0;
         o.label = document.getElementById(`edit-label-${id}`).value;
         o.packed = document.getElementById(`edit-packed-${id}`).value;
         o.tracking = document.getElementById(`edit-track-${id}`).value;
+
+        if (o.platform === 'eBay') {
+          if (!o.ebayBalancePaid || o.ebayBalancePaid === 'N/A') {
+            o.ebayBalancePaid = '⏳ Bei eBay';
+          }
+        } else {
+          o.ebayBalancePaid = 'N/A';
+        }
       }
       editingId = null;
       saveAllData();
@@ -702,16 +716,50 @@
         let itemsFormatted = o.items.map(i => i.name + (i.color ? ` <span class="text-cyan-400">(${i.color})</span>` : '')).join(', ');
 
         if (editingId === o.id) {
+          let printerOptions = '';
+          printers.forEach(p => {
+            printerOptions += `<option value="${p.name}" ${p.name === o.printer ? 'selected' : ''}>${p.name}</option>`;
+          });
+
           tbody.innerHTML += `
             <tr class="border-b border-slate-800 bg-slate-900/95">
-              <td class="p-2"><input type="text" id="edit-cust-${o.id}" value="${o.customer}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-full"></td>
+              <td class="p-2 space-y-1">
+                <input type="text" id="edit-cust-${o.id}" value="${o.customer}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-full">
+                <select id="edit-plat-${o.id}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-full">
+                  <option value="Kleinanzeigen" ${o.platform === 'Kleinanzeigen' ? 'selected' : ''}>Kleinanzeigen</option>
+                  <option value="eBay" ${o.platform === 'eBay' ? 'selected' : ''}>eBay</option>
+                </select>
+              </td>
               <td class="p-2 font-mono">${fixedInvNum}</td>
               <td class="p-2">${itemsFormatted}</td>
-              <td class="p-2">${o.printer}</td>
-              <td class="p-2">${o.isPaid}</td>
-              <td class="p-2">${o.paymentMethod}</td>
+              <td class="p-2">
+                <select id="edit-print-${o.id}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white">
+                  ${printerOptions}
+                </select>
+              </td>
+              <td class="p-2">
+                <select id="edit-ispaid-${o.id}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white">
+                  <option value="✅ Ja" ${o.isPaid === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
+                  <option value="❌ Nein" ${o.isPaid !== '✅ Ja' ? 'selected' : ''}>❌ Nein</option>
+                </select>
+              </td>
+              <td class="p-2">
+                <select id="edit-paymeth-${o.id}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white">
+                  <option value="eBay" ${o.paymentMethod === 'eBay' ? 'selected' : ''}>eBay</option>
+                  <option value="PayPal" ${o.paymentMethod === 'PayPal' ? 'selected' : ''}>PayPal</option>
+                  <option value="Überweisung" ${o.paymentMethod === 'Überweisung' ? 'selected' : ''}>Überweisung</option>
+                  <option value="Bar" ${o.paymentMethod === 'Bar' ? 'selected' : ''}>Bar</option>
+                </select>
+              </td>
               <td class="p-2">-</td>
-              <td class="p-2">${o.status}</td>
+              <td class="p-2">
+                <select id="edit-status-${o.id}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white">
+                  <option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option>
+                  <option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option>
+                  <option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option>
+                  <option value="Versendet" ${o.status === 'Versendet' ? 'selected' : ''}>Versendet</option>
+                </select>
+              </td>
               <td class="p-2 space-y-1">
                 Gesamt: <input type="number" step="0.01" id="edit-price-${o.id}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
                 Versand: <input type="number" step="0.01" id="edit-shipfee-${o.id}" value="${o.shippingFee || 0}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
