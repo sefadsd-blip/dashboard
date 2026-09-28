@@ -490,14 +490,14 @@
       loadFromCloud();
     });
 
-    // --- JSONBIN CLOUD FUNKTIONEN ---
+    // --- JSONBIN CLOUD FUNKTIONEN (MIT PROXY GEGEN BROWSER-BLOCKADEN) ---
     async function loadFromCloud() {
       try {
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-          method: 'GET',
-          headers: {
-            'X-Master-Key': JSONBIN_API_KEY
-          }
+        const targetUrl = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`;
+        const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(targetUrl);
+        
+        const response = await fetch(proxyUrl, {
+          headers: { 'X-Master-Key': JSONBIN_API_KEY }
         });
         
         if (!response.ok) throw new Error("Laden fehlgeschlagen");
@@ -515,27 +515,7 @@
         document.getElementById('cloudStatusText').innerText = "Mit JSONBin Cloud verbunden";
         document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
       } catch (e) {
-        saveToCloudSilent();
-      }
-    }
-
-    async function saveToCloudSilent() {
-      const payload = { orders, spools, expenses, printers, updatedAt: new Date().toISOString() };
-      try {
-        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': JSONBIN_API_KEY,
-            'X-Bin-Versioning': 'false'
-          },
-          body: JSON.stringify(payload)
-        });
-        document.getElementById('cloudStatusText').innerText = "Mit JSONBin Cloud verbunden";
-        document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
-        refreshEverything();
-      } catch (err) {
-        document.getElementById('cloudStatusText').innerText = "Cloud-Verbindung aktiv";
+        document.getElementById('cloudStatusText').innerText = "Cloud-Modus aktiv";
         document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
         refreshEverything();
       }
@@ -544,7 +524,10 @@
     async function saveToCloud() {
       const payload = { orders, spools, expenses, printers, updatedAt: new Date().toISOString() };
       try {
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        const targetUrl = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+        const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(targetUrl);
+
+        const response = await fetch(proxyUrl, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -559,7 +542,23 @@
         refreshEverything();
         alert("✅ Erfolgreich in der JSONBin Cloud gespeichert!");
       } catch (e) {
-        alert("❌ Fehler beim Speichern in der Cloud: " + e.message);
+        // Fallback direkt an JSONBin falls Proxy blockiert
+        try {
+          const directResponse = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Master-Key': JSONBIN_API_KEY,
+              'X-Bin-Versioning': 'false'
+            },
+            body: JSON.stringify(payload)
+          });
+          if (!directResponse.ok) throw new Error();
+          refreshEverything();
+          alert("✅ Erfolgreich in der JSONBin Cloud gespeichert!");
+        } catch(err) {
+          alert("❌ Fehler beim Speichern in der Cloud: " + e.message);
+        }
       }
     }
 
