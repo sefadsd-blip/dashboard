@@ -53,7 +53,7 @@
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
             <span class="inline-block w-2 h-2 rounded-full bg-green-500" id="cloudStatusDot"></span> 
-            <span id="cloudStatusText">Cloud-Verbindung aktiv</span>
+            <span id="cloudStatusText">Online Cloud-Modus</span>
           </p>
         </div>
       </div>
@@ -67,10 +67,10 @@
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv
         </button>
-        <button onclick="loadFromCloud()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
+        <button onclick="loadFromCloudAPI()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-cloud-arrow-down mr-1"></i> ☁️ Laden
         </button>
-        <button onclick="saveToCloud()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
+        <button onclick="saveToCloudAPI()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-floppy-disk mr-1"></i> 💾 Speichern
         </button>
       </div>
@@ -274,10 +274,9 @@
   </div>
 
   <script>
-    // Fester Cloud-Endpunkt ohne CORS-Blockaden für geräteübergreifenden Abruf
-    const CLOUD_BIN_URL = "https://api.jsonbin.io/v3/b/669d5182acd3cb34a8767351/latest";
-    const CLOUD_PUT_URL = "https://api.jsonbin.io/v3/b/669d5182acd3cb34a8767351";
-    const CLOUD_KEY = "$2a$10$vY3ZqW9J1xK0L7m8N2p4Ce8hF6b5v4C3x2Z1m0N9p8q7r6s5t4u3v";
+    // Fester Online-Cloud-Endpunkt (JSONBin) für direkten geräteübergreifenden Abruf ohne PC-Dateien
+    const CLOUD_API_URL = "https://api.jsonbin.io/v3/b/669d5182acd3cb34a8767351";
+    const CLOUD_API_KEY = "$2a$10$vY3ZqW9J1xK0L7m8N2p4Ce8hF6b5v4C3x2Z1m0N9p8q7r6s5t4u3v";
 
     let orders = [];
     let spools = [
@@ -300,70 +299,68 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
       document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
-      loadFromCloud();
+      loadFromCloudAPI();
       addArticleInputRow();
     });
 
-    async function loadFromCloud() {
+    // Direkt aus der Cloud laden (ohne Dateidialog)
+    async function loadFromCloudAPI() {
       try {
-        const response = await fetch(CLOUD_BIN_URL, {
-          headers: { 'X-Master-Key': CLOUD_KEY }
+        const response = await fetch(CLOUD_API_URL + "/latest", {
+          headers: { 'X-Master-Key': CLOUD_API_KEY }
         });
         if (response.ok) {
-          const resJson = await response.json();
-          const data = resJson.record;
-          if (data) {
+          const json = await response.json();
+          if (json && json.record) {
+            const data = json.record;
             if (Array.isArray(data.orders)) orders = data.orders;
             if (Array.isArray(data.spools) && data.spools.length > 0) spools = data.spools;
             if (Array.isArray(data.expenses)) expenses = data.expenses;
             if (Array.isArray(data.printers)) printers = data.printers;
-            
+
             refreshEverything();
-            document.getElementById('cloudStatusText').innerText = "Cloud Verbunden";
+            document.getElementById('cloudStatusText').innerText = "Online Cloud Verbunden";
             document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
+            alert("☁️ Daten erfolgreich direkt aus der Online-Cloud geladen!");
             return;
           }
         }
         throw new Error();
       } catch(e) {
-        // Fallback falls Offline: Lokaler Speicher
-        let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
-        if (Array.isArray(savedOrders)) orders = savedOrders;
-        let savedExpenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent'));
-        if (Array.isArray(savedExpenses)) expenses = savedExpenses;
-        refreshEverything();
-        document.getElementById('cloudStatusText').innerText = "Offline-Modus (Lokal)";
-        document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-yellow-500";
+        alert("⚠️ Konnte nicht aus der Cloud laden. Prüfe die Internetverbindung.");
       }
     }
 
-    async function saveToCloud() {
-      const payload = { orders, spools, expenses, printers, updatedAt: new Date().toISOString() };
-      
-      // Lokal sichern als sofortiges Backup
-      localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
-      localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
+    // Direkt in die Cloud speichern (ohne Dateidialog)
+    async function saveToCloudAPI() {
+      const payload = {
+        orders: orders,
+        spools: spools,
+        expenses: expenses,
+        printers: printers,
+        updatedAt: new Date().toISOString()
+      };
 
       try {
-        const response = await fetch(CLOUD_PUT_URL, {
+        const response = await fetch(CLOUD_API_URL, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'X-Master-Key': CLOUD_KEY
+            'X-Master-Key': CLOUD_API_KEY
           },
           body: JSON.stringify(payload)
         });
 
         if (response.ok) {
-          document.getElementById('cloudStatusText').innerText = "Cloud Gespeichert";
-          document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
           refreshEverything();
-          alert("💾 Erfolgreich in der Cloud gespeichert!");
+          document.getElementById('cloudStatusText').innerText = "Online Cloud Gespeichert";
+          document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
+          alert("💾 Erfolgreich direkt in der Online-Cloud gespeichert!");
         } else {
           throw new Error();
         }
       } catch(e) {
-        alert("⚠️ Cloud-Speicherung fehlgeschlagen, aber lokal gesichert!");
+        alert("⚠️ Fehler beim Speichern in der Cloud!");
       }
     }
 
@@ -381,13 +378,13 @@
       const name = prompt("Drucker-Name:");
       if (!name) return;
       printers.push({ name: name.trim(), desc: "Standard", status: "Frei" });
-      saveToCloud();
+      saveToCloudAPI();
     }
 
     function deletePrinter(idx) {
       if (printers.length <= 1) return;
       printers.splice(idx, 1);
-      saveToCloud();
+      saveToCloudAPI();
     }
 
     function updatePrinterDropdowns() {
@@ -407,14 +404,14 @@
         amount: parseFloat(document.getElementById('expAmount').value) || 0,
         date: document.getElementById('expDate').value
       });
-      saveToCloud();
+      saveToCloudAPI();
       document.getElementById('expDesc').value = '';
       document.getElementById('expAmount').value = '';
     }
 
     function deleteExpense(id) {
       expenses = expenses.filter(ex => ex.id !== id);
-      saveToCloud();
+      saveToCloudAPI();
     }
 
     function renderExpenses() {
@@ -457,14 +454,14 @@
         if (field === 'platform') {
           o.ebayBalancePaid = (val === 'eBay') ? '⏳ Bei eBay' : 'N/A';
         }
-        saveToCloud(); 
+        saveToCloudAPI(); 
         renderOrders(); 
       }
     }
 
     function payoutAllEbayBalance() {
       orders.forEach(o => { if (o.platform === 'eBay') o.ebayBalancePaid = '✅ Ausgezahlt'; });
-      saveToCloud();
+      saveToCloudAPI();
       renderOrders();
     }
 
@@ -477,7 +474,7 @@
 
     function toggleArchiveOrder(id) {
       const o = orders.find(x => x.id === id);
-      if (o) { o.archived = !o.archived; saveToCloud(); }
+      if (o) { o.archived = !o.archived; saveToCloudAPI(); }
     }
 
     function updateCustomerDropdowns() {
@@ -510,13 +507,13 @@
       const n = prompt("Spulen-Name (z.B. PLA Schwarz):");
       if (n && n.trim() !== "") { 
         spools.push({ id: Date.now(), name: n.trim(), remainingGrams: 1000 }); 
-        saveToCloud(); 
+        saveToCloudAPI(); 
       }
     }
 
     function deleteSpool(id) {
       spools = spools.filter(s => s.id !== id);
-      saveToCloud();
+      saveToCloudAPI();
     }
 
     function addArticleInputRow(name='', color='', weight='') {
@@ -599,7 +596,7 @@
         ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A',
         items: items
       });
-      saveToCloud();
+      saveToCloudAPI();
       document.getElementById('orderForm').reset();
       document.getElementById('articleInputRows').innerHTML = '';
       addArticleInputRow();
@@ -607,7 +604,7 @@
 
     function deleteOrder(id) {
       orders = orders.filter(o => o.id !== id);
-      saveToCloud();
+      saveToCloudAPI();
     }
 
     function startEdit(id) { editingId = id; renderOrders(); }
@@ -652,7 +649,7 @@
         }
       }
       editingId = null;
-      saveToCloud();
+      saveToCloudAPI();
     }
 
     function generateInvoiceNumberForExisting(o) {
