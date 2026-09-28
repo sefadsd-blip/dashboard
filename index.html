@@ -52,8 +52,8 @@
             Sefas<span class="text-cyan-400">3d</span>shop
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
-            <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span> 
-            <span>Cloud Verbunden</span>
+            <span class="inline-block w-2 h-2 rounded-full bg-green-500" id="cloudStatusDot"></span> 
+            <span id="cloudStatusText">Cloud Verbunden</span>
           </p>
         </div>
       </div>
@@ -276,6 +276,7 @@
   <script>
     const CLOUD_URL = "https://api.jsonbin.io/v3/b/669d5182acd3cb34a8767351"; 
     const CLOUD_KEY = "$2a$10$vY3ZqW9J1xK0L7m8N2p4Ce8hF6b5v4C3x2Z1m0N9p8q7r6s5t4u3v";
+    const PROXY_URL = "https://api.allorigins.win/raw?url=";
 
     let orders = [];
     let spools = [
@@ -324,27 +325,27 @@
         if (response.ok) {
           document.getElementById('cloudStatusText').innerText = "Cloud Gespeichert";
           document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
+          alert("💾 Erfolgreich in der Cloud gespeichert!");
         } else {
           throw new Error("Fehler beim Cloud-Speichern");
         }
       } catch (e) {
         document.getElementById('cloudStatusText').innerText = "Cloud Fehler";
         document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-red-500";
+        alert("⚠️ Cloud-Fehler beim Speichern!");
       }
     }
 
     async function loadFromCloud() {
       try {
-        const response = await fetch(CLOUD_URL + "/latest", {
-          headers: {
-            'X-Master-Key': CLOUD_KEY
-          }
-        });
+        // Versuch 1: Über den Proxy, um Browser-Blockaden (CORS) komplett zu umgehen
+        const response = await fetch(PROXY_URL + encodeURIComponent(CLOUD_URL + "/latest"));
 
         if (response.ok) {
           const json = await response.json();
-          if (json && json.record) {
-            const data = json.record;
+          // Je nach Proxy-Antwort liegen die Daten direkt oder unter .record
+          const data = json.record || json;
+          if (data && (data.orders || data.spools)) {
             if (Array.isArray(data.orders)) orders = data.orders;
             if (Array.isArray(data.spools) && data.spools.length > 0) spools = data.spools;
             if (Array.isArray(data.expenses)) expenses = data.expenses;
@@ -356,8 +357,29 @@
             return;
           }
         }
-        throw new Error("Keine Daten gefunden");
+        throw new Error("Proxy-Laden fehlgeschlagen");
       } catch (e) {
+        // Versuch 2: Direkter Fallback
+        try {
+          const directRes = await fetch(CLOUD_URL + "/latest", {
+            headers: { 'X-Master-Key': CLOUD_KEY }
+          });
+          if (directRes.ok) {
+            const directJson = await directRes.json();
+            const data = directJson.record;
+            if (data) {
+              if (Array.isArray(data.orders)) orders = data.orders;
+              if (Array.isArray(data.spools) && data.spools.length > 0) spools = data.spools;
+              if (Array.isArray(data.expenses)) expenses = data.expenses;
+              if (Array.isArray(data.printers)) printers = data.printers;
+              refreshEverything();
+              document.getElementById('cloudStatusText').innerText = "Cloud Verbunden";
+              document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
+              return;
+            }
+          }
+        } catch (err) {}
+
         document.getElementById('cloudStatusText').innerText = "Laden fehlgeschlagen";
         document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-red-500";
       }
