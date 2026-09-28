@@ -498,6 +498,26 @@
       container.appendChild(div);
     }
 
+    function addEditArticleRow(containerId, name='', color='', weight='') {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const div = document.createElement('div');
+      div.className = "flex gap-2 items-center edit-article-row mb-1";
+      
+      let colorOptions = '<option value="">-- Farbe wählen --</option>';
+      spools.forEach(s => {
+        colorOptions += `<option value="${s.name}" ${s.name === color ? 'selected' : ''}>${s.name}</option>`;
+      });
+
+      div.innerHTML = `
+        <input type="text" placeholder="Artikel" value="${name}" class="edit-art-name bg-slate-950 border border-blue-500 rounded p-1 text-white flex-1">
+        <select class="edit-art-color bg-slate-950 border border-blue-500 rounded p-1 text-white w-32">${colorOptions}</select>
+        <input type="number" placeholder="Gramm" value="${weight}" class="edit-art-weight bg-slate-950 border border-blue-500 rounded p-1 text-white w-16">
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-400">❌</button>
+      `;
+      container.appendChild(div);
+    }
+
     function addOrder(e) {
       e.preventDefault();
       const year = new Date().getFullYear();
@@ -557,6 +577,7 @@
       const o = orders.find(x => x.id === id);
       if (o) {
         o.customer = document.getElementById(`edit-cust-${id}`).value;
+        o.invoiceNumber = document.getElementById(`edit-inv-${id}`).value;
         o.platform = document.getElementById(`edit-plat-${id}`).value;
         o.printer = document.getElementById(`edit-print-${id}`).value;
         o.isPaid = document.getElementById(`edit-ispaid-${id}`).value;
@@ -568,6 +589,19 @@
         o.label = document.getElementById(`edit-label-${id}`).value;
         o.packed = document.getElementById(`edit-packed-${id}`).value;
         o.tracking = document.getElementById(`edit-track-${id}`).value;
+
+        let newItems = [];
+        document.querySelectorAll(`#edit-articles-${id} .edit-article-row`).forEach(row => {
+          let name = row.querySelector('.edit-art-name').value;
+          let color = row.querySelector('.edit-art-color').value;
+          let weight = parseInt(row.querySelector('.edit-art-weight').value) || 0;
+          if(name.trim() !== "") {
+            newItems.push({ name, color, weight });
+          }
+        });
+        if(newItems.length > 0) {
+          o.items = newItems;
+        }
 
         if (o.platform === 'eBay') {
           if (!o.ebayBalancePaid || o.ebayBalancePaid === 'N/A') {
@@ -721,6 +755,15 @@
             printerOptions += `<option value="${p.name}" ${p.name === o.printer ? 'selected' : ''}>${p.name}</option>`;
           });
 
+          setTimeout(() => {
+            const container = document.getElementById(`edit-articles-${o.id}`);
+            if (container && container.children.length === 0) {
+              o.items.forEach(i => {
+                addEditArticleRow(`edit-articles-${o.id}`, i.name, i.color, i.weight);
+              });
+            }
+          }, 50);
+
           tbody.innerHTML += `
             <tr class="border-b border-slate-800 bg-slate-900/95">
               <td class="p-2 space-y-1">
@@ -730,8 +773,13 @@
                   <option value="eBay" ${o.platform === 'eBay' ? 'selected' : ''}>eBay</option>
                 </select>
               </td>
-              <td class="p-2 font-mono">${fixedInvNum}</td>
-              <td class="p-2">${itemsFormatted}</td>
+              <td class="p-2">
+                <input type="text" id="edit-inv-${o.id}" value="${fixedInvNum}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white font-mono w-28">
+              </td>
+              <td class="p-2">
+                <div id="edit-articles-${o.id}" class="space-y-1"></div>
+                <button type="button" onclick="addEditArticleRow('edit-articles-${o.id}')" class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/30 mt-1">+ Artikel</button>
+              </td>
               <td class="p-2">
                 <select id="edit-print-${o.id}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white">
                   ${printerOptions}
