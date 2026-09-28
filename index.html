@@ -87,8 +87,8 @@
             Sefas<span class="text-cyan-400">3d</span>shop
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
-            <span id="syncDot" class="inline-block w-2 h-2 rounded-full bg-green-500"></span> 
-            <span id="syncStatus">Lokal & Cloud bereit</span>
+            <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span> 
+            <span id="syncStatus">Lokal gespeichert & einsatzbereit</span>
           </p>
         </div>
       </div>
@@ -102,12 +102,13 @@
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv
         </button>
-        <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
-          <i class="fa-solid fa-rotate mr-1"></i> 🔄 Laden
+        <button onclick="exportJsonBackup()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer" title="Alle Daten als Datei sichern">
+          <i class="fa-solid fa-download mr-1"></i> 💾 Backup speichern
         </button>
-        <button onclick="pushToCloudManual()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
-          <i class="fa-solid fa-cloud-arrow-up mr-1"></i> 📤 Speichern
-        </button>
+        <label class="bg-amber-600/20 hover:bg-amber-600/40 text-amber-300 border border-amber-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
+          <i class="fa-solid fa-upload mr-1"></i> 📂 Backup laden
+          <input type="file" accept=".json" onchange="importJsonBackup(event)" class="hidden">
+        </label>
       </div>
     </header>
 
@@ -389,8 +390,6 @@
   </div>
 
   <script>
-    const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
-
     const BACKUP_SPOOLS = [
       {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notifiedCount":0,"lastNotifiedDate":""},
       {"id":2,"name":"PETG Weiß","remainingGrams":650,"notifiedCount":0,"lastNotifiedDate":""}
@@ -477,105 +476,56 @@
       updatePrinterDropdowns();
     });
 
-    function saveLocalOnly() {
+    function saveAllData() {
       try {
         localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
         localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
         localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
         localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
       } catch(e) {}
-    }
-
-    async function loadCloudData() {
-      const statusEl = document.getElementById('syncStatus');
-      const dotEl = document.getElementById('syncDot');
-      if (statusEl) statusEl.innerText = "Lade von Cloud...";
       
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000);
-        
-        const res = await fetch(NPOINT_URL, { cache: 'no-store', signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        if (res.ok) {
-          const json = await res.json();
-          if (json && Array.isArray(json.orders)) {
-            orders = json.orders;
-            if (Array.isArray(json.spools)) spools = json.spools;
-            if (Array.isArray(json.expenses)) expenses = json.expenses;
-            if (Array.isArray(json.printers) && json.printers.length > 0) printers = json.printers;
-            saveLocalOnly();
-            renderOrders();
-            renderSpools();
-            renderExpenses();
-            renderPrinters();
-            updateCustomerDropdowns();
-            updatePrinterDropdowns();
-            if (statusEl) statusEl.innerText = "Mit Cloud verbunden";
-            if (dotEl) dotEl.className = "inline-block w-2 h-2 rounded-full bg-green-500";
-            alert("✅ Daten erfolgreich von der Cloud abgerufen!");
-          } else {
-            alert("Die Cloud-Antwort war leer oder ungültig.");
-            if (statusEl) statusEl.innerText = "Cloud leer";
-          }
-        } else {
-          throw new Error("Server antwortete mit Code " + res.status);
-        }
-      } catch(e) {
-        console.warn("Cloud load error:", e);
-        if (statusEl) statusEl.innerText = "Cloud nicht erreichbar (Lokal aktiv)";
-        if (dotEl) dotEl.className = "inline-block w-2 h-2 rounded-full bg-yellow-500";
-        alert("⚠️ Cloud konnte nicht erreicht werden. Deine lokalen Daten werden weiterverwendet!");
-      }
-    }
-
-    async function pushToCloudManual() {
-      saveLocalOnly();
-      const statusEl = document.getElementById('syncStatus');
-      const dotEl = document.getElementById('syncDot');
-      if (statusEl) statusEl.innerText = "Speichere in Cloud...";
-
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000);
-
-        const res = await fetch(NPOINT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orders, spools, expenses, printers }),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-
-        if (res.ok) {
-          if (statusEl) statusEl.innerText = "Mit Cloud verbunden";
-          if (dotEl) dotEl.className = "inline-block w-2 h-2 rounded-full bg-green-500";
-          alert("✅ Daten erfolgreich in der Cloud gespeichert!");
-        } else {
-          throw new Error("Server abgelehnt Code " + res.status);
-        }
-      } catch(e) {
-        if (statusEl) statusEl.innerText = "Speichern fehlgeschlagen (Lokal gesichert)";
-        if (dotEl) dotEl.className = "inline-block w-2 h-2 rounded-full bg-red-500";
-        alert("❌ Netzwerkfehler: Cloud konnte nicht erreicht werden. Daten wurden sicher lokal gespeichert.");
-      }
-    }
-
-    function saveAllData() {
-      saveLocalOnly();
       renderOrders();
       renderSpools();
       renderExpenses();
       renderPrinters();
       updateCustomerDropdowns();
       updatePrinterDropdowns();
-      
-      fetch(NPOINT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orders, spools, expenses, printers })
-      }).catch(e => console.log("Hintergrund-Sync fehlgeschlagen", e));
+    }
+
+    function exportJsonBackup() {
+      const data = { orders, spools, expenses, printers };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Sefas3DShop_Backup_${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function importJsonBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const json = JSON.parse(e.target.result);
+          if (json && Array.isArray(json.orders)) {
+            orders = json.orders;
+            if (Array.isArray(json.spools)) spools = json.spools;
+            if (Array.isArray(json.expenses)) expenses = json.expenses;
+            if (Array.isArray(json.printers)) printers = json.printers;
+            saveAllData();
+            alert("✅ Backup erfolgreich geladen!");
+          } else {
+            alert("⚠️ Ungültige Backup-Datei.");
+          }
+        } catch(err) {
+          alert("❌ Fehler beim Lesen der Datei.");
+        }
+      };
+      reader.readAsText(file);
     }
 
     function addPrinterPrompt() {
