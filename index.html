@@ -875,10 +875,14 @@
     }
 
     function updateStats() {
-      let totalRev = 0, totalLabelCost = 0, totalOtherExp = 0, ebayBalanceOpen = 0;
+      let totalRev = 0, totalLabelCost = 0, totalOtherExp = 0, ebayBalanceOpen = 0, openOrdersCount = 0;
       const monthFilter = document.getElementById('statsMonthFilter')?.value || 'all';
 
       orders.forEach(o => {
+        if (!o.archived && (o.status === 'Offen' || o.status === 'In Arbeit')) {
+          openOrdersCount++;
+        }
+
         if (monthFilter !== 'all' && o.orderDate && !o.orderDate.startsWith(monthFilter)) return;
 
         let isEbay = o.platform === 'eBay';
@@ -909,6 +913,7 @@
       if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statEbayBalance')) document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerText = openOrdersCount;
     }
 
     function renderPrinters() {
