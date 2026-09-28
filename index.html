@@ -317,10 +317,7 @@
           printers = JSON.parse(localStorage.getItem('sefas_shop_printers')) || printers;
         }
         refreshEverything();
-        alert("☁️ Erfolgreich geladen!");
-      } catch(e) {
-        alert("⚠️ Fehler beim Laden!");
-      }
+      } catch(e) {}
     }
 
     function saveAllData() {
@@ -330,7 +327,6 @@
         localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
         localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
         refreshEverything();
-        alert("✅ Erfolgreich gespeichert!");
       } catch(e) {}
     }
 
@@ -482,11 +478,15 @@
       spools.forEach((s) => {
         c.innerHTML += `<div class="p-2 rounded bg-slate-900 border border-slate-700 flex justify-between items-center text-[11px]"><span>${s.name}</span><span class="text-slate-300">${s.remainingGrams}g</span></div>`;
       });
+      updateColorDropdowns();
     }
 
     function addSpoolPrompt() {
       const n = prompt("Spulen-Name:");
-      if (n) { spools.push({ id: Date.now(), name: n, remainingGrams: 1000 }); saveAllData(); }
+      if (n) { 
+        spools.push({ id: Date.now(), name: n.trim(), remainingGrams: 1000 }); 
+        saveAllData(); 
+      }
     }
 
     function addArticleInputRow(name='', color='', weight='') {
@@ -565,6 +565,8 @@
         o.price = parseFloat(document.getElementById(`edit-price-${id}`).value) || 0;
         o.shippingFee = parseFloat(document.getElementById(`edit-shipfee-${id}`).value) || 0;
         o.labelCost = parseFloat(document.getElementById(`edit-labelcost-${id}`).value) || 0;
+        o.label = document.getElementById(`edit-label-${id}`).value;
+        o.packed = document.getElementById(`edit-packed-${id}`).value;
         o.tracking = document.getElementById(`edit-track-${id}`).value;
       }
       editingId = null;
@@ -721,8 +723,18 @@
                 Versand: <input type="number" step="0.01" id="edit-shipfee-${o.id}" value="${o.shippingFee || 0}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
                 Porto: <input type="number" step="0.01" id="edit-labelcost-${o.id}" value="${lCost}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16">
               </td>
-              <td class="p-2">${o.label || '❌ Nein'}</td>
-              <td class="p-2">${o.packed || '❌ Nein'}</td>
+              <td class="p-2">
+                <select id="edit-label-${o.id}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white">
+                  <option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
+                  <option value="❌ Nein" ${o.label !== '✅ Ja' ? 'selected' : ''}>❌ Nein</option>
+                </select>
+              </td>
+              <td class="p-2">
+                <select id="edit-packed-${o.id}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white">
+                  <option value="✅ Ja" ${o.packed === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
+                  <option value="❌ Nein" ${o.packed !== '✅ Ja' ? 'selected' : ''}>❌ Nein</option>
+                </select>
+              </td>
               <td class="p-2"><input type="text" id="edit-track-${o.id}" value="${o.tracking || '-'}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-20"></td>
               <td class="p-2 text-right">
                 <button onclick="saveEdit(${o.id})" class="bg-green-600 text-white px-2 py-0.5 rounded text-[11px] mr-1">💾</button>
