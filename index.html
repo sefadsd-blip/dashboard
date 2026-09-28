@@ -274,7 +274,7 @@
   </div>
 
   <script>
-    let orders = [
+    let defaultOrders = [
       {
         "id": 1790616860313,
         "customer": "Isabell Zubiller",
@@ -445,7 +445,7 @@
       }
     ];
 
-    let spools = [
+    let defaultSpools = [
       { id: 1, name: "PLA Schwarz", remainingGrams: 3700 },
       { id: 1789935199927, name: "PLA Dunkelblau", remainingGrams: 100 },
       { id: 1789935232879, name: "PETG Orange", remainingGrams: 800 },
@@ -467,7 +467,7 @@
       { id: 1790010818175, name: "PLA Rotschwarz", remainingGrams: 300 }
     ];
 
-    let expenses = [
+    let defaultExpenses = [
       { id: 1790619945324, description: "7X Werbeanzeige kleinanzeigen ", category: "Sonstiges", amount: 24.43, date: "2026-09-28" },
       { id: 1790455400799, date: "2026-09-26", amount: 3.49, category: "Sonstiges", description: "Werbeanzeige kleinanzeigen" },
       { id: 1790448192014, date: "2026-09-26", amount: 50, category: "Sonstiges", description: "anycubic kobra  Reperatur" },
@@ -475,13 +475,18 @@
       { id: 1790356494893, date: "2026-09-25", amount: 99.98, category: "Sonstiges", description: "2x Druckerwartung  CR-10 SP" }
     ];
 
-    let printers = [
+    let defaultPrinters = [
       {"desc":"Großraum","name":"CR-10 Smart Pro #1","status":"In Arbeit"},
       {"desc":"Klipper","name":"Ender 3 V3","status":"In Arbeit"},
       {"desc":"Direct Drive","name":"Anycubic Kobra","status":"In Arbeit"},
       {"desc":"Großraum","name":"CR-10 Smart Pro #2","status":"In Arbeit"},
       {"desc":"Standard","name":"Anycubic Kobra 2","status":"In Arbeit"}
     ];
+
+    let orders = [];
+    let spools = [];
+    let expenses = [];
+    let printers = [];
 
     let editingId = null;
     let showingArchive = false;
@@ -517,15 +522,24 @@
         const saved = localStorage.getItem('sefas3d_shop_data');
         if (saved) {
           const data = JSON.parse(saved);
-          if (Array.isArray(data.orders) && data.orders.length > 0) orders = data.orders;
-          if (Array.isArray(data.spools)) spools = data.spools;
-          if (Array.isArray(data.expenses)) expenses = data.expenses;
-          if (Array.isArray(data.printers)) printers = data.printers;
+          orders = Array.isArray(data.orders) && data.orders.length > 0 ? data.orders : JSON.parse(JSON.stringify(defaultOrders));
+          spools = Array.isArray(data.spools) && data.spools.length > 0 ? data.spools : JSON.parse(JSON.stringify(defaultSpools));
+          expenses = Array.isArray(data.expenses) ? data.expenses : JSON.parse(JSON.stringify(defaultExpenses));
+          printers = Array.isArray(data.printers) && data.printers.length > 0 ? data.printers : JSON.parse(JSON.stringify(defaultPrinters));
+        } else {
+          orders = JSON.parse(JSON.stringify(defaultOrders));
+          spools = JSON.parse(JSON.stringify(defaultSpools));
+          expenses = JSON.parse(JSON.stringify(defaultExpenses));
+          printers = JSON.parse(JSON.stringify(defaultPrinters));
         }
         refreshEverything();
         document.getElementById('statusText').innerText = "Bereit & Gesichert";
         document.getElementById('statusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
       } catch (e) {
+        orders = JSON.parse(JSON.stringify(defaultOrders));
+        spools = JSON.parse(JSON.stringify(defaultSpools));
+        expenses = JSON.parse(JSON.stringify(defaultExpenses));
+        printers = JSON.parse(JSON.stringify(defaultPrinters));
         refreshEverything();
       }
     }
@@ -640,7 +654,7 @@
 
     function toggleArchiveOrder(id) {
       const o = orders.find(x => x.id === id);
-      if (o) { o.archived = !o.archived; saveData(); }
+      if (o) { o.archived = !o.archived; saveData(); renderOrders(); }
     }
 
     function updateCustomerDropdowns() {
@@ -1064,8 +1078,8 @@
               <td class="p-2 text-right space-x-1">
                 <button onclick="printInvoice(${o.id})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button>
                 <button onclick="startEdit(${o.id})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏️</button>
-                <button onclick="toggleArchiveOrder(${o.id})" class="text-purple-300 bg-purple-500/10 px-1.5 py-1 rounded text-[10px]">📦</button>
-                <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]">🗑️</button>
+                <button onclick="toggleArchiveOrder(${o.id})" class="text-purple-300 bg-purple-500/10 px-1.5 py-1 rounded text-[10px]" title="Archivieren">📦</button>
+                <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]" title="Löschen">🗑️</button>
               </td>
             </tr>`;
         }
