@@ -157,7 +157,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
           <input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           
-          <select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+          <select id="platform" onchange="onPlatformChange(this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
             <option value="Kleinanzeigen">🛒 Kleinanzeigen</option>
             <option value="eBay">🛍️ eBay</option>
           </select>
@@ -428,21 +428,54 @@
       const month = document.getElementById('statsMonthFilter')?.value || 'all';
       if (!tbody) return;
       tbody.innerHTML = '';
-      expenses.forEach(ex => {
+
+      let combined = [...expenses];
+      orders.forEach(o => {
+        if (o.labelCost > 0) {
+          combined.push({
+            id: 'auto-' + o.id,
+            date: o.orderDate,
+            category: '📦 DHL / Versand (Auto-Porto)',
+            description: `Porto-Einkauf: ${o.customer} (${generateInvoiceNumberForExisting(o)})`,
+            amount: o.labelCost,
+            isAuto: true
+          });
+        }
+      });
+
+      combined.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+      combined.forEach(ex => {
         if (month !== 'all' && (!ex.date || !ex.date.startsWith(month))) return;
-        tbody.innerHTML += `<tr class="border-b border-slate-800"><td class="p-2">${ex.date||'-'}</td><td class="p-2">${ex.category}</td><td class="p-2">${ex.description}</td><td class="p-2 text-red-400">-${ex.amount.toFixed(2).replace('.',',')} €</td><td class="p-2 text-right"><button onclick="deleteExpense(${ex.id})" class="text-red-400">🗑️</button></td></tr>`;
+        if (ex.isAuto) {
+          tbody.innerHTML += `<tr class="border-b border-slate-800 bg-blue-900/10"><td class="p-2">${ex.date||'-'}</td><td class="p-2 text-blue-300">${ex.category}</td><td class="p-2 text-slate-300">${ex.description}</td><td class="p-2 text-red-400">-${ex.amount.toFixed(2).replace('.',',')} €</td><td class="p-2 text-right"><span class="text-[9px] text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20">Im Auftrag</span></td></tr>`;
+        } else {
+          tbody.innerHTML += `<tr class="border-b border-slate-800"><td class="p-2">${ex.date||'-'}</td><td class="p-2">${ex.category}</td><td class="p-2">${ex.description}</td><td class="p-2 text-red-400">-${ex.amount.toFixed(2).replace('.',',')} €</td><td class="p-2 text-right"><button onclick="deleteExpense(${ex.id})" class="text-red-400">🗑️</button></td></tr>`;
+        }
       });
       updateStats();
     }
 
     function updateField(id, field, val) {
       const o = orders.find(x => x.id === id);
-      if (o) { o[field] = val; saveAllData(); renderOrders(); }
+      if (o) { 
+        o[field] = val; 
+        if (field === 'platform') {
+          o.ebayBalancePaid = (val === 'eBay') ? '⏳ Bei eBay' : 'N/A';
+        }
+        saveAllData(); 
+        renderOrders(); 
+      }
+    }
+
+    function onPlatformChange(val) {
+      // Optional helper for form
     }
 
     function payoutAllEbayBalance() {
       orders.forEach(o => { if (o.platform === 'eBay') o.ebayBalancePaid = '✅ Ausgezahlt'; });
       saveAllData();
+      renderOrders();
     }
 
     function toggleArchiveView() {
@@ -501,11 +534,12 @@
       const year = new Date().getFullYear();
       const nextNum = orders.length + 1;
       const invNum = `RE-${year}-${nextNum.toString().padStart(4, '0')}`;
+      const plat = document.getElementById('platform').value;
 
       orders.unshift({
         id: Date.now(),
         customer: document.getElementById('customer').value,
-        platform: document.getElementById('platform').value,
+        platform: plat,
         paymentMethod: document.getElementById('paymentMethod').value,
         isPaid: document.getElementById('isPaid').value,
         printer: document.getElementById('printer').value,
@@ -518,7 +552,7 @@
         status: "Offen",
         archived: false,
         invoiceNumber: invNum,
-        ebayBalancePaid: document.getElementById('platform').value === 'eBay' ? '⏳ Bei eBay' : 'N/A',
+        ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A',
         items: [{ name: document.querySelector('.art-name').value, weight: parseInt(document.querySelector('.art-weight').value) || 0 }]
       });
       saveAllData();
@@ -654,13 +688,22 @@
 
     function renderOrders() {
       const tbody = document.getElementById('ordersTableBody');
+      const monthFilter = document.getElementById('statsMonthFilter')?.value || 'all';
+      const searchFilter = document.getElementById('searchInput')?.value.toLowerCase() || '';
+
       if (!tbody) return;
       tbody.innerHTML = '';
+
       orders.forEach((o, idx) => {
         if (Boolean(o.archived) !== showingArchive) return;
-        let netTotal = o.price - (o.shippingFee || 0);
+        if (monthFilter !== 'all' && o.orderDate && !o.orderDate.startsWith(monthFilter)) return;
+
+        let searchString = `${o.customer} ${o.platform} ${o.items.map(i=>i.name).join(' ')} ${o.tracking} ${generateInvoiceNumberForExisting(o)}`.toLowerCase();
+        if (searchFilter && !searchString.includes(searchFilter)) return;
+
         let fixedInvNum = generateInvoiceNumberForExisting(o);
         let lCost = o.labelCost || 0;
+        let isEbay = o.platform === 'eBay';
 
         if (editingIndex === idx) {
           tbody.innerHTML += `
@@ -675,8 +718,8 @@
               <td class="p-2">${o.status}</td>
               <td class="p-2 space-y-1">
                 Gesamt: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
-                Versand (Kunde): <input type="number" step="0.01" id="edit-shipfee-${idx}" value="${o.shippingFee || 0}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
-                Porto (Einkauf): <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCost}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16">
+                Versand: <input type="number" step="0.01" id="edit-shipfee-${idx}" value="${o.shippingFee || 0}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
+                Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCost}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16">
               </td>
               <td class="p-2">${o.label}</td>
               <td class="p-2">${o.packed}</td>
@@ -687,6 +730,12 @@
               </td>
             </tr>`;
         } else {
+          let ebayBalanceCell = isEbay ? `
+            <select onchange="updateField(${o.id}, 'ebayBalancePaid', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] ${o.ebayBalancePaid === '✅ Ausgezahlt' ? 'text-emerald-400 font-bold' : 'text-cyan-300'} focus:outline-none">
+              <option value="⏳ Bei eBay" ${o.ebayBalancePaid === '⏳ Bei eBay' ? 'selected' : ''}>⏳ Bei eBay</option>
+              <option value="✅ Ausgezahlt" ${o.ebayBalancePaid === '✅ Ausgezahlt' ? 'selected' : ''}>✅ Ausgezahlt</option>
+            </select>` : `<span class="text-slate-500 text-[11px]">-</span>`;
+
           tbody.innerHTML += `
             <tr class="border-b border-slate-800 hover:bg-slate-800/40">
               <td class="p-2">${o.customer}<br><span class="text-[9px] text-slate-400">${o.platform}</span></td>
@@ -695,12 +744,12 @@
               <td class="p-2">${o.printer}</td>
               <td class="p-2">${o.isPaid}</td>
               <td class="p-2">${o.paymentMethod}</td>
-              <td class="p-2">${o.ebayBalancePaid || '-'}</td>
+              <td class="p-2">${ebayBalanceCell}</td>
               <td class="p-2">${o.status}</td>
               <td class="p-2">
                 <div class="font-bold text-emerald-400">${o.price.toFixed(2).replace('.',',')} €</div>
-                <div class="text-[10px] text-slate-400">Versand (Kunde): +${(o.shippingFee||0).toFixed(2).replace('.',',')} €</div>
-                <div class="text-[10px] text-red-400">Porto (Einkauf): -${lCost.toFixed(2).replace('.',',')} €</div>
+                <div class="text-[10px] text-slate-400">Versand: +${(o.shippingFee||0).toFixed(2).replace('.',',')} €</div>
+                <div class="text-[10px] text-red-400">Porto: -${lCost.toFixed(2).replace('.',',')} €</div>
               </td>
               <td class="p-2">${o.label}</td>
               <td class="p-2">${o.packed}</td>
@@ -718,12 +767,44 @@
     }
 
     function updateStats() {
-      let rev = 0, exp = 0;
-      orders.forEach(o => { rev += o.price; exp += (o.labelCost || 0); });
-      expenses.forEach(ex => exp += ex.amount);
-      if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = rev.toFixed(2).replace('.',',') + ' €';
-      if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = exp.toFixed(2).replace('.',',') + ' €';
-      if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = (rev - exp).toFixed(2).replace('.',',') + ' €';
+      let totalRev = 0, totalLabelCost = 0, totalOtherExp = 0, ebayBalanceOpen = 0;
+      const monthFilter = document.getElementById('statsMonthFilter')?.value || 'all';
+
+      orders.forEach(o => {
+        if (monthFilter !== 'all' && o.orderDate && !o.orderDate.startsWith(monthFilter)) return;
+
+        let isEbay = o.platform === 'eBay';
+        let orderAmount = o.price;
+        let lCost = o.labelCost || 0;
+
+        if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') {
+          ebayBalanceOpen += Math.round((orderAmount - lCost) * 100) / 100;
+        }
+
+        if (!isEbay || o.ebayBalancePaid === '✅ Ausgezahlt') {
+          totalRev += orderAmount;
+        }
+
+        totalLabelCost += lCost;
+      });
+
+      expenses.forEach(ex => {
+        if (monthFilter !== 'all' && ex.date && !ex.date.startsWith(monthFilter)) return;
+        totalOtherExp += ex.amount;
+      });
+
+      let totalExp = totalLabelCost + totalOtherExp;
+      let netProfit = totalRev - totalExp;
+      ebayBalanceOpen = Math.round(ebayBalanceOpen * 100) / 100;
+
+      if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
+      
+      if (document.getElementById('statExpenses')) {
+        document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
+      }
+
+      if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statEbayBalance')) document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
     }
 
     function renderPrinters() {
