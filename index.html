@@ -298,7 +298,7 @@
       {"desc":"Standard","name":"Anycubic Kobra 2","status":"In Arbeit"}
     ];
 
-    let editingIndex = -1;
+    let editingId = null;
     let showingArchive = false;
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -553,16 +553,19 @@
       saveAllData();
     }
 
-    function startEdit(idx) { editingIndex = idx; renderOrders(); }
-    function cancelEdit() { editingIndex = -1; renderOrders(); }
+    function startEdit(id) { editingId = id; renderOrders(); }
+    function cancelEdit() { editingId = null; renderOrders(); }
 
-    function saveEdit(idx) {
-      orders[idx].customer = document.getElementById(`edit-cust-${idx}`).value;
-      orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
-      orders[idx].shippingFee = parseFloat(document.getElementById(`edit-shipfee-${idx}`).value) || 0;
-      orders[idx].labelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
-      orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value;
-      editingIndex = -1;
+    function saveEdit(id) {
+      const o = orders.find(x => x.id === id);
+      if (o) {
+        o.customer = document.getElementById(`edit-cust-${id}`).value;
+        o.price = parseFloat(document.getElementById(`edit-price-${id}`).value) || 0;
+        o.shippingFee = parseFloat(document.getElementById(`edit-shipfee-${id}`).value) || 0;
+        o.labelCost = parseFloat(document.getElementById(`edit-labelcost-${id}`).value) || 0;
+        o.tracking = document.getElementById(`edit-track-${id}`).value;
+      }
+      editingId = null;
       saveAllData();
     }
 
@@ -588,15 +591,16 @@
       const invoiceNumber = generateInvoiceNumberForExisting(o);
       
       let itemsRows = '';
-      let netTotal = o.price - (o.shippingFee || 0);
+      let shipping = o.shippingFee || 0;
+      let netTotal = o.price - shipping;
 
       o.items.forEach(i => {
         let colText = i.color ? ` (${i.color})` : '';
         itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name}${colText}</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${netTotal.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${netTotal.toFixed(2).replace('.', ',')} €</td></tr>`;
       });
 
-      if ((o.shippingFee || 0) > 0) {
-        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">Versandpauschale (DHL)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingFee.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.shippingFee.toFixed(2).replace('.', ',')} €</td></tr>`;
+      if (shipping > 0) {
+        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">Versandpauschale (DHL)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${shipping.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${shipping.toFixed(2).replace('.', ',')} €</td></tr>`;
       }
 
       const sepaPayload = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + o.price.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
@@ -653,7 +657,7 @@
       if (active.length === 0) return alert("Keine Aufträge vorhanden!");
       const invSec = document.getElementById('invoiceSection');
       invSec.innerHTML = '';
-      active.forEach((o, index) => {
+      active.forEach((o) => {
         let invNum = generateInvoiceNumberForExisting(o);
         let net = o.price - (o.shippingFee || 0);
         invSec.innerHTML += `
@@ -696,10 +700,10 @@
         let isEbay = o.platform === 'eBay';
         let itemsFormatted = o.items.map(i => i.name + (i.color ? ` <span class="text-cyan-400">(${i.color})</span>` : '')).join(', ');
 
-        if (editingIndex === idx) {
+        if (editingId === o.id) {
           tbody.innerHTML += `
             <tr class="border-b border-slate-800 bg-slate-900/95">
-              <td class="p-2"><input type="text" id="edit-cust-${idx}" value="${o.customer}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-full"></td>
+              <td class="p-2"><input type="text" id="edit-cust-${o.id}" value="${o.customer}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-full"></td>
               <td class="p-2 font-mono">${fixedInvNum}</td>
               <td class="p-2">${itemsFormatted}</td>
               <td class="p-2">${o.printer}</td>
@@ -708,15 +712,15 @@
               <td class="p-2">-</td>
               <td class="p-2">${o.status}</td>
               <td class="p-2 space-y-1">
-                Gesamt: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
-                Versand: <input type="number" step="0.01" id="edit-shipfee-${idx}" value="${o.shippingFee || 0}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
-                Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCost}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16">
+                Gesamt: <input type="number" step="0.01" id="edit-price-${o.id}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
+                Versand: <input type="number" step="0.01" id="edit-shipfee-${o.id}" value="${o.shippingFee || 0}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
+                Porto: <input type="number" step="0.01" id="edit-labelcost-${o.id}" value="${lCost}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16">
               </td>
               <td class="p-2">${o.label}</td>
               <td class="p-2">${o.packed}</td>
-              <td class="p-2"><input type="text" id="edit-track-${idx}" value="${o.tracking}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-20"></td>
+              <td class="p-2"><input type="text" id="edit-track-${o.id}" value="${o.tracking}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-20"></td>
               <td class="p-2 text-right">
-                <button onclick="saveEdit(${idx})" class="bg-green-600 text-white px-2 py-0.5 rounded text-[11px] mr-1">💾</button>
+                <button onclick="saveEdit(${o.id})" class="bg-green-600 text-white px-2 py-0.5 rounded text-[11px] mr-1">💾</button>
                 <button onclick="cancelEdit()" class="bg-slate-700 text-white px-2 py-0.5 rounded text-[11px]">❌</button>
               </td>
             </tr>`;
@@ -747,7 +751,7 @@
               <td class="p-2 font-mono">${o.tracking}</td>
               <td class="p-2 text-right space-x-1">
                 <button onclick="printInvoice(${idx})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button>
-                <button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏️</button>
+                <button onclick="startEdit(${o.id})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏️</button>
                 <button onclick="toggleArchiveOrder(${o.id})" class="text-purple-300 bg-purple-500/10 px-1.5 py-1 rounded text-[10px]">📦</button>
                 <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]">🗑️</button>
               </td>
