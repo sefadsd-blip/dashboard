@@ -210,7 +210,6 @@
           <select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
             <!-- Dynamisch gefüllt -->
           </select>
-          
           <input type="number" step="0.01" id="price" placeholder="Artikelpreis / Gesamt (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           
           <input type="number" step="0.01" id="labelCost" placeholder="Porto-Einkauf (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
@@ -433,7 +432,7 @@
         const res = await fetch(NPOINT_URL, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
-          if (json && Array.isArray(json.orders)) {
+          if (json && Array.isArray(json.orders) && json.orders.length > 0) {
             orders = json.orders;
             spools = Array.isArray(json.spools) ? json.spools : [];
             expenses = Array.isArray(json.expenses) ? json.expenses : [];
@@ -455,7 +454,7 @@
 
       try {
         let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
-        if (Array.isArray(savedOrders)) {
+        if (Array.isArray(savedOrders) && savedOrders.length > 0) {
           orders = savedOrders;
           spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
           expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
@@ -466,14 +465,7 @@
         }
       } catch(e) {}
 
-      printers = [
-        { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
-        { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
-        { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
-        { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
-      ];
-      refreshEverything();
-      if (statusText) statusText.innerText = "Bereit";
+      if (statusText) statusText.innerText = "Bereit (Keine Daten gefunden)";
     }
 
     function refreshEverything() {
@@ -1360,7 +1352,7 @@
       if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statEbayBalance')) document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerText = openC;
-      if (document.getElementById('statFilament')) document.getElementById('statFilament').innerText = totalW + ' g';
+      if (document.getElementById('statFilament')) document.getElementById('statFilament'].innerText = totalW + ' g';
     }
 
     function renderPrinters() {
@@ -1393,4 +1385,3 @@
   </script>
 </body>
 </html>
-
