@@ -211,7 +211,7 @@
           <div id="articleInputRows" class="space-y-1.5">
             <div class="flex gap-2 items-center article-row">
               <input type="text" placeholder="Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
-              <select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-44 focus:outline-none"><option value="">-- Farbe --</option></select>
+              <select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-44 focus:outline-none"><option value="">-- Farbe wählen --</option></select>
               <input type="number" placeholder="Gramm (g)" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none">
             </div>
           </div>
@@ -342,6 +342,17 @@
       renderExpenses();
       updateCustomerDropdowns();
       updatePrinterDropdowns();
+      updateColorDropdowns();
+    }
+
+    function updateColorDropdowns() {
+      document.querySelectorAll('.art-color').forEach(sel => {
+        const cur = sel.value;
+        sel.innerHTML = '<option value="">-- Farbe wählen --</option>';
+        spools.forEach(s => {
+          sel.innerHTML += `<option value="${s.name}" ${s.name === cur ? 'selected' : ''}>${s.name}</option>`;
+        });
+      });
     }
 
     function addPrinterPrompt() {
@@ -478,11 +489,17 @@
       if (n) { spools.push({ id: Date.now(), name: n, remainingGrams: 1000 }); saveAllData(); }
     }
 
-    function addArticleInputRow(name='', weight='') {
+    function addArticleInputRow(name='', color='', weight='') {
       const container = document.getElementById('articleInputRows');
       const div = document.createElement('div');
       div.className = "flex gap-2 items-center article-row";
-      div.innerHTML = `<input type="text" placeholder="Artikel" value="${name}" required class="art-name bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white flex-1"><input type="number" placeholder="Gramm" value="${weight}" class="art-weight bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white w-24"><button type="button" onclick="this.parentElement.remove()" class="text-red-400">❌</button>`;
+      
+      let colorOptions = '<option value="">-- Farbe wählen --</option>';
+      spools.forEach(s => {
+        colorOptions += `<option value="${s.name}" ${s.name === color ? 'selected' : ''}>${s.name}</option>`;
+      });
+
+      div.innerHTML = `<input type="text" placeholder="Artikelbezeichnung" value="${name}" required class="art-name bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white flex-1"><select class="art-color bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white w-44">${colorOptions}</select><input type="number" placeholder="Gramm" value="${weight}" class="art-weight bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white w-24"><button type="button" onclick="this.parentElement.remove()" class="text-red-400">❌</button>`;
       container.appendChild(div);
     }
 
@@ -492,6 +509,14 @@
       const nextNum = orders.length + 1;
       const invNum = `RE-${year}-${nextNum.toString().padStart(4, '0')}`;
       const plat = document.getElementById('platform').value;
+
+      let items = [];
+      document.querySelectorAll('.article-row').forEach(row => {
+        let name = row.querySelector('.art-name').value;
+        let color = row.querySelector('.art-color').value;
+        let weight = parseInt(row.querySelector('.art-weight').value) || 0;
+        items.push({ name, color, weight });
+      });
 
       orders.unshift({
         id: Date.now(),
@@ -510,10 +535,17 @@
         archived: false,
         invoiceNumber: invNum,
         ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A',
-        items: [{ name: document.querySelector('.art-name').value, weight: parseInt(document.querySelector('.art-weight').value) || 0 }]
+        items: items
       });
       saveAllData();
       document.getElementById('orderForm').reset();
+      document.getElementById('articleInputRows').innerHTML = `
+        <div class="flex gap-2 items-center article-row">
+          <input type="text" placeholder="Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
+          <select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-44 focus:outline-none"><option value="">-- Farbe wählen --</option></select>
+          <input type="number" placeholder="Gramm (g)" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none">
+        </div>`;
+      updateColorDropdowns();
     }
 
     function deleteOrder(id) {
@@ -559,7 +591,8 @@
       let netTotal = o.price - (o.shippingFee || 0);
 
       o.items.forEach(i => {
-        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name}</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${netTotal.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${netTotal.toFixed(2).replace('.', ',')} €</td></tr>`;
+        let colText = i.color ? ` (${i.color})` : '';
+        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name}${colText}</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${netTotal.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${netTotal.toFixed(2).replace('.', ',')} €</td></tr>`;
       });
 
       if ((o.shippingFee || 0) > 0) {
@@ -655,19 +688,20 @@
         if (Boolean(o.archived) !== showingArchive) return;
         if (monthFilter !== 'all' && o.orderDate && !o.orderDate.startsWith(monthFilter)) return;
 
-        let searchString = `${o.customer} ${o.platform} ${o.items.map(i=>i.name).join(' ')} ${o.tracking} ${generateInvoiceNumberForExisting(o)}`.toLowerCase();
+        let searchString = `${o.customer} ${o.platform} ${o.items.map(i=>i.name + ' ' + (i.color||'')).join(' ')} ${o.tracking} ${generateInvoiceNumberForExisting(o)}`.toLowerCase();
         if (searchFilter && !searchString.includes(searchFilter)) return;
 
         let fixedInvNum = generateInvoiceNumberForExisting(o);
         let lCost = o.labelCost || 0;
         let isEbay = o.platform === 'eBay';
+        let itemsFormatted = o.items.map(i => i.name + (i.color ? ` <span class="text-cyan-400">(${i.color})</span>` : '')).join(', ');
 
         if (editingIndex === idx) {
           tbody.innerHTML += `
-            <tr class="border-b border-slate-800 bg-slate-900/90">
+            <tr class="border-b border-slate-800 bg-slate-900/95">
               <td class="p-2"><input type="text" id="edit-cust-${idx}" value="${o.customer}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-full"></td>
               <td class="p-2 font-mono">${fixedInvNum}</td>
-              <td class="p-2">${o.items.map(i=>i.name).join(', ')}</td>
+              <td class="p-2">${itemsFormatted}</td>
               <td class="p-2">${o.printer}</td>
               <td class="p-2">${o.isPaid}</td>
               <td class="p-2">${o.paymentMethod}</td>
@@ -697,7 +731,7 @@
             <tr class="border-b border-slate-800 hover:bg-slate-800/40">
               <td class="p-2">${o.customer}<br><span class="text-[9px] text-slate-400">${o.platform}</span></td>
               <td class="p-2 font-mono text-cyan-300">${fixedInvNum}</td>
-              <td class="p-2">${o.items.map(i=>i.name).join(', ')}</td>
+              <td class="p-2">${itemsFormatted}</td>
               <td class="p-2">${o.printer}</td>
               <td class="p-2">${o.isPaid}</td>
               <td class="p-2">${o.paymentMethod}</td>
