@@ -208,9 +208,16 @@
           <select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
             <!-- Dynamisch gefüllt -->
           </select>
-          <input type="number" step="0.01" id="price" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+          <input type="number" step="0.01" id="price" placeholder="Artikelpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           
           <input type="number" step="0.01" id="labelCost" placeholder="Porto / Label (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+
+          <select id="shippingFee" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+            <option value="5.00" selected>📦 Versandpauschale (5,00 €)</option>
+            <option value="7.00">📦 Versandpauschale (7,00 €)</option>
+            <option value="2.50">✉️ Versandpauschale (2,50 €)</option>
+            <option value="0.00">🤝 Selbstabholung (0,00 €)</option>
+          </select>
 
           <div class="flex flex-col">
             <label class="text-[9px] text-slate-400 mb-0.5">Erstellungsdatum:</label>
@@ -315,7 +322,7 @@
               <th class="p-2">Zahlungsart</th>
               <th class="p-2">eBay Guthaben?</th>
               <th class="p-2">Status</th>
-              <th class="p-2">Umsatz / Porto</th>
+              <th class="p-2">Preis / Versand</th>
               <th class="p-2">Label</th>
               <th class="p-2">Verp.</th>
               <th class="p-2">Tracking</th>
@@ -397,23 +404,23 @@
     ];
 
     const COMPप्लीट_CSV_ORDERS = [
-      { id: 1, customer: "Thomas Siepmann", platform: "eBay", paymentMethod: "eBay", isPaid: "✅ Ja", ebayBalancePaid: "⏳ Bei eBay", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 15.18, labelCost: 5.19, tracking: "-", orderDate: "2026-09-27", invoiceNumber: "RE-2026-0014", shipDate: "2026-09-27", archived: false, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
-      { id: 2, customer: "Jennifer Habenicht", platform: "Kleinanzeigen", paymentMethod: "PayPal", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "Anycubic Kobra", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 25.00, labelCost: 5.19, tracking: "-356601127551", orderDate: "2026-09-27", invoiceNumber: "RE-2026-0013", shipDate: "2026-09-27", archived: false, items: [{name: "More Halter 4x", color: "ASA Grau", weight: 0}] },
-      { id: 3, customer: "Annett Hanitzsch", platform: "Kleinanzeigen", paymentMethod: "PayPal", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 27.00, labelCost: 6.19, tracking: "-", orderDate: "2026-09-26", invoiceNumber: "RE-2026-00012", shipDate: "2026-09-26", archived: false, items: [{name: "Süßer Blumentopf mit Herz-Händen 12x12", color: "Pla Weiß", weight: 150}] },
-      { id: 4, customer: "Dunja marcinkowski", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Offen", label: "❌ Nein", packed: "❌ Nein", price: 7.00, labelCost: 0, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0005", shipDate: "", archived: false, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
-      { id: 5, customer: "Gabi Thomas", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Offen", label: "✅ Ja", packed: "❌ Nein", price: 7.00, labelCost: 0, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0002", shipDate: "", archived: false, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 1, customer: "Thomas Siepmann", platform: "eBay", paymentMethod: "eBay", isPaid: "✅ Ja", ebayBalancePaid: "⏳ Bei eBay", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 15.18, labelCost: 5.19, shippingFee: 0.00, tracking: "-", orderDate: "2026-09-27", invoiceNumber: "RE-2026-0014", shipDate: "2026-09-27", archived: false, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 2, customer: "Jennifer Habenicht", platform: "Kleinanzeigen", paymentMethod: "PayPal", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "Anycubic Kobra", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 20.00, labelCost: 5.19, shippingFee: 5.00, tracking: "-356601127551", orderDate: "2026-09-27", invoiceNumber: "RE-2026-0013", shipDate: "2026-09-27", archived: false, items: [{name: "More Halter 4x", color: "ASA Grau", weight: 0}] },
+      { id: 3, customer: "Annett Hanitzsch", platform: "Kleinanzeigen", paymentMethod: "PayPal", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 20.00, labelCost: 6.19, shippingFee: 7.00, tracking: "-", orderDate: "2026-09-26", invoiceNumber: "RE-2026-00012", shipDate: "2026-09-26", archived: false, items: [{name: "Süßer Blumentopf mit Herz-Händen 12x12", color: "Pla Weiß", weight: 150}] },
+      { id: 4, customer: "Dunja marcinkowski", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Offen", label: "❌ Nein", packed: "❌ Nein", price: 0.00, labelCost: 0, shippingFee: 7.00, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0005", shipDate: "", archived: false, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 5, customer: "Gabi Thomas", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Offen", label: "✅ Ja", packed: "❌ Nein", price: 0.00, labelCost: 0, shippingFee: 7.00, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0002", shipDate: "", archived: false, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
       
-      { id: 6, customer: "Iris Diekmann", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "In Arbeit", label: "✅ Ja", packed: "✅ Ja", price: 37.00, labelCost: 6.19, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-00011", shipDate: "2026-09-24", archived: true, items: [{name: "3x Kürbis", color: "Std", weight: 0}, {name: "3x Katze", color: "Std", weight: 0}] },
-      { id: 7, customer: "Silke Schwarzer", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 27.00, labelCost: 6.19, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0010", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
-      { id: 8, customer: "Familie Tchoffo", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 17.00, labelCost: 6.19, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0009", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
-      { id: 9, customer: "Renate Evelin - Veere", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 50.00, labelCost: 6.19, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0008", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
-      { id: 10, customer: "Ralf Hartmann", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 41.00, labelCost: 6.19, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0007", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
-      { id: 11, customer: "Sabine Beewen", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 16.50, labelCost: 6.19, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0006", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
-      { id: 12, customer: "Tobias von der Famile Ulm", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 40.00, labelCost: 6.19, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0004", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
-      { id: 13, customer: "Antje Nanninga", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 16.00, labelCost: 6.19, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0003", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
-      { id: 14, customer: "Paul Hartmann", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 21.00, labelCost: 6.19, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-001", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
-      { id: 15, customer: "Paul Hartmann", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 17.00, labelCost: 6.19, tracking: "-", orderDate: "2026-02-01", invoiceNumber: "RE-2026-0001", shipDate: "2026-02-01", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
-      { id: 16, customer: "Iris", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 17.00, labelCost: 6.19, tracking: "-", orderDate: "2026-02-11", invoiceNumber: "RE-2026-0011", shipDate: "2026-02-11", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] }
+      { id: 6, customer: "Iris Diekmann", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "In Arbeit", label: "✅ Ja", packed: "✅ Ja", price: 30.00, labelCost: 6.19, shippingFee: 7.00, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-00011", shipDate: "2026-09-24", archived: true, items: [{name: "3x Kürbis", color: "Std", weight: 0}, {name: "3x Katze", color: "Std", weight: 0}] },
+      { id: 7, customer: "Silke Schwarzer", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 20.00, labelCost: 6.19, shippingFee: 7.00, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0010", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 8, customer: "Familie Tchoffo", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 10.00, labelCost: 6.19, shippingFee: 7.00, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0009", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 9, customer: "Renate Evelin - Veere", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 43.00, labelCost: 6.19, shippingFee: 7.00, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0008", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 10, customer: "Ralf Hartmann", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 34.00, labelCost: 6.19, shippingFee: 7.00, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0007", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 11, customer: "Sabine Beewen", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 9.50, labelCost: 6.19, shippingFee: 7.00, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0006", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 12, customer: "Tobias von der Famile Ulm", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 33.00, labelCost: 6.19, shippingFee: 7.00, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0004", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 13, customer: "Antje Nanninga", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 9.00, labelCost: 6.19, shippingFee: 7.00, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0003", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 14, customer: "Paul Hartmann", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 14.00, labelCost: 6.19, shippingFee: 7.00, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-001", shipDate: "2026-09-24", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 15, customer: "Paul Hartmann", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 10.00, labelCost: 6.19, shippingFee: 7.00, tracking: "-", orderDate: "2026-02-01", invoiceNumber: "RE-2026-0001", shipDate: "2026-02-01", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] },
+      { id: 16, customer: "Iris", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "❌ Nein", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 10.00, labelCost: 6.19, shippingFee: 7.00, tracking: "-", orderDate: "2026-02-11", invoiceNumber: "RE-2026-0011", shipDate: "2026-02-11", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 50}] }
     ];
 
     const INITIAL_CSV_EXPENSES = [
@@ -723,6 +730,7 @@
       if (order.printer) document.getElementById('printer').value = order.printer;
       document.getElementById('price').value = order.price || '';
       document.getElementById('labelCost').value = order.labelCost !== undefined ? order.labelCost : 0;
+      if (order.shippingFee !== undefined) document.getElementById('shippingFee').value = order.shippingFee;
       document.getElementById('label').value = order.label || '✅ Ja';
       document.getElementById('packed').value = order.packed || '❌ Nein';
       if (order.orderDate) document.getElementById('orderDate').value = order.orderDate;
@@ -896,6 +904,7 @@
       const custName = document.getElementById('customer').value;
       
       let labelC = parseFloat(document.getElementById('labelCost').value) || 0;
+      let shipFee = parseFloat(document.getElementById('shippingFee').value) || 0;
       let ebayBalStatus = plat === 'eBay' ? '⏳ Bei eBay' : 'N/A';
 
       orders.unshift({
@@ -912,6 +921,7 @@
         packed: document.getElementById('packed').value,
         price: parseFloat(document.getElementById('price').value) || 0,
         labelCost: labelC,
+        shippingFee: shipFee,
         tracking: document.getElementById('tracking').value || '-',
         orderDate: customDate,
         invoiceNumber: fixedInvoiceNum,
@@ -923,6 +933,7 @@
       document.getElementById('orderForm').reset();
       document.getElementById('orderDate').value = new Date().toISOString().slice(0,10);
       document.getElementById('labelCost').value = "0.00";
+      document.getElementById('shippingFee').value = "5.00";
       document.getElementById('existingCustomerSelect').value = "";
     }
 
@@ -975,6 +986,7 @@
       orders[idx].packed = document.getElementById(`edit-packed-${idx}`).value;
       orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
       orders[idx].labelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
+      orders[idx].shippingFee = parseFloat(document.getElementById(`edit-shipfee-${idx}`).value) || 0;
       orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value || '-';
       orders[idx].orderDate = document.getElementById(`edit-date-${idx}`)?.value || orders[idx].orderDate;
       
@@ -1003,7 +1015,7 @@
     function printBoxLabel(idx) {
       const o = orders[idx];
       const printSec = document.getElementById('printSection');
-      let itemsSummary = o.items.map(i => `${i.name} (${i.color || 'Standard'}, ${i.weight || 0}g)`).join("<br>• ");
+      let itemsSummary = o.items.map(i => `${i.name} (${i.color \vert{}\vert{} 'Standard'},${i.weight || 0}g)`).join("<br>• ");
       const trackingUrl = (o.tracking && o.tracking !== '-') ? `https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${o.tracking}` : `Sefas3DShop - ${o.customer}`;
 
       printSec.innerHTML = `
@@ -1048,13 +1060,18 @@
       const invSec = document.getElementById('invoiceSection');
       const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
       const invoiceNumber = generateInvoiceNumberForExisting(o);
+      const shipFeeVal = o.shippingFee !== undefined ? o.shippingFee : 5.00;
       
       let itemsRows = '';
       o.items.forEach(i => {
-        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name} ${i.color ? '(' + i.color + ')' : ''}</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td></tr>`;
+        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name}${i.color ? '(' + i.color + ')' : ''}</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td></tr>`;
       });
 
-      const totalAmountNum = o.price;
+      if (shipFeeVal > 0) {
+        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">Versandpauschale</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${shipFeeVal.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${shipFeeVal.toFixed(2).replace('.', ',')} €</td></tr>`;
+      }
+
+      const totalAmountNum = o.price + shipFeeVal;
       const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
       const sepaPayload = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
 
@@ -1113,11 +1130,15 @@
       activeOrders.forEach((o, index) => {
         const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
         const invoiceNumber = generateInvoiceNumberForExisting(o);
+        const shipFeeVal = o.shippingFee !== undefined ? o.shippingFee : 5.00;
         let itemsRows = '';
         o.items.forEach(i => {
-          itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name} ${i.color ? '(' + i.color + ')' : ''}</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td></tr>`;
+          itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name}${i.color ? '(' + i.color + ')' : ''}</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td></tr>`;
         });
-        const totalAmountNum = o.price;
+        if (shipFeeVal > 0) {
+          itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">Versandpauschale</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${shipFeeVal.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${shipFeeVal.toFixed(2).replace('.', ',')} €</td></tr>`;
+        }
+        const totalAmountNum = o.price + shipFeeVal;
         invSec.innerHTML += `
           <div class="page-break-container" style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px;">
             <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 15px;">
@@ -1139,7 +1160,8 @@
       invSec.classList.remove('hidden');
       setTimeout(() => {
         activeOrders.forEach((o, index) => {
-          const totalAmountNum = o.price;
+          const shipFeeVal = o.shippingFee !== undefined ? o.shippingFee : 5.00;
+          const totalAmountNum = o.price + shipFeeVal;
           const invoiceNumber = generateInvoiceNumberForExisting(o);
           const sepaPayload = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
           renderLocalQrCode(`batchSepaQr_${index}`, sepaPayload);
@@ -1153,17 +1175,18 @@
       let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
       csvContent += "Typ;Plattform;Bezahlt?;Zahlungsart;eBay Guthaben Status;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Umsatz (€);Porto-Ausgabe (€)\n";
       orders.forEach(o => {
-        let total = o.price;
+        let shipFeeVal = o.shippingFee !== undefined ? o.shippingFee : 5.00;
+        let total = o.price + shipFeeVal;
         let type = o.archived ? "Einnahme (Archiviert)" : "Einnahme (Aktiv)";
         let date = o.orderDate || "";
         let inv = generateInvoiceNumberForExisting(o);
         let cust = o.customer.replace(/;/g, ",");
         let lCost = (o.labelCost || 0);
-        csvContent += `${type};${o.platform || 'Kleinanzeigen'};${o.isPaid || '❌ Nein'};${o.paymentMethod || 'Überweisung'};${o.ebayBalancePaid || 'N/A'};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${lCost.toFixed(2).replace('.', ',')}\n`;
+        csvContent += `${type};${o.platform || 'Kleinanzeigen'};${o.isPaid \vert{}\vert{} '❌ Nein'};${o.paymentMethod || 'Überweisung'};${o.ebayBalancePaid \vert{}\vert{} 'N/A'};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${lCost.toFixed(2).replace('.', ',')}\n`;
       });
       expenses.forEach(ex => {
         let desc = ex.description.replace(/;/g, ",");
-        csvContent += `Ausgabe;Shop;✅ Ja;Gebühr;N/A;${ex.date || ""};${desc};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')};0,00\n`;
+        csvContent += `Ausgabe;Shop;✅ Ja;Gebühr;N/A;${ex.date \vert{}\vert{} ""};${desc};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')};0,00\n`;
       });
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
@@ -1207,8 +1230,9 @@
 
         const fixedInvNum = generateInvoiceNumberForExisting(o);
         const lCostVal = o.labelCost !== undefined ? o.labelCost : 0;
+        const shipFeeVal = o.shippingFee !== undefined ? o.shippingFee : 5.00;
         const isEbay = o.platform === 'eBay';
-        const totalOrderRevenue = o.price;
+        const totalOrderRevenue = o.price + shipFeeVal;
 
         if (editingIndex === idx) {
           let editItemsHtml = `<div id="editArticleRows" class="space-y-1.5 my-1.5">`;
@@ -1233,8 +1257,8 @@
               <td class="p-2"><select id="edit-ispaid-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="✅ Ja" ${o.isPaid==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.isPaid==='❌ Nein'?'selected':''}>❌ Nein</option></select></td>
               <td class="p-2"><select id="edit-paymeth-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="eBay" ${o.paymentMethod==='eBay'?'selected':''}>eBay</option><option value="PayPal" ${o.paymentMethod==='PayPal'?'selected':''}>PayPal</option><option value="Überweisung" ${o.paymentMethod==='Überweisung'?'selected':''}>Überweisung</option><option value="Bar" ${o.paymentMethod==='Bar'?'selected':''}>Bar</option></select></td>
               <td class="p-2">${ebayBalSelectEdit}</td>
-              <td class="p-2"><select id="edit-stat-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option ${o.status==='Offen'?'selected':''}>Offen</option><option ${o.status==='In Arbeit'?'selected':''}>In Arbeit</option><option ${o.status==='Fertig'?'selected':''}>Fertig</option></select></td>
-              <td class="p-2 space-y-1"><div>Umsatz: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-16"></div><div>Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCostVal}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-red-300 w-16"></div></td>
+              <td class="p-2"><select id="edit-stat-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option ${o.status==='Offen'?'selected':''}>Offen</option><option ${o.status==='In Arbeit'?'selected':''}>In Arbeit</option><option${o.status==='Fertig'?'selected':''}>Fertig</option></select></td>
+              <td class="p-2 space-y-1"><div>Preis: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-16"></div><div>Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCostVal}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-red-300 w-16"></div><div>Versand: <input type="number" step="0.01" id="edit-shipfee-${idx}" value="${shipFeeVal}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-cyan-300 w-16"></div></td>
               <td class="p-2"><select id="edit-label-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>❌ Nein</option><option value="🟡 Wartet auf Zahlung" ${o.label==='🟡 Wartet auf Zahlung'?'selected':''}>🟡 Wartet auf Zahlung</option></select></td>
               <td class="p-2"><select id="edit-packed-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>❌ Nein</option></select></td>
               <td class="p-2"><input type="text" id="edit-track-${idx}" value="${o.tracking}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-16"></td>
@@ -1242,7 +1266,7 @@
             </tr>`;
         } else {
           let itemsHtml = '<div class="space-y-0.5">';
-          o.items.forEach(i => { itemsHtml += `<div class="text-[11px] text-white">• ${i.name} <span class="text-purple-300">(${i.color || 'Std'}, ${i.weight || 0}g)</span></div>`; });
+          o.items.forEach(i => { itemsHtml += `<div class="text-[11px] text-white">• ${i.name} <span class="text-purple-300">(${i.color \vert{}\vert{} 'Std'},${i.weight || 0}g)</span></div>`; });
           itemsHtml += '</div>';
 
           let archiveBtnHtml = o.archived 
@@ -1261,6 +1285,7 @@
             </select>` : `<span class="text-slate-500 text-[11px]">-</span>`;
 
           let orderPortoDisplay = lCostVal > 0 ? `<div class="text-red-400 text-[10px]">Porto: -${lCostVal.toFixed(2).replace('.', ',')} €</div>` : `<div class="text-slate-500 text-[10px]">Porto: 0,00 €</div>`;
+          let orderShippingDisplay = shipFeeVal > 0 ? `<div class="text-cyan-400 text-[10px]">Versand: +${shipFeeVal.toFixed(2).replace('.', ',')} €</div>` : ``;
 
           tbody.innerHTML += `
             <tr class="hover:bg-slate-800/40 border-b border-slate-800">
@@ -1272,7 +1297,7 @@
               <td class="p-2"><select onchange="updateField(${o.id}, 'paymentMethod', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-cyan-300"><option value="eBay" ${o.paymentMethod === 'eBay' ? 'selected' : ''}>eBay</option><option value="PayPal" ${o.paymentMethod === 'PayPal' ? 'selected' : ''}>PayPal</option><option value="Überweisung" ${o.paymentMethod === 'Überweisung' ? 'selected' : ''}>Überweisung</option><option value="Bar" ${o.paymentMethod === 'Bar' ? 'selected' : ''}>Bar</option></select></td>
               <td class="p-2">${ebayBalanceCell}</td>
               <td class="p-2"><select onchange="updateField(${o.id}, 'status', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-yellow-300"><option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option><option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option><option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option></select></td>
-              <td class="p-2 text-[11px]"><div class="text-emerald-400 font-bold">${totalOrderRevenue.toFixed(2).replace('.', ',')} €</div>${orderPortoDisplay}</td>
+              <td class="p-2 text-[11px]"><div class="text-emerald-400 font-bold">${totalOrderRevenue.toFixed(2).replace('.', ',')} €</div>${orderShippingDisplay}${orderPortoDisplay}</td>
               <td class="p-2"><select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300"><option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.label === '❌ Nein' ? 'selected' : ''}>❌ Nein</option><option value="🟡 Wartet auf Zahlung" ${o.label === '🟡 Wartet auf Zahlung' ? 'selected' : ''}>🟡 Wartet auf Zahlung</option></select></td>
               <td class="p-2"><select onchange="updateField(${o.id}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300"><option value="✅ Ja" ${o.packed === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.packed === '❌ Nein' ? 'selected' : ''}>❌ Nein</option></select></td>
               <td class="p-2 text-[10px] font-mono text-blue-400">${o.tracking}</td>
@@ -1292,7 +1317,8 @@
         if (o.items && Array.isArray(o.items)) o.items.forEach(i => orderTotalWeight += (i.weight || 0));
 
         let isEbay = o.platform === 'eBay';
-        let orderAmount = o.price;
+        let shipFeeVal = o.shippingFee !== undefined ? o.shippingFee : 5.00;
+        let orderAmount = o.price + shipFeeVal;
         let lCost = o.labelCost || 0;
 
         if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') {
