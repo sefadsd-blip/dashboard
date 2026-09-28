@@ -53,7 +53,7 @@
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
             <span class="inline-block w-2 h-2 rounded-full bg-green-500" id="cloudStatusDot"></span> 
-            <span id="cloudStatusText">Mit Cloud verbunden</span>
+            <span id="cloudStatusText">Verbinde mit Cloud...</span>
           </p>
         </div>
       </div>
@@ -277,9 +277,9 @@
   </div>
 
   <script>
-    // JSONBin Konfiguration (Deine Cloud-Verbindung)
+    // Trage hier deine JSONBin.io Zugangsdaten ein:
     const JSONBIN_BIN_ID = "66f7f6f2acd3cb34a88f7c90"; 
-    const JSONBIN_API_KEY = "$2a$10$95bTzX51y0T5Yq3t2G10uex2G70Lw0r0r0r0r0r0r0r0r0r0r0r0"; // Trage hier bei Bedarf deinen Master-Key ein
+    const JSONBIN_API_KEY = ""; // Leer lassen falls deine Bin öffentlich ist, sonst Master-Key eintragen
 
     let orders = [];
     let spools = [
@@ -309,9 +309,10 @@
 
     async function loadFromCloud() {
       try {
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-          headers: JSONBIN_API_KEY ? { 'X-Master-Key': JSONBIN_API_KEY } : {}
-        });
+        const headers = {};
+        if (JSONBIN_API_KEY) headers['X-Master-Key'] = JSONBIN_API_KEY;
+
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, { headers });
         if (!response.ok) throw new Error("Cloud-Abruf fehlgeschlagen");
         const data = await response.json();
         
@@ -322,12 +323,11 @@
           if (Array.isArray(data.record.printers)) printers = data.record.printers;
         }
         refreshEverything();
-        document.getElementById('cloudStatusText').innerText = "Cloud synchronisiert";
+        document.getElementById('cloudStatusText').innerText = "Mit Cloud verbunden";
         document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
       } catch (e) {
-        document.getElementById('cloudStatusText').innerText = "Offline (Nutze lokalen Cache)";
+        document.getElementById('cloudStatusText').innerText = "Offline (Lokaler Modus)";
         document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-yellow-500";
-        // Fallback auf LocalStorage
         try {
           let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
           if (Array.isArray(savedOrders)) orders = savedOrders;
@@ -339,23 +339,22 @@
     async function saveToCloud() {
       const payload = { orders, spools, expenses, printers };
       try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (JSONBIN_API_KEY) headers['X-Master-Key'] = JSONBIN_API_KEY;
+
         const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(JSONBIN_API_KEY ? { 'X-Master-Key': JSONBIN_API_KEY } : {})
-          },
+          headers: headers,
           body: JSON.stringify(payload)
         });
         if (!response.ok) throw new Error("Fehler beim Speichern");
         
-        // Lokaler Backup-Speicher
         localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
         refreshEverything();
         alert("✅ Erfolgreich in der Cloud gespeichert!");
       } catch (e) {
-        alert("❌ Cloud-Speichern fehlgeschlagen! Daten wurden lokal gesichert.");
         localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
+        alert("⚠️ Cloud-Speichern fehlgeschlagen (evtl. API-Key erforderlich). Deine Daten wurden sicher lokal im Browser gespeichert!");
       }
     }
 
@@ -618,7 +617,6 @@
       invSec.innerHTML = `
         <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.4; background: #fff; padding: 20px;">
           
-          <!-- OBERER BEREICH: Logo / Titel / QR Code -->
           <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
             <div style="display: flex; align-items: center; gap: 10px;">
               <svg style="width: 36px; height: 36px;" viewBox="0 0 100 100" fill="currentColor">
@@ -646,7 +644,6 @@
 
           <hr style="border: none; border-top: 1px solid #333; margin-bottom: 20px;">
 
-          <!-- KUNDENADRESSE -->
           <div style="margin-bottom: 25px;">
             <p style="margin: 0 0 2px 0; color: #666; font-size: 10px;">Rechnungsempfänger:</p>
             <div style="font-weight: bold; font-size: 12px; margin-bottom: 2px;">${o.customer}</div>
@@ -655,7 +652,6 @@
 
           <p style="margin: 0 0 10px 0; font-style: italic; color: #444;">Das Lieferdatum entspricht dem Rechnungsdatum.</p>
 
-          <!-- ARTIKEL TABELLE -->
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
             <thead>
               <tr style="border-bottom: 1px solid #333; text-align: left;">
@@ -670,7 +666,6 @@
             </tbody>
           </table>
 
-          <!-- GESAMTBETRAG -->
           <div style="display: flex; justify-content: flex-end; margin-bottom: 25px;">
             <div style="width: 220px; display: flex; justify-content: space-between; padding: 6px 0; border-top: 1px solid #333; border-bottom: 2px solid #333; font-weight: bold;">
               <span>Gesamtbetrag:</span>
@@ -678,7 +673,6 @@
             </div>
           </div>
 
-          <!-- ZAHLUNGSINFORMATIONEN & BEZAHLT-HINWEIS (OHNE JA/NEIN) -->
           <div style="margin-bottom: 35px; font-size: 10.5px; display: flex; justify-content: space-between; align-items: start;">
             <div>
               <p style="margin: 0 0 3px 0; font-weight: bold;">Zahlungsinformationen:</p>
@@ -693,7 +687,6 @@
             </div>
           </div>
 
-          <!-- FUSSTEXT -->
           <div style="text-align: center; font-size: 9.5px; color: #555; border-top: 1px solid #ddd; pt-2;">
             <p style="margin: 4px 0;">Kleinunternehmer gemäß § 19 UStG wird keine Umsatzsteuer berechnet.</p>
             <p style="margin: 4px 0;">Vielen Dank für deinen Einkauf bei Sefas3DShop!</p>
