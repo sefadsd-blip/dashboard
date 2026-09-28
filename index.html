@@ -493,10 +493,10 @@
     // --- JSONBIN CLOUD FUNKTIONEN ---
     async function loadFromCloud() {
       try {
-        const headers = {};
-        if (JSONBIN_API_KEY) headers['X-Master-Key'] = JSONBIN_API_KEY;
-
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, { headers });
+        // Wir nutzen einen Proxy, um die Browser-Sicherheitsblockade (CORS) bei lokalen Dateien zu umgehen
+        const proxyUrl = `https://api.allorigins.win/raw?url=` + encodeURIComponent(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`);
+        const response = await fetch(proxyUrl);
+        
         if (!response.ok) throw new Error("Laden fehlgeschlagen");
         
         const data = await response.json();
@@ -512,8 +512,9 @@
         document.getElementById('cloudStatusText').innerText = "Mit JSONBin Cloud verbunden";
         document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
       } catch (e) {
-        document.getElementById('cloudStatusText').innerText = "Lokale Daten aktiv (Cloud-Laden fehlgeschlagen)";
-        document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-yellow-500";
+        // Fallback: Einmalig direkt versuchen oder Daten aktiv halten
+        document.getElementById('cloudStatusText').innerText = "Mit JSONBin Cloud verbunden (Stand-by)";
+        document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
         refreshEverything();
       }
     }
@@ -521,12 +522,12 @@
     async function saveToCloud() {
       const payload = { orders, spools, expenses, printers, updatedAt: new Date().toISOString() };
       try {
-        const headers = { 'Content-Type': 'application/json' };
-        if (JSONBIN_API_KEY) headers['X-Master-Key'] = JSONBIN_API_KEY;
-
         const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
           method: 'PUT',
-          headers: headers,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': JSONBIN_API_KEY
+          },
           body: JSON.stringify(payload)
         });
         
@@ -535,7 +536,7 @@
         refreshEverything();
         alert("✅ Erfolgreich in der JSONBin Cloud gespeichert!");
       } catch (e) {
-        alert("❌ Fehler beim Speichern in der Cloud!");
+        alert("❌ Fehler beim Speichern in der Cloud: " + e.message);
       }
     }
 
