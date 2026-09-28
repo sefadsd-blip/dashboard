@@ -87,8 +87,8 @@
             Sefas<span class="text-cyan-400">3d</span>shop
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
-            <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span> 
-            <span id="syncStatus">Mit Cloud verbunden</span>
+            <span id="syncDot" class="inline-block w-2 h-2 rounded-full bg-green-500"></span> 
+            <span id="syncStatus">Lokal & Cloud bereit</span>
           </p>
         </div>
       </div>
@@ -487,8 +487,17 @@
     }
 
     async function loadCloudData() {
+      const statusEl = document.getElementById('syncStatus');
+      const dotEl = document.getElementById('syncDot');
+      if (statusEl) statusEl.innerText = "Lade von Cloud...";
+      
       try {
-        const res = await fetch(NPOINT_URL, { cache: 'no-store' });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        
+        const res = await fetch(NPOINT_URL, { cache: 'no-store', signal: controller.signal });
+        clearTimeout(timeoutId);
+
         if (res.ok) {
           const json = await res.json();
           if (json && Array.isArray(json.orders)) {
@@ -503,31 +512,53 @@
             renderPrinters();
             updateCustomerDropdowns();
             updatePrinterDropdowns();
+            if (statusEl) statusEl.innerText = "Mit Cloud verbunden";
+            if (dotEl) dotEl.className = "inline-block w-2 h-2 rounded-full bg-green-500";
             alert("✅ Daten erfolgreich von der Cloud abgerufen!");
           } else {
-            alert("Die Cloud ist leer.");
+            alert("Die Cloud-Antwort war leer oder ungültig.");
+            if (statusEl) statusEl.innerText = "Cloud leer";
           }
+        } else {
+          throw new Error("Server antwortete mit Code " + res.status);
         }
       } catch(e) {
-        alert("Hinweis: Cloud konnte nicht erreicht werden.");
+        console.warn("Cloud load error:", e);
+        if (statusEl) statusEl.innerText = "Cloud nicht erreichbar (Lokal aktiv)";
+        if (dotEl) dotEl.className = "inline-block w-2 h-2 rounded-full bg-yellow-500";
+        alert("⚠️ Cloud konnte nicht erreicht werden. Deine lokalen Daten werden weiterverwendet!");
       }
     }
 
     async function pushToCloudManual() {
       saveLocalOnly();
+      const statusEl = document.getElementById('syncStatus');
+      const dotEl = document.getElementById('syncDot');
+      if (statusEl) statusEl.innerText = "Speichere in Cloud...";
+
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+
         const res = await fetch(NPOINT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orders, spools, expenses, printers })
+          body: JSON.stringify({ orders, spools, expenses, printers }),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
+
         if (res.ok) {
+          if (statusEl) statusEl.innerText = "Mit Cloud verbunden";
+          if (dotEl) dotEl.className = "inline-block w-2 h-2 rounded-full bg-green-500";
           alert("✅ Daten erfolgreich in der Cloud gespeichert!");
         } else {
-          alert("⚠️ Server-Fehler: Die Cloud hat abgelehnt.");
+          throw new Error("Server abgelehnt Code " + res.status);
         }
       } catch(e) {
-        alert("❌ Netzwerkfehler: Cloud konnte nicht erreicht werden.");
+        if (statusEl) statusEl.innerText = "Speichern fehlgeschlagen (Lokal gesichert)";
+        if (dotEl) dotEl.className = "inline-block w-2 h-2 rounded-full bg-red-500";
+        alert("❌ Netzwerkfehler: Cloud konnte nicht erreicht werden. Daten wurden sicher lokal gespeichert.");
       }
     }
 
