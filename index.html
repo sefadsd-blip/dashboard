@@ -58,8 +58,8 @@
             Sefas<span class="text-cyan-400">3d</span>shop
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
-            <span id="cloudStatusIndicator" class="inline-block w-2 h-2 rounded-full bg-green-500"></span> 
-            <span id="cloudStatusText">Cloud aktiv</span>
+            <span id="cloudStatusIndicator" class="inline-block w-2 h-2 rounded-full bg-yellow-500"></span> 
+            <span id="cloudStatusText">Lade Daten...</span>
           </p>
         </div>
       </div>
@@ -72,6 +72,9 @@
         </button>
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv
+        </button>
+        <button onclick="loadFromCloud(true)" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
+          <i class="fa-solid fa-cloud-arrow-down mr-1"></i> ☁️ Laden
         </button>
         <button onclick="syncToCloud()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-cloud-arrow-up mr-1"></i> ☁️ Speichern
@@ -303,13 +306,19 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
       document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
-      loadFromCloud();
+      loadFromCloud(false);
     });
 
-    async function loadFromCloud() {
+    async function loadFromCloud(manualTrigger = false) {
       const indicator = document.getElementById('cloudStatusIndicator');
       const text = document.getElementById('cloudStatusText');
       
+      if(manualTrigger) {
+          text.innerText = "Lade Cloud...";
+          indicator.className = "inline-block w-2 h-2 rounded-full bg-yellow-500 animate-pulse";
+      }
+
+      // Erst lokales Backup abrufen
       try {
         let local = localStorage.getItem('sefas_shop_data');
         if (local) {
@@ -322,6 +331,7 @@
         }
       } catch(e) {}
 
+      // Neueste Version aus der Cloud holen
       try {
         let res = await fetch(CLOUD_URL);
         if (res.ok) {
@@ -335,11 +345,14 @@
             text.innerText = "Cloud aktiv";
             saveLocalBackup();
             refreshEverything();
+            
+            if(manualTrigger) alert("✅ Aktuellste Daten aus der Cloud geladen!");
           }
         }
       } catch(e) {
         indicator.className = "inline-block w-2 h-2 rounded-full bg-blue-500";
         text.innerText = "Lokal aktiv";
+        if(manualTrigger) alert("⚠️ Cloud-Verbindung fehlgeschlagen. Du arbeitest mit lokalen Daten.");
       }
     }
 
@@ -354,6 +367,8 @@
       const indicator = document.getElementById('cloudStatusIndicator');
       const text = document.getElementById('cloudStatusText');
       text.innerText = "Speichere...";
+      indicator.className = "inline-block w-2 h-2 rounded-full bg-yellow-500 animate-pulse";
+      
       saveLocalBackup();
 
       try {
@@ -366,12 +381,14 @@
         if (res.ok) {
           indicator.className = "inline-block w-2 h-2 rounded-full bg-green-500";
           text.innerText = "Gespeichert!";
+          alert("✅ Daten erfolgreich hochgeladen und auf allen Geräten verfügbar!");
         } else {
           throw new Error();
         }
       } catch(e) {
         indicator.className = "inline-block w-2 h-2 rounded-full bg-blue-500";
         text.innerText = "Lokal gespeichert";
+        alert("⚠️ Cloud nicht erreichbar. Daten wurden lokal auf diesem Gerät gespeichert!");
       }
     }
 
