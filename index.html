@@ -56,16 +56,11 @@
 </head>
 <body class="p-3 md:p-5 min-h-screen text-xs">
 
-  <!-- DRUCK-BEREICH FÜR QR-ETIKETTEN -->
   <div id="printSection" class="hidden"></div>
-
-  <!-- DRUCK-BEREICH FÜR RECHNUNGEN -->
   <div id="invoiceSection" class="hidden"></div>
 
-  <!-- MAIN APP -->
   <div id="mainApp" class="max-w-[1700px] mx-auto space-y-4">
     
-    <!-- HEADER -->
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800 p-3 rounded-2xl border border-slate-700 gap-3">
       <div class="flex items-center space-x-3">
         <div class="bg-slate-900 p-2 rounded-xl border border-blue-500/30 flex items-center justify-center shadow-lg">
@@ -87,8 +82,8 @@
             Sefas<span class="text-cyan-400">3d</span>shop
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
-            <span class="inline-block w-2 h-2 rounded-full bg-yellow-500" id="syncDot"></span> 
-            <span id="syncStatus">Lade Cloud-Daten...</span>
+            <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span> 
+            <span>Lokal Aktiv (Ohne Cloud-Blockade)</span>
           </p>
         </div>
       </div>
@@ -102,16 +97,12 @@
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv
         </button>
-        <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
-          <i class="fa-solid fa-rotate mr-1"></i> 🔄 Neu Laden
-        </button>
-        <button onclick="pushToCloudManual()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
-          <i class="fa-solid fa-cloud-arrow-up mr-1"></i> 📤 In Cloud speichern
+        <button onclick="saveAllData()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
+          <i class="fa-solid fa-floppy-disk mr-1"></i> 💾 Speichern
         </button>
       </div>
     </header>
 
-    <!-- STATISTIK & MONATS-FILTER -->
     <section class="space-y-2">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800/60 p-2.5 rounded-xl border border-slate-700 gap-2">
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-chart-pie mr-1.5 text-blue-400"></i> Statistik-Auswertung</h2>
@@ -160,7 +151,6 @@
       </div>
     </section>
 
-    <!-- DRUCKER & FILAMENT -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <section class="lg:col-span-2 space-y-2">
         <div class="flex justify-between items-center">
@@ -179,7 +169,6 @@
       </section>
     </div>
 
-    <!-- NEUEN AUFTRAG ANLEGEN -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex justify-between items-center">
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-plus-circle mr-1.5 text-blue-400"></i> Neuen Auftrag anlegen</h2>
@@ -207,9 +196,7 @@
             <option value="✅ Ja">Bezahlt: ✅ Ja</option>
             <option value="❌ Nein" selected>Bezahlt: ❌ Nein</option>
           </select>
-          <select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-            <!-- Dynamisch gefüllt -->
-          </select>
+          <select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></select>
           
           <input type="number" step="0.01" id="price" placeholder="Artikelpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           
@@ -246,16 +233,6 @@
             <label class="text-[11px] font-semibold text-slate-300">Artikel, Farbe & Gewicht (g):</label>
             <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-[11px] cursor-pointer">+ Artikel</button>
           </div>
-
-          <div class="flex flex-wrap gap-1 py-0.5">
-            <span class="text-[10px] text-slate-400 self-center mr-1">Schnell:</span>
-            <button type="button" onclick="addPresetArticle('Einkaufswagenlöser')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded border border-slate-700 cursor-pointer">+ Einkaufswagenlöser</button>
-            <button type="button" onclick="addPresetArticle('Tannenzapfen')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded border border-slate-700 cursor-pointer">+ Tannenzapfen</button>
-            <button type="button" onclick="addPresetArticle('Küchenrollenhalter')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded border border-slate-700 cursor-pointer">+ Küchenrollenhalter</button>
-            <button type="button" onclick="addPresetArticle('Vase')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded border border-slate-700 cursor-pointer">+ Vase</button>
-            <button type="button" onclick="addPresetArticle('Akkuhalter')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded border border-slate-700 cursor-pointer">+ Akkuhalter</button>
-          </div>
-
           <div id="articleInputRows" class="space-y-1.5">
             <div class="flex gap-2 items-center article-row">
               <input type="text" placeholder="Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
@@ -268,14 +245,13 @@
       </form>
     </section>
 
-    <!-- AUSGABEN & EINKÄUFE VERWALTUNG -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-receipt mr-1.5 text-red-400"></i> Betriebsausgaben & Einkäufe</h2>
       </div>
 
       <form id="expenseForm" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
-        <input type="text" id="expDesc" placeholder="Beschreibung (z.B. eBay Gebühren)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+        <input type="text" id="expDesc" placeholder="Beschreibung" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           <option value="Filament">🧵 Filament</option>
           <option value="DHL / Versand">📦 DHL / Versand</option>
@@ -304,12 +280,9 @@
       </div>
     </section>
 
-    <!-- TABELLE -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-        <div class="flex items-center space-x-2">
-          <h2 id="tableTitle" class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-list-check mr-1.5 text-blue-400"></i> Bestellungen (Aktiv)</h2>
-        </div>
+        <h2 id="tableTitle" class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-list-check mr-1.5 text-blue-400"></i> Bestellungen (Aktiv)</h2>
         <input type="text" id="searchInput" oninput="renderOrders()" placeholder="Suchen..." class="bg-slate-900 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-white w-56 focus:outline-none">
       </div>
       <div class="overflow-x-auto">
@@ -336,144 +309,90 @@
       </div>
     </section>
 
-    <!-- KUNDEN-NACHRICHTEN VORLAGEN -->
-    <section class="card p-4 rounded-xl space-y-3">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-700/60 pb-2.5">
-        <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-comments mr-1.5 text-blue-400"></i> Kleinanzeigen & Kunden-Vorlagen</h2>
-        <select id="templateCustomerSelect" onchange="updateTemplatePreview()" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-[11px] text-slate-300 focus:outline-none w-full sm:w-64">
-          <option value="">👤 Kunden auswählen (zieht Sendungsnummer)...</option>
-        </select>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 flex flex-col justify-between space-y-2">
-          <div>
-            <div class="flex justify-between items-center mb-1.5">
-              <span class="text-[11px] font-bold text-emerald-400">1. Zahlung erhalten</span>
-              <button onclick="copyTemplate(1)" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded text-[10px] cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
-            </div>
-            <textarea id="templateText1" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-[11px] text-slate-300 focus:outline-none" readonly>Hallo,\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.</textarea>
-          </div>
-        </div>
-
-        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 flex flex-col justify-between space-y-2">
-          <div>
-            <div class="flex justify-between items-center mb-1.5">
-              <span class="text-[11px] font-bold text-yellow-400">2. Zahlungserinnerung</span>
-              <button onclick="copyTemplate(2)" class="bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-300 border border-yellow-500/40 px-2 py-0.5 rounded text-[10px] cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
-            </div>
-            <textarea id="templateText2" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-[11px] text-slate-300 focus:outline-none" readonly>Hallo,\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!</textarea>
-          </div>
-        </div>
-
-        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 flex flex-col justify-between space-y-2">
-          <div>
-            <div class="flex justify-between items-center mb-1.5">
-              <span class="text-[11px] font-bold text-blue-400">3. Druck gestartet</span>
-              <button onclick="copyTemplate(3)" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/40 px-2 py-0.5 rounded text-[10px] cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
-            </div>
-            <textarea id="templateText3" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-[11px] text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.</textarea>
-          </div>
-        </div>
-
-        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 flex flex-col justify-between space-y-2">
-          <div>
-            <div class="flex justify-between items-center mb-1.5">
-              <span class="text-[11px] font-bold text-purple-400">4. Paket unterwegs</span>
-              <button onclick="copyTemplate(4)" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded text-[10px] cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button>
-            </div>
-            <textarea id="templateText4" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-[11px] text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n[Sendungsnummer]\n\nLink: https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=[Sendungsnummer]\n\nViel Freude damit!</textarea>
-          </div>
-        </div>
-      </div>
-    </section>
-
   </div>
 
   <script>
-    const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
+    // FESTER DATENSTAND (Ohne Cloud-Abhängigkeit)
+    let orders = [
+      {"id":1790522031947,"items":[{"name":"Schönes Wandregal rund / Metall-Regal Schwarz – Neu 3D-Druck","color":"","weight":0}],"label":"✅ Ja","price":19.99,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Offen","address":"LAUCHHEIMERSTR. 11 94469 DEGGENDORF","printer":"CR-10 Smart Pro #1","archived":false,"customer":"ELVIRA FELK","platform":"eBay","shipDate":"","tracking":"02270136002720","labelCost":6.99,"orderDate":"2026-09-27","shippingFee":0,"invoiceNumber":"RE-2026-0015","paymentMethod":"eBay","ebayBalancePaid":"⏳ Bei eBay"},
+      {"id":1790506736457,"items":[{"name":"Design Küchenrollenhalter | 3D-Druck","color":"PLA Schwarz","weight":0}],"label":"✅ Ja","price":15.18,"isPaid":"✅ Ja","packed":"❌ Nein","status":"Offen","address":"Droste-Hülshoff-Weg 20 58642 Iserlohn","printer":"CR-10 Smart Pro #1","archived":false,"customer":"Thomas Siepmann","platform":"eBay","shipDate":"","tracking":"995500929907","labelCost":5.19,"orderDate":"2026-09-27","paymentDate":"2026-09-27","shippingFee":0,"shippingCost":5,"invoiceNumber":"RE-2026-0014","paymentMethod":"eBay","ebayBalancePaid":"⏳ Bei eBay"},
+      {"id":1790489745269,"items":[{"name":"More Halter 4x","color":"ASA Grau","weight":0}],"label":"✅ Ja","price":15,"isPaid":"✅ Ja","packed":"❌ Nein","status":"Fertig","address":"Trockener Kamp 10 31139 Hildesheim","printer":"Anycubic Kobra","archived":false,"customer":"Jennifer Habenicht","platform":"Kleinanzeigen","shipDate":"","tracking":"-356601127551","labelCost":5,"orderDate":"2026-09-27","paymentDate":"2026-09-27","shippingFee":5,"shippingCost":5,"invoiceNumber":"RE-2026-0013","paymentMethod":"PayPal","ebayBalancePaid":"N/A"},
+      {"id":1790449236772,"items":[{"name":"Süßer Blumentopf mit Herz-Händen 12x12","color":"Pla Weiß","weight":150}],"label":"✅ Ja","price":15,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Offen","address":"Badergraben 18a, 04808 Wurzen","printer":"CR-10 Smart Pro #1","archived":false,"customer":"Annett Hanitzsch","platform":"Kleinanzeigen","shipDate":"","tracking":"-358074757567","labelCost":6.99,"orderDate":"2026-09-26","paymentDate":"","shippingFee":5,"shippingCost":7,"invoiceNumber":"RE-2026-00012","paymentMethod":"PayPal","ebayBalancePaid":"N/A"},
+      {"id":1790098916977,"items":[{"name":"3x Kürbis","color":"","weight":0},{"name":"3x Katze","color":"","weight":0}],"label":"✅ Ja","price":25,"isPaid":"✅ Ja","packed":"✅ Ja","status":"In Arbeit","address":"Am Wellenweiher 4 49401 Damme","printer":"CR-10 Smart Pro #1","archived":false,"customer":"Iris Diekmann","platform":"Kleinanzeigen","shipDate":"","tracking":"-","labelCost":4.19,"orderDate":"2026-09-24","paymentDate":"2026-09-24","shippingFee":5,"shippingCost":7,"invoiceNumber":"RE-2026-00011","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
+      {"id":1789933732086,"items":[{"name":"2x Tannenzapfen","color":"PLA Dunkelrot ","weight":180},{"name":"2x Tannenzapfen","color":"PLA Olivgrün","weight":180}],"label":"✅ Ja","notes":"","price":25,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":0,"address":"Gartenweg 10d 04862 Mockrehna","printer":"Ender 3 V3","archived":true,"customer":"Silke Schwarzer","platform":"Kleinanzeigen","shipDate":"2026-09-24","tracking":"-356408386839","labelCost":4.19,"orderDate":"2026-09-24","paymentDate":"","shippingCost":5,"invoiceNumber":"RE-2026-0010","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
+      {"id":1789933658205,"items":[{"name":"Küchenrollnhalter 2X","color":"PLA Schwarz","weight":460}],"label":"✅ Ja","notes":"","price":11,"isPaid":"✅ Ja","packed":"✅ Ja","status":"In Arbeit","weight":460,"address":"Prämienstraße 62 52428 Jülich","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Familie Tchoffo","platform":"Kleinanzeigen","shipDate":"2026-09-22","tracking":"358072667188","labelCost":5.19,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"shippingCost":5,"invoiceNumber":"RE-2026-0009","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
+      {"id":1,"items":[{"name":"1x Japandi Vogel","color":"PLA grün","weight":50},{"name":"1x Kürbis","color":"PETG Orange","weight":0},{"name":"1x Modernes Eichhörnchen","color":"PLA Hellbraun ","weight":180},{"name":"2x Zapfenhäuschen","color":"PLA Olivgrün","weight":180},{"name":"2x Zapfenhäuschen","color":"PLA Hellbraun ","weight":180}],"label":"✅ Ja","notes":"Bitte gut verpacken","price":45,"isPaid":"✅ Ja","packed":"✅ Ja","status":"In Arbeit","weight":0,"address":"Heinrich - Zillestr.11 04668 Grimma","printer":"Anycubic Kobra","archived":true,"customer":"Renate Evelin - Veere","platform":"Kleinanzeigen","shipDate":"2026-09-26","tracking":"-358073187096","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"shippingCost":7,"invoiceNumber":"RE-2026-0008","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
+      {"id":2,"items":[{"name":"6x Rentier","color":"","weight":0}],"label":"✅ Ja","notes":"","price":40,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":120,"address":"Eichelweg 1 49377 Vechta","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Ralf Hartmann","platform":"Kleinanzeigen","shipDate":"2026-09-21","tracking":"358070447889","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"shippingCost":5,"invoiceNumber":"RE-2026-0007","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
+      {"id":3,"items":[{"name":"1x Fernbedienungshalter","color":"","weight":0}],"label":"✅ Ja","notes":"","price":10,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":0,"address":"Bremer Str 62 a 49356 Diepholz","printer":"Anycubic Kobra","archived":true,"customer":"Sabine Beewen","platform":"Kleinanzeigen","shipDate":"2026-09-21","tracking":"-356600769079","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"shippingCost":5,"invoiceNumber":"RE-2026-0006","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
+      {"id":4,"items":[{"name":"6x Weinhalter schwarz","color":"PLA Schwarz","weight":0},{"name":"9x Bäume","color":"","weight":0}],"label":"🟡 Wartet auf Zahlung","notes":"","price":0,"packed":"❌ Nein","status":"Offen","weight":240,"address":"","printer":"Ender 3 V3","archived":false,"customer":"Dunja marcinkowski","platform":"Kleinanzeigen","shipDate":"","tracking":"-","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingCost":0,"invoiceNumber":"RE-2026-0005","paymentMethod":"Überweisung"},
+      {"id":5,"items":[{"name":"3x Suppenhalter 6cm","color":"PLA Schwarz","weight":0},{"name":"4x Backpulverhalter","color":"PLA Schwarz","weight":0},{"name":"4x Backpulverhalter 6cm","color":"PLA Schwarz","weight":0},{"name":"1x Abroller Alufolie","color":"PLA Schwarz","weight":0}],"label":"✅ Ja","notes":"","price":35,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":0,"address":"","printer":"Anycubic Kobra","archived":true,"customer":"Tobias von der Famile Ulm","platform":"Kleinanzeigen","shipDate":"2026-09-22","tracking":"358072492915","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"shippingCost":7,"invoiceNumber":"RE-2026-0004","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
+      {"id":6,"items":[{"name":"1x Vase weiß","color":"","weight":0}],"label":"✅ Ja","notes":"","price":10,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":110,"address":"Rinderhagenstraße 27 in 26802 Moormerland","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Antje Nanninga","platform":"Kleinanzeigen","shipDate":"2026-09-21","tracking":"-358072667172","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"shippingCost":6,"invoiceNumber":"RE-2026-0003","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
+      {"id":7,"items":[{"name":"1x Dogge lila","color":"PLA lila ","weight":490}],"label":"✅ Ja","notes":"","price":0,"packed":"❌ Nein","status":"Offen","weight":85,"address":"Goerdelerstr. 141, 27755 delmenhorst","printer":"Ender 3 V3","archived":false,"customer":"Gabi Thomas","platform":"Kleinanzeigen","shipDate":"","tracking":"358072492921","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingCost":0,"invoiceNumber":"RE-2026-0002","paymentMethod":"Überweisung"},
+      {"id":8,"items":[{"name":"3x Makita Akkuhalter","color":"","weight":0}],"label":"✅ Ja","notes":"","price":14,"packed":"✅ Ja","status":"In Arbeit","weight":95,"address":"Ellernstraße 40 32457 Porta Westfalica","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Paul Hartmann","platform":"Kleinanzeigen","shipDate":"2026-09-22","tracking":"-","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-001","paymentMethod":"Überweisung"},
+      {"id":1,"items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}],"label":"✅ Ja","price":10,"packed":"✅ Ja","status":"Fertig","address":"Rahden","printer":"Ender 3 V3","archived":true,"customer":"Paul Hartmann","platform":"Kleinanzeigen","shipDate":"2026-02-01","tracking":"-","labelCost":0,"orderDate":"2026-02-01","paymentDate":"2026-02-01","shippingCost":7,"invoiceNumber":"RE-2026-0001","paymentMethod":"Überweisung"},
+      {"id":11,"items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}],"label":"✅ Ja","price":10,"packed":"✅ Ja","status":"Fertig","address":"Rahden","printer":"Ender 3 V3","archived":true,"customer":"Iris","platform":"Kleinanzeigen","shipDate":"2026-02-11","tracking":"-","labelCost":0,"orderDate":"2026-02-11","paymentDate":"2026-02-11","shippingCost":7,"invoiceNumber":"RE-2026-0011","paymentMethod":"Überweisung"}
+    ];
 
-    let orders = [];
-    let spools = [];
-    let expenses = [];
-    let printers = [];
+    let spools = [
+      {"id":1,"name":"PLA Schwarz","notified":false,"remainingGrams":3700},
+      {"id":1789935199927,"name":"PLA Dunkelblau","notified":true,"notifiedCount":3,"remainingGrams":100,"lastNotifiedDate":"Fri Sep 25 2026"},
+      {"id":1789935232879,"name":"PETG Orange","notified":false,"remainingGrams":800},
+      {"id":1789935274064,"name":"PETG Schwarz","notified":false,"remainingGrams":950},
+      {"id":1789935301168,"name":"ASA Grau","notified":false,"remainingGrams":980},
+      {"id":1789935377136,"name":"PLA Hellblau ","notified":false,"remainingGrams":1000},
+      {"id":1789935389839,"name":"PLA Braun","notified":false,"remainingGrams":1000},
+      {"id":1789935427641,"name":"Pla Weiß","notified":false,"remainingGrams":550},
+      {"id":1789935452144,"name":"PLA Pink","notified":false,"remainingGrams":900},
+      {"id":1789935472744,"name":"PLA lila ","notified":false,"remainingGrams":510},
+      {"id":1789935549240,"name":"PLA Regenbogen","notified":true,"notifiedCount":3,"remainingGrams":150,"lastNotifiedDate":"Fri Sep 25 2026"},
+      {"id":1789935577272,"name":"PLA Gold ","notified":false,"remainingGrams":380},
+      {"id":1789935652839,"name":"PLA Dunkelrot ","notified":false,"notifiedCount":0,"remainingGrams":720,"lastNotifiedDate":"Mon Sep 21 2026"},
+      {"id":1789935772655,"name":"PLA Hellbraun ","notified":false,"remainingGrams":540},
+      {"id":1789935791895,"name":"PLA Hellrot ","notified":false,"remainingGrams":800},
+      {"id":1789935820543,"name":"PLA grün","notified":false,"remainingGrams":710},
+      {"id":1789935848831,"name":"PLA Sage grün","notified":false,"remainingGrams":780},
+      {"id":1789935882064,"name":"PLA Olivgrün","notified":false,"notifiedCount":3,"remainingGrams":200,"lastNotifiedDate":"Fri Sep 25 2026"},
+      {"id":1790010818175,"name":"PLA Rotschwarz","notifiedCount":0,"remainingGrams":300,"lastNotifiedDate":""}
+    ];
+
+    let expenses = [
+      {"id":1790506736458,"date":"2026-09-27","amount":5.19,"category":"DHL / Versand","description":"Porto / Label: Thomas Siepmann (RE-2026-0014)"},
+      {"id":1790491511211,"date":"2026-09-27","amount":5.19,"category":"DHL / Versand","description":"2 kg - Päckchen M"},
+      {"id":1790455400799,"date":"2026-09-26","amount":3.49,"category":"Sonstiges","description":"Werbeanzeige kleinanzeigen"},
+      {"id":1790449817184,"date":"2026-09-26","amount":6.19,"category":"DHL / Versand","description":"DHl Paket 2k"},
+      {"id":1790448192014,"date":"2026-09-26","amount":50,"category":"Sonstiges","description":"anycubic kobra Reperatur"},
+      {"id":1790364909071,"date":"2026-09-25","amount":17.9,"category":"Zubehör / Ersatzteile","description":"2x SD-Karten für Drucker"},
+      {"id":1790356494893,"date":"2026-09-25","amount":99.98,"category":"Sonstiges","description":"2x Druckerwartung CR-10 SP"}
+    ];
+
+    let printers = [
+      {"desc":"Großraum","name":"CR-10 Smart Pro #1","status":"In Arbeit"},
+      {"desc":"Klipper","name":"Ender 3 V3","status":"In Arbeit"},
+      {"desc":"Direct Drive","name":"Anycubic Kobra","status":"In Arbeit"},
+      {"desc":"Großraum","name":"CR-10 Smart Pro #2","status":"In Arbeit"},
+      {"desc":"Standard","name":"Anycubic Kobra 2","status":"In Arbeit"}
+    ];
 
     let editingIndex = -1;
     let showingArchive = false;
-    const todayStr = new Date().toISOString().slice(0, 10);
 
-    window.addEventListener('DOMContentLoaded', async () => {
-      const dateInput = document.getElementById('orderDate');
-      if (dateInput) dateInput.value = todayStr;
-      const expDateInput = document.getElementById('expDate');
-      if (expDateInput) expDateInput.value = todayStr;
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
 
-      await loadCloudDataOnStart();
-    });
-
-    function onPlatformChange() {
-      const plat = document.getElementById('platform').value;
-      const shipSel = document.getElementById('shippingFeeSelect');
-      if (plat === 'eBay') {
-        shipSel.value = "0";
-      } else {
-        if (shipSel.value === "0") shipSel.value = "5";
-      }
-    }
-
-    async function loadCloudDataOnStart() {
-      const statusText = document.getElementById('syncStatus');
-      const syncDot = document.getElementById('syncDot');
-      
+      // Versuche lokale Speicherstände zu laden, ansonsten nimm die festen Daten
       try {
-        if (statusText) statusText.innerText = "Lade Daten aus Cloud...";
-        const res = await fetch(NPOINT_URL, { cache: 'no-store' });
-        if (res.ok) {
-          const json = await res.json();
-          if (json && Array.isArray(json.orders)) {
-            orders = json.orders;
-            spools = Array.isArray(json.spools) ? json.spools : [];
-            expenses = Array.isArray(json.expenses) ? json.expenses : [];
-            printers = Array.isArray(json.printers) && json.printers.length > 0 ? json.printers : [
-              { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
-              { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
-              { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
-              { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
-            ];
-
-            saveLocalOnly();
-            refreshEverything();
-            if (statusText) statusText.innerText = "Mit Cloud verbunden";
-            if (syncDot) syncDot.className = "inline-block w-2 h-2 rounded-full bg-green-500";
-            return;
-          }
+        let saved = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
+        if (Array.isArray(saved) && saved.length > 0) {
+          orders = saved;
+          spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || spools;
+          expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || expenses;
+          printers = JSON.parse(localStorage.getItem('sefas_shop_printers')) || printers;
         }
       } catch(e) {}
 
-      // Fallback auf LocalStorage falls Cloud kurzzeitig hängt
-      try {
-        let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
-        if (Array.isArray(savedOrders)) {
-          orders = savedOrders;
-          spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
-          expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
-          printers = JSON.parse(localStorage.getItem('sefas_shop_printers')) || [];
-          refreshEverything();
-          if (statusText) statusText.innerText = "Lokal gespeichert";
-          if (syncDot) syncDot.className = "inline-block w-2 h-2 rounded-full bg-yellow-500";
-          return;
-        }
-      } catch(e) {}
-
-      printers = [
-        { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
-        { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
-        { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
-        { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
-      ];
       refreshEverything();
-      if (statusText) statusText.innerText = "Bereit";
-    }
+    });
 
     function refreshEverything() {
       renderPrinters();
@@ -485,900 +404,220 @@
       updatePrinterDropdowns();
     }
 
-    function saveLocalOnly() {
+    function saveAllData() {
       try {
         localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
         localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
         localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
         localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
+        refreshEverything();
+        alert("✅ Erfolgreich gespeichert!");
       } catch(e) {}
     }
 
-    async function loadCloudData() {
-      await loadCloudDataOnStart();
-      alert("✅ Cloud-Daten erfolgreich geladen!");
-    }
-
-    async function pushToCloudManual() {
-      saveLocalOnly();
-      try {
-        const res = await fetch(NPOINT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orders, spools, expenses, printers })
-        });
-        if (res.ok) {
-          alert("✅ Daten erfolgreich in der Cloud gespeichert!");
-        } else {
-          alert("⚠️ Server-Fehler beim Speichern.");
-        }
-      } catch(e) {
-        alert("❌ Netzwerkfehler beim Speichern.");
-      }
-    }
-
-    function saveAllData() {
-      saveLocalOnly();
-      refreshEverything();
-      
-      fetch(NPOINT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orders, spools, expenses, printers })
-      }).catch(e => console.log("Hintergrund-Sync fehlgeschlagen", e));
+    // Standard-Funktionen für App-Logik
+    function onPlatformChange() {
+      const plat = document.getElementById('platform').value;
+      const shipSel = document.getElementById('shippingFeeSelect');
+      if (plat === 'eBay') shipSel.value = "0";
+      else if (shipSel.value === "0") shipSel.value = "5";
     }
 
     function addPrinterPrompt() {
-      const name = prompt("Drucker-Name (z.B. Bambu Lab X1C):");
+      const name = prompt("Drucker-Name:");
       if (!name) return;
-      const desc = prompt("Beschreibung (z.B. CoreXY / High Speed):", "Standard");
-      printers.push({ name: name.trim(), desc: desc ? desc.trim() : "Standard", status: "Frei" });
+      printers.push({ name: name.trim(), desc: "Standard", status: "Frei" });
       saveAllData();
     }
 
     function deletePrinter(idx) {
-      if (printers.length <= 1) return alert("Du musst mindestens einen Drucker behalten!");
-      if (confirm(`Drucker "${printers[idx].name}" wirklich löschen?`)) {
-        printers.splice(idx, 1);
-        saveAllData();
-      }
+      if (printers.length <= 1) return;
+      printers.splice(idx, 1);
+      saveAllData();
     }
 
     function updatePrinterDropdowns() {
-      const printerSelects = document.querySelectorAll('#printer, [id^="edit-print-"]');
-      printerSelects.forEach(sel => {
-        const currentVal = sel.value;
+      document.querySelectorAll('#printer, [id^="edit-print-"]').forEach(sel => {
+        const cur = sel.value;
         sel.innerHTML = '';
-        printers.forEach(p => {
-          sel.innerHTML += `<option value="${p.name}" ${p.name === currentVal ? 'selected' : ''}>${p.name}</option>`;
-        });
+        printers.forEach(p => { sel.innerHTML += `<option value="${p.name}" ${p.name === cur ? 'selected' : ''}>${p.name}</option>`; });
       });
     }
 
     function addExpense(e) {
       e.preventDefault();
-      const desc = document.getElementById('expDesc').value.trim();
-      const cat = document.getElementById('expCategory').value;
-      const amount = parseFloat(document.getElementById('expAmount').value) || 0;
-      const date = document.getElementById('expDate').value || new Date().toISOString().slice(0, 10);
-
-      if (!desc || amount <= 0) return alert("Bitte Beschreibung und Betrag angeben!");
-
-      expenses.unshift({ id: Date.now(), description: desc, category: cat, amount: amount, date: date });
+      expenses.unshift({
+        id: Date.now(),
+        description: document.getElementById('expDesc').value,
+        category: document.getElementById('expCategory').value,
+        amount: parseFloat(document.getElementById('expAmount').value) || 0,
+        date: document.getElementById('expDate').value
+      });
       saveAllData();
       document.getElementById('expDesc').value = '';
       document.getElementById('expAmount').value = '';
-      document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
     }
 
     function deleteExpense(id) {
-      if (confirm("Diese Ausgabe wirklich löschen?")) {
-        expenses = expenses.filter(ex => ex.id !== id);
-        saveAllData();
-      }
+      expenses = expenses.filter(ex => ex.id !== id);
+      saveAllData();
     }
 
     function renderExpenses() {
       const tbody = document.getElementById('expensesTableBody');
-      const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
+      const month = document.getElementById('statsMonthFilter')?.value || 'all';
       if (!tbody) return;
       tbody.innerHTML = '';
-
       expenses.forEach(ex => {
-        if (selectedMonth !== 'all' && (!ex.date || !ex.date.startsWith(selectedMonth))) return;
+        if (month !== 'all' && (!ex.date || !ex.date.startsWith(month))) return;
+        tbody.innerHTML += `<tr class="border-b border-slate-800"><td class="p-2">${ex.date||'-'}</td><td class="p-2">${ex.category}</td><td class="p-2">${ex.description}</td><td class="p-2 text-red-400">-${ex.amount.toFixed(2).replace('.',',')} €</td><td class="p-2 text-right"><button onclick="deleteExpense(${ex.id})" class="text-red-400">🗑️</button></td></tr>`;
+      });
+      updateStats();
+    }
 
+    function updatePrinterStatus(idx, val) { printers[idx].status = val; saveAllData(); }
+    function updateField(id, field, val) {
+      const o = orders.find(x => x.id === id);
+      if (o) { o[field] = val; saveAllData(); renderOrders(); }
+    }
+
+    function payoutAllEbayBalance() {
+      orders.forEach(o => { if (o.platform === 'eBay') o.ebayBalancePaid = '✅ Ausgezahlt'; });
+      saveAllData();
+    }
+
+    function toggleArchiveView() {
+      showingArchive = !showingArchive;
+      document.getElementById('headerArchiveBtn').innerHTML = showingArchive ? '📋 Aktive Aufträge' : '📂 Archiv';
+      document.getElementById('tableTitle').innerHTML = showingArchive ? '📦 Bestellungen (Archiv)' : '📋 Bestellungen (Aktiv)';
+      renderOrders();
+    }
+
+    function toggleArchiveOrder(id) {
+      const o = orders.find(x => x.id === id);
+      if (o) { o.archived = !o.archived; saveAllData(); }
+    }
+
+    function updateCustomerDropdowns() {
+      const sel = document.getElementById('existingCustomerSelect');
+      if (sel) {
+        sel.innerHTML = '<option value="">📋 Bestehenden Kunden laden...</option>';
+        orders.forEach(o => sel.innerHTML += `<option value="${o.id}">${o.customer}</option>`);
+      }
+    }
+
+    function autofillCustomerData(id) {
+      const o = orders.find(x => x.id == id);
+      if (!o) return;
+      document.getElementById('customer').value = o.customer || '';
+      document.getElementById('platform').value = o.platform || 'Kleinanzeigen';
+      document.getElementById('price').value = o.price || '';
+      document.getElementById('address').value = o.address || '';
+    }
+
+    function renderSpools() {
+      const c = document.getElementById('spoolsList');
+      if (!c) return;
+      c.innerHTML = '';
+      spools.forEach((s, idx) => {
+        c.innerHTML += `<div class="p-2 rounded bg-slate-900 border border-slate-700 flex justify-between items-center text-[11px]"><span>${s.name}</span><span class="text-slate-300">${s.remainingGrams}g</span></div>`;
+      });
+    }
+
+    function addSpoolPrompt() {
+      const n = prompt("Spulen-Name:");
+      if (n) { spools.push({ id: Date.now(), name: n, remainingGrams: 1000 }); saveAllData(); }
+    }
+
+    function addArticleInputRow(name='', color='', weight='') {
+      const container = document.getElementById('articleInputRows');
+      const div = document.createElement('div');
+      div.className = "flex gap-2 items-center article-row";
+      div.innerHTML = `<input type="text" placeholder="Artikel" value="${name}" required class="art-name bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white flex-1"><input type="number" placeholder="Gramm" value="${weight}" class="art-weight bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white w-24"><button type="button" onclick="this.parentElement.remove()" class="text-red-400">❌</button>`;
+      container.appendChild(div);
+    }
+
+    function addOrder(e) {
+      e.preventDefault();
+      orders.unshift({
+        id: Date.now(),
+        customer: document.getElementById('customer').value,
+        platform: document.getElementById('platform').value,
+        paymentMethod: document.getElementById('paymentMethod').value,
+        isPaid: document.getElementById('isPaid').value,
+        printer: document.getElementById('printer').value,
+        price: parseFloat(document.getElementById('price').value) || 0,
+        labelCost: parseFloat(document.getElementById('labelCost').value) || 0,
+        shippingFee: parseFloat(document.getElementById('shippingFeeSelect').value) || 0,
+        address: document.getElementById('address').value,
+        tracking: document.getElementById('tracking').value || '-',
+        orderDate: document.getElementById('orderDate').value,
+        status: "Offen",
+        archived: false,
+        items: [{ name: document.querySelector('.art-name').value, weight: parseInt(document.querySelector('.art-weight').value) || 0 }]
+      });
+      saveAllData();
+      document.getElementById('orderForm').reset();
+    }
+
+    function deleteOrder(id) {
+      orders = orders.filter(o => o.id !== id);
+      saveAllData();
+    }
+
+    function updateMonthFilterDropdown() {
+      const sel = document.getElementById('statsMonthFilter');
+      if (!sel) return;
+      let set = new Set();
+      orders.forEach(o => { if (o.orderDate) set.add(o.orderDate.slice(0, 7)); });
+      sel.innerHTML = '<option value="all">📅 Alle Monate (Gesamt)</option>';
+      Array.from(set).sort().reverse().forEach(m => sel.innerHTML += `<option value="${m}">${m}</option>`);
+    }
+
+    function renderOrders() {
+      const tbody = document.getElementById('ordersTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      orders.forEach((o, idx) => {
+        if (Boolean(o.archived) !== showingArchive) return;
         tbody.innerHTML += `
-          <tr class="hover:bg-slate-800/40 border-b border-slate-800">
-            <td class="p-2 text-[11px] text-slate-300">${ex.date || '-'}</td>
-            <td class="p-2 text-[11px]"><span class="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-purple-300">${ex.category}</span></td>
-            <td class="p-2 text-[11px] font-medium text-white">${ex.description}</td>
-            <td class="p-2 text-[11px] text-red-400 font-bold">-${ex.amount.toFixed(2).replace('.', ',')} €</td>
+          <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+            <td class="p-2">${o.customer}<br><span class="text-[9px] text-slate-400">${o.platform}</span></td>
+            <td class="p-2 font-mono text-cyan-300">${o.invoiceNumber || 'RE-2026-0001'}</td>
+            <td class="p-2">${o.items.map(i=>i.name).join(', ')}</td>
+            <td class="p-2">${o.printer}</td>
+            <td class="p-2">${o.isPaid}</td>
+            <td class="p-2">${o.paymentMethod}</td>
+            <td class="p-2">${o.ebayBalancePaid || '-'}</td>
+            <td class="p-2">${o.status}</td>
+            <td class="p-2 font-bold text-emerald-400">${(o.price + (o.shippingFee||0)).toFixed(2).replace('.',',')} €</td>
+            <td class="p-2">${o.label}</td>
+            <td class="p-2">${o.packed}</td>
+            <td class="p-2 font-mono">${o.tracking}</td>
             <td class="p-2 text-right">
-              <button onclick="deleteExpense(${ex.id})" class="text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded text-[11px] cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+              <button onclick="toggleArchiveOrder(${o.id})" class="text-purple-300 px-1">📦</button>
+              <button onclick="deleteOrder(${o.id})" class="text-red-400 px-1">🗑️</button>
             </td>
           </tr>`;
       });
       updateStats();
     }
 
-    function updatePrinterStatus(index, newStatus) {
-      printers[index].status = newStatus;
-      saveAllData();
-    }
-
-    function updateField(id, field, value) {
-      const order = orders.find(o => o.id === id);
-      if (!order) return;
-
-      if (field === 'status') {
-        order.status = value;
-      } else if (field === 'platform') {
-        order.platform = value;
-        if (value === 'eBay') {
-          order.ebayBalancePaid = '⏳ Bei eBay';
-        } else {
-          order.ebayBalancePaid = 'N/A';
-        }
-      } else if (field === 'paymentMethod') {
-        order.paymentMethod = value;
-      } else if (field === 'isPaid') {
-        order.isPaid = value;
-      } else if (field === 'ebayBalancePaid') {
-        order.ebayBalancePaid = value;
-      } else if (field === 'printer') {
-        order.printer = value;
-      } else if (field === 'label') {
-        order.label = value;
-      } else if (field === 'packed') {
-        order.packed = value;
-      }
-
-      saveAllData();
-      renderOrders();
-    }
-
-    function payoutAllEbayBalance() {
-      let count = 0;
-      orders.forEach(o => {
-        if (o.platform === 'eBay' && o.ebayBalancePaid === '⏳ Bei eBay') {
-          o.ebayBalancePaid = '✅ Ausgezahlt';
-          count++;
-        }
-      });
-      if (count > 0) {
-        saveAllData();
-        alert(`✅ ${count} eBay-Aufträge als "Ausgezahlt" markiert!`);
-      } else {
-        alert("Keine offenen eBay-Guthaben vorhanden.");
-      }
-    }
-
-    function toggleArchiveView() {
-      showingArchive = !showingArchive;
-      const btn = document.getElementById('headerArchiveBtn');
-      const title = document.getElementById('tableTitle');
-      if (showingArchive) {
-        btn.innerHTML = '<i class="fa-solid fa-list-check mr-1"></i> 📋 Aktive Aufträge';
-        btn.className = "bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer";
-        title.innerHTML = '<i class="fa-solid fa-box-archive mr-1.5 text-purple-400"></i> Bestellungen (Archiv)';
-      } else {
-        btn.innerHTML = '<i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv';
-        btn.className = "bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer";
-        title.innerHTML = '<i class="fa-solid fa-list-check mr-1.5 text-blue-400"></i> Bestellungen (Aktiv)';
-      }
-      renderOrders();
-    }
-
-    function toggleArchiveOrder(id) {
-      const order = orders.find(o => o.id === id);
-      if (order) {
-        order.archived = !order.archived;
-        const todayStr = new Date().toISOString().slice(0,10);
-        if (order.archived && !order.shipDate) order.shipDate = todayStr;
-        saveAllData();
-      }
-    }
-
-    function updateCustomerDropdowns() {
-      const sel1 = document.getElementById('existingCustomerSelect');
-      const sel2 = document.getElementById('templateCustomerSelect');
-      
-      if (sel1) {
-        sel1.innerHTML = '<option value="">📋 Bestehenden Kunden laden...</option>';
-        orders.forEach(o => {
-          sel1.innerHTML += `<option value="${o.id}">${o.customer} (${o.tracking && o.tracking !== '-' ? o.tracking : 'Keine Tracking'})</option>`;
-        });
-      }
-
-      if (sel2) {
-        sel2.innerHTML = '<option value="">👤 Kunden auswählen (zieht Sendungsnummer)...</option>';
-        orders.forEach(o => {
-          sel2.innerHTML += `<option value="${o.id}">${o.customer} (${o.tracking && o.tracking !== '-' ? o.tracking : 'Keine Tracking'})</option>`;
-        });
-      }
-    }
-
-    function autofillCustomerData(orderId) {
-      if (!orderId) return;
-      const order = orders.find(o => o.id == orderId);
-      if (!order) return;
-
-      document.getElementById('customer').value = order.customer || '';
-      document.getElementById('platform').value = order.platform || 'Kleinanzeigen';
-      onPlatformChange();
-      document.getElementById('paymentMethod').value = order.paymentMethod || 'Überweisung';
-      document.getElementById('isPaid').value = order.isPaid || '❌ Nein';
-      document.getElementById('address').value = order.address || '';
-      document.getElementById('tracking').value = (order.tracking && order.tracking !== '-') ? order.tracking : '';
-      if (order.printer) document.getElementById('printer').value = order.printer;
-      document.getElementById('price').value = order.price || '';
-      document.getElementById('labelCost').value = order.labelCost !== undefined ? order.labelCost : 0;
-      if (document.getElementById('shippingFeeSelect')) {
-        document.getElementById('shippingFeeSelect').value = order.shippingFee !== undefined ? order.shippingFee : 5;
-      }
-      document.getElementById('label').value = order.label || '✅ Ja';
-      document.getElementById('packed').value = order.packed || '❌ Nein';
-      if (order.orderDate) document.getElementById('orderDate').value = order.orderDate;
-    }
-
-    function updateTemplatePreview() {
-      const orderId = document.getElementById('templateCustomerSelect').value;
-      if (!orderId) return;
-      const o = orders.find(item => item.id == orderId);
-      if (!o) return;
-      const track = (o.tracking && o.tracking !== '-') ? o.tracking : '[Sendungsnummer einfügen]';
-
-      document.getElementById('templateText1').value = `Hallo ${o.customer},\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.`;
-      document.getElementById('templateText2').value = `Hallo ${o.customer},\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!`;
-      document.getElementById('templateText3').value = `Hallo ${o.customer},\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.`;
-      document.getElementById('templateText4').value = `Hallo ${o.customer},\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n${track}\n\nLink: https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${track}\n\nViel Freude damit!`;
-    }
-
-    function copyTemplate(num) {
-      const text = document.getElementById(`templateText${num}`).value;
-      navigator.clipboard.writeText(text).then(() => {
-        alert(`✅ Nachricht-Vorlage ${num} wurde kopiert!`);
-      });
-    }
-
-    function renderSpools() {
-      const container = document.getElementById('spoolsList');
-      const banner = document.getElementById('spoolWarningBanner');
-      if (!container) return;
-      container.innerHTML = '';
-      let lowSpools = [];
-
-      spools.forEach((s, idx) => {
-        const isLow = s.remainingGrams < 250;
-        if (isLow) lowSpools.push(s);
-
-        container.innerHTML += `
-          <div class="p-2 rounded-lg border text-[11px] flex justify-between items-center ${isLow ? 'bg-red-950/40 border-red-500/60 pulse-low-spool' : 'bg-slate-900 border-slate-700/60'}">
-            <span class="font-semibold text-white">${s.name}</span>
-            <div class="flex items-center space-x-1.5">
-              <span onclick="editSpoolGrams(${idx})" class="${isLow ? 'text-red-400 font-bold' : 'text-slate-300'} cursor-pointer hover:underline" title="Klicken zum Bearbeiten">${s.remainingGrams}g</span>
-              <button onclick="editSpoolGrams(${idx})" class="text-slate-400 hover:text-white px-1 cursor-pointer"><i class="fa-solid fa-pen text-[9px]"></i></button>
-              <button onclick="deleteSpool(${idx})" class="text-red-400 px-1 cursor-pointer"><i class="fa-solid fa-xmark text-[10px]"></i></button>
-            </div>
-          </div>`;
-      });
-
-      if (lowSpools.length > 0) {
-        banner.classList.remove('hidden');
-        banner.innerHTML = `<i class="fa-solid fa-bell text-red-400"></i> Spulen-Alarm: ${lowSpools.map(s => `${s.name} (${s.remainingGrams}g)`).join(', ')} unter 250g!`;
-      } else { 
-        banner.classList.add('hidden'); 
-      }
-      updateSpoolDropdowns();
-    }
-
-    function addSpoolPrompt() {
-      const name = prompt("Name/Farbe der Spule (z.B. PLA Rot):");
-      if (!name) return;
-      const grams = parseInt(prompt("Gewicht in Gramm (z.B. 1000):", "1000")) || 1000;
-      spools.push({ id: Date.now(), name, remainingGrams: grams, notifiedCount: 0, lastNotifiedDate: "" });
-      saveAllData();
-    }
-
-    function editSpoolGrams(idx) {
-      const current = spools[idx];
-      const newGrams = prompt(`Neues Gewicht für "${current.name}" in Gramm:`, current.remainingGrams);
-      if (newGrams !== null && !isNaN(parseInt(newGrams))) {
-        spools[idx].remainingGrams = parseInt(newGrams);
-        if (spools[idx].remainingGrams >= 250) spools[idx].notifiedCount = 0;
-        saveAllData();
-      }
-    }
-
-    function deleteSpool(idx) {
-      if (confirm(`Spule "${spools[idx].name}" wirklich löschen?`)) {
-        spools.splice(idx, 1);
-        saveAllData();
-      }
-    }
-
-    function updateSpoolDropdowns() {
-      document.querySelectorAll('.art-color, .edit-art-color').forEach(select => {
-        const current = select.value;
-        select.innerHTML = '<option value="">-- Farbe --</option>';
-        spools.forEach(s => {
-          select.innerHTML += `<option value="${s.name}" ${s.name === current ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`;
-        });
-      });
-    }
-
-    function addArticleInputRow(nameVal = '', colorVal = '', weightVal = '') {
-      const container = document.getElementById('articleInputRows');
-      const div = document.createElement('div');
-      div.className = "flex gap-2 items-center article-row";
-      let optionsHtml = '<option value="">-- Farbe --</option>';
-      spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === colorVal ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
-      div.innerHTML = `
-        <input type="text" placeholder="Artikelbezeichnung" value="${nameVal}" required class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
-        <select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-44 focus:outline-none">${optionsHtml}</select>
-        <input type="number" placeholder="Gramm (g)" value="${weightVal}" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none">
-        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1.5 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>`;
-      container.appendChild(div);
-    }
-
-    function addPresetArticle(presetName) { addArticleInputRow(presetName); }
-
-    function addEditArticleRow(name = '', color = '', weight = '') {
-      const container = document.getElementById('editArticleRows');
-      if (!container) return;
-      const div = document.createElement('div');
-      div.className = "flex gap-2 items-center edit-article-row bg-slate-950 p-1.5 rounded-lg border border-slate-800";
-      let optionsHtml = '<option value="">-- Farbe --</option>';
-      spools.forEach(s => {
-        optionsHtml += `<option value="${s.name}" ${s.name === color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`;
-      });
-      div.innerHTML = `
-        <input type="text" placeholder="Artikelbezeichnung" value="${name}" required class="edit-art-name bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white flex-1 focus:outline-none">
-        <select class="edit-art-color bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-32 focus:outline-none">${optionsHtml}</select>
-        <input type="number" placeholder="Gramm" value="${weight}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-16 focus:outline-none">
-        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1.5 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>`;
-      container.appendChild(div);
-    }
-
-    function generateNewInvoiceNumber(orderDateStr) {
-      const year = orderDateStr ? orderDateStr.slice(0, 4) : new Date().getFullYear().toString();
-      let maxNum = 0;
-      orders.forEach(o => {
-        if (o.invoiceNumber && o.invoiceNumber.startsWith(`RE-${year}-`)) {
-          let parts = o.invoiceNumber.split('-');
-          let num = parseInt(parts[2]) || 0;
-          if (num > maxNum) maxNum = num;
-        }
-      });
-      const nextNum = Math.max(14, maxNum) + 1;
-      return `RE-${year}-${nextNum.toString().padStart(4, '0')}`;
-    }
-
-    function generateInvoiceNumberForExisting(order) {
-      if (order.invoiceNumber) return order.invoiceNumber;
-      return generateNewInvoiceNumber(order.orderDate);
-    }
-
-    function addOrder(e) {
-      e.preventDefault();
-      const nameInputs = document.querySelectorAll('.art-name');
-      const colorInputs = document.querySelectorAll('.art-color');
-      const weightInputs = document.querySelectorAll('.art-weight');
-      const itemsList = [];
-
-      nameInputs.forEach((inp, idx) => {
-        const val = inp.value.trim();
-        if (val) {
-          const w = parseInt(weightInputs[idx].value) || 0;
-          const col = colorInputs[idx].value;
-          itemsList.push({ name: val, color: col, weight: w });
-
-          if (col && w > 0) {
-            const spool = spools.find(s => s.name === col);
-            if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - w);
-          }
-        }
-      });
-      if (itemsList.length === 0) return alert("Bitte Artikel eintragen!");
-      
-      const customDate = document.getElementById('orderDate').value || new Date().toISOString().slice(0,10);
-      const fixedInvoiceNum = generateNewInvoiceNumber(customDate);
-      const plat = document.getElementById('platform').value;
-      const payMethod = document.getElementById('paymentMethod').value;
-      const paidStatus = document.getElementById('isPaid').value;
-      const custName = document.getElementById('customer').value;
-      
-      let labelC = parseFloat(document.getElementById('labelCost').value) || 0;
-      let shippingF = parseFloat(document.getElementById('shippingFeeSelect').value) || 0;
-      let ebayBalStatus = plat === 'eBay' ? '⏳ Bei eBay' : 'N/A';
-
-      orders.unshift({
-        id: Date.now(),
-        customer: custName,
-        platform: plat,
-        paymentMethod: payMethod,
-        isPaid: paidStatus,
-        ebayBalancePaid: ebayBalStatus,
-        address: document.getElementById('address').value || '',
-        printer: document.getElementById('printer').value,
-        status: "Offen",
-        label: document.getElementById('label').value,
-        packed: document.getElementById('packed').value,
-        price: parseFloat(document.getElementById('price').value) || 0,
-        labelCost: labelC,
-        shippingFee: shippingF,
-        tracking: document.getElementById('tracking').value || '-',
-        orderDate: customDate,
-        invoiceNumber: fixedInvoiceNum,
-        shipDate: '',
-        archived: false,
-        items: itemsList
-      });
-      saveAllData();
-      document.getElementById('orderForm').reset();
-      document.getElementById('orderDate').value = new Date().toISOString().slice(0,10);
-      document.getElementById('labelCost').value = "0.00";
-      document.getElementById('shippingFeeSelect').value = "5";
-      document.getElementById('existingCustomerSelect').value = "";
-    }
-
-    function startEdit(idx) { editingIndex = idx; renderOrders(); }
-    function cancelEdit() { editingIndex = -1; renderOrders(); }
-
-    function onEditPlatformChange(idx) {
-      const platVal = document.getElementById(`edit-plat-${idx}`).value;
-      const ebayBalEl = document.getElementById(`edit-ebaybal-cell-${idx}`);
-      
-      if (platVal === 'eBay') {
-        if (ebayBalEl) ebayBalEl.innerHTML = `<select id="edit-ebaybal-${idx}" class="bg-slate-950 border border-cyan-500 rounded p-1 text-[11px] text-cyan-300 w-full"><option value="⏳ Bei eBay" selected>⏳ Bei eBay</option><option value="✅ Ausgezahlt">✅ Ausgezahlt</option></select>`;
-      } else {
-        if (ebayBalEl) {
-          ebayBalEl.innerHTML = `<span class="text-slate-500 text-[11px]">N/A</span><input type="hidden" id="edit-ebaybal-${idx}" value="N/A">`;
-        }
-      }
-    }
-
-    function saveEdit(idx) {
-      const nameInputs = document.querySelectorAll('.edit-art-name');
-      const colorInputs = document.querySelectorAll('.edit-art-color');
-      const weightInputs = document.querySelectorAll('.edit-art-weight');
-      const updatedItems = [];
-      const oldOrder = orders[idx];
-
-      nameInputs.forEach((inp, i) => {
-        const val = inp.value.trim();
-        if (val) {
-          const w = parseInt(weightInputs[i].value) || 0;
-          const col = colorInputs[i].value;
-          updatedItems.push({ name: val, color: col, weight: w });
-        }
-      });
-
-      if (updatedItems.length === 0) return alert("Mindestens ein Artikel erforderlich!");
-
-      if (oldOrder.items) {
-        oldOrder.items.forEach(oldItem => {
-          if (oldItem.color && oldItem.weight > 0) {
-            const spool = spools.find(s => s.name === oldItem.color);
-            if (spool) spool.remainingGrams += oldItem.weight;
-          }
-        });
-      }
-
-      updatedItems.forEach(newItem => {
-        if (newItem.color && newItem.weight > 0) {
-          const spool = spools.find(s => s.name === newItem.color);
-          if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - newItem.weight);
-        }
-      });
-
-      orders[idx].customer = document.getElementById(`edit-cust-${idx}`).value;
-      const newPlat = document.getElementById(`edit-plat-${idx}`).value;
-      orders[idx].platform = newPlat;
-      orders[idx].paymentMethod = document.getElementById(`edit-paymeth-${idx}`).value;
-      orders[idx].isPaid = document.getElementById(`edit-ispaid-${idx}`).value;
-      orders[idx].ebayBalancePaid = document.getElementById(`edit-ebaybal-${idx}`) ? document.getElementById(`edit-ebaybal-${idx}`).value : 'N/A';
-      orders[idx].address = document.getElementById(`edit-addr-${idx}`).value;
-      orders[idx].printer = document.getElementById(`edit-print-${idx}`).value;
-      orders[idx].status = document.getElementById(`edit-stat-${idx}`).value;
-      orders[idx].label = document.getElementById(`edit-label-${idx}`).value;
-      orders[idx].packed = document.getElementById(`edit-packed-${idx}`).value;
-      orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
-      orders[idx].labelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
-      orders[idx].shippingFee = parseFloat(document.getElementById(`edit-shipfee-${idx}`).value) || 0;
-      orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value || '-';
-      orders[idx].orderDate = document.getElementById(`edit-date-${idx}`)?.value || orders[idx].orderDate;
-      
-      const newInvInput = document.getElementById(`edit-inv-${idx}`);
-      if (newInvInput && newInvInput.value.trim()) orders[idx].invoiceNumber = newInvInput.value.trim();
-
-      orders[idx].items = updatedItems;
-      editingIndex = -1;
-      saveAllData();
-    }
-
-    function deleteOrder(id) {
-      const order = orders.find(o => o.id === id);
-      if (order && order.items) {
-        order.items.forEach(i => {
-          if (i.color && i.weight > 0) {
-            const spool = spools.find(s => s.name === i.color);
-            if (spool) spool.remainingGrams += i.weight;
-          }
-        });
-      }
-      orders = orders.filter(o => o.id !== id);
-      saveAllData();
-    }
-
-    function printBoxLabel(idx) {
-      const o = orders[idx];
-      const printSec = document.getElementById('printSection');
-      let itemsSummary = o.items.map(i => `${i.name} (${i.color \vert{}\vert{} 'Standard'},${i.weight || 0}g)`).join("<br>• ");
-      const trackingUrl = (o.tracking && o.tracking !== '-') ? `https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${o.tracking}` : `Sefas3DShop - ${o.customer}`;
-
-      printSec.innerHTML = `
-        <div style="font-family: Arial, sans-serif; border: 2px solid #000; padding: 10px; width: 340px; background: #fff; border-radius: 6px;">
-          <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px;">
-            <strong>Sefas3DShop</strong>
-            <span style="font-size: 10px; background: #000; color: #fff; padding: 2px 4px;">KARTON-ETIKETT</span>
-          </div>
-          <div style="margin-top: 8px; font-size: 12px;">
-            <p style="margin: 2px 0;"><strong>Empfänger:</strong> ${o.customer}</p>
-            <p style="margin: 2px 0; font-size: 11px; color: #444;">${o.address || ''}</p>
-          </div>
-          <div style="margin-top: 8px; border-top: 1px dashed #666; padding-top: 5px; font-size: 11px;">
-            <strong>Inhalt:</strong><br>• ${itemsSummary}
-          </div>
-          <div style="margin-top: 8px; border-top: 1px dashed #666; padding-top: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
-            <div><strong>Tracking:</strong> ${o.tracking}</div>
-            <div id="qrcodeContainer"></div>
-          </div>
-        </div>`;
-      printSec.classList.remove('hidden');
-      setTimeout(() => {
-        const qrContainer = document.getElementById('qrcodeContainer');
-        qrContainer.innerHTML = '';
-        new QRCode(qrContainer, { text: trackingUrl, width: 60, height: 60 });
-        window.print();
-        printSec.classList.add('hidden');
-      }, 300);
-    }
-
-    function renderLocalQrCode(containerId, text) {
-      const container = document.getElementById(containerId);
-      if (!container) return;
-      container.innerHTML = '';
-      try {
-        new QRCode(container, { text: text, width: 75, height: 75, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
-      } catch(e) {}
-    }
-
-    function printInvoice(idx) {
-      const o = orders[idx];
-      const invSec = document.getElementById('invoiceSection');
-      const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
-      const invoiceNumber = generateInvoiceNumberForExisting(o);
-      
-      let itemsRows = '';
-      o.items.forEach(i => {
-        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name}${i.color ? '(' + i.color + ')' : ''}</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td></tr>`;
-      });
-
-      let shippingFee = o.shippingFee !== undefined ? o.shippingFee : 5.00;
-      let totalAmountNum = o.price + shippingFee;
-
-      if (shippingFee > 0) {
-        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">Versandpauschale (DHL Paket)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${shippingFee.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${shippingFee.toFixed(2).replace('.', ',')} €</td></tr>`;
-      }
-
-      const totalAmountStr = totalAmountNum.toFixed(2).replace('.', ',');
-      const sepaPayload = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
-
-      invSec.innerHTML = `
-        <div style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px;">
-          <div style="display: flex; justify-content: space-between; align-items: start; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 15px;">
-            <div>
-              <h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0 0 2px 0;">Sefas3DShop</h1>
-              <p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 42 | 32369 Rahden</p>
-              <p style="margin: 1px 0 0 0; color: #555;">Steuernummer: 52063271982</p>
-            </div>
-            <div style="text-align: right;">
-              <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 0 0 4px 0;">RECHNUNG</h2>
-              <p style="margin: 1px 0;"><strong>Rechnungsnummer:</strong> ${invoiceNumber}</p>
-              <p style="margin: 1px 0;"><strong>Datum:</strong> ${invoiceDate}</p>
-            </div>
-          </div>
-          <div style="margin-bottom: 15px;">
-            <div style="font-weight: bold; font-size: 12px;">${o.customer}</div>
-            <div style="color: #444; white-space: pre-line;">${o.address || ''}</div>
-          </div>
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
-            <thead><tr style="background: #f1f5f9; text-align: left;"><th style="padding: 6px;">Beschreibung</th><th style="padding: 6px; text-align: center;">Menge</th><th style="padding: 6px; text-align: right;">Einzelpreis</th><th style="padding: 6px; text-align: right;">Gesamt</th></tr></thead>
-            <tbody>${itemsRows}</tbody>
-          </table>
-          <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
-            <div style="width: 210px; display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #ddd;">
-              <span>Gesamtbetrag:</span><strong>${totalAmountStr} €</strong>
-            </div>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px; margin-bottom: 15px;">
-            <div style="font-size: 10px;">
-              <p style="margin: 0 0 2px 0;"><strong>Zahlungsinformationen:</strong></p>
-              <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08 | BIC: REVODEB2 (C24 Bank)</p>
-            </div>
-            <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;" id="sepaQrCodeTarget"></div>
-          </div>
-          <div style="border-top: 1px solid #cbd5e1; padding-top: 10px; font-size: 9px; color: #666; text-align: center;">
-            Kleinunternehmer gemäß § 19 UStG. Vielen Dank für Ihren Einkauf!
-          </div>
-        </div>`;
-
-      invSec.classList.remove('hidden');
-      setTimeout(() => {
-        renderLocalQrCode('sepaQrCodeTarget', sepaPayload);
-        window.print();
-        invSec.classList.add('hidden');
-      }, 300);
-    }
-
-    function printAllInvoices() {
-      const activeOrders = orders.filter(o => Boolean(o.archived) === showingArchive);
-      if (activeOrders.length === 0) return alert("Keine Aufträge vorhanden!");
-      const invSec = document.getElementById('invoiceSection');
-      invSec.innerHTML = '';
-      activeOrders.forEach((o, index) => {
-        const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
-        const invoiceNumber = generateInvoiceNumberForExisting(o);
-        let itemsRows = '';
-        o.items.forEach(i => {
-          itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name}${i.color ? '(' + i.color + ')' : ''}</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td></tr>`;
-        });
-        
-        let shippingFee = o.shippingFee !== undefined ? o.shippingFee : 5.00;
-        let totalAmountNum = o.price + shippingFee;
-
-        if (shippingFee > 0) {
-          itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">Versandpauschale (DHL Paket)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${shippingFee.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${shippingFee.toFixed(2).replace('.', ',')} €</td></tr>`;
-        }
-
-        invSec.innerHTML += `
-          <div class="page-break-container" style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px;">
-            <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 15px;">
-              <div><h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0;">Sefas3DShop</h1><p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 42 | 32369 Rahden</p></div>
-              <div style="text-align: right;"><h2 style="font-size: 16px; font-weight: bold; margin: 0;">RECHNUNG</h2><p style="margin: 1px 0;">Nr: ${invoiceNumber}</p><p style="margin: 1px 0;">Datum: ${invoiceDate}</p></div>
-            </div>
-            <div style="font-weight: bold; font-size: 12px; margin-bottom: 15px;">${o.customer}<br><span style="font-weight: normal; color: #444;">${o.address || ''}</span></div>
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
-              <thead><tr style="background: #f1f5f9; text-align: left;"><th style="padding: 6px;">Artikel</th><th style="padding: 6px; text-align: center;">Menge</th><th style="padding: 6px; text-align: right;">Preis</th><th style="padding: 6px; text-align: right;">Gesamt</th></tr></thead>
-              <tbody>${itemsRows}</tbody>
-            </table>
-            <div style="text-align: right; margin-bottom: 15px;"><strong>Gesamtbetrag: ${totalAmountNum.toFixed(2).replace('.', ',')} €</strong></div>
-            <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px;">
-              <div style="font-size: 10px;">IBAN: DE20 1001 0178 0592 6798 08 (C24 Bank)</div>
-              <div style="background: white; padding: 4px;" id="batchSepaQr_${index}"></div>
-            </div>
-          </div>`;
-      });
-      invSec.classList.remove('hidden');
-      setTimeout(() => {
-        activeOrders.forEach((o, index) => {
-          let shippingFee = o.shippingFee !== undefined ? o.shippingFee : 5.00;
-          let totalAmountNum = o.price + shippingFee;
-          let invoiceNumber = generateInvoiceNumberForExisting(o);
-          const sepaPayload = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
-          renderLocalQrCode(`batchSepaQr_${index}`, sepaPayload);
-        });
-        window.print();
-        invSec.classList.add('hidden');
-      }, 400);
-    }
-
-    function exportAccountingCSV() {
-      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-      csvContent += "Typ;Plattform;Bezahlt?;Zahlungsart;eBay Guthaben Status;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Umsatz (€);Porto-Ausgabe (€)\n";
-      orders.forEach(o => {
-        let shippingFee = o.shippingFee !== undefined ? o.shippingFee : 5.00;
-        let total = o.price + shippingFee;
-        let type = o.archived ? "Einnahme (Archiviert)" : "Einnahme (Aktiv)";
-        let date = o.orderDate || "";
-        let inv = generateInvoiceNumberForExisting(o);
-        let cust = o.customer.replace(/;/g, ",");
-        let lCost = (o.labelCost || 0);
-        csvContent += `${type};${o.platform || 'Kleinanzeigen'};${o.isPaid \vert{}\vert{} '❌ Nein'};${o.paymentMethod || 'Überweisung'};${o.ebayBalancePaid \vert{}\vert{} 'N/A'};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${lCost.toFixed(2).replace('.', ',')}\n`;
-      });
-      expenses.forEach(ex => {
-        let desc = ex.description.replace(/;/g, ",");
-        csvContent += `Ausgabe;Shop;✅ Ja;Gebühr;N/A;${ex.date \vert{}\vert{} ""};${desc};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')};0,00\n`;
-      });
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `Sefas3DShop_Buchhaltung_${new Date().toISOString().slice(0,10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    function updateMonthFilterDropdown() {
-      const select = document.getElementById('statsMonthFilter');
-      if (!select) return;
-      const currentSelection = select.value;
-      let monthsSet = new Set();
-      orders.forEach(o => {
-        if (o.orderDate) monthsSet.add(o.orderDate.slice(0, 7));
-      });
-      expenses.forEach(ex => {
-        if (ex.date) monthsSet.add(ex.date.slice(0, 7));
-      });
-      let sortedMonths = Array.from(monthsSet).sort().reverse();
-      select.innerHTML = '<option value="all">📅 Alle Monate (Gesamt)</option>';
-      sortedMonths.forEach(m => {
-        let parts = m.split('-');
-        select.innerHTML += `<option value="${m}">${parts[1]}.${parts[0]}</option>`;
-      });
-      if ([...select.options].some(opt => opt.value === currentSelection)) select.value = currentSelection;
-    }
-
-    function renderOrders() {
-      updateMonthFilterDropdown();
-      const tbody = document.getElementById('ordersTableBody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
-
-      orders.forEach((o, idx) => {
-        if (Boolean(o.archived) !== showingArchive) return;
-        if (query && !o.customer.toLowerCase().includes(query) && !o.tracking.toLowerCase().includes(query)) return;
-
-        const fixedInvNum = generateInvoiceNumberForExisting(o);
-        const lCostVal = o.labelCost !== undefined ? o.labelCost : 0;
-        const shipFeeVal = o.shippingFee !== undefined ? o.shippingFee : 5.00;
-        const isEbay = o.platform === 'eBay';
-        const totalOrderRevenue = o.price + shipFeeVal;
-
-        if (editingIndex === idx) {
-          let editItemsHtml = `<div id="editArticleRows" class="space-y-1.5 my-1.5">`;
-          o.items.forEach(i => {
-            let optionsHtml = '<option value="">-- Farbe --</option>';
-            spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === i.color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
-            editItemsHtml += `<div class="flex gap-1.5 items-center edit-article-row bg-slate-950 p-1.5 rounded-lg border border-slate-800"><input type="text" value="${i.name}" class="edit-art-name bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white flex-1"><select class="edit-art-color bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-32">${optionsHtml}</select><input type="number" value="${i.weight || ''}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-16"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1"><i class="fa-solid fa-xmark"></i></button></div>`;
-          });
-          editItemsHtml += `</div><button type="button" onclick="addEditArticleRow()" class="bg-slate-800 text-blue-400 text-[11px] px-2 py-0.5 rounded">+ Artikel</button>`;
-
-          let printerOptionsEdit = '';
-          printers.forEach(p => { printerOptionsEdit += `<option value="${p.name}" ${p.name === o.printer ? 'selected' : ''}>${p.name}</option>`; });
-
-          let ebayBalSelectEdit = isEbay ? `<select id="edit-ebaybal-${idx}" class="bg-slate-950 border border-cyan-500 rounded p-1 text-[11px] text-cyan-300 w-full"><option value="⏳ Bei eBay" ${o.ebayBalancePaid==='⏳ Bei eBay'?'selected':''}>⏳ Bei eBay</option><option value="✅ Ausgezahlt" ${o.ebayBalancePaid==='✅ Ausgezahlt'?'selected':''}>✅ Ausgezahlt</option></select>` : `<span class="text-slate-500 text-[11px]">N/A</span><input type="hidden" id="edit-ebaybal-${idx}" value="N/A">`;
-
-          tbody.innerHTML += `
-            <tr class="border-b border-slate-800 bg-slate-900/90">
-              <td class="p-2 space-y-1"><input type="text" id="edit-cust-${idx}" value="${o.customer}" class="bg-slate-950 border border-blue-500 rounded px-2 py-0.5 text-[11px] text-white w-full"><select id="edit-plat-${idx}" onchange="onEditPlatformChange(${idx})" class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[10px] text-cyan-300 w-full"><option value="Kleinanzeigen" ${o.platform==='Kleinanzeigen'?'selected':''}>Kleinanzeigen</option><option value="eBay" ${o.platform==='eBay'?'selected':''}>eBay</option></select><input type="text" id="edit-addr-${idx}" value="${o.address || ''}" class="bg-slate-950 border border-blue-500 rounded px-2 py-0.5 text-[10px] text-white w-full"></td>
-              <td class="p-2"><input type="text" id="edit-inv-${idx}" value="${fixedInvNum}" class="bg-slate-950 border border-blue-500 rounded px-2 py-0.5 text-[11px] font-mono text-cyan-400 w-24"></td>
-              <td class="p-2">${editItemsHtml}</td>
-              <td class="p-2"><select id="edit-print-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white">${printerOptionsEdit}</select></td>
-              <td class="p-2"><select id="edit-ispaid-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="✅ Ja" ${o.isPaid==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.isPaid==='❌ Nein'?'selected':''}>❌ Nein</option></select></td>
-              <td class="p-2"><select id="edit-paymeth-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="eBay" ${o.paymentMethod==='eBay'?'selected':''}>eBay</option><option value="PayPal" ${o.paymentMethod==='PayPal'?'selected':''}>PayPal</option><option value="Überweisung" ${o.paymentMethod==='Überweisung'?'selected':''}>Überweisung</option><option value="Bar" ${o.paymentMethod==='Bar'?'selected':''}>Bar</option></select></td>
-              <td class="p-2" id="edit-ebaybal-cell-${idx}">${ebayBalSelectEdit}</td>
-              <td class="p-2"><select id="edit-stat-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option ${o.status==='Offen'?'selected':''}>Offen</option><option ${o.status==='In Arbeit'?'selected':''}>In Arbeit</option><option${o.status==='Fertig'?'selected':''}>Fertig</option></select></td>
-              <td class="p-2 space-y-1"><div>Artikel: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-16"></div><div>Versand: <select id="edit-shipfee-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[10px] text-cyan-300"><option value="0" ${shipFeeVal===0?'selected':''}>0 €</option><option value="5" ${shipFeeVal===5?'selected':''}>5 €</option><option value="7" ${shipFeeVal===7?'selected':''}>7 €</option></select></div><div>Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCostVal}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-red-300 w-16"></div></td>
-              <td class="p-2"><select id="edit-label-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>❌ Nein</option><option value="🟡 Wartet auf Zahlung" ${o.label==='🟡 Wartet auf Zahlung'?'selected':''}>🟡 Wartet auf Zahlung</option></select></td>
-              <td class="p-2"><select id="edit-packed-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>❌ Nein</option></select></td>
-              <td class="p-2"><input type="text" id="edit-track-${idx}" value="${o.tracking}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-16"></td>
-              <td class="p-2 text-right"><button onclick="saveEdit(${idx})" class="bg-green-600 text-white px-2 py-0.5 rounded text-[11px] mr-1"><i class="fa-solid fa-check"></i></button><button onclick="cancelEdit()" class="bg-slate-700 text-white px-2 py-0.5 rounded text-[11px]"><i class="fa-solid fa-xmark"></i></button></td>
-            </tr>`;
-        } else {
-          let itemsHtml = '<div class="space-y-0.5">';
-          o.items.forEach(i => { itemsHtml += `<div class="text-[11px] text-white">• ${i.name} <span class="text-purple-300">(${i.color \vert{}\vert{} 'Std'},${i.weight || 0}g)</span></div>`; });
-          itemsHtml += '</div>';
-
-          let archiveBtnHtml = o.archived 
-            ? `<button onclick="toggleArchiveOrder(${o.id})" class="text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded text-[10px]">📥 Aktiv</button>`
-            : `<button onclick="toggleArchiveOrder(${o.id})" class="text-purple-300 bg-purple-500/10 px-2 py-1 rounded text-[10px]">📦 Archiv</button>`;
-
-          let printerOptionsTable = '';
-          printers.forEach(p => { printerOptionsTable += `<option value="${p.name}" ${p.name === o.printer ? 'selected' : ''}>${p.name}</option>`; });
-
-          let platBadge = isEbay ? '<span class="bg-blue-500/20 text-blue-300 border border-blue-500/40 px-1.5 py-0.5 rounded text-[9px] font-bold">eBay</span>' : '<span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.5 rounded text-[9px]">Kleinanzeigen</span>';
-
-          let ebayBalanceCell = isEbay ? `
-            <select onchange="updateField(${o.id}, 'ebayBalancePaid', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] ${o.ebayBalancePaid === '✅ Ausgezahlt' ? 'text-emerald-400 font-bold' : 'text-cyan-300'} focus:outline-none">
-              <option value="⏳ Bei eBay" ${o.ebayBalancePaid === '⏳ Bei eBay' ? 'selected' : ''}>⏳ Bei eBay</option>
-              <option value="✅ Ausgezahlt" ${o.ebayBalancePaid === '✅ Ausgezahlt' ? 'selected' : ''}>✅ Ausgezahlt</option>
-            </select>` : `<span class="text-slate-500 text-[11px]">-</span>`;
-
-          let orderPortoDisplay = lCostVal > 0 ? `<div class="text-red-400 text-[10px]">Einkauf: -${lCostVal.toFixed(2).replace('.', ',')} €</div>` : `<div class="text-slate-500 text-[10px]">Einkauf: 0,00 €</div>`;
-          let orderShippingDisplay = shipFeeVal > 0 ? `<div class="text-cyan-300 text-[10px]">Versand: +${shipFeeVal.toFixed(2).replace('.', ',')} €</div>` : ``;
-
-          tbody.innerHTML += `
-            <tr class="hover:bg-slate-800/40 border-b border-slate-800">
-              <td class="p-2 font-medium text-white">${o.customer}<div class="flex items-center gap-1 mt-0.5">${platBadge}</div><div class="text-[9px] text-slate-400">${o.address || ''}</div></td>
-              <td class="p-2 text-[11px] font-mono text-cyan-300 font-bold">${fixedInvNum}</td>
-              <td class="p-2">${itemsHtml}</td>
-              <td class="p-2"><select onchange="updateField(${o.id}, 'printer', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300">${printerOptionsTable}</select></td>
-              <td class="p-2"><select onchange="updateField(${o.id}, 'isPaid', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-emerald-300"><option value="✅ Ja" ${o.isPaid === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.isPaid === '❌ Nein' ? 'selected' : ''}>❌ Nein</option></select></td>
-              <td class="p-2"><select onchange="updateField(${o.id}, 'paymentMethod', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-cyan-300"><option value="eBay" ${o.paymentMethod === 'eBay' ? 'selected' : ''}>eBay</option><option value="PayPal" ${o.paymentMethod === 'PayPal' ? 'selected' : ''}>PayPal</option><option value="Überweisung" ${o.paymentMethod === 'Überweisung' ? 'selected' : ''}>Überweisung</option><option value="Bar" ${o.paymentMethod === 'Bar' ? 'selected' : ''}>Bar</option></select></td>
-              <td class="p-2">${ebayBalanceCell}</td>
-              <td class="p-2"><select onchange="updateField(${o.id}, 'status', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-yellow-300"><option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option><option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option><option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option></select></td>
-              <td class="p-2 text-[11px]"><div class="text-emerald-400 font-bold">${totalOrderRevenue.toFixed(2).replace('.', ',')} €</div>${orderShippingDisplay}${orderPortoDisplay}</td>
-              <td class="p-2"><select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300"><option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.label === '❌ Nein' ? 'selected' : ''}>❌ Nein</option><option value="🟡 Wartet auf Zahlung" ${o.label === '🟡 Wartet auf Zahlung' ? 'selected' : ''}>🟡 Wartet auf Zahlung</option></select></td>
-              <td class="p-2"><select onchange="updateField(${o.id}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300"><option value="✅ Ja" ${o.packed === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.packed === '❌ Nein' ? 'selected' : ''}>❌ Nein</option></select></td>
-              <td class="p-2 text-[10px] font-mono text-blue-400">${o.tracking}</td>
-              <td class="p-2 text-right space-x-1">${archiveBtnHtml}<button onclick="printInvoice(${idx})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]">📄</button><button onclick="printBoxLabel(${idx})" class="text-amber-300 bg-amber-500/10 px-1.5 py-1 rounded text-[10px]">🏷️</button><button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]">✏️</button><button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]"><i class="fa-solid fa-trash"></i></button></td>
-            </tr>`;
-        }
-      });
-      updateStats();
-    }
-
     function updateStats() {
-      const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
-      let totalRev = 0, totalExp = 0, totalW = 0, openC = 0, ebayBalanceOpen = 0;
-
-      orders.forEach(o => {
-        let orderTotalWeight = 0;
-        if (o.items && Array.isArray(o.items)) o.items.forEach(i => orderTotalWeight += (i.weight || 0));
-
-        let isEbay = o.platform === 'eBay';
-        let shipFee = o.shippingFee !== undefined ? o.shippingFee : 5.00;
-        let orderAmount = o.price + shipFee;
-        let lCost = o.labelCost || 0;
-
-        if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') {
-          ebayBalanceOpen += Math.round((orderAmount - lCost) * 100) / 100;
-        }
-
-        let targetDate = o.orderDate || '';
-        if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
-          totalRev += orderAmount;
-          totalExp += lCost;
-          totalW += orderTotalWeight;
-        }
-
-        if (!o.archived && o.status !== 'Fertig') openC++;
-      });
-
-      expenses.forEach(ex => {
-        if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) {
-          totalExp += ex.amount;
-        }
-      });
-
-      let netProfit = totalRev - totalExp;
-      ebayBalanceOpen = Math.round(ebayBalanceOpen * 100) / 100;
-
-      if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statEbayBalance')) document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerText = openC;
-      if (document.getElementById('statFilament')) document.getElementById('statFilament').innerText = totalW + ' g';
+      let rev = 0, exp = 0;
+      orders.forEach(o => { rev += o.price + (o.shippingFee || 0); exp += o.labelCost || 0; });
+      expenses.forEach(ex => exp += ex.amount);
+      if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = rev.toFixed(2).replace('.',',') + ' €';
+      if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = exp.toFixed(2).replace('.',',') + ' €';
+      if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = (rev - exp).toFixed(2).replace('.',',') + ' €';
     }
 
     function renderPrinters() {
-      const grid = document.getElementById('printersGrid');
-      if (!grid) return;
-      grid.innerHTML = '';
+      const g = document.getElementById('printersGrid');
+      if (!g) return;
+      g.innerHTML = '';
       printers.forEach((p, idx) => {
-        let statusColor = 'text-blue-400';
-        if (p.status === 'In Arbeit') statusColor = 'text-yellow-400 font-bold';
-        if (p.status === 'Außer Betrieb') statusColor = 'text-red-400 font-bold';
-
-        grid.innerHTML += `
-          <div class="card p-3 rounded-xl space-y-2 relative">
-            <div class="flex justify-between items-center">
-              <h3 class="font-bold text-white text-xs">${p.name}</h3>
-              <div class="flex items-center space-x-1.5">
-                <select onchange="updatePrinterStatus(${idx}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] ${statusColor} focus:outline-none">
-                  <option value="Frei" ${p.status === 'Frei' ? 'selected' : ''}>🟢 Frei</option>
-                  <option value="In Arbeit" ${p.status === 'In Arbeit' ? 'selected' : ''}>🟡 In Arbeit</option>
-                  <option value="Außer Betrieb" ${p.status === 'Außer Betrieb' ? 'selected' : ''}>🔴 Außer Betrieb</option>
-                </select>
-                <button onclick="deletePrinter(${idx})" class="text-red-400 hover:text-red-300 px-1 text-[11px] cursor-pointer" title="Drucker löschen">❌</button>
-              </div>
-            </div>
-            <p class="text-[11px] text-slate-400">${p.desc}</p>
-          </div>`;
+        g.innerHTML += `<div class="card p-3 rounded-xl flex justify-between items-center"><div><h3 class="font-bold text-white">${p.name}</h3><span class="text-[10px] text-slate-400">${p.desc}</span></div><button onclick="deletePrinter(${idx})" class="text-red-400">❌</button></div>`;
       });
       updatePrinterDropdowns();
     }
