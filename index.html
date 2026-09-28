@@ -515,7 +515,6 @@
         document.getElementById('cloudStatusText').innerText = "Mit JSONBin Cloud verbunden";
         document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
       } catch (e) {
-        // Falls der direkte Abruf blockiert wird, initialisieren/senden wir einmalig die Daten, um die Bin zu setzen
         saveToCloudSilent();
       }
     }
@@ -527,7 +526,8 @@
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'X-Master-Key': JSONBIN_API_KEY
+            'X-Master-Key': JSONBIN_API_KEY,
+            'X-Bin-Versioning': 'false'
           },
           body: JSON.stringify(payload)
         });
@@ -548,7 +548,8 @@
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'X-Master-Key': JSONBIN_API_KEY
+            'X-Master-Key': JSONBIN_API_KEY,
+            'X-Bin-Versioning': 'false'
           },
           body: JSON.stringify(payload)
         });
