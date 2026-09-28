@@ -58,8 +58,8 @@
             Sefas<span class="text-cyan-400">3d</span>shop
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
-            <span id="cloudStatusIndicator" class="inline-block w-2 h-2 rounded-full bg-yellow-500"></span> 
-            <span id="cloudStatusText">Lade Daten...</span>
+            <span id="cloudStatusIndicator" class="inline-block w-2 h-2 rounded-full bg-green-500"></span> 
+            <span id="cloudStatusText">Cloud aktiv</span>
           </p>
         </div>
       </div>
@@ -73,7 +73,7 @@
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv
         </button>
-        <button onclick="loadFromCloud(true)" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
+        <button onclick="loadFromCloud()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-cloud-arrow-down mr-1"></i> ☁️ Laden
         </button>
         <button onclick="syncToCloud()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
@@ -287,8 +287,7 @@
   </div>
 
   <script>
-    const BIN_ID = "66f3661be41b4d34e4343169"; 
-    const API_KEY = "$2a$10$9wGkC5S9vJ8v5Wv3V9x7veF8v5Wv3V9x7veF8v5Wv3V9x7veF8v5W";
+    const CLOUD_URL = "https://api.npoint.io/40113f0a51c41b8a5367";
 
     let orders = [];
     let spools = [];
@@ -307,97 +306,61 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
       document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
-      loadFromCloud(false);
+      loadFromCloud();
     });
 
-    async function loadFromCloud(manualTrigger = false) {
+    async function loadFromCloud() {
       const indicator = document.getElementById('cloudStatusIndicator');
       const text = document.getElementById('cloudStatusText');
+      text.innerText = "Lade...";
       
-      if(manualTrigger) {
-          text.innerText = "Lade Cloud...";
-          indicator.className = "inline-block w-2 h-2 rounded-full bg-yellow-500 animate-pulse";
-      }
-
-      // 1. Lokales Backup abrufen, damit du nie mit leeren Händen dastehst
       try {
-        let local = localStorage.getItem('sefas_shop_data');
-        if (local) {
-          let d = JSON.parse(local);
-          orders = d.orders || [];
-          spools = d.spools || [];
-          expenses = d.expenses || [];
-          printers = d.printers || printers;
-          refreshEverything();
-        }
-      } catch(e) {}
-
-      // 2. Deine originale JSONBin.io Cloud laden
-      try {
-        let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-          headers: { 'X-Master-Key': API_KEY }
-        });
+        let res = await fetch(CLOUD_URL);
         if (res.ok) {
           let data = await res.json();
-          let record = data.record;
-          if (record && Array.isArray(record.orders)) {
-            orders = record.orders;
-            spools = record.spools || spools;
-            expenses = record.expenses || expenses;
-            printers = record.printers || printers;
+          if (data && Array.isArray(data.orders)) {
+            orders = data.orders;
+            spools = data.spools || spools;
+            expenses = data.expenses || expenses;
+            printers = data.printers || printers;
             indicator.className = "inline-block w-2 h-2 rounded-full bg-green-500";
             text.innerText = "Cloud aktiv";
-            saveLocalBackup();
             refreshEverything();
-            
-            if(manualTrigger) alert("✅ Aktuellste Daten aus der Cloud geladen!");
+            alert("✅ Daten erfolgreich aus der Cloud geladen!");
+            return;
           }
-        } else {
-            throw new Error();
         }
+        throw new Error();
       } catch(e) {
-        indicator.className = "inline-block w-2 h-2 rounded-full bg-blue-500";
-        text.innerText = "Lokal aktiv";
-        if(manualTrigger) alert("⚠️ Cloud-Verbindung fehlgeschlagen. Du arbeitest mit lokalen Daten.");
+        indicator.className = "inline-block w-2 h-2 rounded-full bg-red-500";
+        text.innerText = "Fehler beim Laden";
+        alert("⚠️ Konnte keine Verbindung zur Cloud herstellen.");
       }
-    }
-
-    function saveLocalBackup() {
-      try {
-        let payload = { orders, spools, expenses, printers };
-        localStorage.setItem('sefas_shop_data', JSON.stringify(payload));
-      } catch(e) {}
     }
 
     async function syncToCloud() {
       const indicator = document.getElementById('cloudStatusIndicator');
       const text = document.getElementById('cloudStatusText');
       text.innerText = "Speichere...";
-      indicator.className = "inline-block w-2 h-2 rounded-full bg-yellow-500 animate-pulse";
-      
-      saveLocalBackup();
 
       try {
         let payload = { orders, spools, expenses, printers };
-        let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': API_KEY
-          },
+        let res = await fetch(CLOUD_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
         if (res.ok) {
           indicator.className = "inline-block w-2 h-2 rounded-full bg-green-500";
-          text.innerText = "Gespeichert!";
-          alert("✅ Daten erfolgreich in der Cloud gespeichert!");
+          text.innerText = "Cloud aktiv";
+          alert("✅ Erfolgreich in der Cloud gespeichert!");
         } else {
           throw new Error();
         }
       } catch(e) {
-        indicator.className = "inline-block w-2 h-2 rounded-full bg-blue-500";
-        text.innerText = "Lokal gespeichert";
-        alert("⚠️ Cloud nicht erreichbar. Daten wurden lokal auf diesem Gerät gespeichert!");
+        indicator.className = "inline-block w-2 h-2 rounded-full bg-red-500";
+        text.innerText = "Fehler beim Speichern";
+        alert("⚠️ Speichern in der Cloud fehlgeschlagen!");
       }
     }
 
@@ -464,7 +427,6 @@
 
       let combined = [];
 
-      // 1. Echte manuelle Ausgaben
       expenses.forEach(ex => {
         combined.push({
           type: 'manual',
@@ -476,7 +438,6 @@
         });
       });
 
-      // 2. Automatisches Porto aus den Aufträgen ziehen
       orders.forEach(o => {
         if (o.labelCost > 0) {
           combined.push({
@@ -490,7 +451,6 @@
         }
       });
 
-      // Nach Datum absteigend sortieren
       combined.sort((a, b) => {
         let dA = new Date(a.date || 0).getTime();
         let dB = new Date(b.date || 0).getTime();
@@ -498,14 +458,12 @@
         return b.id - a.id;
       });
 
-      // Tabelle aufbauen
       combined.forEach(item => {
         if (month !== 'all' && (!item.date || !item.date.startsWith(month))) return;
 
         if (item.type === 'manual') {
           tbody.innerHTML += `<tr class="border-b border-slate-800"><td class="p-2">${item.date||'-'}</td><td class="p-2">${item.category}</td><td class="p-2">${item.description}</td><td class="p-2 text-red-400">-${item.amount.toFixed(2).replace('.',',')} €</td><td class="p-2 text-right"><button onclick="deleteExpense(${item.id})" class="text-red-400 hover:text-red-300">🗑️</button></td></tr>`;
         } else {
-          // Automatische Portokosten heben sich leicht farblich ab
           tbody.innerHTML += `<tr class="border-b border-slate-800 bg-blue-900/10"><td class="p-2">${item.date||'-'}</td><td class="p-2 text-blue-300">${item.category}</td><td class="p-2 text-slate-300">${item.description}</td><td class="p-2 text-red-400">-${item.amount.toFixed(2).replace('.',',')} €</td><td class="p-2 text-right"><span class="text-[9px] text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20">Im Auftrag ändern</span></td></tr>`;
         }
       });
