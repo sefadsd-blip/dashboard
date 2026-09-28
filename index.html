@@ -282,7 +282,7 @@
   <script>
     // --- JSONBIN CLOUD KONFIGURATION ---
     const JSONBIN_BIN_ID = "66f7f6f2acd3cb34a88f7c90"; 
-    const JSONBIN_API_KEY = "$2a$10$T1ZzW0n5Q1S6b9C5eB0VquZqH5Z7q9Q9Z8q9Q9Z8q9Q9Z8q9Q9Z8q"; // <-- Hier ist dein Master-Key hinterlegt
+    const JSONBIN_API_KEY = "$2a$10$hnafVmeRLZAKTKvsRJICNut84QHZvGWJaBSM6AAyLDB/ACywOhb66"; 
 
     let orders = [
       {"id":1790522031947,"items":[{"name":"Schönes Wandregal rund / Metall-Regal Schwarz – Neu 3D-Druck","color":"","weight":0}],"label":"✅ Ja","price":19.99,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Offen","address":"LAUCHHEIMERSTR. 11 94469 DEGGENDORF","printer":"CR-10 Smart Pro #1","archived":false,"customer":"ELVIRA FELK","platform":"eBay","shipDate":"","tracking":"02270136002720","labelCost":6.99,"orderDate":"2026-09-27","shippingFee":0,"invoiceNumber":"RE-2026-0015","paymentMethod":"eBay","ebayBalancePaid":"⏳ Bei eBay"},
@@ -393,7 +393,7 @@
         refreshEverything();
         alert("✅ Erfolgreich in der JSONBin Cloud gespeichert!");
       } catch (e) {
-        alert("❌ Fehler beim Speichern in der Cloud! Bitte trage deinen JSONBin Master-Key ganz oben im Skript unter 'JSONBIN_API_KEY' ein.");
+        alert("❌ Fehler beim Speichern in der Cloud!");
       }
     }
 
