@@ -53,7 +53,7 @@
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
             <span class="inline-block w-2 h-2 rounded-full bg-green-500" id="cloudStatusDot"></span> 
-            <span id="cloudStatusText">Cloud-Verbindung aktiv</span>
+            <span id="cloudStatusText">Cloud Verbunden</span>
           </p>
         </div>
       </div>
@@ -67,10 +67,10 @@
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv
         </button>
-        <button onclick="cloudLoadData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
+        <button onclick="loadFromCloud()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-cloud-arrow-down mr-1"></i> ☁️ Laden
         </button>
-        <button onclick="cloudSaveData()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
+        <button onclick="saveToCloud()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-floppy-disk mr-1"></i> 💾 Speichern
         </button>
       </div>
@@ -274,10 +274,8 @@
   </div>
 
   <script>
-    // Nutzen eines CORS-Proxy / Direct-Endpoints für JSONBin, um Blockaden komplett zu umgehen
-    const CLOUD_BIN_ID = "669d5182acd3cb34a8767351";
-    const CLOUD_API_KEY = "$2a$10$vY3ZqW9J1xK0L7m8N2p4Ce8hF6b5v4C3x2Z1m0N9p8q7r6s5t4u3v";
-    const PROXY_URL = "https://api.allorigins.win/raw?url=";
+    const CLOUD_URL = "https://api.jsonbin.io/v3/b/669d5182acd3cb34a8767351"; 
+    const CLOUD_KEY = "$2a$10$vY3ZqW9J1xK0L7m8N2p4Ce8hF6b5v4C3x2Z1m0N9p8q7r6s5t4u3v";
 
     let orders = [];
     let spools = [
@@ -300,20 +298,55 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
       document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
-      cloudLoadData();
+      loadFromCloud();
       addArticleInputRow();
     });
 
-    async function cloudLoadData() {
+    async function saveToCloud() {
+      const dataPayload = {
+        orders: orders,
+        spools: spools,
+        expenses: expenses,
+        printers: printers,
+        updatedAt: new Date().toISOString()
+      };
+
       try {
-        const targetUrl = `https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`;
-        const response = await fetch(PROXY_URL + encodeURIComponent(targetUrl));
+        const response = await fetch(CLOUD_URL, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': CLOUD_KEY
+          },
+          body: JSON.stringify(dataPayload)
+        });
+
+        if (response.ok) {
+          document.getElementById('cloudStatusText').innerText = "Cloud Gespeichert";
+          document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
+          alert("💾 Erfolgreich in der Cloud gespeichert!");
+        } else {
+          throw new Error("Fehler beim Cloud-Speichern");
+        }
+      } catch (e) {
+        document.getElementById('cloudStatusText').innerText = "Cloud Fehler";
+        document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-red-500";
+        alert("⚠️ Cloud-Fehler beim Speichern!");
+      }
+    }
+
+    async function loadFromCloud() {
+      try {
+        const response = await fetch(CLOUD_URL + "/latest", {
+          headers: {
+            'X-Master-Key': CLOUD_KEY
+          }
+        });
 
         if (response.ok) {
           const json = await response.json();
-          // Falls über den Proxy geholt, liegt das Objekt manchmal direkt oder in .record
-          const data = json.record || json;
-          if (data && (data.orders || data.spools)) {
+          if (json && json.record) {
+            const data = json.record;
             if (Array.isArray(data.orders)) orders = data.orders;
             if (Array.isArray(data.spools) && data.spools.length > 0) spools = data.spools;
             if (Array.isArray(data.expenses)) expenses = data.expenses;
@@ -325,65 +358,11 @@
             return;
           }
         }
-        throw new Error();
+        throw new Error("Keine Daten gefunden");
       } catch (e) {
-        // Fallback auf direkten Fetch falls Proxy blockiert
-        try {
-          const directRes = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`, {
-            headers: { 'X-Master-Key': CLOUD_API_KEY }
-          });
-          if (directRes.ok) {
-            const directJson = await directRes.json();
-            const data = directJson.record;
-            if (data) {
-              if (Array.isArray(data.orders)) orders = data.orders;
-              if (Array.isArray(data.spools) && data.spools.length > 0) spools = data.spools;
-              if (Array.isArray(data.expenses)) expenses = data.expenses;
-              if (Array.isArray(data.printers)) printers = data.printers;
-              refreshEverything();
-              document.getElementById('cloudStatusText').innerText = "Cloud Verbunden";
-              document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
-              return;
-            }
-          }
-        } catch(err) {}
-
-        document.getElementById('cloudStatusText').innerText = "Cloud Offline (Lokal aktiv)";
-        document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-yellow-500";
-      }
-    }
-
-    async function cloudSaveData() {
-      const payload = {
-        orders: orders,
-        spools: spools,
-        expenses: expenses,
-        printers: printers,
-        updatedAt: new Date().toISOString()
-      };
-
-      try {
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': CLOUD_API_KEY
-          },
-          body: JSON.stringify(payload)
-        });
-
-        if (response.ok) {
-          refreshEverything();
-          document.getElementById('cloudStatusText').innerText = "Cloud Gespeichert";
-          document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
-          alert("💾 Erfolgreich in der Cloud gespeichert!");
-        } else {
-          throw new Error();
-        }
-      } catch (e) {
-        document.getElementById('cloudStatusText').innerText = "Cloud Fehler";
+        document.getElementById('cloudStatusText').innerText = "Laden fehlgeschlagen";
         document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-red-500";
-        alert("⚠️ Cloud-Speicherfehler! Bitte Internetverbindung prüfen.");
+        alert("⚠️ Konnte keine Verbindung zur Cloud herstellen!");
       }
     }
 
@@ -401,13 +380,13 @@
       const name = prompt("Drucker-Name:");
       if (!name) return;
       printers.push({ name: name.trim(), desc: "Standard", status: "Frei" });
-      cloudSaveData();
+      saveToCloud();
     }
 
     function deletePrinter(idx) {
       if (printers.length <= 1) return;
       printers.splice(idx, 1);
-      cloudSaveData();
+      saveToCloud();
     }
 
     function updatePrinterDropdowns() {
@@ -427,14 +406,14 @@
         amount: parseFloat(document.getElementById('expAmount').value) || 0,
         date: document.getElementById('expDate').value
       });
-      cloudSaveData();
+      saveToCloud();
       document.getElementById('expDesc').value = '';
       document.getElementById('expAmount').value = '';
     }
 
     function deleteExpense(id) {
       expenses = expenses.filter(ex => ex.id !== id);
-      cloudSaveData();
+      saveToCloud();
     }
 
     function renderExpenses() {
@@ -477,14 +456,14 @@
         if (field === 'platform') {
           o.ebayBalancePaid = (val === 'eBay') ? '⏳ Bei eBay' : 'N/A';
         }
-        cloudSaveData(); 
+        saveToCloud(); 
         renderOrders(); 
       }
     }
 
     function payoutAllEbayBalance() {
       orders.forEach(o => { if (o.platform === 'eBay') o.ebayBalancePaid = '✅ Ausgezahlt'; });
-      cloudSaveData();
+      saveToCloud();
       renderOrders();
     }
 
@@ -497,7 +476,7 @@
 
     function toggleArchiveOrder(id) {
       const o = orders.find(x => x.id === id);
-      if (o) { o.archived = !o.archived; cloudSaveData(); }
+      if (o) { o.archived = !o.archived; saveToCloud(); }
     }
 
     function updateCustomerDropdowns() {
@@ -530,13 +509,13 @@
       const n = prompt("Spulen-Name (z.B. PLA Schwarz):");
       if (n && n.trim() !== "") { 
         spools.push({ id: Date.now(), name: n.trim(), remainingGrams: 1000 }); 
-        cloudSaveData(); 
+        saveToCloud(); 
       }
     }
 
     function deleteSpool(id) {
       spools = spools.filter(s => s.id !== id);
-      cloudSaveData();
+      saveToCloud();
     }
 
     function addArticleInputRow(name='', color='', weight='') {
@@ -619,7 +598,7 @@
         ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A',
         items: items
       });
-      cloudSaveData();
+      saveToCloud();
       document.getElementById('orderForm').reset();
       document.getElementById('articleInputRows').innerHTML = '';
       addArticleInputRow();
@@ -627,7 +606,7 @@
 
     function deleteOrder(id) {
       orders = orders.filter(o => o.id !== id);
-      cloudSaveData();
+      saveToCloud();
     }
 
     function startEdit(id) { editingId = id; renderOrders(); }
@@ -672,7 +651,7 @@
         }
       }
       editingId = null;
-      cloudSaveData();
+      saveToCloud();
     }
 
     function generateInvoiceNumberForExisting(o) {
