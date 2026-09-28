@@ -210,11 +210,11 @@
           <select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
             <!-- Dynamisch gefüllt -->
           </select>
-          <input type="number" step="0.01" id="price" placeholder="Artikelpreis / Gesamt (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+          
+          <input type="number" step="0.01" id="price" placeholder="Artikelpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           
           <input type="number" step="0.01" id="labelCost" placeholder="Porto-Einkauf (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
 
-          <!-- Versandpauschale (wird bei eBay automatisch auf 0 gesetzt) -->
           <select id="shippingFeeSelect" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
             <option value="0">📦 Versandpauschale: 0,00 €</option>
             <option value="5" selected>📦 Versandpauschale: 5,00 €</option>
@@ -416,9 +416,7 @@
       const shipSel = document.getElementById('shippingFeeSelect');
       if (plat === 'eBay') {
         shipSel.value = "0";
-        shipSel.disabled = true;
       } else {
-        shipSel.disabled = false;
         if (shipSel.value === "0") shipSel.value = "5";
       }
     }
@@ -432,7 +430,7 @@
         const res = await fetch(NPOINT_URL, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
-          if (json && Array.isArray(json.orders) && json.orders.length > 0) {
+          if (json && Array.isArray(json.orders)) {
             orders = json.orders;
             spools = Array.isArray(json.spools) ? json.spools : [];
             expenses = Array.isArray(json.expenses) ? json.expenses : [];
@@ -454,7 +452,7 @@
 
       try {
         let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
-        if (Array.isArray(savedOrders) && savedOrders.length > 0) {
+        if (Array.isArray(savedOrders)) {
           orders = savedOrders;
           spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
           expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
@@ -465,7 +463,14 @@
         }
       } catch(e) {}
 
-      if (statusText) statusText.innerText = "Bereit (Keine Daten gefunden)";
+      printers = [
+        { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
+        { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
+        { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
+        { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
+      ];
+      refreshEverything();
+      if (statusText) statusText.innerText = "Bereit";
     }
 
     function refreshEverything() {
@@ -609,7 +614,6 @@
         order.platform = value;
         if (value === 'eBay') {
           order.ebayBalancePaid = '⏳ Bei eBay';
-          order.shippingFee = 0;
         } else {
           order.ebayBalancePaid = 'N/A';
         }
@@ -707,7 +711,7 @@
       if (order.printer) document.getElementById('printer').value = order.printer;
       document.getElementById('price').value = order.price || '';
       document.getElementById('labelCost').value = order.labelCost !== undefined ? order.labelCost : 0;
-      if (document.getElementById('shippingFeeSelect') && order.platform !== 'eBay') {
+      if (document.getElementById('shippingFeeSelect')) {
         document.getElementById('shippingFeeSelect').value = order.shippingFee !== undefined ? order.shippingFee : 5;
       }
       document.getElementById('label').value = order.label || '✅ Ja';
@@ -883,7 +887,7 @@
       const custName = document.getElementById('customer').value;
       
       let labelC = parseFloat(document.getElementById('labelCost').value) || 0;
-      let shippingF = plat === 'eBay' ? 0 : (parseFloat(document.getElementById('shippingFeeSelect').value) || 0);
+      let shippingF = parseFloat(document.getElementById('shippingFeeSelect').value) || 0;
       let ebayBalStatus = plat === 'eBay' ? '⏳ Bei eBay' : 'N/A';
 
       orders.unshift({
@@ -913,7 +917,6 @@
       document.getElementById('orderDate').value = new Date().toISOString().slice(0,10);
       document.getElementById('labelCost').value = "0.00";
       document.getElementById('shippingFeeSelect').value = "5";
-      document.getElementById('shippingFeeSelect').disabled = false;
       document.getElementById('existingCustomerSelect').value = "";
     }
 
@@ -922,16 +925,11 @@
 
     function onEditPlatformChange(idx) {
       const platVal = document.getElementById(`edit-plat-${idx}`).value;
-      const shipFeeEl = document.getElementById(`edit-shipfee-${idx}`);
       const ebayBalEl = document.getElementById(`edit-ebaybal-cell-${idx}`);
       
       if (platVal === 'eBay') {
-        if (shipFeeEl) shipFeeEl.value = "0";
-        if (shipFeeEl) shipFeeEl.disabled = true;
         if (ebayBalEl) ebayBalEl.innerHTML = `<select id="edit-ebaybal-${idx}" class="bg-slate-950 border border-cyan-500 rounded p-1 text-[11px] text-cyan-300 w-full"><option value="⏳ Bei eBay" selected>⏳ Bei eBay</option><option value="✅ Ausgezahlt">✅ Ausgezahlt</option></select>`;
       } else {
-        if (shipFeeEl) shipFeeEl.disabled = false;
-        if (shipFeeEl && shipFeeEl.value === "0") shipFeeEl.value = "5";
         if (ebayBalEl) {
           ebayBalEl.innerHTML = `<span class="text-slate-500 text-[11px]">N/A</span><input type="hidden" id="edit-ebaybal-${idx}" value="N/A">`;
         }
@@ -985,7 +983,7 @@
       orders[idx].packed = document.getElementById(`edit-packed-${idx}`).value;
       orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
       orders[idx].labelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
-      orders[idx].shippingFee = newPlat === 'eBay' ? 0 : (parseFloat(document.getElementById(`edit-shipfee-${idx}`).value) || 0);
+      orders[idx].shippingFee = parseFloat(document.getElementById(`edit-shipfee-${idx}`).value) || 0;
       orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value || '-';
       orders[idx].orderDate = document.getElementById(`edit-date-${idx}`)?.value || orders[idx].orderDate;
       
@@ -1065,7 +1063,7 @@
         itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name}${i.color ? '(' + i.color + ')' : ''}</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td></tr>`;
       });
 
-      let shippingFee = o.shippingFee !== undefined ? o.shippingFee : (o.platform === 'eBay' ? 0 : 5.00);
+      let shippingFee = o.shippingFee !== undefined ? o.shippingFee : 5.00;
       let totalAmountNum = o.price + shippingFee;
 
       if (shippingFee > 0) {
@@ -1105,7 +1103,7 @@
           <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px; margin-bottom: 15px;">
             <div style="font-size: 10px;">
               <p style="margin: 0 0 2px 0;"><strong>Zahlungsinformationen:</strong></p>
-              <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08 | BIC: REVODEB2 (Revolut)</p>
+              <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08 | BIC: REVODEB2 (C24 Bank)</p>
             </div>
             <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;" id="sepaQrCodeTarget"></div>
           </div>
@@ -1135,7 +1133,7 @@
           itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name}${i.color ? '(' + i.color + ')' : ''}</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${o.price.toFixed(2).replace('.', ',')} €</td></tr>`;
         });
         
-        let shippingFee = o.shippingFee !== undefined ? o.shippingFee : (o.platform === 'eBay' ? 0 : 5.00);
+        let shippingFee = o.shippingFee !== undefined ? o.shippingFee : 5.00;
         let totalAmountNum = o.price + shippingFee;
 
         if (shippingFee > 0) {
@@ -1155,7 +1153,7 @@
             </table>
             <div style="text-align: right; margin-bottom: 15px;"><strong>Gesamtbetrag: ${totalAmountNum.toFixed(2).replace('.', ',')} €</strong></div>
             <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px;">
-              <div style="font-size: 10px;">IBAN: DE20 1001 0178 0592 6798 08 (Revolut)</div>
+              <div style="font-size: 10px;">IBAN: DE20 1001 0178 0592 6798 08 (C24 Bank)</div>
               <div style="background: white; padding: 4px;" id="batchSepaQr_${index}"></div>
             </div>
           </div>`;
@@ -1163,7 +1161,7 @@
       invSec.classList.remove('hidden');
       setTimeout(() => {
         activeOrders.forEach((o, index) => {
-          let shippingFee = o.shippingFee !== undefined ? o.shippingFee : (o.platform === 'eBay' ? 0 : 5.00);
+          let shippingFee = o.shippingFee !== undefined ? o.shippingFee : 5.00;
           let totalAmountNum = o.price + shippingFee;
           let invoiceNumber = generateInvoiceNumberForExisting(o);
           const sepaPayload = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
@@ -1178,7 +1176,7 @@
       let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
       csvContent += "Typ;Plattform;Bezahlt?;Zahlungsart;eBay Guthaben Status;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Umsatz (€);Porto-Ausgabe (€)\n";
       orders.forEach(o => {
-        let shippingFee = o.shippingFee !== undefined ? o.shippingFee : (o.platform === 'eBay' ? 0 : 5.00);
+        let shippingFee = o.shippingFee !== undefined ? o.shippingFee : 5.00;
         let total = o.price + shippingFee;
         let type = o.archived ? "Einnahme (Archiviert)" : "Einnahme (Aktiv)";
         let date = o.orderDate || "";
@@ -1233,7 +1231,7 @@
 
         const fixedInvNum = generateInvoiceNumberForExisting(o);
         const lCostVal = o.labelCost !== undefined ? o.labelCost : 0;
-        const shipFeeVal = o.shippingFee !== undefined ? o.shippingFee : (o.platform === 'eBay' ? 0 : 5.00);
+        const shipFeeVal = o.shippingFee !== undefined ? o.shippingFee : 5.00;
         const isEbay = o.platform === 'eBay';
         const totalOrderRevenue = o.price + shipFeeVal;
 
@@ -1261,7 +1259,7 @@
               <td class="p-2"><select id="edit-paymeth-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="eBay" ${o.paymentMethod==='eBay'?'selected':''}>eBay</option><option value="PayPal" ${o.paymentMethod==='PayPal'?'selected':''}>PayPal</option><option value="Überweisung" ${o.paymentMethod==='Überweisung'?'selected':''}>Überweisung</option><option value="Bar" ${o.paymentMethod==='Bar'?'selected':''}>Bar</option></select></td>
               <td class="p-2" id="edit-ebaybal-cell-${idx}">${ebayBalSelectEdit}</td>
               <td class="p-2"><select id="edit-stat-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option ${o.status==='Offen'?'selected':''}>Offen</option><option ${o.status==='In Arbeit'?'selected':''}>In Arbeit</option><option${o.status==='Fertig'?'selected':''}>Fertig</option></select></td>
-              <td class="p-2 space-y-1"><div>Artikel: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-16"></div><div>Versand: <select id="edit-shipfee-${idx}" ${isEbay ? 'disabled' : ''} class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[10px] text-cyan-300"><option value="0" ${shipFeeVal===0?'selected':''}>0 €</option><option value="5" ${shipFeeVal===5?'selected':''}>5 €</option><option value="7" ${shipFeeVal===7?'selected':''}>7 €</option></select></div><div>Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCostVal}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-red-300 w-16"></div></td>
+              <td class="p-2 space-y-1"><div>Artikel: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-16"></div><div>Versand: <select id="edit-shipfee-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[10px] text-cyan-300"><option value="0" ${shipFeeVal===0?'selected':''}>0 €</option><option value="5" ${shipFeeVal===5?'selected':''}>5 €</option><option value="7" ${shipFeeVal===7?'selected':''}>7 €</option></select></div><div>Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCostVal}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-red-300 w-16"></div></td>
               <td class="p-2"><select id="edit-label-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>❌ Nein</option><option value="🟡 Wartet auf Zahlung" ${o.label==='🟡 Wartet auf Zahlung'?'selected':''}>🟡 Wartet auf Zahlung</option></select></td>
               <td class="p-2"><select id="edit-packed-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>❌ Nein</option></select></td>
               <td class="p-2"><input type="text" id="edit-track-${idx}" value="${o.tracking}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-16"></td>
@@ -1320,7 +1318,7 @@
         if (o.items && Array.isArray(o.items)) o.items.forEach(i => orderTotalWeight += (i.weight || 0));
 
         let isEbay = o.platform === 'eBay';
-        let shipFee = o.shippingFee !== undefined ? o.shippingFee : (isEbay ? 0 : 5.00);
+        let shipFee = o.shippingFee !== undefined ? o.shippingFee : 5.00;
         let orderAmount = o.price + shipFee;
         let lCost = o.labelCost || 0;
 
@@ -1352,7 +1350,7 @@
       if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statEbayBalance')) document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerText = openC;
-      if (document.getElementById('statFilament')) document.getElementById('statFilament'].innerText = totalW + ' g';
+      if (document.getElementById('statFilament')) document.getElementById('statFilament').innerText = totalW + ' g';
     }
 
     function renderPrinters() {
