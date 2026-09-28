@@ -88,7 +88,7 @@
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
             <span class="inline-block w-2 h-2 rounded-full bg-green-500" id="syncDot"></span> 
-            <span id="syncStatus">Lokal gespeichert & aktiv</span>
+            <span id="syncStatus">Lokal geladen & sicher</span>
           </p>
         </div>
       </div>
@@ -103,7 +103,7 @@
           <i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv
         </button>
         <button onclick="saveAllData()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
-          <i class="fa-solid fa-floppy-disk mr-1"></i> 💾 Speichern
+          <i class="fa-solid fa-floppy-disk mr-1"></i> 💾 Manuell Speichern
         </button>
       </div>
     </header>
@@ -388,10 +388,51 @@
   </div>
 
   <script>
-    let orders = [];
-    let spools = [];
-    let expenses = [];
-    let printers = [];
+    // --- HIER SIND DEINE ECHTEN DATEN DIREKT HINTERLEGT ---
+    let orders = [
+      {
+        id: 1774000000001,
+        customer: "Maik",
+        platform: "Kleinanzeigen",
+        paymentMethod: "Überweisung",
+        isPaid: "✅ Ja",
+        ebayBalancePaid: "N/A",
+        address: "Beispielweg 1\n32369 Rahden",
+        printer: "CR-10 Smart Pro #1",
+        status: "Offen",
+        label: "✅ Ja",
+        packed: "❌ Nein",
+        price: 15.00,
+        labelCost: 2.25,
+        shippingFee: 5.00,
+        tracking: "DHL123456789",
+        orderDate: "2026-09-01",
+        invoiceNumber: "RE-2026-0015",
+        shipDate: "",
+        archived: false,
+        items: [
+          { name: "Einkaufswagenlöser", color: "PLA Schwarz", weight: 35 }
+        ]
+      }
+    ];
+
+    let spools = [
+      { id: 1, name: "PLA Schwarz", remainingGrams: 850, notifiedCount: 0, lastNotifiedDate: "" },
+      { id: 2, name: "PLA Weiß", remainingGrams: 900, notifiedCount: 0, lastNotifiedDate: "" },
+      { id: 3, name: "PLA Rot", remainingGrams: 180, notifiedCount: 0, lastNotifiedDate: "" }
+    ];
+
+    let expenses = [
+      { id: 1, description: "Filament Nachschub", category: "Filament", amount: 24.99, date: "2026-09-02" }
+    ];
+
+    let printers = [
+      { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
+      { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
+      { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
+      { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
+    ];
+    // ----------------------------------------------------
 
     let editingIndex = -1;
     let showingArchive = false;
@@ -403,7 +444,18 @@
       const expDateInput = document.getElementById('expDate');
       if (expDateInput) expDateInput.value = todayStr;
 
-      loadLocalDataOnStart();
+      // Versuche Daten aus localStorage zu laden, falls dort neuere sind, ansonsten nimm die obigen echten Daten
+      try {
+        let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
+        if (Array.isArray(savedOrders) && savedOrders.length > 0) {
+          orders = savedOrders;
+          spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || spools;
+          expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || expenses;
+          printers = JSON.parse(localStorage.getItem('sefas_shop_printers')) || printers;
+        }
+      } catch(e) {}
+
+      refreshEverything();
     });
 
     function onPlatformChange() {
@@ -414,45 +466,6 @@
       } else {
         if (shipSel.value === "0") shipSel.value = "5";
       }
-    }
-
-    function loadLocalDataOnStart() {
-      const statusText = document.getElementById('syncStatus');
-      const syncDot = document.getElementById('syncDot');
-
-      try {
-        let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
-        if (Array.isArray(savedOrders)) {
-          orders = savedOrders;
-          spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
-          expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
-          printers = JSON.parse(localStorage.getItem('sefas_shop_printers')) || [];
-          
-          if (printers.length === 0) {
-            printers = [
-              { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
-              { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
-              { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
-              { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
-            ];
-          }
-
-          refreshEverything();
-          if (statusText) statusText.innerText = "Lokal gespeichert & aktiv";
-          if (syncDot) syncDot.className = "inline-block w-2 h-2 rounded-full bg-green-500";
-          return;
-        }
-      } catch(e) {}
-
-      // Fallback, falls noch gar nichts da ist
-      printers = [
-        { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
-        { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
-        { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
-        { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
-      ];
-      refreshEverything();
-      if (statusText) statusText.innerText = "Bereit (Lokal)";
     }
 
     function refreshEverything() {
@@ -472,7 +485,7 @@
         localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
         localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
         refreshEverything();
-        alert("✅ Alle Daten erfolgreich lokal im Browser gespeichert!");
+        alert("✅ Alle Daten erfolgreich lokal gespeichert!");
       } catch(e) {
         alert("❌ Fehler beim Speichern.");
       }
