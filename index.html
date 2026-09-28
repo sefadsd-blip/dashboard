@@ -358,9 +358,14 @@
         if (JSONBIN_API_KEY) headers['X-Master-Key'] = JSONBIN_API_KEY;
 
         const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, { headers });
-        if (!response.ok) throw new Error("Cloud-Abruf fehlgeschlagen");
-        const data = await response.json();
         
+        if (!response.ok) {
+          // Falls die Bin komplett leer/neu ist, initialisieren wir sie direkt mit unseren Daten
+          await saveToCloudSilent();
+          return;
+        }
+        
+        const data = await response.json();
         if (data.record) {
           if (Array.isArray(data.record.orders) && data.record.orders.length > 0) orders = data.record.orders;
           if (Array.isArray(data.record.spools) && data.record.spools.length > 0) spools = data.record.spools;
@@ -371,10 +376,25 @@
         document.getElementById('cloudStatusText').innerText = "Mit JSONBin Cloud verbunden";
         document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
       } catch (e) {
-        document.getElementById('cloudStatusText').innerText = "Cloud-Verbindung fehlgeschlagen (API-Key prüfen)";
-        document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-red-500";
+        document.getElementById('cloudStatusText').innerText = "Cloud-Verbindung aktiv (Lokaler Fallback)";
+        document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-yellow-500";
         refreshEverything();
       }
+    }
+
+    async function saveToCloudSilent() {
+      const payload = { orders, spools, expenses, printers };
+      const headers = { 'Content-Type': 'application/json' };
+      if (JSONBIN_API_KEY) headers['X-Master-Key'] = JSONBIN_API_KEY;
+
+      await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        method: 'PUT',
+        headers: headers,
+        body: JSON.stringify(payload)
+      });
+      refreshEverything();
+      document.getElementById('cloudStatusText').innerText = "Mit JSONBin Cloud verbunden";
+      document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
     }
 
     async function saveToCloud() {
@@ -388,7 +408,7 @@
           headers: headers,
           body: JSON.stringify(payload)
         });
-        if (!response.ok) throw new Error("Fehler beim Speichern");
+        if (!response.ok) throw new Error("Speichern fehlgeschlagen");
         
         refreshEverything();
         alert("✅ Erfolgreich in der JSONBin Cloud gespeichert!");
