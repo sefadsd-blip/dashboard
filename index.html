@@ -28,7 +28,6 @@
 
   <div id="printSection" class="hidden"></div>
   <div id="invoiceSection" class="hidden"></div>
-  <input type="file" id="cloudImportFile" class="hidden" accept=".json" onchange="processCloudImport(event)">
 
   <div id="mainApp" class="max-w-[1700px] mx-auto space-y-4">
     
@@ -68,10 +67,10 @@
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv
         </button>
-        <button onclick="triggerCloudLoad()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
+        <button onclick="loadAllData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-cloud-arrow-down mr-1"></i> ☁️ Laden
         </button>
-        <button onclick="triggerCloudSave()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
+        <button onclick="saveAllData()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-floppy-disk mr-1"></i> 💾 Speichern
         </button>
       </div>
@@ -315,7 +314,10 @@
         if (Array.isArray(savedPrinters)) printers = savedPrinters;
 
         refreshEverything();
-      } catch(e) {}
+        alert("Daten erfolgreich geladen!");
+      } catch(e) {
+        alert("Fehler beim Laden!");
+      }
     }
 
     function saveAllData() {
@@ -325,53 +327,10 @@
         localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
         localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
         refreshEverything();
-      } catch(e) {}
-    }
-
-    // Speichern als Cloud-Backup-Datei (ideal zum Ablegen im Cloud-Ordner wie Google Drive / OneDrive)
-    function triggerCloudSave() {
-      saveAllData();
-      const allData = {
-        orders: orders,
-        spools: spools,
-        expenses: expenses,
-        printers: printers,
-        version: "1.0",
-        savedAt: new Date().toISOString()
-      };
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allData, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `sefas_shop_cloud_backup_${new Date().toISOString().slice(0,10)}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    }
-
-    // Laden aus der Cloud-Backup-Datei
-    function triggerCloudLoad() {
-      document.getElementById('cloudImportFile').click();
-    }
-
-    function processCloudImport(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const parsed = JSON.parse(e.target.result);
-          if (parsed.orders) orders = parsed.orders;
-          if (parsed.spools) spools = parsed.spools;
-          if (parsed.expenses) expenses = parsed.expenses;
-          if (parsed.printers) printers = parsed.printers;
-          saveAllData();
-          alert("Daten erfolgreich geladen!");
-        } catch(err) {
-          alert("Fehler beim Lesen der Datei!");
-        }
-      };
-      reader.readAsText(file);
-      event.target.value = '';
+        alert("Daten erfolgreich gespeichert!");
+      } catch(e) {
+        alert("Fehler beim Speichern!");
+      }
     }
 
     function refreshEverything() {
