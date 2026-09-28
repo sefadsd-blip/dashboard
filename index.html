@@ -10,12 +10,6 @@
   <style>
     body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
     .card { background-color: #1e293b; border: 1px solid #334155; }
-    @keyframes pulse-red {
-      0%, 100% { border-color: rgba(239, 68, 68, 0.4); }
-      50% { border-color: rgba(239, 68, 68, 0.9); }
-    }
-    .pulse-low-spool { animation: pulse-red 2s infinite; }
-    
     @media print {
       body * { visibility: hidden !important; }
       #printSection, #printSection *, #invoiceSection, #invoiceSection * { visibility: visible !important; }
@@ -124,7 +118,7 @@
         <div class="card p-3 rounded-xl flex items-center justify-between">
           <div>
             <p class="text-[11px] text-slate-400">Offene Aufträge / Material</p>
-            <h3 id="statOpenOrders" class="text-lg font-bold text-yellow-400">0 <span class="text-[11px] text-slate-400 font-normal" id="statFilament">0g</span></h3>
+            <h3 id="statOpenOrders" class="text-lg font-bold text-yellow-400">0</h3>
           </div>
         </div>
       </div>
@@ -143,7 +137,6 @@
           <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-layer-group mr-1.5 text-purple-400"></i> Filament-Lager</h2>
           <button onclick="addSpoolPrompt()" class="bg-slate-800 hover:bg-slate-700 text-purple-300 text-[11px] px-2 py-0.5 rounded border border-purple-500/35 cursor-pointer">+ Spule</button>
         </div>
-        <div id="spoolWarningBanner" class="hidden bg-red-500/10 border border-red-500/40 p-2 rounded-lg text-[11px] flex items-start gap-2 text-red-300"></div>
         <div id="spoolsList" class="space-y-1.5 max-h-[180px] overflow-y-auto pr-1"></div>
       </section>
     </div>
@@ -208,13 +201,7 @@
             <label class="text-[11px] font-semibold text-slate-300">Artikel, Farbe & Gewicht (g):</label>
             <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-[11px] cursor-pointer">+ Artikel</button>
           </div>
-          <div id="articleInputRows" class="space-y-1.5">
-            <div class="flex gap-2 items-center article-row">
-              <input type="text" placeholder="Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
-              <select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-44 focus:outline-none"><option value="">-- Farbe wählen --</option></select>
-              <input type="number" placeholder="Gramm (g)" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none">
-            </div>
-          </div>
+          <div id="articleInputRows" class="space-y-1.5"></div>
         </div>
         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg py-2 text-xs transition cursor-pointer">Auftrag Speichern</button>
       </form>
@@ -347,17 +334,6 @@
       renderExpenses();
       updateCustomerDropdowns();
       updatePrinterDropdowns();
-      updateColorDropdowns();
-    }
-
-    function updateColorDropdowns() {
-      document.querySelectorAll('.art-color').forEach(sel => {
-        const cur = sel.value;
-        sel.innerHTML = '<option value="">-- Farbe wählen --</option>';
-        spools.forEach(s => {
-          sel.innerHTML += `<option value="${s.name}" ${s.name === cur ? 'selected' : ''}>${s.name}</option>`;
-        });
-      });
     }
 
     function addPrinterPrompt() {
@@ -485,9 +461,8 @@
       if (!c) return;
       c.innerHTML = '';
       spools.forEach((s) => {
-        c.innerHTML += `<div class="p-2 rounded bg-slate-900 border border-slate-700 flex justify-between items-center text-[11px]"><span>${s.name}</span><span class="text-slate-300">${s.remainingGrams}g</span></div>`;
+        c.innerHTML += `<div class="p-2 rounded bg-slate-900 border border-slate-700 flex justify-between items-center text-[11px]"><span>${s.name}</span><span class="text-slate-300">${s.remainingGrams}g</span><button onclick="deleteSpool(${s.id})" class="text-red-400 ml-2">❌</button></div>`;
       });
-      updateColorDropdowns();
     }
 
     function addSpoolPrompt() {
@@ -496,6 +471,11 @@
         spools.push({ id: Date.now(), name: n.trim(), remainingGrams: 1000 }); 
         saveAllData(); 
       }
+    }
+
+    function deleteSpool(id) {
+      spools = spools.filter(s => s.id !== id);
+      saveAllData();
     }
 
     function addArticleInputRow(name='', color='', weight='') {
@@ -508,7 +488,12 @@
         colorOptions += `<option value="${s.name}" ${s.name === color ? 'selected' : ''}>${s.name}</option>`;
       });
 
-      div.innerHTML = `<input type="text" placeholder="Artikelbezeichnung" value="${name}" required class="art-name bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white flex-1"><select class="art-color bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white w-44">${colorOptions}</select><input type="number" placeholder="Gramm (g)" value="${weight}" class="art-weight bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white w-24"><button type="button" onclick="this.parentElement.remove()" class="text-red-400">❌</button>`;
+      div.innerHTML = `
+        <input type="text" placeholder="Artikelbezeichnung" value="${name}" required class="art-name bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
+        <select class="art-color bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white w-44 focus:outline-none">${colorOptions}</select>
+        <input type="number" placeholder="Gramm (g)" value="${weight}" class="art-weight bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white w-24 focus:outline-none">
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1">❌</button>
+      `;
       container.appendChild(div);
     }
 
@@ -526,6 +511,11 @@
         let weight = parseInt(row.querySelector('.art-weight').value) || 0;
         items.push({ name, color, weight });
       });
+
+      if (items.length === 0) {
+        alert("Bitte fügen Sie mindestens einen Artikel hinzu!");
+        return;
+      }
 
       orders.unshift({
         id: Date.now(),
@@ -550,13 +540,8 @@
       });
       saveAllData();
       document.getElementById('orderForm').reset();
-      document.getElementById('articleInputRows').innerHTML = `
-        <div class="flex gap-2 items-center article-row">
-          <input type="text" placeholder="Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
-          <select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-44 focus:outline-none"><option value="">-- Farbe wählen --</option></select>
-          <input type="number" placeholder="Gramm (g)" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none">
-        </div>`;
-      updateColorDropdowns();
+      document.getElementById('articleInputRows').innerHTML = '';
+      addArticleInputRow();
     }
 
     function deleteOrder(id) {
