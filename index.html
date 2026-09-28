@@ -314,7 +314,10 @@
         if (Array.isArray(savedPrinters)) printers = savedPrinters;
 
         refreshEverything();
-      } catch(e) {}
+        alert("Daten erfolgreich geladen!");
+      } catch(e) {
+        alert("Fehler beim Laden!");
+      }
     }
 
     function saveAllData() {
@@ -324,7 +327,10 @@
         localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
         localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
         refreshEverything();
-      } catch(e) {}
+        alert("Daten erfolgreich gespeichert!");
+      } catch(e) {
+        alert("Fehler beim Speichern!");
+      }
     }
 
     function refreshEverything() {
