@@ -288,7 +288,11 @@
 
   <script>
     let orders = [];
-    let spools = [];
+    let spools = [
+      { id: 1, name: "PLA Schwarz", remainingGrams: 1000 },
+      { id: 2, name: "PLA Weiß", remainingGrams: 1000 },
+      { id: 3, name: "PETG Grau", remainingGrams: 1000 }
+    ];
     let expenses = [];
     let printers = [
       {"desc":"Großraum","name":"CR-10 Smart Pro #1","status":"In Arbeit"},
@@ -309,13 +313,18 @@
 
     function loadAllData() {
       try {
-        let saved = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
-        if (Array.isArray(saved) && saved.length > 0) {
-          orders = saved;
-          spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || spools;
-          expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || expenses;
-          printers = JSON.parse(localStorage.getItem('sefas_shop_printers')) || printers;
-        }
+        let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
+        if (Array.isArray(savedOrders)) orders = savedOrders;
+
+        let savedSpools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent'));
+        if (Array.isArray(savedSpools) && savedSpools.length > 0) spools = savedSpools;
+
+        let savedExpenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent'));
+        if (Array.isArray(savedExpenses)) expenses = savedExpenses;
+
+        let savedPrinters = JSON.parse(localStorage.getItem('sefas_shop_printers'));
+        if (Array.isArray(savedPrinters)) printers = savedPrinters;
+
         refreshEverything();
       } catch(e) {}
     }
@@ -482,8 +491,8 @@
     }
 
     function addSpoolPrompt() {
-      const n = prompt("Spulen-Name:");
-      if (n) { 
+      const n = prompt("Spulen-Name (z.B. PLA Schwarz):");
+      if (n && n.trim() !== "") { 
         spools.push({ id: Date.now(), name: n.trim(), remainingGrams: 1000 }); 
         saveAllData(); 
       }
@@ -499,7 +508,7 @@
         colorOptions += `<option value="${s.name}" ${s.name === color ? 'selected' : ''}>${s.name}</option>`;
       });
 
-      div.innerHTML = `<input type="text" placeholder="Artikelbezeichnung" value="${name}" required class="art-name bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white flex-1"><select class="art-color bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white w-44">${colorOptions}</select><input type="number" placeholder="Gramm" value="${weight}" class="art-weight bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white w-24"><button type="button" onclick="this.parentElement.remove()" class="text-red-400">❌</button>`;
+      div.innerHTML = `<input type="text" placeholder="Artikelbezeichnung" value="${name}" required class="art-name bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white flex-1"><select class="art-color bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white w-44">${colorOptions}</select><input type="number" placeholder="Gramm (g)" value="${weight}" class="art-weight bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white w-24"><button type="button" onclick="this.parentElement.remove()" class="text-red-400">❌</button>`;
       container.appendChild(div);
     }
 
