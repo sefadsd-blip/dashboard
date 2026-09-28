@@ -274,8 +274,10 @@
   </div>
 
   <script>
+    // Nutzen eines CORS-Proxy / Direct-Endpoints für JSONBin, um Blockaden komplett zu umgehen
     const CLOUD_BIN_ID = "669d5182acd3cb34a8767351";
     const CLOUD_API_KEY = "$2a$10$vY3ZqW9J1xK0L7m8N2p4Ce8hF6b5v4C3x2Z1m0N9p8q7r6s5t4u3v";
+    const PROXY_URL = "https://api.allorigins.win/raw?url=";
 
     let orders = [];
     let spools = [
@@ -304,16 +306,14 @@
 
     async function cloudLoadData() {
       try {
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`, {
-          headers: {
-            'X-Master-Key': CLOUD_API_KEY
-          }
-        });
+        const targetUrl = `https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`;
+        const response = await fetch(PROXY_URL + encodeURIComponent(targetUrl));
 
         if (response.ok) {
           const json = await response.json();
-          if (json && json.record) {
-            const data = json.record;
+          // Falls über den Proxy geholt, liegt das Objekt manchmal direkt oder in .record
+          const data = json.record || json;
+          if (data && (data.orders || data.spools)) {
             if (Array.isArray(data.orders)) orders = data.orders;
             if (Array.isArray(data.spools) && data.spools.length > 0) spools = data.spools;
             if (Array.isArray(data.expenses)) expenses = data.expenses;
@@ -327,9 +327,29 @@
         }
         throw new Error();
       } catch (e) {
-        document.getElementById('cloudStatusText').innerText = "Cloud Fehler";
-        document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-red-500";
-        alert("⚠️ Konnte keine Verbindung zur Cloud herstellen!");
+        // Fallback auf direkten Fetch falls Proxy blockiert
+        try {
+          const directRes = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`, {
+            headers: { 'X-Master-Key': CLOUD_API_KEY }
+          });
+          if (directRes.ok) {
+            const directJson = await directRes.json();
+            const data = directJson.record;
+            if (data) {
+              if (Array.isArray(data.orders)) orders = data.orders;
+              if (Array.isArray(data.spools) && data.spools.length > 0) spools = data.spools;
+              if (Array.isArray(data.expenses)) expenses = data.expenses;
+              if (Array.isArray(data.printers)) printers = data.printers;
+              refreshEverything();
+              document.getElementById('cloudStatusText').innerText = "Cloud Verbunden";
+              document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
+              return;
+            }
+          }
+        } catch(err) {}
+
+        document.getElementById('cloudStatusText').innerText = "Cloud Offline (Lokal aktiv)";
+        document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-yellow-500";
       }
     }
 
@@ -363,7 +383,7 @@
       } catch (e) {
         document.getElementById('cloudStatusText').innerText = "Cloud Fehler";
         document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-red-500";
-        alert("⚠️ Fehler beim Speichern in der Cloud!");
+        alert("⚠️ Cloud-Speicherfehler! Bitte Internetverbindung prüfen.");
       }
     }
 
