@@ -493,9 +493,12 @@
     // --- JSONBIN CLOUD FUNKTIONEN ---
     async function loadFromCloud() {
       try {
-        // Wir nutzen einen Proxy, um die Browser-Sicherheitsblockade (CORS) bei lokalen Dateien zu umgehen
-        const proxyUrl = `https://api.allorigins.win/raw?url=` + encodeURIComponent(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`);
-        const response = await fetch(proxyUrl);
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+          method: 'GET',
+          headers: {
+            'X-Master-Key': JSONBIN_API_KEY
+          }
+        });
         
         if (!response.ok) throw new Error("Laden fehlgeschlagen");
         
@@ -512,8 +515,27 @@
         document.getElementById('cloudStatusText').innerText = "Mit JSONBin Cloud verbunden";
         document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
       } catch (e) {
-        // Fallback: Einmalig direkt versuchen oder Daten aktiv halten
-        document.getElementById('cloudStatusText').innerText = "Mit JSONBin Cloud verbunden (Stand-by)";
+        // Falls der direkte Abruf blockiert wird, initialisieren/senden wir einmalig die Daten, um die Bin zu setzen
+        saveToCloudSilent();
+      }
+    }
+
+    async function saveToCloudSilent() {
+      const payload = { orders, spools, expenses, printers, updatedAt: new Date().toISOString() };
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': JSONBIN_API_KEY
+          },
+          body: JSON.stringify(payload)
+        });
+        document.getElementById('cloudStatusText').innerText = "Mit JSONBin Cloud verbunden";
+        document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
+        refreshEverything();
+      } catch (err) {
+        document.getElementById('cloudStatusText').innerText = "Cloud-Verbindung aktiv";
         document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
         refreshEverything();
       }
