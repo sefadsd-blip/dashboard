@@ -52,8 +52,8 @@
             Sefas<span class="text-cyan-400">3d</span>shop
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
-            <span class="inline-block w-2 h-2 rounded-full bg-green-500" id="cloudStatusDot"></span> 
-            <span id="cloudStatusText">Bereit & Gesichert</span>
+            <span class="inline-block w-2 h-2 rounded-full bg-green-500" id="statusDot"></span> 
+            <span id="statusText">Bereit & Gesichert</span>
           </p>
         </div>
       </div>
@@ -67,10 +67,10 @@
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv
         </button>
-        <button onclick="loadFromCloud()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
-          <i class="fa-solid fa-cloud-arrow-down mr-1"></i> 🔄 Laden
+        <button onclick="loadData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
+          <i class="fa-solid fa-arrows-rotate mr-1"></i> 🔄 Laden
         </button>
-        <button onclick="saveToCloud()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
+        <button onclick="saveData()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-floppy-disk mr-1"></i> 💾 Speichern
         </button>
       </div>
@@ -489,11 +489,11 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
       document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
-      loadFromCloud();
+      loadData();
       addArticleInputRow();
     });
 
-    function saveToCloud() {
+    function saveData() {
       const dataPayload = {
         orders: orders,
         spools: spools,
@@ -504,15 +504,15 @@
 
       try {
         localStorage.setItem('sefas3d_shop_data', JSON.stringify(dataPayload));
-        document.getElementById('cloudStatusText').innerText = "Erfolgreich gespeichert!";
-        document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
+        document.getElementById('statusText').innerText = "Bereit & Gesichert";
+        document.getElementById('statusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
         alert("💾 Daten erfolgreich gespeichert!");
       } catch (e) {
         alert("⚠️ Fehler beim Speichern!");
       }
     }
 
-    function loadFromCloud() {
+    function loadData() {
       try {
         const saved = localStorage.getItem('sefas3d_shop_data');
         if (saved) {
@@ -523,8 +523,8 @@
           if (Array.isArray(data.printers)) printers = data.printers;
         }
         refreshEverything();
-        document.getElementById('cloudStatusText').innerText = "Bereit & Gesichert";
-        document.getElementById('cloudStatusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
+        document.getElementById('statusText').innerText = "Bereit & Gesichert";
+        document.getElementById('statusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
       } catch (e) {
         refreshEverything();
       }
@@ -544,13 +544,13 @@
       const name = prompt("Drucker-Name:");
       if (!name) return;
       printers.push({ name: name.trim(), desc: "Standard", status: "Frei" });
-      saveToCloud();
+      saveData();
     }
 
     function deletePrinter(idx) {
       if (printers.length <= 1) return;
       printers.splice(idx, 1);
-      saveToCloud();
+      saveData();
     }
 
     function updatePrinterDropdowns() {
@@ -570,14 +570,14 @@
         amount: parseFloat(document.getElementById('expAmount').value) || 0,
         date: document.getElementById('expDate').value
       });
-      saveToCloud();
+      saveData();
       document.getElementById('expDesc').value = '';
       document.getElementById('expAmount').value = '';
     }
 
     function deleteExpense(id) {
       expenses = expenses.filter(ex => ex.id !== id);
-      saveToCloud();
+      saveData();
     }
 
     function renderExpenses() {
@@ -620,14 +620,14 @@
         if (field === 'platform') {
           o.ebayBalancePaid = (val === 'eBay') ? '⏳ Bei eBay' : 'N/A';
         }
-        saveToCloud(); 
+        saveData(); 
         renderOrders(); 
       }
     }
 
     function payoutAllEbayBalance() {
       orders.forEach(o => { if (o.platform === 'eBay') o.ebayBalancePaid = '✅ Ausgezahlt'; });
-      saveToCloud();
+      saveData();
       renderOrders();
     }
 
@@ -640,7 +640,7 @@
 
     function toggleArchiveOrder(id) {
       const o = orders.find(x => x.id === id);
-      if (o) { o.archived = !o.archived; saveToCloud(); }
+      if (o) { o.archived = !o.archived; saveData(); }
     }
 
     function updateCustomerDropdowns() {
@@ -673,13 +673,13 @@
       const n = prompt("Spulen-Name (z.B. PLA Schwarz):");
       if (n && n.trim() !== "") { 
         spools.push({ id: Date.now(), name: n.trim(), remainingGrams: 1000 }); 
-        saveToCloud(); 
+        saveData(); 
       }
     }
 
     function deleteSpool(id) {
       spools = spools.filter(s => s.id !== id);
-      saveToCloud();
+      saveData();
     }
 
     function addArticleInputRow(name='', color='', weight='') {
@@ -762,7 +762,7 @@
         ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A',
         items: items
       });
-      saveToCloud();
+      saveData();
       document.getElementById('orderForm').reset();
       document.getElementById('articleInputRows').innerHTML = '';
       addArticleInputRow();
@@ -770,7 +770,7 @@
 
     function deleteOrder(id) {
       orders = orders.filter(o => o.id !== id);
-      saveToCloud();
+      saveData();
     }
 
     function startEdit(id) { editingId = id; renderOrders(); }
@@ -815,7 +815,7 @@
         }
       }
       editingId = null;
-      saveToCloud();
+      saveData();
     }
 
     function generateInvoiceNumberForExisting(o) {
@@ -1111,7 +1111,7 @@
       if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statEbayBalance')) document.getElementById('statEbayBalance'].innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
+      if (document.getElementById('statEbayBalance')) document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerText = openOrdersCount;
     }
 
@@ -1119,7 +1119,6 @@
       const g = document.getElementById('printersGrid');
       if (!g) return;
       g.innerHTML = '';
-      printers.replaceChildren(); // Safe clean
       printers.forEach((p, idx) => {
         g.innerHTML += `<div class="card p-3 rounded-xl flex justify-between items-center"><div><h3 class="font-bold text-white">${p.name}</h3><span class="text-[10px] text-slate-400">${p.desc}</span></div><button onclick="deletePrinter(${idx})" class="text-red-400">❌</button></div>`;
       });
