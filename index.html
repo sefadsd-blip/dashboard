@@ -284,7 +284,14 @@
   </div>
 
   <script>
-    let orders = [];
+    let orders = [
+      {"id":1790522031947,"items":[{"name":"Schönes Wandregal rund / Metall-Regal Schwarz – Neu 3D-Druck","color":"","weight":0}],"label":"✅ Ja","price":19.99,"isPaid":"Bezahlt","packed":"✅ Ja","status":"Offen","address":"LAUCHHEIMERSTR. 11 94469 DEGGENDORF","printer":"CR-10 Smart Pro #1","archived":false,"customer":"ELVIRA FELK","platform":"eBay","shipDate":"","tracking":"02270136002720","labelCost":6.99,"orderDate":"2026-09-27","shippingFee":0,"invoiceNumber":"RE-2026-0015","paymentMethod":"eBay","ebayBalancePaid":"⏳ Bei eBay"},
+      {"id":1790506736457,"items":[{"name":"Design Küchenrollenhalter | 3D-Druck","color":"PLA Schwarz","weight":0}],"label":"✅ Ja","price":15.18,"isPaid":"Bezahlt","packed":"❌ Nein","status":"Offen","address":"Droste-Hülshoff-Weg 20 58642 Iserlohn","printer":"CR-10 Smart Pro #1","archived":false,"customer":"Thomas Siepmann","platform":"eBay","shipDate":"","tracking":"995500929907","labelCost":5.19,"orderDate":"2026-09-27","paymentDate":"2026-09-27","shippingFee":0,"invoiceNumber":"RE-2026-0014","paymentMethod":"eBay","ebayBalancePaid":"⏳ Bei eBay"},
+      {"id":1790489745269,"items":[{"name":"More Halter 4x","color":"ASA Grau","weight":0}],"label":"✅ Ja","price":15,"isPaid":"Bezahlt","packed":"❌ Nein","status":"Fertig","address":"Trockener Kamp 10 31139 Hildesheim","printer":"Anycubic Kobra","archived":false,"customer":"Jennifer Habenicht","platform":"Kleinanzeigen","shipDate":"","tracking":"-356601127551","labelCost":5,"orderDate":"2026-09-27","paymentDate":"2026-09-27","shippingFee":5,"invoiceNumber":"RE-2026-0013","paymentMethod":"PayPal","ebayBalancePaid":"N/A"},
+      {"id":1790449236772,"items":[{"name":"Süßer Blumentopf mit Herz-Händen 12x12","color":"Pla Weiß","weight":150}],"label":"✅ Ja","price":15,"isPaid":"Bezahlt","packed":"✅ Ja","status":"Offen","address":"Badergraben 18a, 04808 Wurzen","printer":"CR-10 Smart Pro #1","archived":false,"customer":"Annett Hanitzsch","platform":"Kleinanzeigen","shipDate":"","tracking":"-358074757567","labelCost":6.99,"orderDate":"2026-09-26","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-00012","paymentMethod":"PayPal","ebayBalancePaid":"N/A"},
+      {"id":1790098916977,"items":[{"name":"3x Kürbis","color":"","weight":0},{"name":"3x Katze","color":"","weight":0}],"label":"✅ Ja","price":25,"isPaid":"Bezahlt","packed":"✅ Ja","status":"In Arbeit","address":"Am Wellenweiher 4 49401 Damme","printer":"CR-10 Smart Pro #1","archived":false,"customer":"Iris Diekmann","platform":"Kleinanzeigen","shipDate":"","tracking":"-","labelCost":4.19,"orderDate":"2026-09-24","paymentDate":"2026-09-24","shippingFee":5,"invoiceNumber":"RE-2026-00011","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"}
+    ];
+
     let spools = [
       {"id":1,"name":"PLA Schwarz","notified":false,"remainingGrams":3700},
       {"id":1789935199927,"name":"PLA Dunkelblau","notified":true,"notifiedCount":3,"remainingGrams":100,"lastNotifiedDate":"Fri Sep 25 2026"},
@@ -306,7 +313,15 @@
       {"id":1789935882064,"name":"PLA Olivgrün","notified":false,"notifiedCount":3,"remainingGrams":200,"lastNotifiedDate":"Fri Sep 25 2026"},
       {"id":1790010818175,"name":"PLA Rotschwarz","notifiedCount":0,"remainingGrams":300,"lastNotifiedDate":""}
     ];
-    let expenses = [];
+
+    let expenses = [
+      {"id":1790506736458,"date":"2026-09-27","amount":5.19,"category":"DHL / Versand","description":"Porto / Label: Thomas Siepmann (RE-2026-0014)"},
+      {"id":1790491511211,"date":"2026-09-27","amount":5.19,"category":"DHL / Versand","description":"2 kg - Päckchen M"},
+      {"id":1790455400799,"date":"2026-09-26","amount":3.49,"category":"Sonstiges","description":"Werbeanzeige kleinanzeigen"},
+      {"id":1790449817184,"date":"2026-09-26","amount":6.19,"category":"DHL / Versand","description":"DHl Paket 2k"},
+      {"id":1790448192014,"date":"2026-09-26","amount":50,"category":"Sonstiges","description":"anycubic kobra Reperatur"}
+    ];
+
     let printers = [
       {"desc":"Großraum","name":"CR-10 Smart Pro #1","status":"In Arbeit"},
       {"desc":"Klipper","name":"Ender 3 V3","status":"In Arbeit"},
@@ -322,19 +337,18 @@
       document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
       document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
 
-      // Cloud / LocalStorage Daten laden
       try {
         let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
-        if (Array.isArray(savedOrders)) orders = savedOrders;
+        if (Array.isArray(savedOrders) && savedOrders.length > 0) orders = savedOrders;
 
         let savedSpools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent'));
-        if (Array.isArray(savedSpools)) spools = savedSpools;
+        if (Array.isArray(savedSpools) && savedSpools.length > 0) spools = savedSpools;
 
         let savedExpenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent'));
-        if (Array.isArray(savedExpenses)) expenses = savedExpenses;
+        if (Array.isArray(savedExpenses) && savedExpenses.length > 0) expenses = savedExpenses;
 
         let savedPrinters = JSON.parse(localStorage.getItem('sefas_shop_printers'));
-        if (Array.isArray(savedPrinters)) printers = savedPrinters;
+        if (Array.isArray(savedPrinters) && savedPrinters.length > 0) printers = savedPrinters;
       } catch(e) {}
 
       refreshEverything();
@@ -357,7 +371,7 @@
         localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
         localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
         refreshEverything();
-        alert("✅ Erfolgreich in der Cloud / lokal gespeichert!");
+        alert("✅ Erfolgreich gespeichert!");
       } catch(e) {
         alert("❌ Fehler beim Speichern!");
       }
