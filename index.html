@@ -584,19 +584,21 @@
       } catch(e) {}
     }
 
-    function printInvoice(idx) {
-      const o = orders[idx];
+    function printInvoice(id) {
+      const o = orders.find(x => x.id === id);
+      if (!o) return;
       const invSec = document.getElementById('invoiceSection');
       const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
       const invoiceNumber = generateInvoiceNumberForExisting(o);
       
       let itemsRows = '';
       let shipping = o.shippingFee || 0;
-      let netTotal = o.price - shipping;
+      let netTotalForItems = o.price - shipping;
+      let itemPriceShare = o.items.length > 0 ? netTotalForItems / o.items.length : netTotalForItems;
 
       o.items.forEach(i => {
         let colText = i.color ? ` (${i.color})` : '';
-        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name}${colText}</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${netTotal.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${netTotal.toFixed(2).replace('.', ',')} €</td></tr>`;
+        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name}${colText}</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${itemPriceShare.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${itemPriceShare.toFixed(2).replace('.', ',')} €</td></tr>`;
       });
 
       if (shipping > 0) {
@@ -659,12 +661,13 @@
       invSec.innerHTML = '';
       active.forEach((o) => {
         let invNum = generateInvoiceNumberForExisting(o);
-        let net = o.price - (o.shippingFee || 0);
+        let shipping = o.shippingFee || 0;
+        let net = o.price - shipping;
         invSec.innerHTML += `
           <div class="page-break-container" style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; padding: 10px; background: #fff;">
             <h2>Sefas3DShop - Rechnung ${invNum}</h2>
             <p>Kunde: ${o.customer}</p>
-            <p>Gesamtbetrag: ${o.price.toFixed(2).replace('.',',')} € (Netto: ${net.toFixed(2).replace('.',',')} € + Versand: ${(o.shippingFee||0).toFixed(2).replace('.',',')} €)</p>
+            <p>Gesamtbetrag: ${o.price.toFixed(2).replace('.',',')} € (Warenwert: ${net.toFixed(2).replace('.',',')} € + Versand: ${shipping.toFixed(2).replace('.',',')} €)</p>
           </div>`;
       });
       invSec.classList.remove('hidden');
@@ -688,7 +691,7 @@
       if (!tbody) return;
       tbody.innerHTML = '';
 
-      orders.forEach((o, idx) => {
+      orders.forEach((o) => {
         if (Boolean(o.archived) !== showingArchive) return;
         if (monthFilter !== 'all' && o.orderDate && !o.orderDate.startsWith(monthFilter)) return;
 
@@ -750,7 +753,7 @@
               <td class="p-2">${o.packed}</td>
               <td class="p-2 font-mono">${o.tracking}</td>
               <td class="p-2 text-right space-x-1">
-                <button onclick="printInvoice(${idx})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button>
+                <button onclick="printInvoice(${o.id})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button>
                 <button onclick="startEdit(${o.id})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏️</button>
                 <button onclick="toggleArchiveOrder(${o.id})" class="text-purple-300 bg-purple-500/10 px-1.5 py-1 rounded text-[10px]">📦</button>
                 <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]">🗑️</button>
