@@ -597,7 +597,6 @@
       let itemsRows = '';
       let isEbay = o.platform === 'eBay';
 
-      // ENTSCHEIDUNG: eBay nimmt das Porto (labelCost), Kleinanzeigen nimmt die Versandpauschale (shippingFee)
       let shippingAmount = isEbay ? (o.labelCost || 0) : (o.shippingFee || 0);
       let shippingTitle = isEbay ? "Porto / Versand" : "Versand- / Paketpauschale";
 
@@ -618,7 +617,6 @@
           </tr>`;
       });
 
-      // Versand/Porto als eigener Posten in der Tabelle
       if (shippingAmount > 0) {
         itemsRows += `
           <tr>
@@ -679,21 +677,28 @@
           </table>
 
           <!-- GESAMTBETRAG -->
-          <div style="display: flex; justify-content: flex-end; margin-bottom: 30px;">
+          <div style="display: flex; justify-content: flex-end; margin-bottom: 25px;">
             <div style="width: 220px; display: flex; justify-content: space-between; padding: 6px 0; border-top: 1px solid #333; border-bottom: 2px solid #333; font-weight: bold;">
               <span>Gesamtbetrag:</span>
               <span>${o.price.toFixed(2).replace('.', ',')} €</span>
             </div>
           </div>
 
-          <!-- ZAHLUNGSINFORMATIONEN -->
-          <div style="margin-bottom: 40px; font-size: 10.5px;">
-            <p style="margin: 0 0 3px 0; font-weight: bold;">Zahlungsinformationen:</p>
-            <p style="margin: 1px 0;">Empfänger: Sefa Demir</p>
-            <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08</p>
-            <p style="margin: 1px 0;">Bank: Revolut Bank UAB, Zweigniederlassung</p>
-            <p style="margin: 1px 0;">BIC: REVODEB2</p>
-            <p style="margin: 4px 0 0 0; color: #2563eb; font-weight: bold;">📍 Mit Banking-App scannen & bezahlen!</p>
+          <!-- ZAHLUNGSINFORMATIONEN & ZAHLUNGSART -->
+          <div style="margin-bottom: 35px; font-size: 10.5px; display: flex; justify-content: space-between; align-items: start;">
+            <div>
+              <p style="margin: 0 0 3px 0; font-weight: bold;">Zahlungsinformationen:</p>
+              <p style="margin: 1px 0;">Empfänger: Sefa Demir</p>
+              <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08</p>
+              <p style="margin: 1px 0;">Bank: Revolut Bank UAB, Zweigniederlassung</p>
+              <p style="margin: 1px 0;">BIC: REVODEB2</p>
+              <p style="margin: 4px 0 0 0; color: #2563eb; font-weight: bold;">📍 Mit Banking-App scannen & bezahlen!</p>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 6px; text-align: right;">
+              <p style="margin: 0 0 2px 0; font-size: 9.5px; color: #64748b;">Zahlungsart / Status:</p>
+              <p style="margin: 0; font-weight: bold; font-size: 11px; color: #0f172a;">${o.paymentMethod || 'Überweisung'}</p>
+              <p style="margin: 2px 0 0 0; font-size: 10px; color: ${o.isPaid.includes('Ja') ? '#16a34a' : '#dc2626'};">${o.isPaid}</p>
+            </div>
           </div>
 
           <!-- FUSSTEXT -->
@@ -722,7 +727,7 @@
         invSec.innerHTML += `
           <div class="page-break-container" style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; padding: 10px; background: #fff;">
             <h2>Sefas3DShop - Rechnung ${invNum}</h2>
-            <p>Kunde: ${o.customer}</p>
+            <p>Kunde: ${o.customer} | Zahlungsart: ${o.paymentMethod}</p>
             <p>Gesamtbetrag: ${o.price.toFixed(2).replace('.',',')} €</p>
           </div>`;
       });
