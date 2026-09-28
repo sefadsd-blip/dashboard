@@ -178,7 +178,7 @@
           
           <input type="number" step="0.01" id="labelCost" placeholder="Porto-Einkauf (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
 
-          <input type="number" step="0.01" id="shippingFee" placeholder="Versandpauschale vom Kunden (€)" value="5.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+          <input type="number" step="0.01" id="shippingFee" placeholder="Versandpauschale (€)" value="5.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
 
           <div class="flex flex-col">
             <label class="text-[9px] text-slate-400 mb-0.5">Erstellungsdatum:</label>
@@ -595,11 +595,15 @@
       const invoiceNumber = generateInvoiceNumberForExisting(o);
       
       let itemsRows = '';
-      let shippingFee = o.shippingFee || 0;
+      let isEbay = o.platform === 'eBay';
+
+      // ENTSCHEIDUNG: eBay nimmt das Porto (labelCost), Kleinanzeigen nimmt die Versandpauschale (shippingFee)
+      let shippingAmount = isEbay ? (o.labelCost || 0) : (o.shippingFee || 0);
+      let shippingTitle = isEbay ? "Porto / Versand" : "Versand- / Paketpauschale";
+
       let countItems = o.items.length || 1;
-      
-      // Bei eBay ist der Gesamtpreis oft inkl. Versand – wir teilen den Artikelwert auf
-      let goodsTotal = o.price - shippingFee;
+      let goodsTotal = o.price - shippingAmount;
+      if (goodsTotal < 0) goodsTotal = o.price;
       let itemShare = countItems > 0 ? goodsTotal / countItems : goodsTotal;
 
       o.items.forEach(i => {
@@ -614,14 +618,14 @@
           </tr>`;
       });
 
-      // Versand/Paketpauschale als eigener Posten in der Tabelle
-      if (shippingFee > 0) {
+      // Versand/Porto als eigener Posten in der Tabelle
+      if (shippingAmount > 0) {
         itemsRows += `
           <tr>
-            <td style="padding: 6px 0; border-bottom: 1px solid #eee;">Versand- / Paketpauschale</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #eee;">${shippingTitle}</td>
             <td style="padding: 6px 0; border-bottom: 1px solid #eee; text-align: center;">1</td>
-            <td style="padding: 6px 0; border-bottom: 1px solid #eee; text-align: right;">${shippingFee.toFixed(2).replace('.', ',')} €</td>
-            <td style="padding: 6px 0; border-bottom: 1px solid #eee; text-align: right;">${shippingFee.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #eee; text-align: right;">${shippingAmount.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #eee; text-align: right;">${shippingAmount.toFixed(2).replace('.', ',')} €</td>
           </tr>`;
       }
 
@@ -715,12 +719,11 @@
       invSec.innerHTML = '';
       active.forEach((o, index) => {
         let invNum = generateInvoiceNumberForExisting(o);
-        let net = o.price - (o.shippingFee || 0);
         invSec.innerHTML += `
           <div class="page-break-container" style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; padding: 10px; background: #fff;">
             <h2>Sefas3DShop - Rechnung ${invNum}</h2>
             <p>Kunde: ${o.customer}</p>
-            <p>Gesamtbetrag: ${o.price.toFixed(2).replace('.',',')} € (Netto: ${net.toFixed(2).replace('.',',')} € + Versand: ${(o.shippingFee||0).toFixed(2).replace('.',',')} €)</p>
+            <p>Gesamtbetrag: ${o.price.toFixed(2).replace('.',',')} €</p>
           </div>`;
       });
       invSec.classList.remove('hidden');
