@@ -287,7 +287,8 @@
   </div>
 
   <script>
-    const CLOUD_URL = "https://api.npoint.io/40113f0a51c41b8a5367";
+    // Nutzt einen stabilen öffentlichen JSON-Speicher-Dienst (myjson.dit.upm.es), der GET und PUT perfekt unterstützt
+    const CLOUD_URL = "https://myjson.dit.upm.es/api/bins/95a5";
 
     let orders = [];
     let spools = [];
@@ -312,12 +313,13 @@
     async function loadFromCloud() {
       const indicator = document.getElementById('cloudStatusIndicator');
       const text = document.getElementById('cloudStatusText');
-      text.innerText = "Lade...";
+      text.innerText = "Lade Cloud...";
       
       try {
         let res = await fetch(CLOUD_URL);
         if (res.ok) {
-          let data = await res.json();
+          let json = await res.json();
+          let data = json.record || json;
           if (data && Array.isArray(data.orders)) {
             orders = data.orders;
             spools = data.spools || spools;
@@ -326,27 +328,25 @@
             indicator.className = "inline-block w-2 h-2 rounded-full bg-green-500";
             text.innerText = "Cloud aktiv";
             refreshEverything();
-            alert("✅ Daten erfolgreich aus der Cloud geladen!");
             return;
           }
         }
         throw new Error();
       } catch(e) {
         indicator.className = "inline-block w-2 h-2 rounded-full bg-red-500";
-        text.innerText = "Fehler beim Laden";
-        alert("⚠️ Konnte keine Verbindung zur Cloud herstellen.");
+        text.innerText = "Cloud-Fehler";
       }
     }
 
     async function syncToCloud() {
       const indicator = document.getElementById('cloudStatusIndicator');
       const text = document.getElementById('cloudStatusText');
-      text.innerText = "Speichere...";
+      text.innerText = "Speichere in Cloud...";
 
       try {
         let payload = { orders, spools, expenses, printers };
         let res = await fetch(CLOUD_URL, {
-          method: 'POST',
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
@@ -359,7 +359,7 @@
         }
       } catch(e) {
         indicator.className = "inline-block w-2 h-2 rounded-full bg-red-500";
-        text.innerText = "Fehler beim Speichern";
+        text.innerText = "Speicher-Fehler";
         alert("⚠️ Speichern in der Cloud fehlgeschlagen!");
       }
     }
