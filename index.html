@@ -169,8 +169,8 @@
             <option value="Bar">💶 Bar</option>
           </select>
           <select id="isPaid" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-            <option value="✅ Ja">Bezahlt: ✅ Ja</option>
-            <option value="❌ Nein" selected>Bezahlt: ❌ Nein</option>
+            <option value="Bezahlt">Bezahlt</option>
+            <option value="Offen" selected>Offen</option>
           </select>
           <select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></select>
           
@@ -284,24 +284,7 @@
   </div>
 
   <script>
-    let orders = [
-      {"id":1790522031947,"items":[{"name":"Schönes Wandregal rund / Metall-Regal Schwarz – Neu 3D-Druck","color":"","weight":0}],"label":"✅ Ja","price":19.99,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Offen","address":"LAUCHHEIMERSTR. 11 94469 DEGGENDORF","printer":"CR-10 Smart Pro #1","archived":false,"customer":"ELVIRA FELK","platform":"eBay","shipDate":"","tracking":"02270136002720","labelCost":6.99,"orderDate":"2026-09-27","shippingFee":0,"invoiceNumber":"RE-2026-0015","paymentMethod":"eBay","ebayBalancePaid":"⏳ Bei eBay"},
-      {"id":1790506736457,"items":[{"name":"Design Küchenrollenhalter | 3D-Druck","color":"PLA Schwarz","weight":0}],"label":"✅ Ja","price":15.18,"isPaid":"✅ Ja","packed":"❌ Nein","status":"Offen","address":"Droste-Hülshoff-Weg 20 58642 Iserlohn","printer":"CR-10 Smart Pro #1","archived":false,"customer":"Thomas Siepmann","platform":"eBay","shipDate":"","tracking":"995500929907","labelCost":5.19,"orderDate":"2026-09-27","paymentDate":"2026-09-27","shippingFee":0,"invoiceNumber":"RE-2026-0014","paymentMethod":"eBay","ebayBalancePaid":"⏳ Bei eBay"},
-      {"id":1790489745269,"items":[{"name":"More Halter 4x","color":"ASA Grau","weight":0}],"label":"✅ Ja","price":15,"isPaid":"✅ Ja","packed":"❌ Nein","status":"Fertig","address":"Trockener Kamp 10 31139 Hildesheim","printer":"Anycubic Kobra","archived":false,"customer":"Jennifer Habenicht","platform":"Kleinanzeigen","shipDate":"","tracking":"-356601127551","labelCost":5,"orderDate":"2026-09-27","paymentDate":"2026-09-27","shippingFee":5,"invoiceNumber":"RE-2026-0013","paymentMethod":"PayPal","ebayBalancePaid":"N/A"},
-      {"id":1790449236772,"items":[{"name":"Süßer Blumentopf mit Herz-Händen 12x12","color":"Pla Weiß","weight":150}],"label":"✅ Ja","price":15,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Offen","address":"Badergraben 18a, 04808 Wurzen","printer":"CR-10 Smart Pro #1","archived":false,"customer":"Annett Hanitzsch","platform":"Kleinanzeigen","shipDate":"","tracking":"-358074757567","labelCost":6.99,"orderDate":"2026-09-26","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-00012","paymentMethod":"PayPal","ebayBalancePaid":"N/A"},
-      {"id":1790098916977,"items":[{"name":"3x Kürbis","color":"","weight":0},{"name":"3x Katze","color":"","weight":0}],"label":"✅ Ja","price":25,"isPaid":"✅ Ja","packed":"✅ Ja","status":"In Arbeit","address":"Am Wellenweiher 4 49401 Damme","printer":"CR-10 Smart Pro #1","archived":false,"customer":"Iris Diekmann","platform":"Kleinanzeigen","shipDate":"","tracking":"-","labelCost":4.19,"orderDate":"2026-09-24","paymentDate":"2026-09-24","shippingFee":5,"invoiceNumber":"RE-2026-00011","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
-      {"id":1789933732086,"items":[{"name":"2x Tannenzapfen","color":"PLA Dunkelrot ","weight":180},{"name":"2x Tannenzapfen","color":"PLA Olivgrün","weight":180}],"label":"✅ Ja","notes":"","price":25,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":0,"address":"Gartenweg 10d 04862 Mockrehna","printer":"Ender 3 V3","archived":true,"customer":"Silke Schwarzer","platform":"Kleinanzeigen","shipDate":"2026-09-24","tracking":"-356408386839","labelCost":4.19,"orderDate":"2026-09-24","paymentDate":"","shippingCost":5,"invoiceNumber":"RE-2026-0010","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
-      {"id":1789933658205,"items":[{"name":"Küchenrollnhalter 2X","color":"PLA Schwarz","weight":460}],"label":"✅ Ja","notes":"","price":11,"isPaid":"✅ Ja","packed":"✅ Ja","status":"In Arbeit","weight":460,"address":"Prämienstraße 62 52428 Jülich","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Familie Tchoffo","platform":"Kleinanzeigen","shipDate":"2026-09-22","tracking":"358072667188","labelCost":5.19,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-0009","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
-      {"id":1,"items":[{"name":"1x Japandi Vogel","color":"PLA grün","weight":50},{"name":"1x Kürbis","color":"PETG Orange","weight":0},{"name":"1x Modernes Eichhörnchen","color":"PLA Hellbraun ","weight":180},{"name":"2x Zapfenhäuschen","color":"PLA Olivgrün","weight":180},{"name":"2x Zapfenhäuschen","color":"PLA Hellbraun ","weight":180}],"label":"✅ Ja","notes":"Bitte gut verpacken","price":45,"isPaid":"✅ Ja","packed":"✅ Ja","status":"In Arbeit","weight":0,"address":"Heinrich - Zillestr.11 04668 Grimma","printer":"Anycubic Kobra","archived":true,"customer":"Renate Evelin - Veere","platform":"Kleinanzeigen","shipDate":"2026-09-26","tracking":"-358073187096","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-0008","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
-      {"id":2,"items":[{"name":"6x Rentier","color":"","weight":0}],"label":"✅ Ja","notes":"","price":40,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":120,"address":"Eichelweg 1 49377 Vechta","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Ralf Hartmann","platform":"Kleinanzeigen","shipDate":"2026-09-21","tracking":"358070447889","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-0007","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
-      {"id":3,"items":[{"name":"1x Fernbedienungshalter","color":"","weight":0}],"label":"✅ Ja","notes":"","price":10,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":0,"address":"Bremer Str 62 a 49356 Diepholz","printer":"Anycubic Kobra","archived":true,"customer":"Sabine Beewen","platform":"Kleinanzeigen","shipDate":"2026-09-21","tracking":"-356600769079","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-0006","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
-      {"id":4,"items":[{"name":"6x Weinhalter schwarz","color":"PLA Schwarz","weight":0},{"name":"9x Bäume","color":"","weight":0}],"label":"🟡 Wartet auf Zahlung","notes":"","price":0,"packed":"❌ Nein","status":"Offen","weight":240,"address":"","printer":"Ender 3 V3","archived":false,"customer":"Dunja marcinkowski","platform":"Kleinanzeigen","shipDate":"","tracking":"-","labelCost":0,"orderDate":"2026-09-24","shippingFee":0,"invoiceNumber":"RE-2026-0005","paymentMethod":"Überweisung"},
-      {"id":5,"items":[{"name":"3x Suppenhalter 6cm","color":"PLA Schwarz","weight":0},{"name":"4x Backpulverhalter","color":"PLA Schwarz","weight":0},{"name":"4x Backpulverhalter 6cm","color":"PLA Schwarz","weight":0},{"name":"1x Abroller Alufolie","color":"PLA Schwarz","weight":0}],"label":"✅ Ja","notes":"","price":35,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":0,"address":"","printer":"Anycubic Kobra","archived":true,"customer":"Tobias von der Famile Ulm","platform":"Kleinanzeigen","shipDate":"2026-09-22","tracking":"358072492915","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-0004","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
-      {"id":6,"items":[{"name":"1x Vase weiß","color":"","weight":0}],"label":"✅ Ja","notes":"","price":10,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":110,"address":"Rinderhagenstraße 27 in 26802 Moormerland","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Antje Nanninga","platform":"Kleinanzeigen","shipDate":"2026-09-21","tracking":"-358072667172","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-0003","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
-      {"id":7,"items":[{"name":"1x Dogge lila","color":"PLA lila ","weight":490}],"label":"✅ Ja","notes":"","price":0,"packed":"❌ Nein","status":"Offen","weight":85,"address":"Goerdelerstr. 141, 27755 delmenhorst","printer":"Ender 3 V3","archived":false,"customer":"Gabi Thomas","platform":"Kleinanzeigen","shipDate":"","tracking":"358072492921","labelCost":0,"orderDate":"2026-09-24","shippingFee":0,"invoiceNumber":"RE-2026-0002","paymentMethod":"Überweisung"},
-      {"id":8,"items":[{"name":"3x Makita Akkuhalter","color":"","weight":0}],"label":"✅ Ja","notes":"","price":14,"packed":"✅ Ja","status":"In Arbeit","weight":95,"address":"Ellernstraße 40 32457 Porta Westfalica","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Paul Hartmann","platform":"Kleinanzeigen","shipDate":"2026-09-22","tracking":"-","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-001","paymentMethod":"Überweisung"}
-    ];
-
+    let orders = [];
     let spools = [
       {"id":1,"name":"PLA Schwarz","notified":false,"remainingGrams":3700},
       {"id":1789935199927,"name":"PLA Dunkelblau","notified":true,"notifiedCount":3,"remainingGrams":100,"lastNotifiedDate":"Fri Sep 25 2026"},
@@ -323,17 +306,7 @@
       {"id":1789935882064,"name":"PLA Olivgrün","notified":false,"notifiedCount":3,"remainingGrams":200,"lastNotifiedDate":"Fri Sep 25 2026"},
       {"id":1790010818175,"name":"PLA Rotschwarz","notifiedCount":0,"remainingGrams":300,"lastNotifiedDate":""}
     ];
-
-    let expenses = [
-      {"id":1790506736458,"date":"2026-09-27","amount":5.19,"category":"DHL / Versand","description":"Porto / Label: Thomas Siepmann (RE-2026-0014)"},
-      {"id":1790491511211,"date":"2026-09-27","amount":5.19,"category":"DHL / Versand","description":"2 kg - Päckchen M"},
-      {"id":1790455400799,"date":"2026-09-26","amount":3.49,"category":"Sonstiges","description":"Werbeanzeige kleinanzeigen"},
-      {"id":1790449817184,"date":"2026-09-26","amount":6.19,"category":"DHL / Versand","description":"DHl Paket 2k"},
-      {"id":1790448192014,"date":"2026-09-26","amount":50,"category":"Sonstiges","description":"anycubic kobra Reperatur"},
-      {"id":1790364909071,"date":"2026-09-25","amount":17.9,"category":"Zubehör / Ersatzteile","description":"2x SD-Karten für Drucker"},
-      {"id":1790356494893,"date":"2026-09-25","amount":99.98,"category":"Sonstiges","description":"2x Druckerwartung CR-10 SP"}
-    ];
-
+    let expenses = [];
     let printers = [
       {"desc":"Großraum","name":"CR-10 Smart Pro #1","status":"In Arbeit"},
       {"desc":"Klipper","name":"Ender 3 V3","status":"In Arbeit"},
@@ -349,14 +322,19 @@
       document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
       document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
 
+      // Cloud / LocalStorage Daten laden
       try {
-        let saved = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
-        if (Array.isArray(saved) && saved.length > 0) {
-          orders = saved;
-          spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || spools;
-          expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || expenses;
-          printers = JSON.parse(localStorage.getItem('sefas_shop_printers')) || printers;
-        }
+        let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
+        if (Array.isArray(savedOrders)) orders = savedOrders;
+
+        let savedSpools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent'));
+        if (Array.isArray(savedSpools)) spools = savedSpools;
+
+        let savedExpenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent'));
+        if (Array.isArray(savedExpenses)) expenses = savedExpenses;
+
+        let savedPrinters = JSON.parse(localStorage.getItem('sefas_shop_printers'));
+        if (Array.isArray(savedPrinters)) printers = savedPrinters;
       } catch(e) {}
 
       refreshEverything();
@@ -379,8 +357,10 @@
         localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
         localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
         refreshEverything();
-        alert("✅ Erfolgreich gespeichert!");
-      } catch(e) {}
+        alert("✅ Erfolgreich in der Cloud / lokal gespeichert!");
+      } catch(e) {
+        alert("❌ Fehler beim Speichern!");
+      }
     }
 
     function addPrinterPrompt() {
@@ -490,7 +470,7 @@
       const sel = document.getElementById('existingCustomerSelect');
       if (sel) {
         sel.innerHTML = '<option value="">📋 Bestehenden Kunden laden...</option>';
-        orders.forEach(o => sel.innerHTML += `<option value="${o.id}">${o.customer}</option>`);
+        orders.forEach(o => sel.innerHTML += `<option value="${o.id}">${o.customer} (${o.platform})</option>`);
       }
     }
 
@@ -704,7 +684,7 @@
             </div>
             <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 6px; text-align: right;">
               <p style="margin: 0; font-weight: bold; font-size: 11px; color: #0f172a;">Bezahlt mit ${o.paymentMethod || 'Überweisung'}</p>
-              <p style="margin: 3px 0 0 0; font-size: 10.5px; font-weight: bold; color: ${o.isPaid.includes('Ja') ? '#16a34a' : '#dc2626'};">${o.isPaid}</p>
+              <p style="margin: 3px 0 0 0; font-size: 10.5px; font-weight: bold; color: ${o.isPaid === 'Bezahlt' ? '#16a34a' : '#dc2626'};">${o.isPaid}</p>
             </div>
           </div>
 
