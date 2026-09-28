@@ -10,6 +10,12 @@
   <style>
     body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
     .card { background-color: #1e293b; border: 1px solid #334155; }
+    @keyframes pulse-red {
+      0%, 100% { border-color: rgba(239, 68, 68, 0.4); }
+      50% { border-color: rgba(239, 68, 68, 0.9); }
+    }
+    .pulse-low-spool { animation: pulse-red 2s infinite; }
+    
     @media print {
       body * { visibility: hidden !important; }
       #printSection, #printSection *, #invoiceSection, #invoiceSection * { visibility: visible !important; }
@@ -52,8 +58,8 @@
             Sefas<span class="text-cyan-400">3d</span>shop
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
-            <span class="inline-block w-2 h-2 rounded-full bg-green-500" id="statusDot"></span> 
-            <span id="statusText">Bereit & Gesichert</span>
+            <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span> 
+            <span>Lokal Aktiv & Bereit</span>
           </p>
         </div>
       </div>
@@ -67,10 +73,7 @@
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv
         </button>
-        <button onclick="loadData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
-          <i class="fa-solid fa-arrows-rotate mr-1"></i> 🔄 Laden
-        </button>
-        <button onclick="saveData()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
+        <button onclick="saveAllData()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-floppy-disk mr-1"></i> 💾 Speichern
         </button>
       </div>
@@ -118,7 +121,7 @@
         <div class="card p-3 rounded-xl flex items-center justify-between">
           <div>
             <p class="text-[11px] text-slate-400">Offene Aufträge / Material</p>
-            <h3 id="statOpenOrders" class="text-lg font-bold text-yellow-400">0</h3>
+            <h3 id="statOpenOrders" class="text-lg font-bold text-yellow-400">0 <span class="text-[11px] text-slate-400 font-normal" id="statFilament">0g</span></h3>
           </div>
         </div>
       </div>
@@ -137,6 +140,7 @@
           <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-layer-group mr-1.5 text-purple-400"></i> Filament-Lager</h2>
           <button onclick="addSpoolPrompt()" class="bg-slate-800 hover:bg-slate-700 text-purple-300 text-[11px] px-2 py-0.5 rounded border border-purple-500/35 cursor-pointer">+ Spule</button>
         </div>
+        <div id="spoolWarningBanner" class="hidden bg-red-500/10 border border-red-500/40 p-2 rounded-lg text-[11px] flex items-start gap-2 text-red-300"></div>
         <div id="spoolsList" class="space-y-1.5 max-h-[180px] overflow-y-auto pr-1"></div>
       </section>
     </div>
@@ -201,7 +205,13 @@
             <label class="text-[11px] font-semibold text-slate-300">Artikel, Farbe & Gewicht (g):</label>
             <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-[11px] cursor-pointer">+ Artikel</button>
           </div>
-          <div id="articleInputRows" class="space-y-1.5"></div>
+          <div id="articleInputRows" class="space-y-1.5">
+            <div class="flex gap-2 items-center article-row">
+              <input type="text" placeholder="Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
+              <select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-44 focus:outline-none"><option value="">-- Farbe --</option></select>
+              <input type="number" placeholder="Gramm (g)" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none">
+            </div>
+          </div>
         </div>
         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg py-2 text-xs transition cursor-pointer">Auftrag Speichern</button>
       </form>
@@ -274,208 +284,57 @@
   </div>
 
   <script>
-    let defaultOrders = [
-      {
-        "id": 1790616860313,
-        "customer": "Isabell Zubiller",
-        "platform": "Kleinanzeigen",
-        "paymentMethod": "PayPal",
-        "isPaid": "✅ Ja",
-        "printer": "CR-10 Smart Pro #1",
-        "price": 15,
-        "labelCost": 0,
-        "shippingFee": 5,
-        "address": "Gauersheimerstraße 23  67294 ilbesheim",
-        "tracking": "-",
-        "orderDate": "2026-09-28",
-        "status": "Offen",
-        "archived": false,
-        "invoiceNumber": "RE-2026-0016",
-        "ebayBalancePaid": "N/A",
-        "items": [
-          {"name": "1x Kürbis Hoch 14cm ", "color": "PLA Schwarz", "weight": 0},
-          {"name": "1x kürbis klein", "color": "PLA Schwarz", "weight": 0},
-          {"name": "1x kürbis klein", "color": "Pla Weiß", "weight": 0}
-        ],
-        "label": "❌ Nein",
-        "packed": "❌ Nein"
-      },
-      {
-        "id": 1790522031947,
-        "items": [{"name": "Schönes Wandregal rund / Metall-Regal Schwarz – Neu 3D-Druck", "color": "", "weight": 0}],
-        "label": "✅ Ja", "price": 19.99, "isPaid": "✅ Ja", "packed": "❌ Nein", "status": "Offen",
-        "address": "LAUCHHEIMERSTR. 11 94469 DEGGENDORF", "printer": "CR-10 Smart Pro #1", "archived": false,
-        "customer": "ELVIRA FELK", "platform": "eBay", "shipDate": "", "tracking": "02270136002720",
-        "labelCost": 6.99, "orderDate": "2026-09-27", "invoiceNumber": "RE-2026-0015",
-        "paymentMethod": "eBay", "ebayBalancePaid": "⏳ Bei eBay", "shippingFee": 0
-      },
-      {
-        "id": 1790506736457,
-        "items": [{"name": "Design Küchenrollenhalter | 3D-Druck", "color": "PLA Schwarz", "weight": 0}],
-        "label": "✅ Ja", "price": 15.18, "isPaid": "✅ Ja", "packed": "❌ Nein", "status": "Offen",
-        "address": "Droste-Hülshoff-Weg 20 58642 Iserlohn", "printer": "CR-10 Smart Pro #1", "archived": false,
-        "customer": "Thomas Siepmann", "platform": "eBay", "shipDate": "", "tracking": "995500929907",
-        "labelCost": 5.19, "orderDate": "2026-09-27", "invoiceNumber": "RE-2026-0014",
-        "paymentMethod": "eBay", "ebayBalancePaid": "⏳ Bei eBay"
-      },
-      {
-        "id": 1790489745269,
-        "items": [{"name": "More Halter 4x", "color": "ASA Grau", "weight": 0}],
-        "label": "✅ Ja", "price": 15, "isPaid": "✅ Ja", "packed": "❌ Nein", "status": "In Arbeit",
-        "address": "Trockener Kamp 10 31139 Hildesheim", "printer": "Anycubic Kobra", "archived": false,
-        "customer": "Jennifer Habenicht", "platform": "Kleinanzeigen", "tracking": "-356601127551",
-        "labelCost": 5, "orderDate": "2026-09-27", "invoiceNumber": "RE-2026-0013",
-        "paymentMethod": "PayPal", "ebayBalancePaid": "N/A", "shippingFee": 5
-      },
-      {
-        "id": 1790449236772,
-        "items": [{"name": "Süßer Blumentopf mit Herz-Händen 12x12", "color": "Pla Weiß", "weight": 150}],
-        "label": "✅ Ja", "price": 20, "isPaid": "✅ Ja", "packed": "✅ Ja", "status": "Offen",
-        "address": "Badergraben 18a, 04808 Wurzen", "printer": "CR-10 Smart Pro #1", "archived": false,
-        "customer": "Annett Hanitzsch", "platform": "Kleinanzeigen", "tracking": "-358074757567",
-        "labelCost": 6.99, "orderDate": "2026-09-26", "invoiceNumber": "RE-2026-00012",
-        "paymentMethod": "PayPal", "ebayBalancePaid": "N/A"
-      },
-      {
-        "id": 1790098916977,
-        "items": [{"name": "3x Kürbis", "color": "", "weight": 0}, {"name": "3x Katze", "color": "", "weight": 0}],
-        "label": "✅ Ja", "price": 30, "isPaid": "✅ Ja", "packed": "✅ Ja", "status": "In Arbeit",
-        "address": "Am Wellenweiher 4 49401 Damme", "printer": "CR-10 Smart Pro #1", "archived": true,
-        "customer": "Iris Diekmann", "platform": "Kleinanzeigen", "tracking": "-",
-        "labelCost": 4.19, "orderDate": "2026-09-24", "invoiceNumber": "RE-2026-00011",
-        "paymentMethod": "Überweisung", "ebayBalancePaid": "N/A"
-      },
-      {
-        "id": 1789933732086,
-        "items": [{"name": "2x Tannenzapfen", "color": "PLA Dunkelrot ", "weight": 180}, {"name": "2x Tannenzapfen", "color": "PLA Olivgrün", "weight": 180}],
-        "label": "✅ Ja", "price": 25, "isPaid": "✅ Ja", "packed": "✅ Ja", "status": "Fertig",
-        "address": "Gartenweg 10d 04862 Mockrehna", "printer": "Ender 3 V3", "archived": true,
-        "customer": "Silke Schwarzer", "platform": "Kleinanzeigen", "tracking": "-356408386839",
-        "labelCost": 4.19, "orderDate": "2026-09-24", "invoiceNumber": "RE-2026-0010",
-        "paymentMethod": "Überweisung", "ebayBalancePaid": "N/A"
-      },
-      {
-        "id": 1789933658205,
-        "items": [{"name": "Küchenrollnhalter 2X", "color": "PLA Schwarz", "weight": 460}],
-        "label": "✅ Ja", "price": 16, "isPaid": "✅ Ja", "packed": "✅ Ja", "status": "In Arbeit",
-        "address": "Prämienstraße 62 52428 Jülich", "printer": "CR-10 Smart Pro #1", "archived": true,
-        "customer": "Familie Tchoffo", "platform": "Kleinanzeigen", "tracking": "358072667188",
-        "labelCost": 5.19, "orderDate": "2026-09-24", "invoiceNumber": "RE-2026-0009",
-        "paymentMethod": "Überweisung", "ebayBalancePaid": "N/A"
-      },
-      {
-        "id": 1,
-        "items": [
-          {"name": "1x Japandi Vogel", "color": "PLA grün", "weight": 50},
-          {"name": "1x Kürbis", "color": "PETG Orange", "weight": 0},
-          {"name": "1x Modernes Eichhörnchen", "color": "PLA Hellbraun ", "weight": 180},
-          {"name": "2x Zapfenhäuschen", "color": "PLA Olivgrün", "weight": 180},
-          {"name": "2x Zapfenhäuschen", "color": "PLA Hellbraun ", "weight": 180}
-        ],
-        "label": "✅ Ja", "price": 43, "isPaid": "✅ Ja", "packed": "✅ Ja", "status": "In Arbeit",
-        "address": "Heinrich - Zillestr.11 04668 Grimma", "printer": "Anycubic Kobra", "archived": true,
-        "customer": "Renate Evelin - Veere", "platform": "Kleinanzeigen", "tracking": "-358073187096",
-        "labelCost": 0, "orderDate": "2026-09-24", "invoiceNumber": "RE-2026-0008",
-        "paymentMethod": "Überweisung", "ebayBalancePaid": "N/A"
-      },
-      {
-        "id": 2, "items": [{"name": "6x Rentier", "color": "", "weight": 0}],
-        "label": "✅ Ja", "price": 34, "packed": "✅ Ja", "status": "Fertig",
-        "address": "Eichelweg 1 49377 Vechta", "printer": "CR-10 Smart Pro #1", "archived": true,
-        "customer": "Ralf Hartmann", "platform": "Kleinanzeigen", "tracking": "358070447889",
-        "labelCost": 0, "orderDate": "2026-09-24", "invoiceNumber": "RE-2026-0007", "paymentMethod": "Überweisung"
-      },
-      {
-        "id": 3, "items": [{"name": "1x Fernbedienungshalter", "color": "", "weight": 0}],
-        "label": "✅ Ja", "price": 9.5, "packed": "✅ Ja", "status": "Fertig",
-        "address": "Bremer Str 62 a  49356 Diepholz", "printer": "Anycubic Kobra", "archived": true,
-        "customer": "Sabine Beewen", "platform": "Kleinanzeigen", "tracking": "-356600769079",
-        "labelCost": 0, "orderDate": "2026-09-24", "invoiceNumber": "RE-2026-0006", "paymentMethod": "Überweisung"
-      },
-      {
-        "id": 4, "items": [{"name": "6x Weinhalter schwarz", "color": "PLA Schwarz", "weight": 0}, {"name": "9x Bäume", "color": "", "weight": 0}],
-        "label": "❌ Nein", "price": 0, "packed": "❌ Nein", "status": "Offen",
-        "address": "", "printer": "Ender 3 V3", "archived": false,
-        "customer": "Dunja marcinkowski", "platform": "Kleinanzeigen", "tracking": "-",
-        "labelCost": 0, "orderDate": "2026-09-24", "invoiceNumber": "RE-2026-0005",
-        "paymentMethod": "Überweisung", "isPaid": "✅ Ja", "shippingFee": 0, "ebayBalancePaid": "N/A"
-      },
-      {
-        "id": 5, "items": [{"name": "3x Suppenhalter 6cm", "color": "PLA Schwarz", "weight": 0}, {"name": "4x Backpulverhalter", "color": "PLA Schwarz", "weight": 0}, {"name": "4x Backpulverhalter 6cm", "color": "PLA Schwarz", "weight": 0}, {"name": "1x Abroller Alufolie", "color": "PLA Schwarz", "weight": 0}],
-        "label": "✅ Ja", "price": 33, "packed": "✅ Ja", "status": "Fertig",
-        "address": "", "printer": "Anycubic Kobra", "archived": true,
-        "customer": "Tobias von der Famile Ulm", "platform": "Kleinanzeigen", "tracking": "358072492915",
-        "labelCost": 0, "orderDate": "2026-09-24", "invoiceNumber": "RE-2026-0004", "paymentMethod": "Überweisung"
-      },
-      {
-        "id": 6, "items": [{"name": "1x Vase weiß", "color": "", "weight": 0}],
-        "label": "✅ Ja", "price": 9, "packed": "✅ Ja", "status": "Fertig",
-        "address": "Rinderhagenstraße 27 in 26802 Moormerland", "printer": "CR-10 Smart Pro #1", "archived": true,
-        "customer": "Antje Nanninga", "platform": "Kleinanzeigen", "tracking": "-358072667172",
-        "labelCost": 0, "orderDate": "2026-09-24", "invoiceNumber": "RE-2026-0003", "paymentMethod": "Überweisung"
-      },
-      {
-        "id": 7, "items": [{"name": "1x Dogge lila", "color": "PLA lila ", "weight": 490}],
-        "label": "✅ Ja", "price": 0, "packed": "❌ Nein", "status": "Offen",
-        "address": "Goerdelerstr. 141, 27755 delmenhorst", "printer": "Ender 3 V3", "archived": false,
-        "customer": "Gabi Thomas", "platform": "Kleinanzeigen", "tracking": "358072492921",
-        "labelCost": 0, "orderDate": "2026-09-24", "invoiceNumber": "RE-2026-0002",
-        "paymentMethod": "Überweisung", "isPaid": "✅ Ja", "shippingFee": 0, "ebayBalancePaid": "N/A"
-      },
-      {
-        "id": 8, "items": [{"name": "3x Makita Akkuhalter", "color": "", "weight": 0}],
-        "label": "✅ Ja", "price": 14, "packed": "✅ Ja", "status": "In Arbeit",
-        "address": "Ellernstraße 40  32457 Porta Westfalica", "printer": "CR-10 Smart Pro #1", "archived": true,
-        "customer": "Paul Hartmann", "platform": "Kleinanzeigen", "tracking": "-",
-        "labelCost": 0, "orderDate": "2026-09-24", "invoiceNumber": "RE-2026-001", "paymentMethod": "Überweisung"
-      },
-      {
-        "id": 1, "items": [{"name": "3D-Druck Artikel", "color": "PLA Schwarz", "weight": 50}],
-        "label": "✅ Ja", "price": 10, "packed": "✅ Ja", "status": "Fertig",
-        "address": "Rahden", "printer": "Ender 3 V3", "archived": true,
-        "customer": "Paul Hartmann", "platform": "Kleinanzeigen", "shipDate": "2026-02-01",
-        "tracking": "-", "labelCost": 0, "orderDate": "2026-02-01", "invoiceNumber": "RE-2026-0001", "paymentMethod": "Überweisung"
-      },
-      {
-        "id": 11, "items": [{"name": "3D-Druck Artikel", "color": "PLA Schwarz", "weight": 50}],
-        "label": "✅ Ja", "price": 10, "packed": "✅ Ja", "status": "Fertig",
-        "address": "Rahden", "printer": "Ender 3 V3", "archived": true,
-        "customer": "Iris", "platform": "Kleinanzeigen", "shipDate": "2026-02-11",
-        "tracking": "-", "labelCost": 0, "orderDate": "2026-02-11", "invoiceNumber": "RE-2026-0011", "paymentMethod": "Überweisung"
-      }
+    let orders = [
+      {"id":1790522031947,"items":[{"name":"Schönes Wandregal rund / Metall-Regal Schwarz – Neu 3D-Druck","color":"","weight":0}],"label":"✅ Ja","price":19.99,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Offen","address":"LAUCHHEIMERSTR. 11 94469 DEGGENDORF","printer":"CR-10 Smart Pro #1","archived":false,"customer":"ELVIRA FELK","platform":"eBay","shipDate":"","tracking":"02270136002720","labelCost":6.99,"orderDate":"2026-09-27","shippingFee":0,"invoiceNumber":"RE-2026-0015","paymentMethod":"eBay","ebayBalancePaid":"⏳ Bei eBay"},
+      {"id":1790506736457,"items":[{"name":"Design Küchenrollenhalter | 3D-Druck","color":"PLA Schwarz","weight":0}],"label":"✅ Ja","price":15.18,"isPaid":"✅ Ja","packed":"❌ Nein","status":"Offen","address":"Droste-Hülshoff-Weg 20 58642 Iserlohn","printer":"CR-10 Smart Pro #1","archived":false,"customer":"Thomas Siepmann","platform":"eBay","shipDate":"","tracking":"995500929907","labelCost":5.19,"orderDate":"2026-09-27","paymentDate":"2026-09-27","shippingFee":0,"invoiceNumber":"RE-2026-0014","paymentMethod":"eBay","ebayBalancePaid":"⏳ Bei eBay"},
+      {"id":1790489745269,"items":[{"name":"More Halter 4x","color":"ASA Grau","weight":0}],"label":"✅ Ja","price":15,"isPaid":"✅ Ja","packed":"❌ Nein","status":"Fertig","address":"Trockener Kamp 10 31139 Hildesheim","printer":"Anycubic Kobra","archived":false,"customer":"Jennifer Habenicht","platform":"Kleinanzeigen","shipDate":"","tracking":"-356601127551","labelCost":5,"orderDate":"2026-09-27","paymentDate":"2026-09-27","shippingFee":5,"invoiceNumber":"RE-2026-0013","paymentMethod":"PayPal","ebayBalancePaid":"N/A"},
+      {"id":1790449236772,"items":[{"name":"Süßer Blumentopf mit Herz-Händen 12x12","color":"Pla Weiß","weight":150}],"label":"✅ Ja","price":15,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Offen","address":"Badergraben 18a, 04808 Wurzen","printer":"CR-10 Smart Pro #1","archived":false,"customer":"Annett Hanitzsch","platform":"Kleinanzeigen","shipDate":"","tracking":"-358074757567","labelCost":6.99,"orderDate":"2026-09-26","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-00012","paymentMethod":"PayPal","ebayBalancePaid":"N/A"},
+      {"id":1790098916977,"items":[{"name":"3x Kürbis","color":"","weight":0},{"name":"3x Katze","color":"","weight":0}],"label":"✅ Ja","price":25,"isPaid":"✅ Ja","packed":"✅ Ja","status":"In Arbeit","address":"Am Wellenweiher 4 49401 Damme","printer":"CR-10 Smart Pro #1","archived":false,"customer":"Iris Diekmann","platform":"Kleinanzeigen","shipDate":"","tracking":"-","labelCost":4.19,"orderDate":"2026-09-24","paymentDate":"2026-09-24","shippingFee":5,"invoiceNumber":"RE-2026-00011","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
+      {"id":1789933732086,"items":[{"name":"2x Tannenzapfen","color":"PLA Dunkelrot ","weight":180},{"name":"2x Tannenzapfen","color":"PLA Olivgrün","weight":180}],"label":"✅ Ja","notes":"","price":25,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":0,"address":"Gartenweg 10d 04862 Mockrehna","printer":"Ender 3 V3","archived":true,"customer":"Silke Schwarzer","platform":"Kleinanzeigen","shipDate":"2026-09-24","tracking":"-356408386839","labelCost":4.19,"orderDate":"2026-09-24","paymentDate":"","shippingCost":5,"invoiceNumber":"RE-2026-0010","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
+      {"id":1789933658205,"items":[{"name":"Küchenrollnhalter 2X","color":"PLA Schwarz","weight":460}],"label":"✅ Ja","notes":"","price":11,"isPaid":"✅ Ja","packed":"✅ Ja","status":"In Arbeit","weight":460,"address":"Prämienstraße 62 52428 Jülich","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Familie Tchoffo","platform":"Kleinanzeigen","shipDate":"2026-09-22","tracking":"358072667188","labelCost":5.19,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-0009","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
+      {"id":1,"items":[{"name":"1x Japandi Vogel","color":"PLA grün","weight":50},{"name":"1x Kürbis","color":"PETG Orange","weight":0},{"name":"1x Modernes Eichhörnchen","color":"PLA Hellbraun ","weight":180},{"name":"2x Zapfenhäuschen","color":"PLA Olivgrün","weight":180},{"name":"2x Zapfenhäuschen","color":"PLA Hellbraun ","weight":180}],"label":"✅ Ja","notes":"Bitte gut verpacken","price":45,"isPaid":"✅ Ja","packed":"✅ Ja","status":"In Arbeit","weight":0,"address":"Heinrich - Zillestr.11 04668 Grimma","printer":"Anycubic Kobra","archived":true,"customer":"Renate Evelin - Veere","platform":"Kleinanzeigen","shipDate":"2026-09-26","tracking":"-358073187096","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-0008","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
+      {"id":2,"items":[{"name":"6x Rentier","color":"","weight":0}],"label":"✅ Ja","notes":"","price":40,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":120,"address":"Eichelweg 1 49377 Vechta","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Ralf Hartmann","platform":"Kleinanzeigen","shipDate":"2026-09-21","tracking":"358070447889","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-0007","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
+      {"id":3,"items":[{"name":"1x Fernbedienungshalter","color":"","weight":0}],"label":"✅ Ja","notes":"","price":10,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":0,"address":"Bremer Str 62 a 49356 Diepholz","printer":"Anycubic Kobra","archived":true,"customer":"Sabine Beewen","platform":"Kleinanzeigen","shipDate":"2026-09-21","tracking":"-356600769079","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-0006","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
+      {"id":4,"items":[{"name":"6x Weinhalter schwarz","color":"PLA Schwarz","weight":0},{"name":"9x Bäume","color":"","weight":0}],"label":"🟡 Wartet auf Zahlung","notes":"","price":0,"packed":"❌ Nein","status":"Offen","weight":240,"address":"","printer":"Ender 3 V3","archived":false,"customer":"Dunja marcinkowski","platform":"Kleinanzeigen","shipDate":"","tracking":"-","labelCost":0,"orderDate":"2026-09-24","shippingFee":0,"invoiceNumber":"RE-2026-0005","paymentMethod":"Überweisung"},
+      {"id":5,"items":[{"name":"3x Suppenhalter 6cm","color":"PLA Schwarz","weight":0},{"name":"4x Backpulverhalter","color":"PLA Schwarz","weight":0},{"name":"4x Backpulverhalter 6cm","color":"PLA Schwarz","weight":0},{"name":"1x Abroller Alufolie","color":"PLA Schwarz","weight":0}],"label":"✅ Ja","notes":"","price":35,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":0,"address":"","printer":"Anycubic Kobra","archived":true,"customer":"Tobias von der Famile Ulm","platform":"Kleinanzeigen","shipDate":"2026-09-22","tracking":"358072492915","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-0004","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
+      {"id":6,"items":[{"name":"1x Vase weiß","color":"","weight":0}],"label":"✅ Ja","notes":"","price":10,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":110,"address":"Rinderhagenstraße 27 in 26802 Moormerland","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Antje Nanninga","platform":"Kleinanzeigen","shipDate":"2026-09-21","tracking":"-358072667172","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-0003","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
+      {"id":7,"items":[{"name":"1x Dogge lila","color":"PLA lila ","weight":490}],"label":"✅ Ja","notes":"","price":0,"packed":"❌ Nein","status":"Offen","weight":85,"address":"Goerdelerstr. 141, 27755 delmenhorst","printer":"Ender 3 V3","archived":false,"customer":"Gabi Thomas","platform":"Kleinanzeigen","shipDate":"","tracking":"358072492921","labelCost":0,"orderDate":"2026-09-24","shippingFee":0,"invoiceNumber":"RE-2026-0002","paymentMethod":"Überweisung"},
+      {"id":8,"items":[{"name":"3x Makita Akkuhalter","color":"","weight":0}],"label":"✅ Ja","notes":"","price":14,"packed":"✅ Ja","status":"In Arbeit","weight":95,"address":"Ellernstraße 40 32457 Porta Westfalica","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Paul Hartmann","platform":"Kleinanzeigen","shipDate":"2026-09-22","tracking":"-","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-001","paymentMethod":"Überweisung"}
     ];
 
-    let defaultSpools = [
-      { id: 1, name: "PLA Schwarz", remainingGrams: 3700 },
-      { id: 1789935199927, name: "PLA Dunkelblau", remainingGrams: 100 },
-      { id: 1789935232879, name: "PETG Orange", remainingGrams: 800 },
-      { id: 1789935274064, name: "PETG Schwarz", remainingGrams: 950 },
-      { id: 1789935301168, name: "ASA Grau", remainingGrams: 980 },
-      { id: 1789935377136, name: "PLA Hellblau ", remainingGrams: 1000 },
-      { id: 1789935389839, name: "PLA Braun", remainingGrams: 1000 },
-      { id: 1789935427641, name: "Pla Weiß", remainingGrams: 550 },
-      { id: 1789935452144, name: "PLA Pink", remainingGrams: 900 },
-      { id: 1789935472744, name: "PLA lila ", remainingGrams: 510 },
-      { id: 1789935549240, name: "PLA Regenbogen", remainingGrams: 150 },
-      { id: 1789935577272, name: "PLA Gold ", remainingGrams: 380 },
-      { id: 1789935652839, name: "PLA Dunkelrot ", remainingGrams: 720 },
-      { id: 1789935772655, name: "PLA Hellbraun ", remainingGrams: 540 },
-      { id: 1789935791895, name: "PLA Hellrot ", remainingGrams: 800 },
-      { id: 1789935820543, name: "PLA grün", remainingGrams: 710 },
-      { id: 1789935848831, name: "PLA Sage grün", remainingGrams: 780 },
-      { id: 1789935882064, name: "PLA Olivgrün", remainingGrams: 200 },
-      { id: 1790010818175, name: "PLA Rotschwarz", remainingGrams: 300 }
+    let spools = [
+      {"id":1,"name":"PLA Schwarz","notified":false,"remainingGrams":3700},
+      {"id":1789935199927,"name":"PLA Dunkelblau","notified":true,"notifiedCount":3,"remainingGrams":100,"lastNotifiedDate":"Fri Sep 25 2026"},
+      {"id":1789935232879,"name":"PETG Orange","notified":false,"remainingGrams":800},
+      {"id":1789935274064,"name":"PETG Schwarz","notified":false,"remainingGrams":950},
+      {"id":1789935301168,"name":"ASA Grau","notified":false,"remainingGrams":980},
+      {"id":1789935377136,"name":"PLA Hellblau ","notified":false,"remainingGrams":1000},
+      {"id":1789935389839,"name":"PLA Braun","notified":false,"remainingGrams":1000},
+      {"id":1789935427641,"name":"Pla Weiß","notified":false,"remainingGrams":550},
+      {"id":1789935452144,"name":"PLA Pink","notified":false,"remainingGrams":900},
+      {"id":1789935472744,"name":"PLA lila ","notified":false,"remainingGrams":510},
+      {"id":1789935549240,"name":"PLA Regenbogen","notified":true,"notifiedCount":3,"remainingGrams":150,"lastNotifiedDate":"Fri Sep 25 2026"},
+      {"id":1789935577272,"name":"PLA Gold ","notified":false,"remainingGrams":380},
+      {"id":1789935652839,"name":"PLA Dunkelrot ","notified":false,"notifiedCount":0,"remainingGrams":720,"lastNotifiedDate":"Mon Sep 21 2026"},
+      {"id":1789935772655,"name":"PLA Hellbraun ","notified":false,"remainingGrams":540},
+      {"id":1789935791895,"name":"PLA Hellrot ","notified":false,"remainingGrams":800},
+      {"id":1789935820543,"name":"PLA grün","notified":false,"remainingGrams":710},
+      {"id":1789935848831,"name":"PLA Sage grün","notified":false,"remainingGrams":780},
+      {"id":1789935882064,"name":"PLA Olivgrün","notified":false,"notifiedCount":3,"remainingGrams":200,"lastNotifiedDate":"Fri Sep 25 2026"},
+      {"id":1790010818175,"name":"PLA Rotschwarz","notifiedCount":0,"remainingGrams":300,"lastNotifiedDate":""}
     ];
 
-    let defaultExpenses = [
-      { id: 1790619945324, description: "7X Werbeanzeige kleinanzeigen ", category: "Sonstiges", amount: 24.43, date: "2026-09-28" },
-      { id: 1790455400799, date: "2026-09-26", amount: 3.49, category: "Sonstiges", description: "Werbeanzeige kleinanzeigen" },
-      { id: 1790448192014, date: "2026-09-26", amount: 50, category: "Sonstiges", description: "anycubic kobra  Reperatur" },
-      { id: 1790364909071, date: "2026-09-25", amount: 17.9, category: "Zubehör / Ersatzteile", description: "2x SD-Karten für Drucker" },
-      { id: 1790356494893, date: "2026-09-25", amount: 99.98, category: "Sonstiges", description: "2x Druckerwartung  CR-10 SP" }
+    let expenses = [
+      {"id":1790506736458,"date":"2026-09-27","amount":5.19,"category":"DHL / Versand","description":"Porto / Label: Thomas Siepmann (RE-2026-0014)"},
+      {"id":1790491511211,"date":"2026-09-27","amount":5.19,"category":"DHL / Versand","description":"2 kg - Päckchen M"},
+      {"id":1790455400799,"date":"2026-09-26","amount":3.49,"category":"Sonstiges","description":"Werbeanzeige kleinanzeigen"},
+      {"id":1790449817184,"date":"2026-09-26","amount":6.19,"category":"DHL / Versand","description":"DHl Paket 2k"},
+      {"id":1790448192014,"date":"2026-09-26","amount":50,"category":"Sonstiges","description":"anycubic kobra Reperatur"},
+      {"id":1790364909071,"date":"2026-09-25","amount":17.9,"category":"Zubehör / Ersatzteile","description":"2x SD-Karten für Drucker"},
+      {"id":1790356494893,"date":"2026-09-25","amount":99.98,"category":"Sonstiges","description":"2x Druckerwartung CR-10 SP"}
     ];
 
-    let defaultPrinters = [
+    let printers = [
       {"desc":"Großraum","name":"CR-10 Smart Pro #1","status":"In Arbeit"},
       {"desc":"Klipper","name":"Ender 3 V3","status":"In Arbeit"},
       {"desc":"Direct Drive","name":"Anycubic Kobra","status":"In Arbeit"},
@@ -483,66 +342,25 @@
       {"desc":"Standard","name":"Anycubic Kobra 2","status":"In Arbeit"}
     ];
 
-    let orders = [];
-    let spools = [];
-    let expenses = [];
-    let printers = [];
-
-    let editingId = null;
+    let editingIndex = -1;
     let showingArchive = false;
 
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
       document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
-      loadData();
-      addArticleInputRow();
-    });
-
-    function saveData() {
-      const dataPayload = {
-        orders: orders,
-        spools: spools,
-        expenses: expenses,
-        printers: printers,
-        updatedAt: new Date().toISOString()
-      };
 
       try {
-        localStorage.setItem('sefas3d_shop_data', JSON.stringify(dataPayload));
-        document.getElementById('statusText').innerText = "Bereit & Gesichert";
-        document.getElementById('statusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
-        alert("💾 Daten erfolgreich gespeichert!");
-      } catch (e) {
-        alert("⚠️ Fehler beim Speichern!");
-      }
-    }
-
-    function loadData() {
-      try {
-        const saved = localStorage.getItem('sefas3d_shop_data');
-        if (saved) {
-          const data = JSON.parse(saved);
-          orders = Array.isArray(data.orders) && data.orders.length > 0 ? data.orders : JSON.parse(JSON.stringify(defaultOrders));
-          spools = Array.isArray(data.spools) && data.spools.length > 0 ? data.spools : JSON.parse(JSON.stringify(defaultSpools));
-          expenses = Array.isArray(data.expenses) ? data.expenses : JSON.parse(JSON.stringify(defaultExpenses));
-          printers = Array.isArray(data.printers) && data.printers.length > 0 ? data.printers : JSON.parse(JSON.stringify(defaultPrinters));
-        } else {
-          orders = JSON.parse(JSON.stringify(defaultOrders));
-          spools = JSON.parse(JSON.stringify(defaultSpools));
-          expenses = JSON.parse(JSON.stringify(defaultExpenses));
-          printers = JSON.parse(JSON.stringify(defaultPrinters));
+        let saved = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
+        if (Array.isArray(saved) && saved.length > 0) {
+          orders = saved;
+          spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || spools;
+          expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || expenses;
+          printers = JSON.parse(localStorage.getItem('sefas_shop_printers')) || printers;
         }
-        refreshEverything();
-        document.getElementById('statusText').innerText = "Bereit & Gesichert";
-        document.getElementById('statusDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
-      } catch (e) {
-        orders = JSON.parse(JSON.stringify(defaultOrders));
-        spools = JSON.parse(JSON.stringify(defaultSpools));
-        expenses = JSON.parse(JSON.stringify(defaultExpenses));
-        printers = JSON.parse(JSON.stringify(defaultPrinters));
-        refreshEverything();
-      }
-    }
+      } catch(e) {}
+
+      refreshEverything();
+    });
 
     function refreshEverything() {
       renderPrinters();
@@ -554,17 +372,28 @@
       updatePrinterDropdowns();
     }
 
+    function saveAllData() {
+      try {
+        localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
+        localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
+        localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
+        localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
+        refreshEverything();
+        alert("✅ Erfolgreich gespeichert!");
+      } catch(e) {}
+    }
+
     function addPrinterPrompt() {
       const name = prompt("Drucker-Name:");
       if (!name) return;
       printers.push({ name: name.trim(), desc: "Standard", status: "Frei" });
-      saveData();
+      saveAllData();
     }
 
     function deletePrinter(idx) {
       if (printers.length <= 1) return;
       printers.splice(idx, 1);
-      saveData();
+      saveAllData();
     }
 
     function updatePrinterDropdowns() {
@@ -584,14 +413,14 @@
         amount: parseFloat(document.getElementById('expAmount').value) || 0,
         date: document.getElementById('expDate').value
       });
-      saveData();
+      saveAllData();
       document.getElementById('expDesc').value = '';
       document.getElementById('expAmount').value = '';
     }
 
     function deleteExpense(id) {
       expenses = expenses.filter(ex => ex.id !== id);
-      saveData();
+      saveAllData();
     }
 
     function renderExpenses() {
@@ -634,14 +463,14 @@
         if (field === 'platform') {
           o.ebayBalancePaid = (val === 'eBay') ? '⏳ Bei eBay' : 'N/A';
         }
-        saveData(); 
+        saveAllData(); 
         renderOrders(); 
       }
     }
 
     function payoutAllEbayBalance() {
       orders.forEach(o => { if (o.platform === 'eBay') o.ebayBalancePaid = '✅ Ausgezahlt'; });
-      saveData();
+      saveAllData();
       renderOrders();
     }
 
@@ -654,7 +483,7 @@
 
     function toggleArchiveOrder(id) {
       const o = orders.find(x => x.id === id);
-      if (o) { o.archived = !o.archived; saveData(); renderOrders(); }
+      if (o) { o.archived = !o.archived; saveAllData(); }
     }
 
     function updateCustomerDropdowns() {
@@ -679,59 +508,20 @@
       if (!c) return;
       c.innerHTML = '';
       spools.forEach((s) => {
-        c.innerHTML += `<div class="p-2 rounded bg-slate-900 border border-slate-700 flex justify-between items-center text-[11px]"><span>${s.name}</span><span class="text-slate-300">${s.remainingGrams}g</span><button onclick="deleteSpool(${s.id})" class="text-red-400 ml-2">❌</button></div>`;
+        c.innerHTML += `<div class="p-2 rounded bg-slate-900 border border-slate-700 flex justify-between items-center text-[11px]"><span>${s.name}</span><span class="text-slate-300">${s.remainingGrams}g</span></div>`;
       });
     }
 
     function addSpoolPrompt() {
-      const n = prompt("Spulen-Name (z.B. PLA Schwarz):");
-      if (n && n.trim() !== "") { 
-        spools.push({ id: Date.now(), name: n.trim(), remainingGrams: 1000 }); 
-        saveData(); 
-      }
+      const n = prompt("Spulen-Name:");
+      if (n) { spools.push({ id: Date.now(), name: n, remainingGrams: 1000 }); saveAllData(); }
     }
 
-    function deleteSpool(id) {
-      spools = spools.filter(s => s.id !== id);
-      saveData();
-    }
-
-    function addArticleInputRow(name='', color='', weight='') {
+    function addArticleInputRow(name='', weight='') {
       const container = document.getElementById('articleInputRows');
       const div = document.createElement('div');
       div.className = "flex gap-2 items-center article-row";
-      
-      let colorOptions = '<option value="">-- Farbe wählen --</option>';
-      spools.forEach(s => {
-        colorOptions += `<option value="${s.name}" ${s.name === color ? 'selected' : ''}>${s.name}</option>`;
-      });
-
-      div.innerHTML = `
-        <input type="text" placeholder="Artikelbezeichnung" value="${name}" required class="art-name bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
-        <select class="art-color bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white w-44 focus:outline-none">${colorOptions}</select>
-        <input type="number" placeholder="Gramm (g)" value="${weight}" class="art-weight bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white w-24 focus:outline-none">
-        <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1">❌</button>
-      `;
-      container.appendChild(div);
-    }
-
-    function addEditArticleRow(containerId, name='', color='', weight='') {
-      const container = document.getElementById(containerId);
-      if (!container) return;
-      const div = document.createElement('div');
-      div.className = "flex gap-2 items-center edit-article-row mb-1";
-      
-      let colorOptions = '<option value="">-- Farbe wählen --</option>';
-      spools.forEach(s => {
-        colorOptions += `<option value="${s.name}" ${s.name === color ? 'selected' : ''}>${s.name}</option>`;
-      });
-
-      div.innerHTML = `
-        <input type="text" placeholder="Artikel" value="${name}" class="edit-art-name bg-slate-950 border border-blue-500 rounded p-1 text-white flex-1">
-        <select class="edit-art-color bg-slate-950 border border-blue-500 rounded p-1 text-white w-32">${colorOptions}</select>
-        <input type="number" placeholder="Gramm" value="${weight}" class="edit-art-weight bg-slate-950 border border-blue-500 rounded p-1 text-white w-16">
-        <button type="button" onclick="this.parentElement.remove()" class="text-red-400">❌</button>
-      `;
+      div.innerHTML = `<input type="text" placeholder="Artikel" value="${name}" required class="art-name bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white flex-1"><input type="number" placeholder="Gramm" value="${weight}" class="art-weight bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white w-24"><button type="button" onclick="this.parentElement.remove()" class="text-red-400">❌</button>`;
       container.appendChild(div);
     }
 
@@ -741,19 +531,6 @@
       const nextNum = orders.length + 1;
       const invNum = `RE-${year}-${nextNum.toString().padStart(4, '0')}`;
       const plat = document.getElementById('platform').value;
-
-      let items = [];
-      document.querySelectorAll('.article-row').forEach(row => {
-        let name = row.querySelector('.art-name').value;
-        let color = row.querySelector('.art-color').value;
-        let weight = parseInt(row.querySelector('.art-weight').value) || 0;
-        items.push({ name, color, weight });
-      });
-
-      if (items.length === 0) {
-        alert("Bitte fügen Sie mindestens einen Artikel hinzu!");
-        return;
-      }
 
       orders.unshift({
         id: Date.now(),
@@ -769,67 +546,31 @@
         tracking: document.getElementById('tracking').value || '-',
         orderDate: document.getElementById('orderDate').value,
         status: "Offen",
-        label: document.getElementById('label').value,
-        packed: document.getElementById('packed').value,
         archived: false,
         invoiceNumber: invNum,
         ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A',
-        items: items
+        items: [{ name: document.querySelector('.art-name').value, weight: parseInt(document.querySelector('.art-weight').value) || 0 }]
       });
-      saveData();
+      saveAllData();
       document.getElementById('orderForm').reset();
-      document.getElementById('articleInputRows').innerHTML = '';
-      addArticleInputRow();
     }
 
     function deleteOrder(id) {
       orders = orders.filter(o => o.id !== id);
-      saveData();
+      saveAllData();
     }
 
-    function startEdit(id) { editingId = id; renderOrders(); }
-    function cancelEdit() { editingId = null; renderOrders(); }
+    function startEdit(idx) { editingIndex = idx; renderOrders(); }
+    function cancelEdit() { editingIndex = -1; renderOrders(); }
 
-    function saveEdit(id) {
-      const o = orders.find(x => x.id === id);
-      if (o) {
-        o.customer = document.getElementById(`edit-cust-${id}`).value;
-        o.invoiceNumber = document.getElementById(`edit-inv-${id}`).value;
-        o.platform = document.getElementById(`edit-plat-${id}`).value;
-        o.printer = document.getElementById(`edit-print-${id}`).value;
-        o.isPaid = document.getElementById(`edit-ispaid-${id}`).value;
-        o.paymentMethod = document.getElementById(`edit-paymeth-${id}`).value;
-        o.status = document.getElementById(`edit-status-${id}`).value;
-        o.price = parseFloat(document.getElementById(`edit-price-${id}`).value) || 0;
-        o.shippingFee = parseFloat(document.getElementById(`edit-shipfee-${id}`).value) || 0;
-        o.labelCost = parseFloat(document.getElementById(`edit-labelcost-${id}`).value) || 0;
-        o.label = document.getElementById(`edit-label-${id}`).value;
-        o.packed = document.getElementById(`edit-packed-${id}`).value;
-        o.tracking = document.getElementById(`edit-track-${id}`).value;
-
-        let newItems = [];
-        document.querySelectorAll(`#edit-articles-${id} .edit-article-row`).forEach(row => {
-          let name = row.querySelector('.edit-art-name').value;
-          let color = row.querySelector('.edit-art-color').value;
-          let weight = parseInt(row.querySelector('.edit-art-weight').value) || 0;
-          if(name.trim() !== "") {
-            newItems.push({ name, color, weight });
-          }
-        });
-        if(newItems.length > 0) {
-          o.items = newItems;
-        }
-
-        if (o.platform === 'eBay') {
-          if (!o.ebayBalancePaid || o.ebayBalancePaid === 'N/A') {
-            o.ebayBalancePaid = '⏳ Bei eBay';
-          }
-        } else {
-          o.ebayBalancePaid = 'N/A';
-        }
-      }
-      editingId = null;
-      saveData();
+    function saveEdit(idx) {
+      orders[idx].customer = document.getElementById(`edit-cust-${idx}`).value;
+      orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
+      orders[idx].shippingFee = parseFloat(document.getElementById(`edit-shipfee-${idx}`).value) || 0;
+      orders[idx].labelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
+      orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value;
+      editingIndex = -1;
+      saveAllData();
     }
 
     function generateInvoiceNumberForExisting(o) {
@@ -847,67 +588,112 @@
       } catch(e) {}
     }
 
-    function printInvoice(id) {
-      const o = orders.find(x => x.id === id);
-      if (!o) return;
+    function printInvoice(idx) {
+      const o = orders[idx];
       const invSec = document.getElementById('invoiceSection');
       const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
       const invoiceNumber = generateInvoiceNumberForExisting(o);
       
       let itemsRows = '';
-      let isKleinanzeigen = (o.platform === 'Kleinanzeigen');
-      let shipping = isKleinanzeigen ? (o.shippingFee || 0) : 0;
-      let netTotalForItems = o.price - shipping;
-      let itemPriceShare = o.items.length > 0 ? netTotalForItems / o.items.length : netTotalForItems;
+      let shippingFee = o.shippingFee || 0;
+      let countItems = o.items.length || 1;
+      let itemShare = countItems > 0 ? (o.price - shippingFee) / countItems : o.price;
 
       o.items.forEach(i => {
-        let colText = i.color ? ` (${i.color})` : '';
-        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">${i.name}${colText}</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${itemPriceShare.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${itemPriceShare.toFixed(2).replace('.', ',')} €</td></tr>`;
+        let singlePrice = itemShare;
+        let totalItemPrice = itemShare;
+        itemsRows += `
+          <tr>
+            <td style="padding: 6px 0; border-bottom: 1px solid #eee;">${i.name}</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #eee; text-align: center;">1</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #eee; text-align: right;">${singlePrice.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #eee; text-align: right;">${totalItemPrice.toFixed(2).replace('.', ',')} €</td>
+          </tr>`;
       });
 
-      if (isKleinanzeigen && shipping > 0) {
-        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">Versandpauschale (DHL)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${shipping.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${shipping.toFixed(2).replace('.', ',')} €</td></tr>`;
+      if (shippingFee > 0) {
+        itemsRows += `
+          <tr>
+            <td style="padding: 6px 0; border-bottom: 1px solid #eee;">Versand- / Paketpauschale</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #eee; text-align: center;">1</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #eee; text-align: right;">${shippingFee.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 6px 0; border-bottom: 1px solid #eee; text-align: right;">${shippingFee.toFixed(2).replace('.', ',')} €</td>
+          </tr>`;
       }
 
       const sepaPayload = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + o.price.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
 
       invSec.innerHTML = `
-        <div style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px;">
-          <div style="display: flex; justify-content: space-between; align-items: start; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 15px;">
+        <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.4; background: #fff; padding: 20px;">
+          
+          <!-- OBERER BEREICH: Logo / Titel / QR Code -->
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
             <div>
-              <h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0 0 2px 0;">Sefas3DShop</h1>
-              <p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 42 | 32369 Rahden</p>
-              <p style="margin: 1px 0 0 0; color: #555;">Steuernummer: 52063271982</p>
+              <h1 style="font-size: 16px; font-weight: bold; margin: 0 0 2px 0;">Sefas3DShop</h1>
+              <p style="margin: 0; color: #444;">Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden</p>
+              <p style="margin: 0; color: #444;">Steuernummer: 52063271982</p>
             </div>
-            <div style="text-align: right;">
-              <h2 style="font-size: 16px; font-weight: bold; color: #333; margin: 0 0 4px 0;">RECHNUNG</h2>
-              <p style="margin: 1px 0;"><strong>Rechnungsnummer:</strong> ${invoiceNumber}</p>
-              <p style="margin: 1px 0;"><strong>Datum:</strong> ${invoiceDate}</p>
+            <div style="text-align: right; display: flex; align-items: flex-start; gap: 10px;">
+              <div>
+                <h2 style="font-size: 14px; font-weight: bold; margin: 0 0 4px 0; letter-spacing: 0.5px;">RECHNUNG</h2>
+                <p style="margin: 1px 0;">Rechnungsnummer: ${invoiceNumber}</p>
+                <p style="margin: 1px 0;">Datum: ${invoiceDate}</p>
+                <p style="margin: 1px 0;">Sendungsnummer: ${o.tracking || '-'}</p>
+              </div>
+              <div id="sepaQrCodeTarget" style="border: 1px solid #ccc; padding: 2px; background: #fff;"></div>
             </div>
           </div>
-          <div style="margin-bottom: 15px;">
-            <div style="font-weight: bold; font-size: 12px;">${o.customer}</div>
-            <div style="color: #444; white-space: pre-line;">${o.address || ''}</div>
+
+          <hr style="border: none; border-top: 1px solid #333; margin-bottom: 20px;">
+
+          <!-- KUNDENADRESSE -->
+          <div style="margin-bottom: 25px;">
+            <p style="margin: 0 0 2px 0; color: #666; font-size: 10px;">Rechnungsempfänger:</p>
+            <div style="font-weight: bold; font-size: 12px; margin-bottom: 2px;">${o.customer}</div>
+            <div style="color: #333; white-space: pre-line;">${o.address || ''}</div>
           </div>
+
+          <p style="margin: 0 0 10px 0; font-style: italic; color: #444;">Das Lieferdatum entspricht dem Rechnungsdatum.</p>
+
+          <!-- ARTIKEL TABELLE -->
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
-            <thead><tr style="background: #f1f5f9; text-align: left;"><th style="padding: 6px;">Beschreibung</th><th style="padding: 6px; text-align: center;">Menge</th><th style="padding: 6px; text-align: right;">Einzelpreis</th><th style="padding: 6px; text-align: right;">Gesamt</th></tr></thead>
-            <tbody>${itemsRows}</tbody>
+            <thead>
+              <tr style="border-bottom: 1px solid #333; text-align: left;">
+                <th style="padding: 6px 0;">Beschreibung</th>
+                <th style="padding: 6px 0; text-align: center; width: 60px;">Menge</th>
+                <th style="padding: 6px 0; text-align: right; width: 90px;">Einzelpreis</th>
+                <th style="padding: 6px 0; text-align: right; width: 90px;">Gesamt</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsRows}
+            </tbody>
           </table>
-          <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
-            <div style="width: 210px; display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #ddd;">
-              <span>Gesamtbetrag:</span><strong>${o.price.toFixed(2).replace('.', ',')} €</strong>
+
+          <!-- GESAMTBETRAG -->
+          <div style="display: flex; justify-content: flex-end; margin-bottom: 30px;">
+            <div style="width: 220px; display: flex; justify-content: space-between; padding: 6px 0; border-top: 1px solid #333; border-bottom: 2px solid #333; font-weight: bold;">
+              <span>Gesamtbetrag:</span>
+              <span>${o.price.toFixed(2).replace('.', ',')} €</span>
             </div>
           </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px; margin-bottom: 15px;">
-            <div style="font-size: 10px;">
-              <p style="margin: 0 0 2px 0;"><strong>Zahlungsinformationen:</strong></p>
-              <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08 | C24 Bank</p>
-            </div>
-            <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;" id="sepaQrCodeTarget"></div>
+
+          <!-- ZAHLUNGSINFORMATIONEN -->
+          <div style="margin-bottom: 40px; font-size: 10.5px;">
+            <p style="margin: 0 0 3px 0; font-weight: bold;">Zahlungsinformationen:</p>
+            <p style="margin: 1px 0;">Empfänger: Sefa Demir</p>
+            <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08</p>
+            <p style="margin: 1px 0;">Bank: Revolut Bank UAB, Zweigniederlassung</p>
+            <p style="margin: 1px 0;">BIC: REVODEB2</p>
+            <p style="margin: 4px 0 0 0; color: #2563eb; font-weight: bold;">📍 Mit Banking-App scannen & bezahlen!</p>
           </div>
-          <div style="border-top: 1px solid #cbd5e1; padding-top: 10px; font-size: 9px; color: #666; text-align: center;">
-            Kleinunternehmer gemäß § 19 UStG. Vielen Dank für Ihren Einkauf!
+
+          <!-- FUSSTEXT -->
+          <div style="text-align: center; font-size: 9.5px; color: #555; border-top: 1px solid #ddd; pt-2;">
+            <p style="margin: 4px 0;">Kleinunternehmer gemäß § 19 UStG wird keine Umsatzsteuer berechnet.</p>
+            <p style="margin: 4px 0;">Vielen Dank für deinen Einkauf bei Sefas3DShop!</p>
           </div>
+
         </div>`;
 
       invSec.classList.remove('hidden');
@@ -923,16 +709,14 @@
       if (active.length === 0) return alert("Keine Aufträge vorhanden!");
       const invSec = document.getElementById('invoiceSection');
       invSec.innerHTML = '';
-      active.forEach((o) => {
+      active.forEach((o, index) => {
         let invNum = generateInvoiceNumberForExisting(o);
-        let isKleinanzeigen = (o.platform === 'Kleinanzeigen');
-        let shipping = isKleinanzeigen ? (o.shippingFee || 0) : 0;
-        let net = o.price - shipping;
+        let net = o.price - (o.shippingFee || 0);
         invSec.innerHTML += `
           <div class="page-break-container" style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; padding: 10px; background: #fff;">
             <h2>Sefas3DShop - Rechnung ${invNum}</h2>
-            <p>Kunde: ${o.customer} (${o.platform})</p>
-            <p>Gesamtbetrag: ${o.price.toFixed(2).replace('.',',')} € ${isKleinanzeigen ? `(Warenwert: ${net.toFixed(2).replace('.',',')} € + Versand:${shipping.toFixed(2).replace('.',',')} €)` : ''}</p>
+            <p>Kunde: ${o.customer}</p>
+            <p>Gesamtbetrag: ${o.price.toFixed(2).replace('.',',')} € (Netto: ${net.toFixed(2).replace('.',',')} € + Versand: ${(o.shippingFee||0).toFixed(2).replace('.',',')} €)</p>
           </div>`;
       });
       invSec.classList.remove('hidden');
@@ -956,97 +740,38 @@
       if (!tbody) return;
       tbody.innerHTML = '';
 
-      orders.forEach((o) => {
+      orders.forEach((o, idx) => {
         if (Boolean(o.archived) !== showingArchive) return;
         if (monthFilter !== 'all' && o.orderDate && !o.orderDate.startsWith(monthFilter)) return;
 
-        let searchString = `${o.customer} ${o.platform} ${o.items.map(i=>i.name + ' ' + (i.color||'')).join(' ')} ${o.tracking} ${generateInvoiceNumberForExisting(o)}`.toLowerCase();
+        let searchString = `${o.customer} ${o.platform} ${o.items.map(i=>i.name).join(' ')} ${o.tracking} ${generateInvoiceNumberForExisting(o)}`.toLowerCase();
         if (searchFilter && !searchString.includes(searchFilter)) return;
 
         let fixedInvNum = generateInvoiceNumberForExisting(o);
         let lCost = o.labelCost || 0;
         let isEbay = o.platform === 'eBay';
-        let itemsFormatted = o.items.map(i => i.name + (i.color ? ` <span class="text-cyan-400">(${i.color})</span>` : '')).join(', ');
 
-        if (editingId === o.id) {
-          let printerOptions = '';
-          printers.forEach(p => {
-            printerOptions += `<option value="${p.name}" ${p.name === o.printer ? 'selected' : ''}>${p.name}</option>`;
-          });
-
-          setTimeout(() => {
-            const container = document.getElementById(`edit-articles-${o.id}`);
-            if (container && container.children.length === 0) {
-              o.items.forEach(i => {
-                addEditArticleRow(`edit-articles-${o.id}`, i.name, i.color, i.weight);
-              });
-            }
-          }, 50);
-
+        if (editingIndex === idx) {
           tbody.innerHTML += `
-            <tr class="border-b border-slate-800 bg-slate-900/95">
-              <td class="p-2 space-y-1">
-                <input type="text" id="edit-cust-${o.id}" value="${o.customer}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-full">
-                <select id="edit-plat-${o.id}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-full">
-                  <option value="Kleinanzeigen" ${o.platform === 'Kleinanzeigen' ? 'selected' : ''}>Kleinanzeigen</option>
-                  <option value="eBay" ${o.platform === 'eBay' ? 'selected' : ''}>eBay</option>
-                </select>
-              </td>
-              <td class="p-2">
-                <input type="text" id="edit-inv-${o.id}" value="${fixedInvNum}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white font-mono w-28">
-              </td>
-              <td class="p-2">
-                <div id="edit-articles-${o.id}" class="space-y-1"></div>
-                <button type="button" onclick="addEditArticleRow('edit-articles-${o.id}')" class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/30 mt-1">+ Artikel</button>
-              </td>
-              <td class="p-2">
-                <select id="edit-print-${o.id}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white">
-                  ${printerOptions}
-                </select>
-              </td>
-              <td class="p-2">
-                <select id="edit-ispaid-${o.id}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white">
-                  <option value="✅ Ja" ${o.isPaid === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
-                  <option value="❌ Nein" ${o.isPaid !== '✅ Ja' ? 'selected' : ''}>❌ Nein</option>
-                </select>
-              </td>
-              <td class="p-2">
-                <select id="edit-paymeth-${o.id}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white">
-                  <option value="eBay" ${o.paymentMethod === 'eBay' ? 'selected' : ''}>eBay</option>
-                  <option value="PayPal" ${o.paymentMethod === 'PayPal' ? 'selected' : ''}>PayPal</option>
-                  <option value="Überweisung" ${o.paymentMethod === 'Überweisung' ? 'selected' : ''}>Überweisung</option>
-                  <option value="Bar" ${o.paymentMethod === 'Bar' ? 'selected' : ''}>Bar</option>
-                </select>
-              </td>
+            <tr class="border-b border-slate-800 bg-slate-900/90">
+              <td class="p-2"><input type="text" id="edit-cust-${idx}" value="${o.customer}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-full"></td>
+              <td class="p-2 font-mono">${fixedInvNum}</td>
+              <td class="p-2">${o.items.map(i=>i.name).join(', ')}</td>
+              <td class="p-2">${o.printer}</td>
+              <td class="p-2">${o.isPaid}</td>
+              <td class="p-2">${o.paymentMethod}</td>
               <td class="p-2">-</td>
-              <td class="p-2">
-                <select id="edit-status-${o.id}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white">
-                  <option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option>
-                  <option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option>
-                  <option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option>
-                  <option value="Versendet" ${o.status === 'Versendet' ? 'selected' : ''}>Versendet</option>
-                </select>
-              </td>
+              <td class="p-2">${o.status}</td>
               <td class="p-2 space-y-1">
-                Gesamt: <input type="number" step="0.01" id="edit-price-${o.id}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
-                Versand: <input type="number" step="0.01" id="edit-shipfee-${o.id}" value="${o.shippingFee || 0}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
-                Porto: <input type="number" step="0.01" id="edit-labelcost-${o.id}" value="${lCost}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16">
+                Gesamt: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
+                Versand: <input type="number" step="0.01" id="edit-shipfee-${idx}" value="${o.shippingFee || 0}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
+                Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCost}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16">
               </td>
-              <td class="p-2">
-                <select id="edit-label-${o.id}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white">
-                  <option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
-                  <option value="❌ Nein" ${o.label !== '✅ Ja' ? 'selected' : ''}>❌ Nein</option>
-                </select>
-              </td>
-              <td class="p-2">
-                <select id="edit-packed-${o.id}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white">
-                  <option value="✅ Ja" ${o.packed === '✅ Ja' ? 'selected' : ''}>✅ Ja</option>
-                  <option value="❌ Nein" ${o.packed !== '✅ Ja' ? 'selected' : ''}>❌ Nein</option>
-                </select>
-              </td>
-              <td class="p-2"><input type="text" id="edit-track-${o.id}" value="${o.tracking || '-'}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-20"></td>
+              <td class="p-2">${o.label}</td>
+              <td class="p-2">${o.packed}</td>
+              <td class="p-2"><input type="text" id="edit-track-${idx}" value="${o.tracking}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-20"></td>
               <td class="p-2 text-right">
-                <button onclick="saveEdit(${o.id})" class="bg-green-600 text-white px-2 py-0.5 rounded text-[11px] mr-1">💾</button>
+                <button onclick="saveEdit(${idx})" class="bg-green-600 text-white px-2 py-0.5 rounded text-[11px] mr-1">💾</button>
                 <button onclick="cancelEdit()" class="bg-slate-700 text-white px-2 py-0.5 rounded text-[11px]">❌</button>
               </td>
             </tr>`;
@@ -1061,7 +786,7 @@
             <tr class="border-b border-slate-800 hover:bg-slate-800/40">
               <td class="p-2">${o.customer}<br><span class="text-[9px] text-slate-400">${o.platform}</span></td>
               <td class="p-2 font-mono text-cyan-300">${fixedInvNum}</td>
-              <td class="p-2">${itemsFormatted}</td>
+              <td class="p-2">${o.items.map(i=>i.name).join(', ')}</td>
               <td class="p-2">${o.printer}</td>
               <td class="p-2">${o.isPaid}</td>
               <td class="p-2">${o.paymentMethod}</td>
@@ -1072,14 +797,14 @@
                 <div class="text-[10px] text-slate-400">Versand: +${(o.shippingFee||0).toFixed(2).replace('.',',')} €</div>
                 <div class="text-[10px] text-red-400">Porto: -${lCost.toFixed(2).replace('.',',')} €</div>
               </td>
-              <td class="p-2">${o.label || '❌ Nein'}</td>
-              <td class="p-2">${o.packed || '❌ Nein'}</td>
-              <td class="p-2 font-mono">${o.tracking || '-'}</td>
+              <td class="p-2">${o.label}</td>
+              <td class="p-2">${o.packed}</td>
+              <td class="p-2 font-mono">${o.tracking}</td>
               <td class="p-2 text-right space-x-1">
-                <button onclick="printInvoice(${o.id})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button>
-                <button onclick="startEdit(${o.id})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏️</button>
-                <button onclick="toggleArchiveOrder(${o.id})" class="text-purple-300 bg-purple-500/10 px-1.5 py-1 rounded text-[10px]" title="Archivieren">📦</button>
-                <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]" title="Löschen">🗑️</button>
+                <button onclick="printInvoice(${idx})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button>
+                <button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏️</button>
+                <button onclick="toggleArchiveOrder(${o.id})" class="text-purple-300 bg-purple-500/10 px-1.5 py-1 rounded text-[10px]">📦</button>
+                <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]">🗑️</button>
               </td>
             </tr>`;
         }
@@ -1088,14 +813,10 @@
     }
 
     function updateStats() {
-      let totalRev = 0, totalLabelCost = 0, totalOtherExp = 0, ebayBalanceOpen = 0, openOrdersCount = 0;
+      let totalRev = 0, totalLabelCost = 0, totalOtherExp = 0, ebayBalanceOpen = 0;
       const monthFilter = document.getElementById('statsMonthFilter')?.value || 'all';
 
       orders.forEach(o => {
-        if (!o.archived && (o.status === 'Offen' || o.status === 'In Arbeit')) {
-          openOrdersCount++;
-        }
-
         if (monthFilter !== 'all' && o.orderDate && !o.orderDate.startsWith(monthFilter)) return;
 
         let isEbay = o.platform === 'eBay';
@@ -1123,10 +844,13 @@
       ebayBalanceOpen = Math.round(ebayBalanceOpen * 100) / 100;
 
       if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
+      
+      if (document.getElementById('statExpenses')) {
+        document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
+      }
+
       if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statEbayBalance')) document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerText = openOrdersCount;
     }
 
     function renderPrinters() {
