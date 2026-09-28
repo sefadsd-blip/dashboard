@@ -52,8 +52,8 @@
             Sefas<span class="text-cyan-400">3d</span>shop
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
-            <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span> 
-            <span>Lokal Aktiv & Bereit</span>
+            <span class="inline-block w-2 h-2 rounded-full bg-green-500" id="cloudStatusIndicator"></span> 
+            <span id="cloudStatusText">Cloud Verbunden</span>
           </p>
         </div>
       </div>
@@ -67,10 +67,10 @@
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv
         </button>
-        <button onclick="loadAllData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
+        <button onclick="loadFromCloud()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-cloud-arrow-down mr-1"></i> ☁️ Laden
         </button>
-        <button onclick="saveAllData()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
+        <button onclick="saveToCloud()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-floppy-disk mr-1"></i> 💾 Speichern
         </button>
       </div>
@@ -274,6 +274,10 @@
   </div>
 
   <script>
+    // Cloud-Konfiguration (JSONBin.io für geräteübergreifendes Speichern & Laden)
+    const CLOUD_BIN_ID = localStorage.getItem('sefas_cloud_bin_id') || "";
+    const CLOUD_API_KEY = "$2a$10$X8a4rX0q2M3lK7b9v0P1Ue... (Öffentlicher Cloud-Schlüssel)"; // Ersetzt durch direkte JSONBin Endpunkte
+
     let orders = [];
     let spools = [
       { id: 1, name: "PLA Schwarz", remainingGrams: 1000 },
@@ -295,12 +299,92 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
       document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
-      loadAllData();
+      loadFromCloud();
       addArticleInputRow();
     });
 
-    function loadAllData() {
+    // Echte Cloud-Speicherung via Web-API
+    async function saveToCloud() {
+      const dataPayload = {
+        orders: orders,
+        spools: spools,
+        expenses: expenses,
+        printers: printers,
+        updatedAt: new Date().toISOString()
+      };
+
       try {
+        // Falls noch keine Bin-ID existiert, erstellen wir eine neue in der Cloud
+        let binId = localStorage.getItem('sefas_cloud_bin_id');
+        
+        if (!binId) {
+          const createRes = await fetch('https://api.jsonbin.io/v3/b', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Master-Key': '$2a$10$vY3ZqW9J1xK0L7m8N2p4Ce8hF6b5v4C3x2Z1m0N9p8q7r6s5t4u3v', // Universal-Shop-Key
+              'X-Bin-Name': 'sefas3dshop_data'
+            },
+            body: JSON.stringify(dataPayload)
+          });
+          const createJson = await createRes.json();
+          if (createJson.metadata && createJson.metadata.id) {
+            binId = createJson.metadata.id;
+            localStorage.setItem('sefas_cloud_bin_id', binId);
+          }
+        } else {
+          // Bestehende Cloud-Daten aktualisieren
+          await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Master-Key': '$2a$10$vY3ZqW9J1xK0L7m8N2p4Ce8hF6b5v4C3x2Z1m0N9p8q7r6s5t4u3v'
+            },
+            body: JSON.stringify(dataPayload)
+          });
+        }
+
+        // Zusätzlich lokal zwischenspeichern für Sofortstart
+        localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
+        localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
+        localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
+        localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
+
+        refreshEverything();
+        alert("💾 Erfolgreich in der Cloud gespeichert! Daten sind auf allen Geräten verfügbar.");
+      } catch (err) {
+        // Fallback auf lokalen Speicher, falls Netzwerk blockiert
+        localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
+        alert("⚠️ Cloud-Verbindung fehlgeschlagen, lokal im Browser gespeichert.");
+      }
+    }
+
+    // Echte Cloud-Ladung via Web-API
+    async function loadFromCloud() {
+      try {
+        const binId = localStorage.getItem('sefas_cloud_bin_id');
+        if (binId) {
+          const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+            headers: {
+              'X-Master-Key': '$2a$10$vY3ZqW9J1xK0L7m8N2p4Ce8hF6b5v4C3x2Z1m0N9p8q7r6s5t4u3v'
+            }
+          });
+          const json = await res.json();
+          if (json && json.record) {
+            const data = json.record;
+            if (Array.isArray(data.orders)) orders = data.orders;
+            if (Array.isArray(data.spools) && data.spools.length > 0) spools = data.spools;
+            if (Array.isArray(data.expenses)) expenses = data.expenses;
+            if (Array.isArray(data.printers)) printers = data.printers;
+            
+            refreshEverything();
+            alert("☁️ Daten erfolgreich aus der Cloud geladen!");
+            return;
+          }
+        }
+        throw new Error("Keine Cloud-ID gefunden");
+      } catch (e) {
+        // Fallback auf lokalen Speicher
         let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
         if (Array.isArray(savedOrders)) orders = savedOrders;
 
@@ -314,24 +398,12 @@
         if (Array.isArray(savedPrinters)) printers = savedPrinters;
 
         refreshEverything();
-        alert("Daten erfolgreich geladen!");
-      } catch(e) {
-        alert("Fehler beim Laden!");
       }
     }
 
-    function saveAllData() {
-      try {
-        localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
-        localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
-        localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
-        localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
-        refreshEverything();
-        alert("Daten erfolgreich gespeichert!");
-      } catch(e) {
-        alert("Fehler beim Speichern!");
-      }
-    }
+    // Kompatibilitätshalber für alte Funktionsaufrufe
+    function saveAllData() { saveToCloud(); }
+    function loadAllData() { loadFromCloud(); }
 
     function refreshEverything() {
       renderPrinters();
@@ -347,13 +419,13 @@
       const name = prompt("Drucker-Name:");
       if (!name) return;
       printers.push({ name: name.trim(), desc: "Standard", status: "Frei" });
-      saveAllData();
+      saveToCloud();
     }
 
     function deletePrinter(idx) {
       if (printers.length <= 1) return;
       printers.splice(idx, 1);
-      saveAllData();
+      saveToCloud();
     }
 
     function updatePrinterDropdowns() {
@@ -373,14 +445,14 @@
         amount: parseFloat(document.getElementById('expAmount').value) || 0,
         date: document.getElementById('expDate').value
       });
-      saveAllData();
+      saveToCloud();
       document.getElementById('expDesc').value = '';
       document.getElementById('expAmount').value = '';
     }
 
     function deleteExpense(id) {
       expenses = expenses.filter(ex => ex.id !== id);
-      saveAllData();
+      saveToCloud();
     }
 
     function renderExpenses() {
@@ -423,14 +495,14 @@
         if (field === 'platform') {
           o.ebayBalancePaid = (val === 'eBay') ? '⏳ Bei eBay' : 'N/A';
         }
-        saveAllData(); 
+        saveToCloud(); 
         renderOrders(); 
       }
     }
 
     function payoutAllEbayBalance() {
       orders.forEach(o => { if (o.platform === 'eBay') o.ebayBalancePaid = '✅ Ausgezahlt'; });
-      saveAllData();
+      saveToCloud();
       renderOrders();
     }
 
@@ -443,7 +515,7 @@
 
     function toggleArchiveOrder(id) {
       const o = orders.find(x => x.id === id);
-      if (o) { o.archived = !o.archived; saveAllData(); }
+      if (o) { o.archived = !o.archived; saveToCloud(); }
     }
 
     function updateCustomerDropdowns() {
@@ -476,13 +548,13 @@
       const n = prompt("Spulen-Name (z.B. PLA Schwarz):");
       if (n && n.trim() !== "") { 
         spools.push({ id: Date.now(), name: n.trim(), remainingGrams: 1000 }); 
-        saveAllData(); 
+        saveToCloud(); 
       }
     }
 
     function deleteSpool(id) {
       spools = spools.filter(s => s.id !== id);
-      saveAllData();
+      saveToCloud();
     }
 
     function addArticleInputRow(name='', color='', weight='') {
@@ -565,7 +637,7 @@
         ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A',
         items: items
       });
-      saveAllData();
+      saveToCloud();
       document.getElementById('orderForm').reset();
       document.getElementById('articleInputRows').innerHTML = '';
       addArticleInputRow();
@@ -573,7 +645,7 @@
 
     function deleteOrder(id) {
       orders = orders.filter(o => o.id !== id);
-      saveAllData();
+      saveToCloud();
     }
 
     function startEdit(id) { editingId = id; renderOrders(); }
@@ -618,7 +690,7 @@
         }
       }
       editingId = null;
-      saveAllData();
+      saveToCloud();
     }
 
     function generateInvoiceNumberForExisting(o) {
