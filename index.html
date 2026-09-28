@@ -88,7 +88,7 @@
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
             <span class="inline-block w-2 h-2 rounded-full bg-green-500" id="syncDot"></span> 
-            <span id="syncStatus">Mit Cloud verbunden</span>
+            <span id="syncStatus">Lokal gespeichert & aktiv</span>
           </p>
         </div>
       </div>
@@ -102,11 +102,8 @@
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv
         </button>
-        <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
-          <i class="fa-solid fa-rotate mr-1"></i> 🔄 Laden
-        </button>
-        <button onclick="pushToCloudManual()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
-          <i class="fa-solid fa-cloud-arrow-up mr-1"></i> 📤 Speichern
+        <button onclick="saveAllData()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
+          <i class="fa-solid fa-floppy-disk mr-1"></i> 💾 Speichern
         </button>
       </div>
     </header>
@@ -391,8 +388,6 @@
   </div>
 
   <script>
-    const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
-
     let orders = [];
     let spools = [];
     let expenses = [];
@@ -402,13 +397,13 @@
     let showingArchive = false;
     const todayStr = new Date().toISOString().slice(0, 10);
 
-    window.addEventListener('DOMContentLoaded', async () => {
+    window.addEventListener('DOMContentLoaded', () => {
       const dateInput = document.getElementById('orderDate');
       if (dateInput) dateInput.value = todayStr;
       const expDateInput = document.getElementById('expDate');
       if (expDateInput) expDateInput.value = todayStr;
 
-      await loadCloudDataOnStart();
+      loadLocalDataOnStart();
     });
 
     function onPlatformChange() {
@@ -421,34 +416,9 @@
       }
     }
 
-    async function loadCloudDataOnStart() {
+    function loadLocalDataOnStart() {
       const statusText = document.getElementById('syncStatus');
       const syncDot = document.getElementById('syncDot');
-      
-      try {
-        if (statusText) statusText.innerText = "Lade Daten aus der Cloud...";
-        const res = await fetch(NPOINT_URL, { cache: 'no-store' });
-        if (res.ok) {
-          const json = await res.json();
-          if (json && Array.isArray(json.orders)) {
-            orders = json.orders;
-            spools = Array.isArray(json.spools) ? json.spools : [];
-            expenses = Array.isArray(json.expenses) ? json.expenses : [];
-            printers = Array.isArray(json.printers) && json.printers.length > 0 ? json.printers : [
-              { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
-              { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
-              { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
-              { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
-            ];
-
-            saveLocalOnly();
-            refreshEverything();
-            if (statusText) statusText.innerText = "Cloud-Daten geladen & synchron";
-            if (syncDot) syncDot.className = "inline-block w-2 h-2 rounded-full bg-green-500";
-            return;
-          }
-        }
-      } catch(e) {}
 
       try {
         let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
@@ -457,12 +427,24 @@
           spools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent')) || [];
           expenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent')) || [];
           printers = JSON.parse(localStorage.getItem('sefas_shop_printers')) || [];
+          
+          if (printers.length === 0) {
+            printers = [
+              { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
+              { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
+              { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
+              { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
+            ];
+          }
+
           refreshEverything();
-          if (statusText) statusText.innerText = "Lokal gespeichert (Cloud offline)";
+          if (statusText) statusText.innerText = "Lokal gespeichert & aktiv";
+          if (syncDot) syncDot.className = "inline-block w-2 h-2 rounded-full bg-green-500";
           return;
         }
       } catch(e) {}
 
+      // Fallback, falls noch gar nichts da ist
       printers = [
         { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
         { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
@@ -470,7 +452,7 @@
         { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
       ];
       refreshEverything();
-      if (statusText) statusText.innerText = "Bereit";
+      if (statusText) statusText.innerText = "Bereit (Lokal)";
     }
 
     function refreshEverything() {
@@ -483,47 +465,17 @@
       updatePrinterDropdowns();
     }
 
-    function saveLocalOnly() {
+    function saveAllData() {
       try {
         localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
         localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
         localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
         localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
-      } catch(e) {}
-    }
-
-    async function loadCloudData() {
-      await loadCloudDataOnStart();
-      alert("✅ Cloud-Daten erfolgreich aktualisiert!");
-    }
-
-    async function pushToCloudManual() {
-      saveLocalOnly();
-      try {
-        const res = await fetch(NPOINT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orders, spools, expenses, printers })
-        });
-        if (res.ok) {
-          alert("✅ Daten erfolgreich in der Cloud gespeichert!");
-        } else {
-          alert("⚠️ Server-Fehler: Die Cloud hat abgelehnt.");
-        }
+        refreshEverything();
+        alert("✅ Alle Daten erfolgreich lokal im Browser gespeichert!");
       } catch(e) {
-        alert("❌ Netzwerkfehler: Cloud konnte nicht erreicht werden.");
+        alert("❌ Fehler beim Speichern.");
       }
-    }
-
-    function saveAllData() {
-      saveLocalOnly();
-      refreshEverything();
-      
-      fetch(NPOINT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orders, spools, expenses, printers })
-      }).catch(e => console.log("Hintergrund-Sync fehlgeschlagen", e));
     }
 
     function addPrinterPrompt() {
