@@ -10,6 +10,12 @@
   <style>
     body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
     .card { background-color: #1e293b; border: 1px solid #334155; }
+    @keyframes pulse-red {
+      0%, 100% { border-color: rgba(239, 68, 68, 0.4); }
+      50% { border-color: rgba(239, 68, 68, 0.9); }
+    }
+    .pulse-low-spool { animation: pulse-red 2s infinite; }
+    
     @media print {
       body * { visibility: hidden !important; }
       #printSection, #printSection *, #invoiceSection, #invoiceSection * { visibility: visible !important; }
@@ -134,6 +140,7 @@
           <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-layer-group mr-1.5 text-purple-400"></i> Filament-Lager</h2>
           <button onclick="addSpoolPrompt()" class="bg-slate-800 hover:bg-slate-700 text-purple-300 text-[11px] px-2 py-0.5 rounded border border-purple-500/35 cursor-pointer">+ Spule</button>
         </div>
+        <div id="spoolWarningBanner" class="hidden bg-red-500/10 border border-red-500/40 p-2 rounded-lg text-[11px] flex items-start gap-2 text-red-300"></div>
         <div id="spoolsList" class="space-y-1.5 max-h-[180px] overflow-y-auto pr-1"></div>
       </section>
     </div>
@@ -171,7 +178,7 @@
           
           <input type="number" step="0.01" id="labelCost" placeholder="Porto-Einkauf (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
 
-          <input type="number" step="0.01" id="shippingFee" placeholder="Versandpauschale vom Kunden (€)" value="5.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+          <input type="number" step="0.01" id="shippingFee" placeholder="Versand / Porto auf Rechnung (€)" value="5.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
 
           <div class="flex flex-col">
             <label class="text-[9px] text-slate-400 mb-0.5">Erstellungsdatum:</label>
@@ -278,8 +285,8 @@
 
   <script>
     let orders = [
-      {"id":1790522031947,"items":[{"name":"Schönes Wandregal rund / Metall-Regal Schwarz – Neu 3D-Druck","color":"","weight":0}],"label":"✅ Ja","price":19.99,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Offen","address":"LAUCHHEIMERSTR. 11 94469 DEGGENDORF","printer":"CR-10 Smart Pro #1","archived":false,"customer":"ELVIRA FELK","platform":"eBay","shipDate":"","tracking":"02270136002720","labelCost":6.99,"orderDate":"2026-09-27","shippingFee":0,"invoiceNumber":"RE-2026-0015","paymentMethod":"eBay","ebayBalancePaid":"⏳ Bei eBay"},
-      {"id":1790506736457,"items":[{"name":"Design Küchenrollenhalter | 3D-Druck","color":"PLA Schwarz","weight":0}],"label":"✅ Ja","price":15.18,"isPaid":"✅ Ja","packed":"❌ Nein","status":"Offen","address":"Droste-Hülshoff-Weg 20 58642 Iserlohn","printer":"CR-10 Smart Pro #1","archived":false,"customer":"Thomas Siepmann","platform":"eBay","shipDate":"","tracking":"995500929907","labelCost":5.19,"orderDate":"2026-09-27","paymentDate":"2026-09-27","shippingFee":0,"invoiceNumber":"RE-2026-0014","paymentMethod":"eBay","ebayBalancePaid":"⏳ Bei eBay"},
+      {"id":1790522031947,"items":[{"name":"Schönes Wandregal rund / Metall-Regal Schwarz – Neu 3D-Druck","color":"","weight":0}],"label":"✅ Ja","price":19.99,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Offen","address":"LAUCHHEIMERSTR. 11 94469 DEGGENDORF","printer":"CR-10 Smart Pro #1","archived":false,"customer":"ELVIRA FELK","platform":"eBay","shipDate":"","tracking":"02270136002720","labelCost":6.99,"orderDate":"2026-09-27","shippingFee":5.00,"invoiceNumber":"RE-2026-0015","paymentMethod":"eBay","ebayBalancePaid":"⏳ Bei eBay"},
+      {"id":1790506736457,"items":[{"name":"Design Küchenrollenhalter | 3D-Druck","color":"PLA Schwarz","weight":0}],"label":"✅ Ja","price":15.18,"isPaid":"✅ Ja","packed":"❌ Nein","status":"Offen","address":"Droste-Hülshoff-Weg 20 58642 Iserlohn","printer":"CR-10 Smart Pro #1","archived":false,"customer":"Thomas Siepmann","platform":"eBay","shipDate":"","tracking":"995500929907","labelCost":5.19,"orderDate":"2026-09-27","paymentDate":"2026-09-27","shippingFee":5.00,"invoiceNumber":"RE-2026-0014","paymentMethod":"eBay","ebayBalancePaid":"⏳ Bei eBay"},
       {"id":1790489745269,"items":[{"name":"More Halter 4x","color":"ASA Grau","weight":0}],"label":"✅ Ja","price":15,"isPaid":"✅ Ja","packed":"❌ Nein","status":"Fertig","address":"Trockener Kamp 10 31139 Hildesheim","printer":"Anycubic Kobra","archived":false,"customer":"Jennifer Habenicht","platform":"Kleinanzeigen","shipDate":"","tracking":"-356601127551","labelCost":5,"orderDate":"2026-09-27","paymentDate":"2026-09-27","shippingFee":5,"invoiceNumber":"RE-2026-0013","paymentMethod":"PayPal","ebayBalancePaid":"N/A"},
       {"id":1790449236772,"items":[{"name":"Süßer Blumentopf mit Herz-Händen 12x12","color":"Pla Weiß","weight":150}],"label":"✅ Ja","price":15,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Offen","address":"Badergraben 18a, 04808 Wurzen","printer":"CR-10 Smart Pro #1","archived":false,"customer":"Annett Hanitzsch","platform":"Kleinanzeigen","shipDate":"","tracking":"-358074757567","labelCost":6.99,"orderDate":"2026-09-26","paymentDate":"","shippingFee":5,"invoiceNumber":"RE-2026-00012","paymentMethod":"PayPal","ebayBalancePaid":"N/A"},
       {"id":1790098916977,"items":[{"name":"3x Kürbis","color":"","weight":0},{"name":"3x Katze","color":"","weight":0}],"label":"✅ Ja","price":25,"isPaid":"✅ Ja","packed":"✅ Ja","status":"In Arbeit","address":"Am Wellenweiher 4 49401 Damme","printer":"CR-10 Smart Pro #1","archived":false,"customer":"Iris Diekmann","platform":"Kleinanzeigen","shipDate":"","tracking":"-","labelCost":4.19,"orderDate":"2026-09-24","paymentDate":"2026-09-24","shippingFee":5,"invoiceNumber":"RE-2026-00011","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
@@ -374,26 +381,6 @@
         refreshEverything();
         alert("✅ Erfolgreich gespeichert!");
       } catch(e) {}
-    }
-
-    function exportAccountingCSV() {
-      let csv = "\uFEFFDatum;Typ;Rechnung;Kunde;Plattform;Kategorie/Artikel;Zahlungsart;Status;Betrag (€);Porto/Versand (€)\n";
-      orders.forEach(o => {
-        let inv = generateInvoiceNumberForExisting(o);
-        let itemsStr = o.items.map(i => i.name).join(" | ");
-        csv += `${o.orderDate || ''};Auftrag;${inv};"${o.customer}";${o.platform};"${itemsStr}";${o.paymentMethod};${o.status};${o.price.toString().replace('.',',')};${(o.shippingFee||0).toString().replace('.',',')}\n`;
-      });
-      expenses.forEach(ex => {
-        csv += `${ex.date || ''};Ausgabe;-;'-';'-';"${ex.description}";'-';'-';-${ex.amount.toString().replace('.',',')};0,00\n`;
-      });
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Sefas3DShop_Buchhaltung_${new Date().toISOString().slice(0,10)}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
     }
 
     function addPrinterPrompt() {
@@ -612,6 +599,7 @@
       let countItems = o.items.length || 1;
       
       let goodsTotal = o.price - shippingFee;
+      if (goodsTotal < 0) goodsTotal = o.price;
       let itemShare = countItems > 0 ? goodsTotal / countItems : goodsTotal;
 
       o.items.forEach(i => {
@@ -853,7 +841,11 @@
       ebayBalanceOpen = Math.round(ebayBalanceOpen * 100) / 100;
 
       if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
+      
+      if (document.getElementById('statExpenses')) {
+        document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
+      }
+
       if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statEbayBalance')) document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
     }
@@ -862,6 +854,7 @@
       const g = document.getElementById('printersGrid');
       if (!g) return;
       g.innerHTML = '';
+      printers.push = printers.push || function(){};
       printers.forEach((p, idx) => {
         g.innerHTML += `<div class="card p-3 rounded-xl flex justify-between items-center"><div><h3 class="font-bold text-white">${p.name}</h3><span class="text-[10px] text-slate-400">${p.desc}</span></div><button onclick="deletePrinter(${idx})" class="text-red-400">❌</button></div>`;
       });
