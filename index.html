@@ -63,7 +63,7 @@
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Gesamt-Umsatz (Monat)</p><h3 id="statRevenue" class="text-xl font-bold text-emerald-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Gesamt-Ausgaben (Monat)</p><h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Reingewinn (Einnahmen - Ausgaben)</p><h3 id="statProfit" class="text-xl font-bold text-blue-400">0,00 €</h3></div></div>
-        <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍️️ eBay-Guthaben (Netto)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt markieren</button></div>
+        <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍 eBay-Guthaben (Netto)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt markieren</button></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Offene Aufträge / Material</p><h3 id="statOpenOrders" class="text-lg font-bold text-yellow-400">0 <span class="text-[11px] text-slate-400 font-normal" id="statFilament">0g</span></h3></div></div>
       </div>
     </section>
@@ -89,7 +89,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
           <input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           <select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍️ eBay</option></select>
-          <select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿️ PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select>
+          <select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿️️ PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select>
           <select id="isPaid" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Bezahlt: ✅ Ja</option><option value="❌ Nein" selected>Bezahlt: ❌ Nein</option></select>
           <select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></select>
           <input type="number" step="0.01" id="price" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
@@ -225,6 +225,9 @@
       document.getElementById('orderDate').value = todayStr;
       document.getElementById('expDate').value = todayStr;
 
+      // AUTOMATISCHER ABGLEICH: Fügt Porto von bestehenden Aufträgen rückwirkend zu den Ausgaben hinzu, falls noch nicht geschehen
+      checkAndMigrateExistingOrderPostage();
+
       renderPrinters();
       updateMonthFilterDropdown();
       renderOrders();
@@ -233,6 +236,29 @@
       updateCustomerDropdowns();
       updatePrinterDropdowns();
     });
+
+    function checkAndMigrateExistingOrderPostage() {
+      let added = false;
+      orders.forEach(o => {
+        const lCost = parseFloat(o.labelCost) || 0;
+        const invNum = generateInvoiceNumberForExisting(o);
+        if (lCost > 0) {
+          const descSearch = `Porto / Label für ${o.customer} (${invNum})`;
+          const exists = expenses.some(ex => ex.description === descSearch || (ex.description.includes(o.customer) && ex.amount === lCost));
+          if (!exists) {
+            expenses.unshift({
+              id: Date.now() + Math.random(),
+              description: descSearch,
+              category: 'DHL / Versand',
+              amount: lCost,
+              date: o.orderDate || todayStr
+            });
+            added = true;
+          }
+        }
+      });
+      if (added) saveLocalOnly();
+    }
 
     function saveLocalOnly() {
       try {
@@ -253,6 +279,7 @@
             if (Array.isArray(json.spools)) spools = json.spools;
             if (Array.isArray(json.expenses)) expenses = json.expenses;
             if (Array.isArray(json.printers) && json.printers.length > 0) printers = json.printers;
+            checkAndMigrateExistingOrderPostage();
             saveLocalOnly();
             renderOrders();
             renderSpools();
@@ -277,7 +304,7 @@
           body: JSON.stringify({ orders, spools, expenses, printers })
         });
         if (res.ok) alert("✅ Daten erfolgreich in der Cloud gespeichert!");
-        else alert("⚠️️ Server-Fehler: Die Cloud hat abgelehnt.");
+        else alert("⚠ Server-Fehler: Die Cloud hat abgelehnt.");
       } catch(e) { alert("❌ Netzwerkfehler: Cloud konnte nicht erreicht werden."); }
     }
 
@@ -581,12 +608,10 @@
       const payMethod = document.getElementById('paymentMethod').value;
       const lCostVal = parseFloat(document.getElementById('labelCost').value) || 0;
 
-      // AUTOMATISCHER PORTO-EINTRAG IN AUSGABEN
       if (lCostVal > 0) {
-        const custName = document.getElementById('customer').value;
         expenses.unshift({
           id: Date.now(),
-          description: `Porto / Label für ${custName} (${fixedInvoiceNum})`,
+          description: `Porto / Label für ${document.getElementById('customer').value} (${fixedInvoiceNum})`,
           category: 'DHL / Versand',
           amount: lCostVal,
           date: customDate
@@ -672,7 +697,23 @@
       orders[idx].packed = document.getElementById(`edit-packed-${idx}`).value;
       orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
       orders[idx].shippingFee = parseFloat(document.getElementById(`edit-shipfee-${idx}`).value) || 0;
-      orders[idx].labelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
+      
+      const newLabelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
+      const oldLabelCost = orders[idx].labelCost || 0;
+      orders[idx].labelCost = newLabelCost;
+
+      // Wenn sich das Porto beim Bearbeiten geändert hat oder neu dazukam, in Ausgaben anpassen
+      if (newLabelCost > 0 && newLabelCost !== oldLabelCost) {
+        const invNum = generateInvoiceNumberForExisting(orders[idx]);
+        expenses.unshift({
+          id: Date.now(),
+          description: `Porto / Label für ${orders[idx].customer} (${invNum})`,
+          category: 'DHL / Versand',
+          amount: newLabelCost,
+          date: orders[idx].orderDate || todayStr
+        });
+      }
+
       orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value || '-';
       orders[idx].orderDate = document.getElementById(`edit-date-${idx}`)?.value || orders[idx].orderDate;
       
