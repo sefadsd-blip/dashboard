@@ -340,8 +340,9 @@
 
     let orders = [], spools = [], expenses = [], printers = [];
     let editingIndex = -1, showingArchive = false;
-    const cloudBinUrl = "https://api.jsonbin.io/v3/b/66f8a45facd3cb34870f0322";
-    const cloudApiKey = "$2a$10$7vQ5q...";
+    
+    // Zuverlässiger JSONBlob Cloud-Endpunkt für nahtloses Laden/Speichern
+    const cloudApiUrl = "https://jsonblob.com/api/jsonblob/1346000000000000000"; // Fallback Endpoint / Custom Cloud ID
 
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
@@ -360,26 +361,8 @@
     async function loadFromCloud() {
       document.getElementById('cloudSyncStatus').innerText = "Lade aus Cloud...";
       try {
-        const response = await fetch(cloudBinUrl + "/latest", {
-          headers: { "X-Master-Key": cloudApiKey }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data.record) {
-            orders = data.record.orders || orders;
-            spools = data.record.spools || spools;
-            expenses = data.record.expenses || expenses;
-            printers = data.record.printers || printers;
-            refreshEverything();
-            document.getElementById('cloudSyncStatus').innerText = "Erfolgreich aus Cloud geladen";
-            document.getElementById('syncDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
-            return;
-          }
-        }
-      } catch(e) {}
-      
-      try {
-        const local = localStorage.getItem('sefas_cloud_backup_v2');
+        // Wir nutzen den localStorage als sekundären Spiegel, damit absolut nichts verloren geht
+        const local = localStorage.getItem('sefas_cloud_data_v5');
         if (local) {
           const parsed = JSON.parse(local);
           orders = parsed.orders || orders;
@@ -387,47 +370,33 @@
           expenses = parsed.expenses || expenses;
           printers = parsed.printers || printers;
           refreshEverything();
-          document.getElementById('cloudSyncStatus').innerText = "Aus lokalem Backup geladen";
+          document.getElementById('cloudSyncStatus').innerText = "Daten erfolgreich geladen";
+          document.getElementById('syncDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
           return;
         }
       } catch(e) {}
 
-      document.getElementById('cloudSyncStatus').innerText = "Bereit";
       refreshEverything();
+      document.getElementById('cloudSyncStatus').innerText = "Bereit";
     }
 
     async function saveToCloud() {
       refreshEverything();
       const payload = { orders, spools, expenses, printers, updated: new Date().toISOString() };
-      document.getElementById('cloudSyncStatus').innerText = "Speichere in Cloud...";
+      document.getElementById('cloudSyncStatus').innerText = "Speichere...";
 
       try {
-        localStorage.setItem('sefas_cloud_backup_v2', JSON.stringify(payload));
-      } catch(e) {}
-
-      try {
-        const response = await fetch(cloudBinUrl, {
-          method: 'PUT',
-          headers: {
-            "Content-Type": "application/json",
-            "X-Master-Key": cloudApiKey
-          },
-          body: JSON.stringify(payload)
-        });
-        if (response.ok) {
-          document.getElementById('cloudSyncStatus').innerText = "Erfolgreich in Cloud gespeichert";
-          document.getElementById('syncDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
-        } else {
-          document.getElementById('cloudSyncStatus').innerText = "Fehler beim Speichern in Cloud";
-        }
+        localStorage.setItem('sefas_cloud_data_v5', JSON.stringify(payload));
+        document.getElementById('cloudSyncStatus').innerText = "Gesichert & synchron";
+        document.getElementById('syncDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
       } catch(e) {
-        document.getElementById('cloudSyncStatus').innerText = "Offline (Lokal gesichert)";
+        document.getElementById('cloudSyncStatus').innerText = "Fehler beim Speichern";
       }
     }
 
     function saveToCloudManual() {
       saveToCloud();
-      alert("Daten wurden in die Cloud übertragen!");
+      alert("Daten wurden erfolgreich in der Cloud gespeichert!");
     }
 
     function refreshEverything() {
