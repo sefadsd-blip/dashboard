@@ -775,10 +775,20 @@
     }
 
     function updateStats() {
-      let totalRev = 0, totalLabelCost = 0, totalOtherExp = 0, ebayBalanceOpen = 0;
+      let totalRev = 0, totalLabelCost = 0, totalOtherExp = 0, ebayBalanceOpen = 0, openCount = 0, openFilament = 0;
       const monthFilter = document.getElementById('statsMonthFilter')?.value || 'all';
 
       orders.forEach(o => {
+        // Offene Aufträge zählen (nur aktive, nicht archivierte)
+        if (!o.archived && o.status && o.status.toLowerCase() !== 'fertig') {
+          openCount++;
+          if (o.items && Array.isArray(o.items)) {
+            o.items.forEach(i => {
+              openFilament += parseInt(i.weight) || 0;
+            });
+          }
+        }
+
         if (monthFilter !== 'all' && o.orderDate && !o.orderDate.startsWith(monthFilter)) return;
         let isEbay = o.platform === 'eBay';
         let orderAmount = o.price;
@@ -800,6 +810,11 @@
       if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statEbayBalance')) document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
+      
+      // Offene Aufträge und Gramm im Dashboard aktualisieren
+      if (document.getElementById('statOpenOrders')) {
+        document.getElementById('statOpenOrders').innerHTML = `${openCount} <span class="text-[11px] text-slate-400 font-normal" id="statFilament">${openFilament}g</span>`;
+      }
     }
 
     function renderPrinters() {
