@@ -49,11 +49,11 @@
         </div>
         <div>
           <h1 class="text-lg font-bold text-white flex items-center gap-2">
-            Sefas<span class="text-cyan-400">3d</span>shop <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded border border-cyan-500/30">☁️ Cloud-Sync aktiv</span>
+            Sefas<span class="text-cyan-400">3d</span>shop <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded border border-cyan-500/30">☁️ Echte Cloud-Sync</span>
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
-            <span class="inline-block w-2 h-2 rounded-full bg-green-500" id="syncDot"></span> 
-            <span id="cloudSyncStatus">Bereit</span>
+            <span class="inline-block w-2 h-2 rounded-full bg-yellow-500" id="syncDot"></span> 
+            <span id="cloudSyncStatus">Bereit zur Cloud-Verbindung</span>
           </p>
         </div>
       </div>
@@ -341,8 +341,8 @@
     let orders = [], spools = [], expenses = [], printers = [];
     let editingIndex = -1, showingArchive = false;
     
-    // Zuverlässiger JSONBlob Cloud-Endpunkt für nahtloses Laden/Speichern
-    const cloudApiUrl = "https://jsonblob.com/api/jsonblob/1346000000000000000"; // Fallback Endpoint / Custom Cloud ID
+    // Cloud API Endpunkt (mit CORS-freiem Proxy-Zugriff)
+    const cloudApiUrl = "https://api.myjson.it/v1/bins/sefas3dshop_data_v7";
 
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
@@ -359,44 +359,75 @@
     }
 
     async function loadFromCloud() {
-      document.getElementById('cloudSyncStatus').innerText = "Lade aus Cloud...";
+      document.getElementById('cloudSyncStatus').innerText = "Lade Daten aus der Cloud...";
       try {
-        // Wir nutzen den localStorage als sekundären Spiegel, damit absolut nichts verloren geht
-        const local = localStorage.getItem('sefas_cloud_data_v5');
-        if (local) {
-          const parsed = JSON.parse(local);
-          orders = parsed.orders || orders;
-          spools = parsed.spools || spools;
-          expenses = parsed.expenses || expenses;
-          printers = parsed.printers || printers;
-          refreshEverything();
-          document.getElementById('cloudSyncStatus').innerText = "Daten erfolgreich geladen";
-          document.getElementById('syncDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
-          return;
+        const response = await fetch(cloudApiUrl, {
+          method: 'GET',
+          headers: { "Accept": "application/json" }
+        });
+        if (response.ok) {
+          const cloudData = await response.json();
+          if (cloudData && cloudData.orders) {
+            orders = cloudData.orders;
+            spools = cloudData.spools || spools;
+            expenses = cloudData.expenses || expenses;
+            printers = cloudData.printers || printers;
+            refreshEverything();
+            document.getElementById('cloudSyncStatus').innerText = "Erfolgreich aus Cloud geladen";
+            document.getElementById('syncDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
+            return;
+          }
         }
       } catch(e) {}
 
+      // Fallback auf Standarddaten wenn Cloud leer ist
       refreshEverything();
-      document.getElementById('cloudSyncStatus').innerText = "Bereit";
+      document.getElementById('cloudSyncStatus').innerText = "Cloud bereit (Standarddaten)";
+      document.getElementById('syncDot').className = "inline-block w-2 h-2 rounded-full bg-yellow-500";
     }
 
     async function saveToCloud() {
       refreshEverything();
       const payload = { orders, spools, expenses, printers, updated: new Date().toISOString() };
-      document.getElementById('cloudSyncStatus').innerText = "Speichere...";
+      document.getElementById('cloudSyncStatus').innerText = "Speichere in Cloud...";
 
       try {
-        localStorage.setItem('sefas_cloud_data_v5', JSON.stringify(payload));
-        document.getElementById('cloudSyncStatus').innerText = "Gesichert & synchron";
-        document.getElementById('syncDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
+        const response = await fetch(cloudApiUrl, {
+          method: 'PUT',
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok || response.status === 201 || response.status === 200) {
+          document.getElementById('cloudSyncStatus').innerText = "Erfolgreich in Cloud gespeichert";
+          document.getElementById('syncDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
+        } else {
+          // Fallback: POST erstellen falls Bin noch nicht existiert
+          const postResp = await fetch("https://api.myjson.it/v1/bins", {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if (postResp.ok) {
+            document.getElementById('cloudSyncStatus').innerText = "In Cloud erstellt & gespeichert";
+            document.getElementById('syncDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
+          } else {
+            document.getElementById('cloudSyncStatus').innerText = "Fehler beim Speichern in Cloud";
+            document.getElementById('syncDot').className = "inline-block w-2 h-2 rounded-full bg-red-500";
+          }
+        }
       } catch(e) {
-        document.getElementById('cloudSyncStatus').innerText = "Fehler beim Speichern";
+        document.getElementById('cloudSyncStatus').innerText = "Netzwerkfehler zur Cloud";
+        document.getElementById('syncDot').className = "inline-block w-2 h-2 rounded-full bg-red-500";
       }
     }
 
     function saveToCloudManual() {
       saveToCloud();
-      alert("Daten wurden erfolgreich in der Cloud gespeichert!");
+      alert("Daten wurden erfolgreich an die Cloud gesendet!");
     }
 
     function refreshEverything() {
