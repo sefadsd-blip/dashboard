@@ -28,7 +28,6 @@
 
   <div id="printSection" class="hidden"></div>
   <div id="invoiceSection" class="hidden"></div>
-  <input type="file" id="importFile" accept=".json" onchange="importDataFromFile(event)" class="hidden">
 
   <div id="mainApp" class="max-w-[1700px] mx-auto space-y-4">
     
@@ -50,7 +49,7 @@
         </div>
         <div>
           <h1 class="text-lg font-bold text-white flex items-center gap-2">
-            Sefas<span class="text-cyan-400">3d</span>shop <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded border border-cyan-500/30">☁️ Cloud & Backup aktiv</span>
+            Sefas<span class="text-cyan-400">3d</span>shop <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded border border-cyan-500/30">☁️ Cloud-Direktspeicherung</span>
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
             <span class="inline-block w-2 h-2 rounded-full bg-green-500" id="syncDot"></span> 
@@ -59,14 +58,11 @@
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-1.5">
-        <button onclick="loadFromCloud()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer" title="Daten aus Cloud laden">
+        <button onclick="loadFromCloud()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
           <i class="fa-solid fa-rotate mr-1"></i> ☁️ Aus Cloud laden
         </button>
-        <button onclick="triggerImport()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer" title="JSON-Datei laden">
-          <i class="fa-solid fa-folder-open mr-1"></i> 📂 Laden (Datei)
-        </button>
-        <button onclick="exportDataToFile()" class="bg-teal-600 hover:bg-teal-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer" title="JSON-Datei speichern">
-          <i class="fa-solid fa-floppy-disk mr-1"></i> 💾 Speichern (Datei)
+        <button onclick="saveToCloudManual()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
+          <i class="fa-solid fa-cloud-arrow-up mr-1"></i> 💾 In Cloud speichern
         </button>
         <button onclick="exportAccountingCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
           <i class="fa-solid fa-file-excel mr-1"></i> 📊 CSV Export
@@ -375,83 +371,45 @@
             expenses = data.record.expenses || expenses;
             printers = data.record.printers || printers;
             refreshEverything();
-            document.getElementById('cloudSyncStatus').innerText = "Mit Cloud verbunden & synchron";
+            document.getElementById('cloudSyncStatus').innerText = "Erfolgreich aus Cloud geladen";
             document.getElementById('syncDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
             return;
           }
         }
       } catch(e) {}
       
-      try {
-        const local = localStorage.getItem('sefas_cloud_backup_v2');
-        if (local) {
-          const parsed = JSON.parse(local);
-          orders = parsed.orders || orders;
-          spools = parsed.spools || spools;
-          expenses = parsed.expenses || expenses;
-          printers = parsed.printers || printers;
-          refreshEverything();
-        }
-      } catch(e) {}
-
-      document.getElementById('cloudSyncStatus').innerText = "Cloud-Synchronisation aktiv";
+      document.getElementById('cloudSyncStatus').innerText = "Fehler beim Laden aus Cloud";
       refreshEverything();
     }
 
     async function saveToCloud() {
       refreshEverything();
       const payload = { orders, spools, expenses, printers, updated: new Date().toISOString() };
-      
-      try {
-        localStorage.setItem('sefas_cloud_backup_v2', JSON.stringify(payload));
-      } catch(e) {}
+      document.getElementById('cloudSyncStatus').innerText = "Speichere in Cloud...";
 
       try {
-        fetch(cloudBinUrl, {
+        const response = await fetch(cloudBinUrl, {
           method: 'PUT',
           headers: {
             "Content-Type": "application/json",
             "X-Master-Key": cloudApiKey
           },
           body: JSON.stringify(payload)
-        }).catch(() => {});
-      } catch(e) {}
-    }
-
-    function exportDataToFile() {
-      const payload = { orders, spools, expenses, printers };
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", "sefas3dshop_backup_" + new Date().toISOString().slice(0, 10) + ".json");
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    }
-
-    function triggerImport() {
-      document.getElementById('importFile').click();
-    }
-
-    function importDataFromFile(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const parsed = JSON.parse(e.target.result);
-          if (parsed.orders) orders = parsed.orders;
-          if (parsed.spools) spools = parsed.spools;
-          if (parsed.expenses) expenses = parsed.expenses;
-          if (parsed.printers) printers = parsed.printers;
-          saveToCloud();
-          alert("Daten erfolgreich aus Datei geladen und in Cloud gespeichert!");
-        } catch (err) {
-          alert("Fehler beim Lesen der Datei!");
+        });
+        if (response.ok) {
+          document.getElementById('cloudSyncStatus').innerText = "Erfolgreich in Cloud gespeichert";
+          document.getElementById('syncDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
+        } else {
+          document.getElementById('cloudSyncStatus').innerText = "Fehler beim Speichern";
         }
-      };
-      reader.readAsText(file);
-      event.target.value = '';
+      } catch(e) {
+        document.getElementById('cloudSyncStatus').innerText = "Keine Verbindung zur Cloud";
+      }
+    }
+
+    function saveToCloudManual() {
+      saveToCloud();
+      alert("Daten wurden an die Cloud gesendet!");
     }
 
     function refreshEverything() {
