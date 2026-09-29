@@ -18,12 +18,9 @@
     
     @media print {
       body * { visibility: hidden !important; }
-      #printSection:not(.hidden), #printSection:not(.hidden) *, #invoiceSection:not(.hidden), #invoiceSection:not(.hidden) * { visibility: visible !important; }
-      #printSection:not(.hidden) { 
-        position: fixed !important; left: 0 !important; top: 0 !important; width: 100vw !important; height: 100vh !important; color: #000 !important; background: #fff !important; padding: 5px !important; display: flex !important; justify-content: center !important; align-items: center !important;
-      }
-      #invoiceSection:not(.hidden) {
-        position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; color: #000 !important; background: #fff !important; padding: 10px !important; display: block !important;
+      #printArea, #printArea * { visibility: visible !important; }
+      #printArea { 
+        position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; color: #000 !important; background: #fff !important; display: block !important;
       }
       .page-break-container { page-break-after: always; break-after: page; margin-bottom: 20px; }
       @page { size: auto; margin: 5mm; }
@@ -32,8 +29,7 @@
 </head>
 <body class="p-3 md:p-5 min-h-screen text-xs">
 
-  <div id="printSection" class="hidden"></div>
-  <div id="invoiceSection" class="hidden"></div>
+  <div id="printArea"></div>
 
   <div id="mainApp" class="max-w-[1700px] mx-auto space-y-4">
     
@@ -157,7 +153,7 @@
       </div>
       <form id="expenseForm" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
         <input type="text" id="expDesc" placeholder="Beschreibung" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙️️ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷️ Sonstiges / eBay Gebühren</option></select>
+        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙️ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷️ Sonstiges / eBay Gebühren</option></select>
         <input type="number" step="0.01" id="expAmount" placeholder="Betrag (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <input type="date" id="expDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg py-1.5 text-xs transition cursor-pointer">+ Ausgabe eintragen</button>
@@ -703,16 +699,12 @@
 
     function printBoxLabel(idx) {
       const o = orders[idx];
-      const invDiv = document.getElementById('invoiceSection');
-      invDiv.innerHTML = '';
-      invDiv.classList.add('hidden');
-      
-      const printSec = document.getElementById('printSection');
       let itemsSummary = o.items.map(i => `${i.name} (${i.color || 'Standard'}, ${i.weight || 0}g)`).join("<br>• ");
       const trackingUrl = (o.tracking && o.tracking !== '-') ? `https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${o.tracking}` : `Sefas3DShop - ${o.customer}`;
 
-      printSec.innerHTML = `
-        <div style="font-family: Arial, sans-serif; border: 2px solid #000; padding: 10px; width: 340px; background: #fff; border-radius: 6px;">
+      const printArea = document.getElementById('printArea');
+      printArea.innerHTML = `
+        <div style="font-family: Arial, sans-serif; border: 2px solid #000; padding: 10px; width: 340px; background: #fff; border-radius: 6px; margin: 20px auto;">
           <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px;">
             <strong>Sefas3DShop</strong><span style="font-size: 10px; background: #000; color: #fff; padding: 2px 4px;">KARTON-ETIKETT</span>
           </div>
@@ -727,13 +719,13 @@
             <div><strong>Tracking:</strong> ${o.tracking}</div><div id="qrcodeContainer"></div>
           </div>
         </div>`;
-      printSec.classList.remove('hidden');
+      
       setTimeout(() => {
         const qrContainer = document.getElementById('qrcodeContainer');
         qrContainer.innerHTML = '';
         new QRCode(qrContainer, { text: trackingUrl, width: 60, height: 60 });
         window.print();
-        printSec.classList.add('hidden');
+        printArea.innerHTML = '';
       }, 300);
     }
 
@@ -746,17 +738,11 @@
 
     function printInvoice(idx) {
       const o = orders[idx];
-      const printSec = document.getElementById('printSection');
-      printSec.innerHTML = '';
-      printSec.classList.add('hidden');
-
-      const invSec = document.getElementById('invoiceSection');
       const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
       const invoiceNumber = generateInvoiceNumberForExisting(o);
       
       let displayShippingCost = (o.platform === 'eBay') ? (o.labelCost || 0) : (o.shippingFee || 0);
       let itemsNetTotal = Math.max(0, o.price - displayShippingCost);
-      
       let itemsListHtml = o.items.map(i => `• ${i.name} ${i.color ? '(' + i.color + ')' : ''}`).join('<br>');
       
       let itemsRows = `<tr>
@@ -772,10 +758,10 @@
 
       const totalAmountNum = o.price;
       const sepaPayload = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
-
       const logoSvg = `<svg width="45" height="45" viewBox="0 0 100 100" fill="currentColor"><polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/><polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/></svg>`;
 
-      invSec.innerHTML = `
+      const printArea = document.getElementById('printArea');
+      printArea.innerHTML = `
         <div style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px;">
           <div style="display: flex; justify-content: space-between; align-items: start; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 15px;">
             <div style="display: flex; gap: 10px; align-items: center;">
@@ -818,11 +804,10 @@
           </div>
         </div>`;
 
-      invSec.classList.remove('hidden');
       setTimeout(() => {
         renderLocalQrCode('sepaQrCodeTarget', sepaPayload);
         window.print();
-        invSec.classList.add('hidden');
+        printArea.innerHTML = '';
       }, 300);
     }
 
@@ -830,12 +815,8 @@
       const activeOrders = orders.filter(o => Boolean(o.archived) === showingArchive);
       if (activeOrders.length === 0) return alert("Keine Aufträge vorhanden!");
       
-      const printSec = document.getElementById('printSection');
-      printSec.innerHTML = '';
-      printSec.classList.add('hidden');
-
-      const invSec = document.getElementById('invoiceSection');
-      invSec.innerHTML = '';
+      const printArea = document.getElementById('printArea');
+      printArea.innerHTML = '';
       
       const logoSvg = `<svg width="45" height="45" viewBox="0 0 100 100" fill="currentColor"><polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/><polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/></svg>`;
 
@@ -845,8 +826,8 @@
         
         let displayShippingCost = (o.platform === 'eBay') ? (o.labelCost || 0) : (o.shippingFee || 0);
         let itemsNetTotal = Math.max(0, o.price - displayShippingCost);
-        
         let itemsListHtml = o.items.map(i => `• ${i.name} ${i.color ? '(' + i.color + ')' : ''}`).join('<br>');
+        
         let itemsRows = `<tr>
           <td style="padding: 6px; border-bottom: 1px solid #ddd;"><strong>3D-Druck Artikel bestehend aus:</strong><br>${itemsListHtml}</td>
           <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1 Set</td>
@@ -859,7 +840,7 @@
         }
 
         const totalAmountNum = o.price;
-        invSec.innerHTML += `
+        printArea.innerHTML += `
           <div class="page-break-container" style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: start; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 15px;">
               <div style="display: flex; gap: 10px; align-items: center;">${logoSvg}<div><h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0 0 2px 0;">Sefas3DShop</h1><p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 42 | 32369 Rahden</p></div></div>
@@ -877,7 +858,7 @@
             </div>
           </div>`;
       });
-      invSec.classList.remove('hidden');
+
       setTimeout(() => {
         activeOrders.forEach((o, index) => {
           const totalAmountNum = o.price;
@@ -886,7 +867,7 @@
           renderLocalQrCode(`batchSepaQr_${index}`, sepaPayload);
         });
         window.print();
-        invSec.classList.add('hidden');
+        printArea.innerHTML = '';
       }, 400);
     }
 
