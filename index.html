@@ -89,7 +89,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
           <input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           <select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍️ eBay</option></select>
-          <select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿️️ PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select>
+          <select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿️ PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select>
           <select id="isPaid" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Bezahlt: ✅ Ja</option><option value="❌ Nein" selected>Bezahlt: ❌ Nein</option></select>
           <select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></select>
           <input type="number" step="0.01" id="price" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
@@ -277,7 +277,7 @@
           body: JSON.stringify({ orders, spools, expenses, printers })
         });
         if (res.ok) alert("✅ Daten erfolgreich in der Cloud gespeichert!");
-        else alert("⚠️ Server-Fehler: Die Cloud hat abgelehnt.");
+        else alert("⚠️️ Server-Fehler: Die Cloud hat abgelehnt.");
       } catch(e) { alert("❌ Netzwerkfehler: Cloud konnte nicht erreicht werden."); }
     }
 
@@ -787,7 +787,7 @@
               <div style="font-size: 10px;">
                 <p style="margin: 0 0 2px 0;"><strong>Zahlungsinformationen:</strong></p>
                 <p style="margin: 1px 0;">Bezahlt mit: <strong>${o.paymentMethod || 'Überweisung'}</strong> ${o.isPaid === '✅ Ja' ? '(Vielen Dank für deine Zahlung!)' : ''}</p>
-                <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08 | C24 Bank</p>
+                <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08 | Revolut</p>
               </div>
               <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;" id="sepaQrCodeTarget"></div>
             </div>
@@ -850,7 +850,7 @@
             </table>
             <div style="text-align: right; margin-bottom: 15px;"><strong>Gesamtbetrag: ${totalAmountNum.toFixed(2).replace('.', ',')} €</strong></div>
             <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px;">
-              <div style="font-size: 10px;"><p style="margin: 1px 0;">Bezahlt mit: <strong>${o.paymentMethod || 'Überweisung'}</strong> ${o.isPaid === '✅ Ja' ? '(Vielen Dank!)' : ''}</p>IBAN: DE20 1001 0178 0592 6798 08 (C24 Bank)</div>
+              <div style="font-size: 10px;"><p style="margin: 1px 0;">Bezahlt mit: <strong>${o.paymentMethod || 'Überweisung'}</strong> ${o.isPaid === '✅ Ja' ? '(Vielen Dank!)' : ''}</p>IBAN: DE20 1001 0178 0592 6798 08 (Revolut)</div>
               <div style="background: white; padding: 4px;" id="batchSepaQr_${index}" data-payload="${encodeURIComponent(sepsPayloadStr)}"></div>
             </div>
           </div>`;
