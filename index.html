@@ -89,7 +89,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
           <input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           <select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍️ eBay</option></select>
-          <select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿️ PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select>
+          <select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿️️ PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select>
           <select id="isPaid" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Bezahlt: ✅ Ja</option><option value="❌ Nein" selected>Bezahlt: ❌ Nein</option></select>
           <select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></select>
           <input type="number" step="0.01" id="price" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
@@ -715,7 +715,7 @@
           <script>
             window.onload = function() {
               new QRCode(document.getElementById('qrcodeContainer'), { text: "${trackingUrl}", width: 60, height: 60 });
-              setTimeout(() => { window.print(); window.close(); }, 300);
+              setTimeout(() => { window.print(); }, 500);
             };
           <\/script>
         </body>
@@ -799,7 +799,7 @@
           <script>
             window.onload = function() {
               new QRCode(document.getElementById('sepaQrCodeTarget'), { text: \`${sepsPayloadStr}\`, width: 75, height: 75, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
-              setTimeout(() => { window.print(); window.close(); }, 400);
+              setTimeout(() => { window.print(); }, 500);
             };
           <\/script>
         </body>
@@ -872,7 +872,7 @@
                 let payload = decodeURIComponent(el.getAttribute('data-payload'));
                 new QRCode(el, { text: payload, width: 75, height: 75, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
               });
-              setTimeout(() => { window.print(); window.close(); }, 600);
+              setTimeout(() => { window.print(); }, 800);
             };
           <\/script>
         </body>
