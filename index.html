@@ -592,6 +592,10 @@
       orders[idx].shippingFee = parseFloat(document.getElementById(`edit-shipfee-${idx}`).value) || 0;
       orders[idx].labelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
       orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value;
+      
+      const statusSel = document.getElementById(`edit-status-${idx}`);
+      if (statusSel) orders[idx].status = statusSel.value;
+
       editingIndex = -1;
       saveToCloud();
     }
@@ -723,7 +727,13 @@
               <td class="p-2">${o.isPaid}</td>
               <td class="p-2">${o.paymentMethod}</td>
               <td class="p-2">-</td>
-              <td class="p-2">${o.status}</td>
+              <td class="p-2">
+                <select id="edit-status-${idx}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-24">
+                  <option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option>
+                  <option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option>
+                  <option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option>
+                </select>
+              </td>
               <td class="p-2 space-y-1">
                 Gesamt: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
                 Versand: <input type="number" step="0.01" id="edit-shipfee-${idx}" value="${o.shippingFee || 0}" class="bg-slate-950 border border-blue-500 rounded p-1 text-white w-16"><br>
@@ -779,28 +789,34 @@
       const monthFilter = document.getElementById('statsMonthFilter')?.value || 'all';
 
       orders.forEach(o => {
-        // Offene Aufträge zählen (nur aktive, nicht archivierte)
-        if (!o.archived && o.status && o.status.toLowerCase() !== 'fertig') {
+        // Zählt JEDEN Auftrag, der NICHT archiviert ist, als offen/aktiv
+        if (o.archived !== true) {
           openCount++;
           if (o.items && Array.isArray(o.items)) {
             o.items.forEach(i => {
-              openFilament += parseInt(i.weight) || 0;
+              let w = parseInt(i.weight);
+              if (!isNaN(w)) openFilament += w;
             });
           }
         }
 
         if (monthFilter !== 'all' && o.orderDate && !o.orderDate.startsWith(monthFilter)) return;
-        let isEbay = o.platform === 'eBay';
-        let orderAmount = o.price;
-        let lCost = o.labelCost || 0;
-        if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') ebayBalanceOpen += Math.round((orderAmount - lCost) * 100) / 100;
-        if (!isEbay || o.ebayBalancePaid === '✅ Ausgezahlt') totalRev += orderAmount;
+        let isEbay = (o.platform === 'eBay');
+        let orderAmount = parseFloat(o.price) || 0;
+        let lCost = parseFloat(o.labelCost) || 0;
+        
+        if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') {
+          ebayBalanceOpen += (orderAmount - lCost);
+        }
+        if (!isEbay || o.ebayBalancePaid === '✅ Ausgezahlt') {
+          totalRev += orderAmount;
+        }
         totalLabelCost += lCost;
       });
 
       expenses.forEach(ex => {
         if (monthFilter !== 'all' && ex.date && !ex.date.startsWith(monthFilter)) return;
-        totalOtherExp += ex.amount;
+        totalOtherExp += parseFloat(ex.amount) || 0;
       });
 
       let totalExp = totalLabelCost + totalOtherExp;
@@ -811,7 +827,7 @@
       if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
       if (document.getElementById('statEbayBalance')) document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
       
-      // Offene Aufträge und Gramm im Dashboard aktualisieren
+      // Anzeige im Dashboard aktualisieren
       if (document.getElementById('statOpenOrders')) {
         document.getElementById('statOpenOrders').innerHTML = `${openCount} <span class="text-[11px] text-slate-400 font-normal" id="statFilament">${openFilament}g</span>`;
       }
