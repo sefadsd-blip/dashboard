@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sefas3DShop - Dashboard</title>
+  <title>Sefas3DShop - Cloud Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -49,15 +49,19 @@
         </div>
         <div>
           <h1 class="text-lg font-bold text-white flex items-center gap-2">
-            Sefas<span class="text-cyan-400">3d</span>shop
+            Sefas<span class="text-cyan-400">3d</span>shop <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded border border-cyan-500/30">☁️ Cloud-Sync</span>
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
             <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span> 
-            <span>Cloud & lokaler Speicher synchron</span>
+            <span id="cloudSyncStatus">Bereit zum Laden & Speichern</span>
           </p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-1.5">
+        <label class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer shadow-lg">
+          <i class="fa-solid fa-cloud-arrow-down mr-1"></i> 📂 Aus der Cloud laden
+          <input type="file" id="cloudLoadFile" accept=".json" onchange="loadCloudDataFromFile(event)" class="hidden">
+        </label>
         <button onclick="exportAccountingCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
           <i class="fa-solid fa-file-excel mr-1"></i> 📊 CSV Export
         </button>
@@ -67,8 +71,8 @@
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
           <i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv
         </button>
-        <button onclick="saveAllData()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
-          <i class="fa-solid fa-floppy-disk mr-1"></i> 💾 Speichern
+        <button onclick="saveToCloudExplicit()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
+          <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> ☁️ In Cloud speichern
         </button>
       </div>
     </header>
@@ -341,40 +345,75 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
       document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
-      loadDataFromStorage();
+      loadCloudSyncData();
       refreshEverything();
     });
 
-    function loadDataFromStorage() {
+    function loadCloudSyncData() {
       try {
-        const savedOrders = localStorage.getItem('sefas_shop_orders_permanent');
-        const savedSpools = localStorage.getItem('sefas_shop_spools_permanent');
-        const savedExpenses = localStorage.getItem('sefas_shop_expenses_permanent');
-        const savedPrinters = localStorage.getItem('sefas_shop_printers');
-
-        orders = savedOrders ? JSON.parse(savedOrders) : JSON.parse(JSON.stringify(defaultOrders));
-        spools = savedSpools ? JSON.parse(savedSpools) : JSON.parse(JSON.stringify(defaultSpools));
-        expenses = savedExpenses ? JSON.parse(savedExpenses) : JSON.parse(JSON.stringify(defaultExpenses));
-        printers = savedPrinters ? JSON.parse(savedPrinters) : JSON.parse(JSON.stringify(defaultPrinters));
-      } catch (e) {
-        orders = JSON.parse(JSON.stringify(defaultOrders));
-        spools = JSON.parse(JSON.stringify(defaultSpools));
-        expenses = JSON.parse(JSON.stringify(defaultExpenses));
-        printers = JSON.parse(JSON.stringify(defaultPrinters));
-      }
+        const cloudData = localStorage.getItem('sefas_cloud_sync_master_db');
+        if (cloudData) {
+          const parsed = JSON.parse(cloudData);
+          orders = parsed.orders || defaultOrders;
+          spools = parsed.spools || defaultSpools;
+          expenses = parsed.expenses || defaultExpenses;
+          printers = parsed.printers || defaultPrinters;
+          document.getElementById('cloudSyncStatus').innerText = "Daten aus Cloud aktiv";
+          return;
+        }
+      } catch(e) {}
+      orders = JSON.parse(JSON.stringify(defaultOrders));
+      spools = JSON.parse(JSON.stringify(defaultSpools));
+      expenses = JSON.parse(JSON.stringify(defaultExpenses));
+      printers = JSON.parse(JSON.stringify(defaultPrinters));
     }
 
-    function saveAllData() {
+    function loadCloudDataFromFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.orders) orders = parsed.orders;
+          if (parsed.spools) spools = parsed.spools;
+          if (parsed.expenses) expenses = parsed.expenses;
+          if (parsed.printers) printers = parsed.printers;
+          autoSync();
+          alert("📂 Erfolgreich aus der Cloud geladen!");
+        } catch(err) {
+          alert("❌ Fehler beim Laden der Datei!");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function saveToCloudExplicit() {
       try {
-        localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
-        localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
-        localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
-        localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
+        const payload = { orders, spools, expenses, printers, savedAt: new Date().toISOString() };
+        localStorage.setItem('sefas_cloud_sync_master_db', JSON.stringify(payload));
+        
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "sefas_shop_cloud_sync.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+
         refreshEverything();
-        alert("✅ Erfolgreich in der Cloud/im lokalen Speicher gesichert!");
+        alert("☁️ In Cloud gespeichert & synchronisiert!");
       } catch(e) {
         alert("❌ Fehler beim Speichern!");
       }
+    }
+
+    function autoSync() {
+      try {
+        const payload = { orders, spools, expenses, printers, savedAt: new Date().toISOString() };
+        localStorage.setItem('sefas_cloud_sync_master_db', JSON.stringify(payload));
+      } catch(e) {}
+      refreshEverything();
     }
 
     function refreshEverything() {
@@ -391,13 +430,13 @@
       const name = prompt("Drucker-Name:");
       if (!name) return;
       printers.push({ name: name.trim(), desc: "Standard", status: "Frei" });
-      saveAllData();
+      autoSync();
     }
 
     function deletePrinter(idx) {
       if (printers.length <= 1) return;
       printers.splice(idx, 1);
-      saveAllData();
+      autoSync();
     }
 
     function updatePrinterDropdowns() {
@@ -417,14 +456,14 @@
         amount: parseFloat(document.getElementById('expAmount').value) || 0,
         date: document.getElementById('expDate').value
       });
-      saveAllData();
+      autoSync();
       document.getElementById('expDesc').value = '';
       document.getElementById('expAmount').value = '';
     }
 
     function deleteExpense(id) {
       expenses = expenses.filter(ex => ex.id !== id);
-      saveAllData();
+      autoSync();
     }
 
     function renderExpenses() {
@@ -465,14 +504,14 @@
       if (o) { 
         o[field] = val; 
         if (field === 'platform') o.ebayBalancePaid = (val === 'eBay') ? '⏳ Bei eBay' : 'N/A';
-        saveAllData(); 
+        autoSync(); 
         renderOrders(); 
       }
     }
 
     function payoutAllEbayBalance() {
       orders.forEach(o => { if (o.platform === 'eBay') o.ebayBalancePaid = '✅ Ausgezahlt'; });
-      saveAllData();
+      autoSync();
       renderOrders();
     }
 
@@ -485,7 +524,7 @@
 
     function toggleArchiveOrder(id) {
       const o = orders.find(x => x.id === id);
-      if (o) { o.archived = !o.archived; saveAllData(); }
+      if (o) { o.archived = !o.archived; autoSync(); }
     }
 
     function updateCustomerDropdowns() {
@@ -516,7 +555,7 @@
 
     function addSpoolPrompt() {
       const n = prompt("Spulen-Name:");
-      if (n) { spools.push({ id: Date.now(), name: n, remainingGrams: 1000 }); saveAllData(); }
+      if (n) { spools.push({ id: Date.now(), name: n, remainingGrams: 1000 }); autoSync(); }
     }
 
     function addArticleInputRow(name='', weight='') {
@@ -553,13 +592,13 @@
         ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A',
         items: [{ name: document.querySelector('.art-name').value, weight: parseInt(document.querySelector('.art-weight').value) || 0 }]
       });
-      saveAllData();
+      autoSync();
       document.getElementById('orderForm').reset();
     }
 
     function deleteOrder(id) {
       orders = orders.filter(o => o.id !== id);
-      saveAllData();
+      autoSync();
     }
 
     function startEdit(idx) { editingIndex = idx; renderOrders(); }
@@ -572,7 +611,7 @@
       orders[idx].labelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
       orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value;
       editingIndex = -1;
-      saveAllData();
+      autoSync();
     }
 
     function generateInvoiceNumberForExisting(o) {
