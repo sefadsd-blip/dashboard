@@ -18,11 +18,11 @@
     
     @media print {
       body * { visibility: hidden !important; }
-      #printSection, #printSection *, #invoiceSection, #invoiceSection * { visibility: visible !important; }
-      #printSection { 
+      #printSection:not(.hidden), #printSection:not(.hidden) *, #invoiceSection:not(.hidden), #invoiceSection:not(.hidden) * { visibility: visible !important; }
+      #printSection:not(.hidden) { 
         position: fixed !important; left: 0 !important; top: 0 !important; width: 100vw !important; height: 100vh !important; color: #000 !important; background: #fff !important; padding: 5px !important; display: flex !important; justify-content: center !important; align-items: center !important;
       }
-      #invoiceSection {
+      #invoiceSection:not(.hidden) {
         position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; color: #000 !important; background: #fff !important; padding: 10px !important; display: block !important;
       }
       .page-break-container { page-break-after: always; break-after: page; margin-bottom: 20px; }
@@ -157,7 +157,7 @@
       </div>
       <form id="expenseForm" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
         <input type="text" id="expDesc" placeholder="Beschreibung" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙️ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷️ Sonstiges / eBay Gebühren</option></select>
+        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙️️ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷️ Sonstiges / eBay Gebühren</option></select>
         <input type="number" step="0.01" id="expAmount" placeholder="Betrag (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <input type="date" id="expDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg py-1.5 text-xs transition cursor-pointer">+ Ausgabe eintragen</button>
@@ -703,7 +703,9 @@
 
     function printBoxLabel(idx) {
       const o = orders[idx];
-      document.getElementById('invoiceSection').innerHTML = ''; // Vorher Rechnung ausblenden
+      const invDiv = document.getElementById('invoiceSection');
+      invDiv.innerHTML = '';
+      invDiv.classList.add('hidden');
       
       const printSec = document.getElementById('printSection');
       let itemsSummary = o.items.map(i => `${i.name} (${i.color || 'Standard'}, ${i.weight || 0}g)`).join("<br>• ");
@@ -744,7 +746,10 @@
 
     function printInvoice(idx) {
       const o = orders[idx];
-      document.getElementById('printSection').innerHTML = ''; // Vorher Etikett ausblenden
+      const printSec = document.getElementById('printSection');
+      printSec.innerHTML = '';
+      printSec.classList.add('hidden');
+
       const invSec = document.getElementById('invoiceSection');
       const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
       const invoiceNumber = generateInvoiceNumberForExisting(o);
@@ -824,7 +829,11 @@
     function printAllInvoices() {
       const activeOrders = orders.filter(o => Boolean(o.archived) === showingArchive);
       if (activeOrders.length === 0) return alert("Keine Aufträge vorhanden!");
-      document.getElementById('printSection').innerHTML = ''; // Vorher Etikett ausblenden
+      
+      const printSec = document.getElementById('printSection');
+      printSec.innerHTML = '';
+      printSec.classList.add('hidden');
+
       const invSec = document.getElementById('invoiceSection');
       invSec.innerHTML = '';
       
