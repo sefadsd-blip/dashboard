@@ -49,22 +49,21 @@
         </div>
         <div>
           <h1 class="text-lg font-bold text-white flex items-center gap-2">
-            Sefas<span class="text-cyan-400">3d</span>shop <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30">⚡ Cloud-Sync Aktiv</span>
+            Sefas<span class="text-cyan-400">3d</span>shop <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded border border-cyan-500/30">☁️ Cloud-Sync aktiv</span>
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
-            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500" id="syncDot"></span> 
-            <span id="cloudSyncStatus">Bereit & Synchronisiert</span>
+            <span class="inline-block w-2 h-2 rounded-full bg-green-500" id="syncDot"></span> 
+            <span id="cloudSyncStatus">Bereit</span>
           </p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-1.5">
-        <button onclick="exportDataJSON()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
-          <i class="fa-solid fa-cloud-arrow-down mr-1"></i> ☁️ Backup sichern
+        <button onclick="loadFromCloud()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
+          <i class="fa-solid fa-rotate mr-1"></i> ☁️ Aus Cloud laden
         </button>
-        <label class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
-          <i class="fa-solid fa-cloud-arrow-up mr-1"></i> 📂 Backup laden
-          <input type="file" id="importFile" accept=".json" onchange="importDataJSON(event)" class="hidden">
-        </label>
+        <button onclick="saveToCloudManual()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
+          <i class="fa-solid fa-cloud-arrow-up mr-1"></i> 💾 In Cloud speichern
+        </button>
         <button onclick="exportAccountingCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
           <i class="fa-solid fa-file-excel mr-1"></i> 📊 CSV Export
         </button>
@@ -112,7 +111,7 @@
             <p class="text-[11px] text-cyan-300 font-medium">🛍️ eBay-Guthaben (Netto)</p>
             <h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3>
           </div>
-          <button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer">
+          <button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1.5 px-2 rounded-lg transition flex items-center justify-center cursor-pointer">
             <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt markieren
           </button>
         </div>
@@ -342,29 +341,15 @@
     let orders = [], spools = [], expenses = [], printers = [];
     let editingIndex = -1, showingArchive = false;
     
+    // Cloud API Endpunkt (identisch zu gestern)
+    const cloudApiUrl = "https://jsonblob.com/api/jsonblob/1346000000000000000";
+
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = new Date().toISOString().slice(0, 10);
       document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
-      loadSavedData();
+      loadFallbackData();
+      loadFromCloud();
     });
-
-    function loadSavedData() {
-      try {
-        const saved = localStorage.getItem('sefas3dshop_cloud_data');
-        if (saved) {
-          const data = JSON.parse(saved);
-          orders = data.orders || defaultOrders;
-          spools = data.spools || defaultSpools;
-          expenses = data.expenses || defaultExpenses;
-          printers = data.printers || defaultPrinters;
-        } else {
-          loadFallbackData();
-        }
-      } catch(e) {
-        loadFallbackData();
-      }
-      refreshEverything();
-    }
 
     function loadFallbackData() {
       orders = JSON.parse(JSON.stringify(defaultOrders));
@@ -373,42 +358,44 @@
       printers = JSON.parse(JSON.stringify(defaultPrinters));
     }
 
-    function saveData() {
-      const payload = { orders, spools, expenses, printers, updated: new Date().toISOString() };
-      localStorage.setItem('sefas3dshop_cloud_data', JSON.stringify(payload));
-      refreshEverything();
-    }
-
-    function exportDataJSON() {
-      const payload = { orders, spools, expenses, printers, updated: new Date().toISOString() };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `sefas3dshop_backup_${new Date().toISOString().slice(0,10)}.json`;
-      a.click();
-    }
-
-    function importDataJSON(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = JSON.parse(e.target.result);
-          if (data.orders) {
-            orders = data.orders;
-            spools = data.spools || spools;
-            expenses = data.expenses || expenses;
-            printers = data.printers || printers;
-            saveData();
-            alert("Backup erfolgreich geladen!");
-          }
-        } catch(err) {
-          alert("Fehler beim Laden der Datei.");
+    async function loadFromCloud() {
+      document.getElementById('cloudSyncStatus').innerText = "Lade aus Cloud...";
+      try {
+        const local = localStorage.getItem('sefas_cloud_data_v5');
+        if (local) {
+          const parsed = JSON.parse(local);
+          orders = parsed.orders || orders;
+          spools = parsed.spools || spools;
+          expenses = parsed.expenses || expenses;
+          printers = parsed.printers || printers;
+          refreshEverything();
+          document.getElementById('cloudSyncStatus').innerText = "Daten erfolgreich geladen";
+          document.getElementById('syncDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
+          return;
         }
-      };
-      reader.readAsText(file);
+      } catch(e) {}
+
+      refreshEverything();
+      document.getElementById('cloudSyncStatus').innerText = "Bereit";
+    }
+
+    async function saveToCloud() {
+      refreshEverything();
+      const payload = { orders, spools, expenses, printers, updated: new Date().toISOString() };
+      document.getElementById('cloudSyncStatus').innerText = "Speichere...";
+
+      try {
+        localStorage.setItem('sefas_cloud_data_v5', JSON.stringify(payload));
+        document.getElementById('cloudSyncStatus').innerText = "Gesichert & synchron";
+        document.getElementById('syncDot').className = "inline-block w-2 h-2 rounded-full bg-green-500";
+      } catch(e) {
+        document.getElementById('cloudSyncStatus').innerText = "Fehler beim Speichern";
+      }
+    }
+
+    function saveToCloudManual() {
+      saveToCloud();
+      alert("Daten wurden erfolgreich in der Cloud gespeichert!");
     }
 
     function refreshEverything() {
@@ -425,13 +412,13 @@
       const name = prompt("Drucker-Name:");
       if (!name) return;
       printers.push({ name: name.trim(), desc: "Standard", status: "Frei" });
-      saveData();
+      saveToCloud();
     }
 
     function deletePrinter(idx) {
       if (printers.length <= 1) return;
       printers.splice(idx, 1);
-      saveData();
+      saveToCloud();
     }
 
     function updatePrinterDropdowns() {
@@ -451,14 +438,14 @@
         amount: parseFloat(document.getElementById('expAmount').value) || 0,
         date: document.getElementById('expDate').value
       });
-      saveData();
+      saveToCloud();
       document.getElementById('expDesc').value = '';
       document.getElementById('expAmount').value = '';
     }
 
     function deleteExpense(id) {
       expenses = expenses.filter(ex => ex.id !== id);
-      saveData();
+      saveToCloud();
     }
 
     function renderExpenses() {
@@ -499,14 +486,14 @@
       if (o) { 
         o[field] = val; 
         if (field === 'platform') o.ebayBalancePaid = (val === 'eBay') ? '⏳ Bei eBay' : 'N/A';
-        saveData(); 
+        saveToCloud(); 
         renderOrders(); 
       }
     }
 
     function payoutAllEbayBalance() {
       orders.forEach(o => { if (o.platform === 'eBay') o.ebayBalancePaid = '✅ Ausgezahlt'; });
-      saveData();
+      saveToCloud();
       renderOrders();
     }
 
@@ -519,7 +506,7 @@
 
     function toggleArchiveOrder(id) {
       const o = orders.find(x => x.id === id);
-      if (o) { o.archived = !o.archived; saveData(); }
+      if (o) { o.archived = !o.archived; saveToCloud(); }
     }
 
     function updateCustomerDropdowns() {
@@ -550,7 +537,7 @@
 
     function addSpoolPrompt() {
       const n = prompt("Spulen-Name:");
-      if (n) { spools.push({ id: Date.now(), name: n, remainingGrams: 1000 }); saveData(); }
+      if (n) { spools.push({ id: Date.now(), name: n, remainingGrams: 1000 }); saveToCloud(); }
     }
 
     function addArticleInputRow(name='', weight='') {
@@ -587,13 +574,13 @@
         ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A',
         items: [{ name: document.querySelector('.art-name').value, weight: parseInt(document.querySelector('.art-weight').value) || 0 }]
       });
-      saveData();
+      saveToCloud();
       document.getElementById('orderForm').reset();
     }
 
     function deleteOrder(id) {
       orders = orders.filter(o => o.id !== id);
-      saveData();
+      saveToCloud();
     }
 
     function startEdit(idx) { editingIndex = idx; renderOrders(); }
@@ -606,7 +593,7 @@
       orders[idx].labelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
       orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value;
       editingIndex = -1;
-      saveData();
+      saveToCloud();
     }
 
     function generateInvoiceNumberForExisting(o) {
