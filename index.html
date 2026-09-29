@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sefas3DShop - Cloud Dashboard</title>
+  <title>Sefas3DShop - Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -49,17 +49,17 @@
         </div>
         <div>
           <h1 class="text-lg font-bold text-white flex items-center gap-2">
-            Sefas<span class="text-cyan-400">3d</span>shop <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded border border-cyan-500/30">☁️ Cloud-Sync</span>
+            Sefas<span class="text-cyan-400">3d</span>shop
           </h1>
           <p class="text-slate-400 text-[11px] flex items-center gap-1.5">
             <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span> 
-            <span id="cloudSyncStatus">Bereit zum Laden & Speichern</span>
+            <span>Lokal & Cloud-Sync aktiv</span>
           </p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-1.5">
         <label class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer shadow-lg">
-          <i class="fa-solid fa-cloud-arrow-down mr-1"></i> 📂 Aus der Cloud laden
+          <i class="fa-solid fa-cloud-arrow-down mr-1"></i> Aus der Cloud laden
           <input type="file" id="cloudLoadFile" accept=".json" onchange="loadCloudDataFromFile(event)" class="hidden">
         </label>
         <button onclick="exportAccountingCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
@@ -72,7 +72,7 @@
           <i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv
         </button>
         <button onclick="saveToCloudExplicit()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer">
-          <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> ☁️ In Cloud speichern
+          <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> In Cloud speichern
         </button>
       </div>
     </header>
@@ -358,7 +358,6 @@
           spools = parsed.spools || defaultSpools;
           expenses = parsed.expenses || defaultExpenses;
           printers = parsed.printers || defaultPrinters;
-          document.getElementById('cloudSyncStatus').innerText = "Daten aus Cloud aktiv";
           return;
         }
       } catch(e) {}
