@@ -89,7 +89,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
           <input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           <select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍️ eBay</option></select>
-          <select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿️️ PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select>
+          <select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿️ PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select>
           <select id="isPaid" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Bezahlt: ✅ Ja</option><option value="❌ Nein" selected>Bezahlt: ❌ Nein</option></select>
           <select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></select>
           <input type="number" step="0.01" id="price" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
@@ -225,7 +225,6 @@
       document.getElementById('orderDate').value = todayStr;
       document.getElementById('expDate').value = todayStr;
 
-      // AUTOMATISCHER ABGLEICH: Fügt Porto von bestehenden Aufträgen rückwirkend zu den Ausgaben hinzu, falls noch nicht geschehen
       checkAndMigrateExistingOrderPostage();
 
       renderPrinters();
@@ -270,15 +269,17 @@
     }
 
     async function loadCloudData() {
+      document.getElementById('syncStatus').innerText = "Lade von Cloud...";
       try {
         const res = await fetch(NPOINT_URL, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
-          if (json && Array.isArray(json.orders)) {
-            orders = json.orders;
-            if (Array.isArray(json.spools)) spools = json.spools;
+          if (json) {
+            if (Array.isArray(json.orders)) orders = json.orders;
+            if (Array.isArray(json.spools) && json.spools.length > 0) spools = json.spools;
             if (Array.isArray(json.expenses)) expenses = json.expenses;
             if (Array.isArray(json.printers) && json.printers.length > 0) printers = json.printers;
+            
             checkAndMigrateExistingOrderPostage();
             saveLocalOnly();
             renderOrders();
@@ -287,25 +288,42 @@
             renderPrinters();
             updateCustomerDropdowns();
             updatePrinterDropdowns();
+            document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
             alert("✅ Daten erfolgreich von der Cloud abgerufen!");
           } else {
-            alert("Die Cloud ist leer.");
+            alert("Die Cloud-Antwort war leer oder ungültig.");
+            document.getElementById('syncStatus').innerText = "Fehler beim Laden";
           }
+        } else {
+          alert("Server-Fehler beim Abrufen der Cloud (Status: " + res.status + ")");
+          document.getElementById('syncStatus').innerText = "Verbindungsfehler";
         }
-      } catch(e) { alert("Hinweis: Cloud konnte nicht erreicht werden."); }
+      } catch(e) {
+        alert("❌ Netzwerkfehler: Cloud konnte wegen CORS oder Netzwerkeinschränkung nicht erreicht werden.");
+        document.getElementById('syncStatus').innerText = "Offline / Fehler";
+      }
     }
 
     async function pushToCloudManual() {
       saveLocalOnly();
+      document.getElementById('syncStatus').innerText = "Speichere in Cloud...";
       try {
         const res = await fetch(NPOINT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ orders, spools, expenses, printers })
         });
-        if (res.ok) alert("✅ Daten erfolgreich in der Cloud gespeichert!");
-        else alert("⚠ Server-Fehler: Die Cloud hat abgelehnt.");
-      } catch(e) { alert("❌ Netzwerkfehler: Cloud konnte nicht erreicht werden."); }
+        if (res.ok) {
+          document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
+          alert("✅ Daten erfolgreich in der Cloud gespeichert!");
+        } else {
+          alert("⚠ Server-Fehler: Die Cloud hat abgelehnt.");
+          document.getElementById('syncStatus').innerText = "Fehler beim Speichern";
+        }
+      } catch(e) {
+        alert("❌ Netzwerkfehler: Cloud konnte nicht erreicht werden.");
+        document.getElementById('syncStatus').innerText = "Offline / Fehler";
+      }
     }
 
     function saveAllData() {
@@ -702,7 +720,6 @@
       const oldLabelCost = orders[idx].labelCost || 0;
       orders[idx].labelCost = newLabelCost;
 
-      // Wenn sich das Porto beim Bearbeiten geändert hat oder neu dazukam, in Ausgaben anpassen
       if (newLabelCost > 0 && newLabelCost !== oldLabelCost) {
         const invNum = generateInvoiceNumberForExisting(orders[idx]);
         expenses.unshift({
