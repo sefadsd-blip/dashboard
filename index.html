@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sefas3DShop - Dashboard (Cloud)</title>
+  <title>Sefas3DShop - Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -19,67 +19,10 @@
 </head>
 <body class="p-3 md:p-5 min-h-screen text-xs">
 
-  <div id="subPageOverlay" class="hidden fixed inset-0 bg-slate-950/95 z-50 overflow-y-auto p-3 md:p-6">
-    <div class="max-w-4xl mx-auto space-y-4">
-      <div class="flex justify-between items-center bg-slate-800 p-4 rounded-2xl border border-slate-700">
-        <div class="flex items-center space-x-3">
-          <div class="bg-slate-900 p-2.5 rounded-xl border border-cyan-500/30 flex items-center justify-center shadow-lg">
-            <i class="fa-solid fa-toolbox text-cyan-400 text-lg"></i>
-          </div>
-          <div>
-            <h2 class="text-base font-bold text-white">Sefas3DShop - Tools & Katalog</h2>
-            <p class="text-slate-400 text-[11px]">Kostenrechner & Cloud-Verwaltung</p>
-          </div>
-        </div>
-        <button onclick="closeSubPage()" class="bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
-          <i class="fa-solid fa-xmark text-sm"></i> Schließen & Zurück
-        </button>
-      </div>
-
-      <section class="card p-4 rounded-xl space-y-2 border border-emerald-500/30 bg-emerald-950/10">
-        <div class="flex justify-between items-center border-b border-slate-700/60 pb-2">
-          <h2 class="text-xs font-semibold text-emerald-400"><i class="fa-solid fa-calculator mr-1.5"></i> Kostenrechner (+ 35% & 1,50€)</h2>
-        </div>
-        <div class="space-y-2 pt-1">
-          <div class="flex items-center gap-2">
-            <input type="number" id="calcHours" oninput="calculateCosts()" placeholder="Zeit (h, z.B. 1.5)" min="0" step="0.1" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full focus:outline-none focus:border-emerald-500 transition">
-            <input type="number" id="calcGrams" oninput="calculateCosts()" placeholder="Gewicht (g)" min="0" step="1" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full focus:outline-none focus:border-emerald-500 transition">
-          </div>
-          <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-800">
-            <div class="flex justify-between text-[11px] text-slate-400"><span>Druckzeit (0,25 €/h):</span> <span id="calcPrintCost">0,00 €</span></div>
-            <div class="flex justify-between text-[11px] text-slate-400"><span>Strom (0,12 €/h):</span> <span id="calcElecCost">0,00 €</span></div>
-            <div class="flex justify-between text-[11px] text-slate-400 border-b border-slate-700 pb-1.5 mb-1.5"><span>Material (0,02 €/g):</span> <span id="calcMatCost">0,00 €</span></div>
-            <div class="flex justify-between text-[11px] text-slate-300"><span>Herstellung (Netto):</span> <span id="calcTotalCost">0,00 €</span></div>
-            <div class="flex justify-between text-[11px] text-amber-400"><span>+ 35% Gewinn-Aufschlag:</span> <span id="calcMarkup">0,00 €</span></div>
-            <div class="flex justify-between text-[11px] text-purple-400 border-b border-slate-700 pb-1.5 mb-1.5"><span>+ Bearbeitung (fix):</span> <span>1,50 €</span></div>
-            <div class="flex justify-between font-bold text-white text-[13px] mt-1"><span>Empf. Verkaufspreis:</span> <span id="calcFinalPrice" class="text-emerald-400" data-raw-price="0">0,00 €</span></div>
-          </div>
-          <button onclick="transferToCatalogFromSub()" class="w-full bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 border border-emerald-500/50 rounded py-2 text-xs font-bold transition cursor-pointer shadow-sm"><i class="fa-solid fa-arrow-down mr-1"></i> Preis in Katalog übernehmen</button>
-        </div>
-      </section>
-
-      <section class="card p-4 rounded-xl space-y-3">
-        <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
-          <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-tags mr-1.5 text-amber-400"></i> Artikel-Katalog & Preisliste</h2>
-        </div>
-        <form id="productForm" onsubmit="addProduct(event)" class="flex flex-col sm:flex-row gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
-          <input type="text" id="prodName" placeholder="Artikelname (z.B. Vase, Halter...)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white flex-1 focus:outline-none focus:border-amber-500 transition">
-          <input type="number" step="0.01" id="prodPrice" placeholder="Verkaufspreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full sm:w-48 focus:outline-none focus:border-amber-500 transition">
-          <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-1.5 px-4 text-xs transition cursor-pointer whitespace-nowrap">+ Im Katalog speichern</button>
-        </form>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1" id="productsList"></div>
-      </section>
-    </div>
-  </div>
-
   <div id="mainApp" class="max-w-[1700px] mx-auto space-y-4">
     
-    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800 p-3 rounded-2xl border border-slate-700 gap-3 relative">
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800 p-3 rounded-2xl border border-slate-700 gap-3">
       <div class="flex items-center space-x-3">
-        <button onclick="openSubPage()" class="bg-slate-900 hover:bg-slate-700 text-cyan-400 p-2.5 rounded-xl border border-slate-700 transition flex items-center justify-center cursor-pointer shadow-md" title="Tools & Katalog öffnen">
-          <i class="fa-solid fa-bars text-sm"></i>
-        </button>
-
         <div class="bg-slate-900 p-2 rounded-xl border border-blue-500/30 flex items-center justify-center shadow-lg">
           <svg class="w-8 h-8 text-cyan-400" viewBox="0 0 100 100" fill="currentColor">
             <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="url(#blueGrad)" stroke-width="8"/>
@@ -96,10 +39,9 @@
         </div>
         <div>
           <h1 class="text-lg font-bold text-white flex items-center gap-2">Sefas<span class="text-cyan-400">3d</span>shop</h1>
-          <p class="text-slate-400 text-[11px] flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-green-500" id="statusDot"></span><span id="syncStatus">Cloud bereit</span></p>
+          <p class="text-slate-400 text-[11px] flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-green-500"></span><span id="syncStatus">Mit Cloud verbunden</span></p>
         </div>
       </div>
-      
       <div class="flex flex-wrap items-center gap-1.5">
         <button onclick="exportAccountingCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer"><i class="fa-solid fa-file-excel mr-1"></i> 📊 CSV Export</button>
         <button onclick="printAllInvoices()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer"><i class="fa-solid fa-print mr-1"></i> 🖨️ Alle Rechnungen</button>
@@ -121,7 +63,7 @@
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Gesamt-Umsatz (Monat)</p><h3 id="statRevenue" class="text-xl font-bold text-emerald-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Gesamt-Ausgaben (Monat)</p><h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Reingewinn (Einnahmen - Ausgaben)</p><h3 id="statProfit" class="text-xl font-bold text-blue-400">0,00 €</h3></div></div>
-        <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍️ eBay-Guthaben (Netto)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt markieren</button></div>
+        <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍 eBay-Guthaben (Netto)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt markieren</button></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Offene Aufträge / Material</p><h3 id="statOpenOrders" class="text-lg font-bold text-yellow-400">0 <span class="text-[11px] text-slate-400 font-normal" id="statFilament">0g</span></h3></div></div>
       </div>
     </section>
@@ -138,9 +80,47 @@
           <div id="spoolWarningBanner" class="hidden bg-red-500/10 border border-red-500/40 p-2 rounded-lg text-[11px] flex items-start gap-2 text-red-300"></div>
           <div id="spoolsList" class="space-y-1.5 max-h-[180px] overflow-y-auto pr-1"></div>
         </section>
+
+        <!-- VERBESSERTER KOSTENRECHNER MIT +35% AUFSCHLAG -->
+        <section class="card p-3 rounded-xl space-y-2 border border-emerald-500/30 bg-emerald-950/10">
+          <div class="flex justify-between items-center border-b border-slate-700/60 pb-1.5">
+            <h2 class="text-xs font-semibold text-emerald-400"><i class="fa-solid fa-calculator mr-1.5"></i> Kostenrechner (+ 35% Aufschlag)</h2>
+          </div>
+          <div class="space-y-2 pt-1">
+            <div class="flex items-center gap-2">
+              <input type="number" id="calcHours" oninput="calculateCosts()" placeholder="Zeit (h, z.B. 1.5)" min="0" step="0.1" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full focus:outline-none focus:border-emerald-500 transition">
+              <input type="number" id="calcGrams" oninput="calculateCosts()" placeholder="Gewicht (g)" min="0" step="1" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full focus:outline-none focus:border-emerald-500 transition">
+            </div>
+            <div class="bg-slate-900 p-2 rounded-lg border border-slate-800">
+              <div class="flex justify-between text-[10px] text-slate-400"><span>Druckzeit (0,25 €/h):</span> <span id="calcPrintCost">0,00 €</span></div>
+              <div class="flex justify-between text-[10px] text-slate-400"><span>Strom (0,12 €/h):</span> <span id="calcElecCost">0,00 €</span></div>
+              <div class="flex justify-between text-[10px] text-slate-400 border-b border-slate-700 pb-1 mb-1"><span>Material (0,02 €/g):</span> <span id="calcMatCost">0,00 €</span></div>
+              <div class="flex justify-between text-[10px] text-slate-300"><span>Herstellung (Netto):</span> <span id="calcTotalCost">0,00 €</span></div>
+              <div class="flex justify-between text-[10px] text-amber-400 border-b border-slate-700 pb-1 mb-1"><span>+ 35% Gewinn-Aufschlag:</span> <span id="calcMarkup">0,00 €</span></div>
+              <div class="flex justify-between font-bold text-white text-[12px] mt-1"><span>Empf. Verkaufspreis:</span> <span id="calcFinalPrice" class="text-emerald-400" data-raw-price="0">0,00 €</span></div>
+            </div>
+            <button onclick="transferToCatalog()" class="w-full bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 border border-emerald-500/50 rounded py-1.5 text-[11px] font-bold transition cursor-pointer shadow-sm"><i class="fa-solid fa-arrow-down mr-1"></i> Preis in Katalog übernehmen</button>
+          </div>
+        </section>
       </div>
     </div>
 
+    <!-- ARTIKEL & PREISLISTE -->
+    <section class="card p-4 rounded-xl space-y-3">
+      <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
+        <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-tags mr-1.5 text-amber-400"></i> Artikel-Katalog & Preisliste</h2>
+      </div>
+      <form id="productForm" onsubmit="addProduct(event)" class="flex flex-col sm:flex-row gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+        <input type="text" id="prodName" placeholder="Artikelname (z.B. Vase, Halter...)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white flex-1 focus:outline-none focus:border-amber-500 transition">
+        <input type="number" step="0.01" id="prodPrice" placeholder="Verkaufspreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full sm:w-48 focus:outline-none focus:border-amber-500 transition">
+        <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-1.5 px-4 text-xs transition cursor-pointer whitespace-nowrap">+ Im Katalog speichern</button>
+      </form>
+      <div class="flex flex-wrap gap-2 pt-1" id="productsList">
+        <!-- Artikel werden hier per JS geladen -->
+      </div>
+    </section>
+
+    <!-- AUFTRAG ANLEGEN -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex justify-between items-center">
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-plus-circle mr-1.5 text-blue-400"></i> Neuen Auftrag anlegen</h2>
@@ -149,7 +129,7 @@
       <form id="orderForm" onsubmit="addOrder(event)" class="space-y-3">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
           <input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-          <select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍 eBay</option></select>
+          <select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍️ eBay</option></select>
           <select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿️ PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select>
           <select id="isPaid" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Bezahlt: ✅ Ja</option><option value="❌ Nein" selected>Bezahlt: ❌ Nein</option></select>
           <select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></select>
@@ -162,7 +142,7 @@
             <label class="text-[9px] text-slate-400 mb-0.5">Erstellungsdatum:</label>
             <input type="date" id="orderDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none">
           </div>
-          <select id="label" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none self-end"><option value="✅ Ja">Label gedruckt: ✅ Ja</option><option value="❌ Nein">Label gedruckt: ✅ Nein</option></select>
+          <select id="label" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none self-end"><option value="✅ Ja">Label gedruckt: ✅ Ja</option><option value="❌ Nein">Label gedruckt: ❌ Nein</option></select>
           <select id="packed" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none self-end"><option value="❌ Nein">Verpackt: ❌ Nein</option><option value="✅ Ja">Verpackt: ✅ Ja</option></select>
           <input type="text" id="tracking" placeholder="Tracking-Nummer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none self-end">
         </div>
@@ -177,7 +157,9 @@
             <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-[11px] cursor-pointer">+ Leeren Artikel</button>
           </div>
           
-          <div class="flex flex-wrap gap-1.5 py-0.5" id="quickAddButtons"></div>
+          <div class="flex flex-wrap gap-1.5 py-0.5" id="quickAddButtons">
+            <!-- Wird per JS befüllt -->
+          </div>
 
           <div id="articleInputRows" class="space-y-1.5">
             <div class="flex gap-2 items-center article-row">
@@ -191,13 +173,14 @@
       </form>
     </section>
 
+    <!-- AUSGABEN -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-receipt mr-1.5 text-red-400"></i> Betriebsausgaben & Einkäufe</h2>
       </div>
       <form id="expenseForm" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
         <input type="text" id="expDesc" placeholder="Beschreibung" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷 Sonstiges / eBay Gebühren</option></select>
+        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙️ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷️ Sonstiges / eBay Gebühren</option></select>
         <input type="number" step="0.01" id="expAmount" placeholder="Betrag (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <input type="date" id="expDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg py-1.5 text-xs transition cursor-pointer">+ Ausgabe eintragen</button>
@@ -207,6 +190,7 @@
       </div>
     </section>
 
+    <!-- AUFTRÄGE TABELLE -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div class="flex items-center space-x-2"><h2 id="tableTitle" class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-list-check mr-1.5 text-blue-400"></i> Bestellungen (Aktiv)</h2></div>
@@ -224,6 +208,7 @@
       </div>
     </section>
 
+    <!-- VORLAGEN -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-700/60 pb-2.5">
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-comments mr-1.5 text-blue-400"></i> Kleinanzeigen & Kunden-Vorlagen</h2>
@@ -240,12 +225,8 @@
   </div>
 
   <script>
-    const jsonbinKey = "$2a$10$hnafVmeRLZAKTKvsRJICNut84QHZvWJaBSM6AAyLDB/ACywOhb66";
-    const jsonbinId = "6ac18cafac6210605a10f4e7";
-    
-    // Wir nutzen einen öffentlichen Proxy, damit der Browser den Zugriff auf die Cloud-Bin nicht blockiert
-    const apiUrl = `https://api.jsonbin.io/v3/b/${jsonbinId}`;
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+    const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
+    const CORS_PROXY = 'https://corsproxy.io/?';
 
     const BACKUP_SPOOLS = [
       {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notifiedCount":0,"lastNotifiedDate":""},
@@ -274,127 +255,87 @@
     let printers = [];
     let products = [];
 
+    try {
+      let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
+      orders = (Array.isArray(savedOrders)) ? savedOrders : [];
+
+      const savedSpools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent'));
+      spools = (Array.isArray(savedSpools) && savedSpools.length > 0) ? savedSpools : BACKUP_SPOOLS;
+
+      const savedExpenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent'));
+      expenses = (Array.isArray(savedExpenses)) ? savedExpenses : [];
+
+      const savedPrinters = JSON.parse(localStorage.getItem('sefas_shop_printers'));
+      printers = (Array.isArray(savedPrinters) && savedPrinters.length > 0) ? savedPrinters : BACKUP_PRINTERS;
+
+      const savedProducts = JSON.parse(localStorage.getItem('sefas_shop_products'));
+      products = (Array.isArray(savedProducts) && savedProducts.length > 0) ? savedProducts : BACKUP_PRODUCTS;
+    } catch(e) {}
+
     const todayStr = new Date().toISOString().slice(0, 10);
 
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = todayStr;
       document.getElementById('expDate').value = todayStr;
-      loadCloudData();
+
+      checkAndMigrateExistingOrderPostage();
+
+      renderPrinters();
+      updateMonthFilterDropdown();
+      renderOrders();
+      renderSpools();
+      renderExpenses();
+      renderProducts();
+      updateCustomerDropdowns();
+      updatePrinterDropdowns();
     });
-
-    function setStatus(text, color) {
-       document.getElementById('syncStatus').innerText = text;
-       document.getElementById('statusDot').className = `inline-block w-2 h-2 rounded-full ${color}`;
-    }
-
-    function openSubPage() { document.getElementById('subPageOverlay').classList.remove('hidden'); }
-    function closeSubPage() { document.getElementById('subPageOverlay').classList.add('hidden'); }
-
-    async function loadCloudData() {
-      setStatus("Lade Cloud...", "bg-yellow-500");
-      try {
-        const res = await fetch(`${proxyUrl}/latest`, {
-          method: 'GET',
-          headers: { 'X-Master-Key': jsonbinKey }
-        });
-        if (res.ok) {
-          const json = await res.json();
-          const data = json.record;
-          if (data) {
-            orders = Array.isArray(data.orders) ? data.orders : [];
-            spools = (Array.isArray(data.spools) && data.spools.length > 0) ? data.spools : BACKUP_SPOOLS;
-            expenses = Array.isArray(data.expenses) ? data.expenses : [];
-            printers = (Array.isArray(data.printers) && data.printers.length > 0) ? data.printers : BACKUP_PRINTERS;
-            products = (Array.isArray(data.products) && data.products.length > 0) ? data.products : BACKUP_PRODUCTS;
-            
-            checkAndMigrateExistingOrderPostage();
-            renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
-            updateCustomerDropdowns(); updatePrinterDropdowns();
-            setStatus("Mit Cloud verbunden", "bg-green-500");
-          }
-        } else {
-          throw new Error("Fehler beim Laden");
-        }
-      } catch(e) {
-        setStatus("Verbindungsfehler", "bg-red-500");
-        console.error(e);
-      }
-    }
-
-    async function pushToCloudManual() {
-      setStatus("Speichere Cloud...", "bg-yellow-500");
-      const payload = { orders, spools, expenses, printers, products };
-
-      try {
-        const res = await fetch(proxyUrl, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': jsonbinKey
-          },
-          body: JSON.stringify(payload)
-        });
-
-        if (res.ok) {
-          setStatus("Mit Cloud verbunden", "bg-green-500");
-          alert("✅ Erfolgreich in der Cloud gespeichert!");
-        } else {
-          throw new Error("Server abgelehnt.");
-        }
-      } catch(e) {
-        setStatus("Fehler beim Speichern", "bg-red-500");
-        alert("❌ Fehler beim Speichern in der Cloud.");
-      }
-    }
-
-    function saveAllData() {
-      renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
-      updateCustomerDropdowns(); updatePrinterDropdowns();
-      
-      fetch(proxyUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Master-Key': jsonbinKey
-        },
-        body: JSON.stringify({ orders, spools, expenses, printers, products })
-      }).catch(e => console.log("Cloud auto-sync fail"));
-    }
-
+    
+    // KOSTENRECHNER LOGIK - MIT 35% GEWINN-AUFSCHLAG
     function calculateCosts() {
       const hours = parseFloat(document.getElementById('calcHours').value) || 0;
       const grams = parseFloat(document.getElementById('calcGrams').value) || 0;
+
       const printCost = hours * 0.25;
       const elecCost = hours * 0.12;
       const matCost = grams * 0.02;
+      
       const totalCost = printCost + elecCost + matCost;
-      const markup = totalCost * 0.35;
-      const handlingFee = 1.50;
-      let finalPrice = 0;
-      if (hours > 0 || grams > 0) finalPrice = totalCost + markup + handlingFee;
+      const markup = totalCost * 0.35; // Exakt 35% Marge oben drauf
+      const finalPrice = totalCost + markup;
 
       document.getElementById('calcPrintCost').innerText = printCost.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('calcElecCost').innerText = elecCost.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('calcMatCost').innerText = matCost.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('calcTotalCost').innerText = totalCost.toFixed(2).replace('.', ',') + ' €';
+      
       document.getElementById('calcMarkup').innerText = '+' + markup.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('calcFinalPrice').innerText = finalPrice.toFixed(2).replace('.', ',') + ' €';
+      
+      // Verstecktes Feld um den exakten berechneten Preis an den Katalog zu übergeben
       document.getElementById('calcFinalPrice').dataset.rawPrice = finalPrice.toFixed(2);
     }
     
-    function transferToCatalogFromSub() {
+    // PREIS IN DEN KATALOG ÜBERNEHMEN
+    function transferToCatalog() {
       const rawPrice = document.getElementById('calcFinalPrice').dataset.rawPrice;
       if (rawPrice && parseFloat(rawPrice) > 0) {
         document.getElementById('prodPrice').value = rawPrice;
-        document.getElementById('prodName').focus();
-      } else { alert('Bitte gib zuerst Zeit und Gewicht im Rechner ein!'); }
+        document.getElementById('prodName').focus(); // Setzt den Cursor direkt in das Namens-Feld
+        
+        // Scrollt die Seite sanft zum Katalog
+        document.getElementById('productForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        alert('Bitte gib zuerst Zeit und Gewicht im Rechner ein!');
+      }
     }
 
+    // ARTIKEL & PREISLISTE LOGIK
     function addProduct(e) {
       e.preventDefault();
       const name = document.getElementById('prodName').value.trim();
       const price = parseFloat(document.getElementById('prodPrice').value) || 0;
       if (!name) return;
+      
       products.push({ id: Date.now(), name, price });
       saveAllData();
       document.getElementById('productForm').reset();
@@ -413,16 +354,17 @@
         list.innerHTML = '';
         products.forEach(p => {
           list.innerHTML += `
-            <div class="bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg flex items-center justify-between gap-3 text-xs">
+            <div class="bg-slate-900 border border-slate-700 px-2.5 py-1.5 rounded-lg flex items-center justify-between gap-3 text-xs">
               <span class="text-white font-medium">${p.name}</span>
               <div class="flex items-center gap-2">
                 <span class="text-amber-400 font-bold">${p.price.toFixed(2).replace('.', ',')} €</span>
-                <button type="button" onclick="deleteProduct(${p.id})" class="text-red-400 hover:text-red-300 ml-1"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" onclick="deleteProduct(${p.id})" class="text-red-400 hover:text-red-300 ml-1" title="Löschen"><i class="fa-solid fa-xmark"></i></button>
               </div>
             </div>`;
         });
       }
       
+      // Update the quick add buttons in the order form
       const quickAdds = document.getElementById('quickAddButtons');
       if (quickAdds) {
         quickAdds.innerHTML = '<span class="text-[10px] text-slate-400 self-center mr-1"><i class="fa-solid fa-bolt text-amber-400"></i> Katalog-Schnellwahl:</span>';
@@ -442,6 +384,7 @@
     }
 
     function checkAndMigrateExistingOrderPostage() {
+      let added = false;
       orders.forEach(o => {
         const lCost = parseFloat(o.labelCost) || 0;
         const invNum = generateInvoiceNumberForExisting(o);
@@ -449,10 +392,105 @@
           const descSearch = `Porto / Label für ${o.customer} (${invNum})`;
           const exists = expenses.some(ex => ex.description === descSearch || (ex.description.includes(o.customer) && ex.amount === lCost));
           if (!exists) {
-            expenses.unshift({ id: Date.now() + Math.random(), description: descSearch, category: 'DHL / Versand', amount: lCost, date: o.orderDate || todayStr });
+            expenses.unshift({
+              id: Date.now() + Math.random(),
+              description: descSearch,
+              category: 'DHL / Versand',
+              amount: lCost,
+              date: o.orderDate || todayStr
+            });
+            added = true;
           }
         }
       });
+      if (added) saveLocalOnly();
+    }
+
+    function saveLocalOnly() {
+      try {
+        localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
+        localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
+        localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
+        localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
+        localStorage.setItem('sefas_shop_products', JSON.stringify(products));
+      } catch(e) {}
+    }
+
+    async function loadCloudData() {
+      document.getElementById('syncStatus').innerText = "Lade von Cloud...";
+      try {
+        const res = await fetch(CORS_PROXY + encodeURIComponent(NPOINT_URL), { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json) {
+            if (Array.isArray(json.orders)) orders = json.orders;
+            if (Array.isArray(json.spools) && json.spools.length > 0) spools = json.spools;
+            if (Array.isArray(json.expenses)) expenses = json.expenses;
+            if (Array.isArray(json.printers) && json.printers.length > 0) printers = json.printers;
+            if (Array.isArray(json.products) && json.products.length > 0) products = json.products;
+            
+            checkAndMigrateExistingOrderPostage();
+            saveLocalOnly();
+            renderOrders();
+            renderSpools();
+            renderExpenses();
+            renderPrinters();
+            renderProducts();
+            updateCustomerDropdowns();
+            updatePrinterDropdowns();
+            document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
+            alert("✅ Daten erfolgreich von der Cloud abgerufen!");
+          } else {
+            alert("Die Cloud-Antwort war leer.");
+            document.getElementById('syncStatus').innerText = "Fehler beim Laden";
+          }
+        } else {
+          alert("Server-Fehler beim Abrufen der Cloud (Status: " + res.status + ")");
+          document.getElementById('syncStatus').innerText = "Verbindungsfehler";
+        }
+      } catch(e) {
+        alert("❌ Netzwerkfehler beim Cloud-Laden.");
+        document.getElementById('syncStatus').innerText = "Offline / Fehler";
+      }
+    }
+
+    async function pushToCloudManual() {
+      saveLocalOnly();
+      document.getElementById('syncStatus').innerText = "Speichere in Cloud...";
+      try {
+        const res = await fetch(CORS_PROXY + encodeURIComponent(NPOINT_URL), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orders, spools, expenses, printers, products })
+        });
+        if (res.ok) {
+          document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
+          alert("✅ Daten erfolgreich in der Cloud gespeichert!");
+        } else {
+          alert("⚠ Server-Fehler: Die Cloud hat abgelehnt.");
+          document.getElementById('syncStatus').innerText = "Fehler beim Speichern";
+        }
+      } catch(e) {
+        alert("❌ Netzwerkfehler beim Cloud-Speichern.");
+        document.getElementById('syncStatus').innerText = "Offline / Fehler";
+      }
+    }
+
+    function saveAllData() {
+      saveLocalOnly();
+      renderOrders();
+      renderSpools();
+      renderExpenses();
+      renderPrinters();
+      renderProducts();
+      updateCustomerDropdowns();
+      updatePrinterDropdowns();
+      
+      fetch(CORS_PROXY + encodeURIComponent(NPOINT_URL), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orders, spools, expenses, printers, products })
+      }).catch(e => console.log("Hintergrund-Sync fehlgeschlagen", e));
     }
 
     function addPrinterPrompt() {
@@ -485,6 +523,7 @@
       const date = document.getElementById('expDate').value || new Date().toISOString().slice(0, 10);
 
       if (!desc || amount <= 0) return alert("Bitte Beschreibung und Betrag angeben!");
+
       expenses.unshift({ id: Date.now(), description: desc, category: cat, amount: amount, date: date });
       saveAllData();
       document.getElementById('expDesc').value = ''; document.getElementById('expAmount').value = ''; document.getElementById('expDate').value = todayStr;
@@ -737,22 +776,43 @@
       const lCostVal = parseFloat(document.getElementById('labelCost').value) || 0;
 
       if (lCostVal > 0) {
-        expenses.unshift({ id: Date.now(), description: `Porto / Label für ${document.getElementById('customer').value} (${fixedInvoiceNum})`, category: 'DHL / Versand', amount: lCostVal, date: customDate });
+        expenses.unshift({
+          id: Date.now(),
+          description: `Porto / Label für ${document.getElementById('customer').value} (${fixedInvoiceNum})`,
+          category: 'DHL / Versand',
+          amount: lCostVal,
+          date: customDate
+        });
       }
       
       orders.unshift({
-        id: Date.now(), customer: document.getElementById('customer').value, platform: plat, paymentMethod: payMethod,
-        isPaid: document.getElementById('isPaid').value, ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A',
-        address: document.getElementById('address').value || '', printer: document.getElementById('printer').value,
-        status: "Offen", label: document.getElementById('label').value, packed: document.getElementById('packed').value,
-        price: parseFloat(document.getElementById('price').value) || 0, shippingFee: parseFloat(document.getElementById('shippingFee').value) || 0,
-        labelCost: lCostVal, tracking: document.getElementById('tracking').value || '-', orderDate: customDate,
-        invoiceNumber: fixedInvoiceNum, shipDate: '', archived: false, items: itemsList
+        id: Date.now(),
+        customer: document.getElementById('customer').value,
+        platform: plat,
+        paymentMethod: payMethod,
+        isPaid: document.getElementById('isPaid').value,
+        ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A',
+        address: document.getElementById('address').value || '',
+        printer: document.getElementById('printer').value,
+        status: "Offen",
+        label: document.getElementById('label').value,
+        packed: document.getElementById('packed').value,
+        price: parseFloat(document.getElementById('price').value) || 0,
+        shippingFee: parseFloat(document.getElementById('shippingFee').value) || 0,
+        labelCost: lCostVal,
+        tracking: document.getElementById('tracking').value || '-',
+        orderDate: customDate,
+        invoiceNumber: fixedInvoiceNum,
+        shipDate: '',
+        archived: false,
+        items: itemsList
       });
       saveAllData();
       document.getElementById('orderForm').reset();
-      document.getElementById('orderDate').value = todayStr; document.getElementById('labelCost').value = "0.00";
-      document.getElementById('shippingFee').value = "5.00"; document.getElementById('existingCustomerSelect').value = "";
+      document.getElementById('orderDate').value = todayStr;
+      document.getElementById('labelCost').value = "0.00";
+      document.getElementById('shippingFee').value = "5.00";
+      document.getElementById('existingCustomerSelect').value = "";
     }
 
     function startEdit(idx) { editingIndex = idx; renderOrders(); }
@@ -811,11 +871,18 @@
 
       if (newLabelCost > 0 && newLabelCost !== oldLabelCost) {
         const invNum = generateInvoiceNumberForExisting(orders[idx]);
-        expenses.unshift({ id: Date.now(), description: `Porto / Label für ${orders[idx].customer} (${invNum})`, category: 'DHL / Versand', amount: newLabelCost, date: orders[idx].orderDate || todayStr });
+        expenses.unshift({
+          id: Date.now(),
+          description: `Porto / Label für ${orders[idx].customer} (${invNum})`,
+          category: 'DHL / Versand',
+          amount: newLabelCost,
+          date: orders[idx].orderDate || todayStr
+        });
       }
 
       orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value || '-';
       orders[idx].orderDate = document.getElementById(`edit-date-${idx}`)?.value || orders[idx].orderDate;
+      
       const newInvInput = document.getElementById(`edit-inv-${idx}`);
       if (newInvInput && newInvInput.value.trim()) orders[idx].invoiceNumber = newInvInput.value.trim();
 
@@ -940,7 +1007,7 @@
               <div style="font-size: 10px;">
                 <p style="margin: 0 0 2px 0;"><strong>Zahlungsinformationen:</strong></p>
                 <p style="margin: 1px 0;">Bezahlt mit: <strong>${o.paymentMethod || 'Überweisung'}</strong> ${o.isPaid === '✅ Ja' ? '(Vielen Dank für deine Zahlung!)' : ''}</p>
-                <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08 | C24 Bank</p>
+                <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08 | Revolut</p>
               </div>
               <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;" id="sepaQrCodeTarget"></div>
             </div>
@@ -1003,7 +1070,7 @@
             </table>
             <div style="text-align: right; margin-bottom: 15px;"><strong>Gesamtbetrag: ${totalAmountNum.toFixed(2).replace('.', ',')} €</strong></div>
             <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px;">
-              <div style="font-size: 10px;"><p style="margin: 1px 0;">Bezahlt mit: <strong>${o.paymentMethod || 'Überweisung'}</strong> ${o.isPaid === '✅ Ja' ? '(Vielen Dank!)' : ''}</p>IBAN: DE20 1001 0178 0592 6798 08 (C24 Bank)</div>
+              <div style="font-size: 10px;"><p style="margin: 1px 0;">Bezahlt mit: <strong>${o.paymentMethod || 'Überweisung'}</strong> ${o.isPaid === '✅ Ja' ? '(Vielen Dank!)' : ''}</p>IBAN: DE20 1001 0178 0592 6798 08 (Revolut)</div>
               <div style="background: white; padding: 4px;" id="batchSepaQr_${index}" data-payload="${encodeURIComponent(sepsPayloadStr)}"></div>
             </div>
           </div>`;
@@ -1044,7 +1111,7 @@
         let inv = generateInvoiceNumberForExisting(o);
         let cust = o.customer.replace(/;/g, ",");
         let lCost = (o.labelCost || 0);
-        csvContent += `${type};${o.platform || 'Kleinanzeigen'};${o.isPaid === '✅ Ja' ? '✅ Ja' : '❌ Nein'};${o.paymentMethod || 'Überweisung'};${o.ebayBalancePaid || 'N/A'};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${lCost.toFixed(2).replace('.', ',')}\n`;
+        csvContent += `${type};${o.platform || 'Kleinanzeigen'};${o.isPaid || '❌ Nein'};${o.paymentMethod || 'Überweisung'};${o.ebayBalancePaid || 'N/A'};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${lCost.toFixed(2).replace('.', ',')}\n`;
       });
       expenses.forEach(ex => {
         let desc = ex.description.replace(/;/g, ",");
@@ -1145,7 +1212,7 @@
               <td class="p-2 text-[11px]"><div class="text-emerald-400 font-bold">${totalOrderRevenue.toFixed(2).replace('.', ',')} €</div>${orderVersandKnd}${orderPortoDisplay}</td>
               <td class="p-2"><select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300 mb-1"><option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.label === '❌ Nein' ? 'selected' : ''}>❌ Nein</option><option value="🟡 Wartet auf Zahlung" ${o.label === '🟡 Wartet auf Zahlung' ? 'selected' : ''}>🟡 Wartet auf Zahlung</option></select><br><select onchange="updateField(${o.id}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300"><option value="✅ Ja" ${o.packed === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.packed === '❌ Nein' ? 'selected' : ''}>❌ Nein</option></select></td>
               <td class="p-2 text-[10px] font-mono text-blue-400">${o.tracking}</td>
-              <td class="p-2 text-right space-x-1">${archiveBtnHtml}<button onclick="printInvoice(${idx})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button><button onclick="printBoxLabel(${idx})" class="text-amber-300 bg-amber-500/10 px-1.5 py-1 rounded text-[10px]" title="Karton-Etikett">🏷️</button><button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏</button><button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]"><i class="fa-solid fa-trash"></i></button></td>
+              <td class="p-2 text-right space-x-1">${archiveBtnHtml}<button onclick="printInvoice(${idx})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button><button onclick="printBoxLabel(${idx})" class="text-amber-300 bg-amber-500/10 px-1.5 py-1 rounded text-[10px]" title="Karton-Etikett">🏷️</button><button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏️</button><button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]"><i class="fa-solid fa-trash"></i></button></td>
             </tr>`;
         }
       });
@@ -1161,19 +1228,24 @@
           openC++;
           if (o.items && Array.isArray(o.items)) { o.items.forEach(i => totalW += (parseInt(i.weight) || 0)); }
         }
+
         let isEbay = o.platform === 'eBay';
         let orderAmount = o.price;
         let lCost = o.labelCost || 0;
+
         if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') { ebayBalanceOpen += Math.round((o.price - lCost) * 100) / 100; }
+
         let targetDate = o.orderDate || '';
         if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
           totalRev += orderAmount;
           totalExp += lCost;
         }
       });
+
       expenses.forEach(ex => {
         if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) { totalExp += ex.amount; }
       });
+
       let netProfit = totalRev - totalExp;
       ebayBalanceOpen = Math.round(ebayBalanceOpen * 100) / 100;
 
