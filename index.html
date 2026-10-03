@@ -451,7 +451,11 @@
       }
       document.getElementById('syncStatus').innerText = "Lade von Cloud...";
       try {
-        const res = await fetch(`https://jsonblob.com/api/jsonBlob/${jsonBlobId}`, { cache: 'no-store' });
+        const res = await fetch(`https://jsonblob.com/api/jsonBlob/${jsonBlobId}`, { 
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          cache: 'no-store' 
+        });
         if (res.ok) {
           const json = await res.json();
           if (json) {
@@ -499,17 +503,24 @@
             body: JSON.stringify(payload)
           });
           if (res.ok) {
-            const location = res.headers.get('Location');
-            if (location) {
-              const parts = location.split('/');
-              jsonBlobId = parts[parts.length - 1];
+            let textBody = await res.text();
+            try {
+              const data = JSON.parse(textBody);
+              if (data && data.id) jsonBlobId = data.id;
+            } catch(err) {}
+
+            if (!jsonBlobId) {
+              const location = res.headers.get('Location');
+              if (location) {
+                const parts = location.split('/');
+                jsonBlobId = parts[parts.length - 1];
+              }
+            }
+
+            if (jsonBlobId) {
               localStorage.setItem('sefas_shop_blob_id', jsonBlobId);
             } else {
-              const data = await res.json();
-              if (data && data.id) {
-                jsonBlobId = data.id;
-                localStorage.setItem('sefas_shop_blob_id', jsonBlobId);
-              }
+              throw new Error("Konnte Blob-ID nicht empfangen.");
             }
           }
         } else {
@@ -518,16 +529,39 @@
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify(payload)
           });
+          if (res.status === 404) {
+            res = await fetch('https://jsonblob.com/api/jsonBlob', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+              let textBody = await res.text();
+              try {
+                const data = JSON.parse(textBody);
+                if (data && data.id) jsonBlobId = data.id;
+              } catch(err) {}
+              if (!jsonBlobId) {
+                const location = res.headers.get('Location');
+                if (location) {
+                  const parts = location.split('/');
+                  jsonBlobId = parts[parts.length - 1];
+                }
+              }
+              if (jsonBlobId) localStorage.setItem('sefas_shop_blob_id', jsonBlobId);
+            }
+          }
         }
 
-        if (res && res.ok) {
+        if (res && (res.ok || res.status === 201)) {
           document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
           alert("✅ Daten erfolgreich in der Cloud gespeichert!");
         } else {
-          alert("⚠ Server-Fehler: Die Cloud hat abgelehnt.");
+          alert("⚠ Server-Fehler: Die Cloud hat abgelehnt (Status: " + (res ? res.status : 'unbekannt') + ")");
           document.getElementById('syncStatus').innerText = "Fehler beim Speichern";
         }
       } catch(e) {
+        console.error(e);
         alert("❌ Netzwerkfehler beim Cloud-Speichern.");
         document.getElementById('syncStatus').innerText = "Offline / Fehler";
       }
