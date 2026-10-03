@@ -242,6 +242,10 @@
   <script>
     const jsonbinKey = "$2a$10$hnafVmeRLZAKTKvsRJICNut84QHZvWJaBSM6AAyLDB/ACywOhb66";
     const jsonbinId = "6ac18cafac6210605a10f4e7";
+    
+    // Wir nutzen einen öffentlichen Proxy, damit der Browser den Zugriff auf die Cloud-Bin nicht blockiert
+    const apiUrl = `https://api.jsonbin.io/v3/b/${jsonbinId}`;
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
 
     const BACKUP_SPOOLS = [
       {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notifiedCount":0,"lastNotifiedDate":""},
@@ -289,11 +293,9 @@
     async function loadCloudData() {
       setStatus("Lade Cloud...", "bg-yellow-500");
       try {
-        const res = await fetch(`https://api.jsonbin.io/v3/b/${jsonbinId}/latest`, {
+        const res = await fetch(`${proxyUrl}/latest`, {
           method: 'GET',
-          headers: {
-            'X-Master-Key': jsonbinKey
-          }
+          headers: { 'X-Master-Key': jsonbinKey }
         });
         if (res.ok) {
           const json = await res.json();
@@ -324,7 +326,7 @@
       const payload = { orders, spools, expenses, printers, products };
 
       try {
-        const res = await fetch(`https://api.jsonbin.io/v3/b/${jsonbinId}`, {
+        const res = await fetch(proxyUrl, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -349,7 +351,7 @@
       renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
       updateCustomerDropdowns(); updatePrinterDropdowns();
       
-      fetch(`https://api.jsonbin.io/v3/b/${jsonbinId}`, {
+      fetch(proxyUrl, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
