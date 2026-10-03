@@ -19,24 +19,73 @@
 </head>
 <body class="p-3 md:p-5 min-h-screen text-xs">
 
+  <!-- SEPARATE UNTERSEITE / OVERLAY FÜR KOSTENRECHNER & KATALOG -->
+  <div id="subPageOverlay" class="hidden fixed inset-0 bg-slate-950/95 z-50 overflow-y-auto p-3 md:p-6">
+    <div class="max-w-4xl mx-auto space-y-4">
+      <div class="flex justify-between items-center bg-slate-800 p-4 rounded-2xl border border-slate-700">
+        <div class="flex items-center space-x-3">
+          <div class="bg-slate-900 p-2.5 rounded-xl border border-cyan-500/30 flex items-center justify-center shadow-lg">
+            <i class="fa-solid fa-toolbox text-cyan-400 text-lg"></i>
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-white">Sefas3DShop - Tools & Katalog</h2>
+            <p class="text-slate-400 text-[11px]">Kostenrechner & Artikelverwaltung</p>
+          </div>
+        </div>
+        <button onclick="closeSubPage()" class="bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+          <i class="fa-solid fa-xmark text-sm"></i> Schließen & Zurück
+        </button>
+      </div>
+
+      <!-- KOSTENRECHNER AUF DER UNTERSEITE -->
+      <section class="card p-4 rounded-xl space-y-2 border border-emerald-500/30 bg-emerald-950/10">
+        <div class="flex justify-between items-center border-b border-slate-700/60 pb-2">
+          <h2 class="text-xs font-semibold text-emerald-400"><i class="fa-solid fa-calculator mr-1.5"></i> Kostenrechner (+ 35% & 1,50€)</h2>
+        </div>
+        <div class="space-y-2 pt-1">
+          <div class="flex items-center gap-2">
+            <input type="number" id="calcHours" oninput="calculateCosts()" placeholder="Zeit (h, z.B. 1.5)" min="0" step="0.1" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full focus:outline-none focus:border-emerald-500 transition">
+            <input type="number" id="calcGrams" oninput="calculateCosts()" placeholder="Gewicht (g)" min="0" step="1" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full focus:outline-none focus:border-emerald-500 transition">
+          </div>
+          <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+            <div class="flex justify-between text-[11px] text-slate-400"><span>Druckzeit (0,25 €/h):</span> <span id="calcPrintCost">0,00 €</span></div>
+            <div class="flex justify-between text-[11px] text-slate-400"><span>Strom (0,12 €/h):</span> <span id="calcElecCost">0,00 €</span></div>
+            <div class="flex justify-between text-[11px] text-slate-400 border-b border-slate-700 pb-1.5 mb-1.5"><span>Material (0,02 €/g):</span> <span id="calcMatCost">0,00 €</span></div>
+            <div class="flex justify-between text-[11px] text-slate-300"><span>Herstellung (Netto):</span> <span id="calcTotalCost">0,00 €</span></div>
+            <div class="flex justify-between text-[11px] text-amber-400"><span>+ 35% Gewinn-Aufschlag:</span> <span id="calcMarkup">0,00 €</span></div>
+            <div class="flex justify-between text-[11px] text-purple-400 border-b border-slate-700 pb-1.5 mb-1.5"><span>+ Bearbeitung (fix):</span> <span>1,50 €</span></div>
+            <div class="flex justify-between font-bold text-white text-[13px] mt-1"><span>Empf. Verkaufspreis:</span> <span id="calcFinalPrice" class="text-emerald-400" data-raw-price="0">0,00 €</span></div>
+          </div>
+          <button onclick="transferToCatalogFromSub()" class="w-full bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 border border-emerald-500/50 rounded py-2 text-xs font-bold transition cursor-pointer shadow-sm"><i class="fa-solid fa-arrow-down mr-1"></i> Preis in Katalog übernehmen</button>
+        </div>
+      </section>
+
+      <!-- ARTIKEL & PREISLISTE AUF DER UNTERSEITE -->
+      <section class="card p-4 rounded-xl space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
+          <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-tags mr-1.5 text-amber-400"></i> Artikel-Katalog & Preisliste</h2>
+        </div>
+        <form id="productForm" onsubmit="addProduct(event)" class="flex flex-col sm:flex-row gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+          <input type="text" id="prodName" placeholder="Artikelname (z.B. Vase, Halter...)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white flex-1 focus:outline-none focus:border-amber-500 transition">
+          <input type="number" step="0.01" id="prodPrice" placeholder="Verkaufspreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full sm:w-48 focus:outline-none focus:border-amber-500 transition">
+          <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-1.5 px-4 text-xs transition cursor-pointer whitespace-nowrap">+ Im Katalog speichern</button>
+        </form>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1" id="productsList">
+          <!-- Artikel werden hier per JS geladen -->
+        </div>
+      </section>
+    </div>
+  </div>
+
   <div id="mainApp" class="max-w-[1700px] mx-auto space-y-4">
     
     <!-- HEADER MIT HAMBURGER-MENÜ (OBEN LINKS) -->
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800 p-3 rounded-2xl border border-slate-700 gap-3 relative">
       <div class="flex items-center space-x-3">
         <!-- HAMBURGER-MENÜ BUTTON (3 STRICHE) -->
-        <div class="relative">
-          <button onclick="toggleHamburgerMenu()" class="bg-slate-900 hover:bg-slate-700 text-cyan-400 p-2.5 rounded-xl border border-slate-700 transition flex items-center justify-center cursor-pointer shadow-md" title="Menü öffnen">
-            <i class="fa-solid fa-bars text-sm"></i>
-          </button>
-          
-          <!-- HAMBURGER DROPDOWN INHALT -->
-          <div id="hamburgerDropdown" class="hidden absolute left-0 mt-2 w-52 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
-            <div class="px-3 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-800 mb-1">Schnellzugriff</div>
-            <button onclick="toggleSection('calculatorSection'); closeHamburgerMenu();" class="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg flex items-center gap-2.5 cursor-pointer"><i class="fa-solid fa-calculator text-emerald-400 w-4"></i> Kostenrechner</button>
-            <button onclick="toggleSection('catalogSection'); closeHamburgerMenu();" class="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg flex items-center gap-2.5 cursor-pointer"><i class="fa-solid fa-tags text-amber-400 w-4"></i> Artikel-Katalog</button>
-          </div>
-        </div>
+        <button onclick="openSubPage()" class="bg-slate-900 hover:bg-slate-700 text-cyan-400 p-2.5 rounded-xl border border-slate-700 transition flex items-center justify-center cursor-pointer shadow-md" title="Tools & Katalog öffnen">
+          <i class="fa-solid fa-bars text-sm"></i>
+        </button>
 
         <div class="bg-slate-900 p-2 rounded-xl border border-blue-500/30 flex items-center justify-center shadow-lg">
           <svg class="w-8 h-8 text-cyan-400" viewBox="0 0 100 100" fill="currentColor">
@@ -64,18 +113,6 @@
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv</button>
         <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-rotate mr-1"></i> 🔄 Laden</button>
         <button onclick="pushToCloudManual()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> 📤 Speichern</button>
-
-        <!-- 3-PUNKTE-MENÜ BUTTON -->
-        <div class="relative">
-          <button onclick="toggleDropdownMenu()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-          
-          <!-- DROPDOWN INHALT -->
-          <div id="threeDotMenu" class="hidden absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
-            <button onclick="toggleSection('calculatorSection'); closeDropdownMenu();" class="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg flex items-center gap-2 cursor-pointer"><i class="fa-solid fa-calculator text-emerald-400"></i> Kostenrechner öffnen</button>
-            <button onclick="toggleSection('catalogSection'); closeDropdownMenu();" class="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg flex items-center gap-2 cursor-pointer"><i class="fa-solid fa-tags text-amber-400"></i> Artikel-Katalog öffnen</button>
-          </div>
-        </div>
-
       </div>
     </header>
 
@@ -108,48 +145,8 @@
           <div id="spoolWarningBanner" class="hidden bg-red-500/10 border border-red-500/40 p-2 rounded-lg text-[11px] flex items-start gap-2 text-red-300"></div>
           <div id="spoolsList" class="space-y-1.5 max-h-[180px] overflow-y-auto pr-1"></div>
         </section>
-
-        <!-- KOSTENRECHNER (ÜBER MENÜ STEUERBAR) -->
-        <section id="calculatorSection" class="card p-3 rounded-xl space-y-2 border border-emerald-500/30 bg-emerald-950/10">
-          <div class="flex justify-between items-center border-b border-slate-700/60 pb-1.5">
-            <h2 class="text-xs font-semibold text-emerald-400"><i class="fa-solid fa-calculator mr-1.5"></i> Kostenrechner (+ 35% & 1,50€)</h2>
-            <button onclick="toggleSection('calculatorSection')" class="text-slate-400 hover:text-white text-[11px]"><i class="fa-solid fa-xmark"></i></button>
-          </div>
-          <div class="space-y-2 pt-1">
-            <div class="flex items-center gap-2">
-              <input type="number" id="calcHours" oninput="calculateCosts()" placeholder="Zeit (h, z.B. 1.5)" min="0" step="0.1" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full focus:outline-none focus:border-emerald-500 transition">
-              <input type="number" id="calcGrams" oninput="calculateCosts()" placeholder="Gewicht (g)" min="0" step="1" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full focus:outline-none focus:border-emerald-500 transition">
-            </div>
-            <div class="bg-slate-900 p-2 rounded-lg border border-slate-800">
-              <div class="flex justify-between text-[10px] text-slate-400"><span>Druckzeit (0,25 €/h):</span> <span id="calcPrintCost">0,00 €</span></div>
-              <div class="flex justify-between text-[10px] text-slate-400"><span>Strom (0,12 €/h):</span> <span id="calcElecCost">0,00 €</span></div>
-              <div class="flex justify-between text-[10px] text-slate-400 border-b border-slate-700 pb-1 mb-1"><span>Material (0,02 €/g):</span> <span id="calcMatCost">0,00 €</span></div>
-              <div class="flex justify-between text-[10px] text-slate-300"><span>Herstellung (Netto):</span> <span id="calcTotalCost">0,00 €</span></div>
-              <div class="flex justify-between text-[10px] text-amber-400"><span>+ 35% Gewinn-Aufschlag:</span> <span id="calcMarkup">0,00 €</span></div>
-              <div class="flex justify-between text-[10px] text-purple-400 border-b border-slate-700 pb-1 mb-1"><span>+ Bearbeitung (fix):</span> <span>1,50 €</span></div>
-              <div class="flex justify-between font-bold text-white text-[12px] mt-1"><span>Empf. Verkaufspreis:</span> <span id="calcFinalPrice" class="text-emerald-400" data-raw-price="0">0,00 €</span></div>
-            </div>
-            <button onclick="transferToCatalog()" class="w-full bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 border border-emerald-500/50 rounded py-1.5 text-[11px] font-bold transition cursor-pointer shadow-sm"><i class="fa-solid fa-arrow-down mr-1"></i> Preis in Katalog übernehmen</button>
-          </div>
-        </section>
       </div>
     </div>
-
-    <!-- ARTIKEL & PREISLISTE (ÜBER MENÜ STEUERBAR) -->
-    <section id="catalogSection" class="card p-4 rounded-xl space-y-3">
-      <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
-        <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-tags mr-1.5 text-amber-400"></i> Artikel-Katalog & Preisliste</h2>
-        <button onclick="toggleSection('catalogSection')" class="text-slate-400 hover:text-white text-[11px]"><i class="fa-solid fa-xmark"></i> Schließen</button>
-      </div>
-      <form id="productForm" onsubmit="addProduct(event)" class="flex flex-col sm:flex-row gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
-        <input type="text" id="prodName" placeholder="Artikelname (z.B. Vase, Halter...)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white flex-1 focus:outline-none focus:border-amber-500 transition">
-        <input type="number" step="0.01" id="prodPrice" placeholder="Verkaufspreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full sm:w-48 focus:outline-none focus:border-amber-500 transition">
-        <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-1.5 px-4 text-xs transition cursor-pointer whitespace-nowrap">+ Im Katalog speichern</button>
-      </form>
-      <div class="flex flex-wrap gap-2 pt-1" id="productsList">
-        <!-- Artikel werden hier per JS geladen -->
-      </div>
-    </section>
 
     <!-- AUFTRAG ANLEGEN -->
     <section class="card p-4 rounded-xl space-y-3">
@@ -211,7 +208,7 @@
       </div>
       <form id="expenseForm" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
         <input type="text" id="expDesc" placeholder="Beschreibung" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙️ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷️ Sonstiges / eBay Gebühren</option></select>
+        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙️️ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷️ Sonstiges / eBay Gebühren</option></select>
         <input type="number" step="0.01" id="expAmount" placeholder="Betrag (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <input type="date" id="expDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg py-1.5 text-xs transition cursor-pointer">+ Ausgabe eintragen</button>
@@ -321,48 +318,13 @@
       updatePrinterDropdowns();
     });
 
-    // HAMBURGER-MENÜ & 3-PUNKTE MENÜ STEUERUNG
-    function toggleHamburgerMenu() {
-      const menu = document.getElementById('hamburgerDropdown');
-      if (menu) {
-        menu.classList.toggle('hidden');
-        document.getElementById('threeDotMenu')?.classList.add('hidden');
-      }
+    // UNTERSEITE / OVERLAY STEUERUNG
+    function openSubPage() {
+      document.getElementById('subPageOverlay').classList.remove('hidden');
     }
-    function closeHamburgerMenu() {
-      const menu = document.getElementById('hamburgerDropdown');
-      if (menu) menu.classList.add('hidden');
+    function closeSubPage() {
+      document.getElementById('subPageOverlay').classList.add('hidden');
     }
-
-    function toggleDropdownMenu() {
-      const menu = document.getElementById('threeDotMenu');
-      if (menu) {
-        menu.classList.toggle('hidden');
-        document.getElementById('hamburgerDropdown')?.classList.add('hidden');
-      }
-    }
-    function closeDropdownMenu() {
-      const menu = document.getElementById('threeDotMenu');
-      if (menu) menu.classList.add('hidden');
-    }
-
-    function toggleSection(sectionId) {
-      const sec = document.getElementById(sectionId);
-      if (sec) {
-        sec.classList.toggle('hidden');
-        if (!sec.classList.contains('hidden')) {
-          sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }
-    }
-
-    // Klick außerhalb schließt alle Dropdowns
-    window.addEventListener('click', function(e) {
-      if (!e.target.closest('.relative')) {
-        closeHamburgerMenu();
-        closeDropdownMenu();
-      }
-    });
     
     // KOSTENRECHNER LOGIK - MIT 35% GEWINN-AUFSCHLAG + 1,50€ PAUSCHALE
     function calculateCosts() {
@@ -394,13 +356,11 @@
       document.getElementById('calcFinalPrice').dataset.rawPrice = finalPrice.toFixed(2);
     }
     
-    function transferToCatalog() {
+    function transferToCatalogFromSub() {
       const rawPrice = document.getElementById('calcFinalPrice').dataset.rawPrice;
       if (rawPrice && parseFloat(rawPrice) > 0) {
         document.getElementById('prodPrice').value = rawPrice;
         document.getElementById('prodName').focus();
-        document.getElementById('catalogSection').classList.remove('hidden');
-        document.getElementById('catalogSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
       } else {
         alert('Bitte gib zuerst Zeit und Gewicht im Rechner ein!');
       }
@@ -431,7 +391,7 @@
         list.innerHTML = '';
         products.forEach(p => {
           list.innerHTML += `
-            <div class="bg-slate-900 border border-slate-700 px-2.5 py-1.5 rounded-lg flex items-center justify-between gap-3 text-xs">
+            <div class="bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg flex items-center justify-between gap-3 text-xs">
               <span class="text-white font-medium">${p.name}</span>
               <div class="flex items-center gap-2">
                 <span class="text-amber-400 font-bold">${p.price.toFixed(2).replace('.', ',')} €</span>
