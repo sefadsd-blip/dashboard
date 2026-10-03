@@ -29,7 +29,7 @@
           </div>
           <div>
             <h2 class="text-base font-bold text-white">Sefas3DShop - Tools & Katalog</h2>
-            <p class="text-slate-400 text-[11px]">Kostenrechner & Artikelverwaltung</p>
+            <p class="text-slate-400 text-[11px]">Kostenrechner & Cloud-Verwaltung</p>
           </div>
         </div>
         <button onclick="closeSubPage()" class="bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
@@ -71,16 +71,6 @@
           <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-1.5 px-4 text-xs transition cursor-pointer whitespace-nowrap">+ Im Katalog speichern</button>
         </form>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1" id="productsList"></div>
-      </section>
-
-      <!-- CLOUD REPARATUR BEREICH -->
-      <section class="card p-4 rounded-xl space-y-2 border border-slate-600/50 bg-slate-900/50 mt-4">
-        <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-cloud text-blue-400 mr-1.5"></i> Cloud-Verbindung manuell reparieren</h2>
-        <p class="text-[10px] text-slate-400">Falls dein Browser das Erstellen komplett blockiert, kannst du hier deine alte <span class="text-blue-300 font-mono">jsonblob.com</span> ID von heute Morgen einfügen.</p>
-        <div class="flex gap-2 mt-2">
-          <input type="text" id="manualCloudId" placeholder="ID eingeben (z.B. 132456789...)" class="bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white flex-1 focus:outline-none focus:border-blue-500">
-          <button onclick="saveManualCloudId()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded px-4 py-1.5 text-xs transition cursor-pointer">Verbinden</button>
-        </div>
       </section>
     </div>
   </div>
@@ -215,7 +205,7 @@
       </div>
       <form id="expenseForm" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
         <input type="text" id="expDesc" placeholder="Beschreibung" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷️ Sonstiges / eBay Gebühren</option></select>
+        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷 Sonstiges / eBay Gebühren</option></select>
         <input type="number" step="0.01" id="expAmount" placeholder="Betrag (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <input type="date" id="expDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg py-1.5 text-xs transition cursor-pointer">+ Ausgabe eintragen</button>
@@ -260,8 +250,9 @@
   </div>
 
   <script>
-    // DIE ORIGINALE CLOUD-ID LOGIK
-    let jsonBlobId = localStorage.getItem('sefas_shop_blob_id') || '';
+    // JSONBIN.IO CLOUD CONFIG (Fest hinterlegt)
+    const jsonbinKey = "$2a$10$hnafVmeRLZAKTKvsRJICNut84QHZvWJaBSM6AAyLDB/ACywOhb66";
+    let jsonbinId = localStorage.getItem('sefas_shop_jsonbin_id') || '';
 
     const BACKUP_SPOOLS = [
       {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notifiedCount":0,"lastNotifiedDate":""},
@@ -312,10 +303,6 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = todayStr;
       document.getElementById('expDate').value = todayStr;
-      
-      if(document.getElementById('manualCloudId')) {
-        document.getElementById('manualCloudId').value = jsonBlobId || '';
-      }
 
       checkAndMigrateExistingOrderPostage();
 
@@ -336,15 +323,117 @@
 
     function openSubPage() { document.getElementById('subPageOverlay').classList.remove('hidden'); }
     function closeSubPage() { document.getElementById('subPageOverlay').classList.add('hidden'); }
-    
-    function saveManualCloudId() {
-      let val = document.getElementById('manualCloudId').value.trim();
-      if (!val) return;
-      if (val.includes('/')) val = val.split('/').pop();
-      jsonBlobId = val;
-      localStorage.setItem('sefas_shop_blob_id', jsonBlobId);
-      alert('✅ Cloud ID wurde repariert! Klicke jetzt im Hauptmenü auf "📤 Speichern" oder "Laden".');
-      closeSubPage();
+
+    async function loadCloudData() {
+      if (!jsonbinId) {
+        alert("⚠ Noch keine Bin-ID vorhanden. Klicke einmal auf '📤 Speichern', um automatisch eine Bin in deinem jsonbin-Account anzulegen.");
+        return;
+      }
+      setStatus("Lade...", "bg-yellow-500");
+      try {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${jsonbinId}/latest`, {
+          headers: { 'X-Master-Key': jsonbinKey },
+          cache: 'no-store'
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const data = json.record;
+          if (data) {
+            if (Array.isArray(data.orders)) orders = data.orders;
+            if (Array.isArray(data.spools) && data.spools.length > 0) spools = data.spools;
+            if (Array.isArray(data.expenses)) expenses = data.expenses;
+            if (Array.isArray(data.printers) && data.printers.length > 0) printers = data.printers;
+            if (Array.isArray(data.products) && data.products.length > 0) products = data.products;
+            
+            checkAndMigrateExistingOrderPostage();
+            saveLocalOnly();
+            renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
+            updateCustomerDropdowns(); updatePrinterDropdowns();
+            setStatus("Verbunden", "bg-green-500");
+            alert("✅ Daten erfolgreich von der jsonbin-Cloud abgerufen!");
+          }
+        } else {
+          throw new Error("Fehler " + res.status);
+        }
+      } catch(e) {
+        alert("❌ Fehler beim Laden der Cloud.");
+        setStatus("Fehler", "bg-red-500");
+      }
+    }
+
+    async function pushToCloudManual() {
+      saveLocalOnly();
+      setStatus("Speichere...", "bg-yellow-500");
+      
+      const payload = { orders, spools, expenses, printers, products };
+
+      try {
+        let res;
+        if (!jsonbinId) {
+          res = await fetch('https://api.jsonbin.io/v3/b', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Master-Key': jsonbinKey,
+              'X-Bin-Name': 'Sefas3DShop_Data'
+            },
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (json.metadata && json.metadata.id) {
+              jsonbinId = json.metadata.id;
+              localStorage.setItem('sefas_shop_jsonbin_id', jsonbinId);
+            }
+          }
+        } else {
+          res = await fetch(`https://api.jsonbin.io/v3/b/${jsonbinId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Master-Key': jsonbinKey
+            },
+            body: JSON.stringify(payload)
+          });
+        }
+
+        if (res && res.ok) {
+          setStatus("Verbunden", "bg-green-500");
+          alert("✅ Daten erfolgreich in der jsonbin-Cloud gespeichert!");
+        } else {
+          throw new Error("Server hat abgelehnt.");
+        }
+      } catch(e) {
+        setStatus("Netzwerkfehler", "bg-red-500");
+        alert("❌ Fehler beim Speichern in der Cloud. Bitte Internetverbindung prüfen.");
+      }
+    }
+
+    function saveLocalOnly() {
+      try {
+        localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
+        localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
+        localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
+        localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
+        localStorage.setItem('sefas_shop_products', JSON.stringify(products));
+      } catch(e) {}
+    }
+
+    function saveAllData() {
+      saveLocalOnly();
+      renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
+      updateCustomerDropdowns(); updatePrinterDropdowns();
+      
+      if (jsonbinId) {
+        fetch(`https://api.jsonbin.io/v3/b/${jsonbinId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': jsonbinKey
+          },
+          body: JSON.stringify({ orders, spools, expenses, printers, products })
+        }).catch(e => console.log("Bg Sync fail"));
+      }
     }
 
     function calculateCosts() {
@@ -442,144 +531,6 @@
         }
       });
       if (added) saveLocalOnly();
-    }
-
-    function saveLocalOnly() {
-      try {
-        localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
-        localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
-        localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
-        localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
-        localStorage.setItem('sefas_shop_products', JSON.stringify(products));
-      } catch(e) {}
-    }
-
-    // SICHERES LADEN MIT 404-ERKENNUNG
-    async function loadCloudData() {
-      if (!jsonBlobId) {
-        alert("⚠ Keine aktive Cloud-ID. Wenn du heute Morgen eine hattest, öffne 'Tools & Katalog' und trage sie dort unten wieder ein.");
-        return;
-      }
-      setStatus("Lade...", "bg-yellow-500");
-      try {
-        const res = await fetch(`https://jsonblob.com/api/jsonBlob/${jsonBlobId}`, { cache: 'no-store' });
-        if (res.ok) {
-          const json = await res.json();
-          if (json) {
-            if (Array.isArray(json.orders)) orders = json.orders;
-            if (Array.isArray(json.spools) && json.spools.length > 0) spools = json.spools;
-            if (Array.isArray(json.expenses)) expenses = json.expenses;
-            if (Array.isArray(json.printers) && json.printers.length > 0) printers = json.printers;
-            if (Array.isArray(json.products) && json.products.length > 0) products = json.products;
-            
-            checkAndMigrateExistingOrderPostage();
-            saveLocalOnly();
-            renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
-            updateCustomerDropdowns(); updatePrinterDropdowns();
-            setStatus("Verbunden", "bg-green-500");
-            alert("✅ Daten erfolgreich von der Cloud abgerufen!");
-          }
-        } else if (res.status === 404) {
-          alert("❌ Die Cloud unter dieser ID existiert nicht mehr.");
-          jsonBlobId = '';
-          localStorage.removeItem('sefas_shop_blob_id');
-          setStatus("ID Ungültig", "bg-red-500");
-        } else {
-          throw new Error("Fehler " + res.status);
-        }
-      } catch(e) {
-        alert("❌ Netzwerkfehler beim Laden.");
-        setStatus("Fehler", "bg-red-500");
-      }
-    }
-
-    // DER ULTIMATIVE, SICHERE SAVE-PROZESS (PROXY + AUTO-BACKUP)
-    async function pushToCloudManual() {
-      saveLocalOnly();
-      setStatus("Speichere...", "bg-yellow-500");
-      
-      const payload = { orders, spools, expenses, printers, products };
-
-      try {
-        let res;
-        
-        if (!jsonBlobId) {
-          // NEU ERSTELLEN
-          try {
-            // Erst direkt versuchen (falls der Browser Gnade zeigt)
-            res = await fetch('https://jsonblob.com/api/jsonBlob', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-          } catch(directErr) {
-            // Wenn der Browser blockt (Dein Fehlerbild), umgehen wir es per Proxy!
-            console.log("Direkter POST blockiert, nutze Proxy...");
-            res = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://jsonblob.com/api/jsonBlob'), {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-          }
-
-          if (res && res.ok) {
-            const location = res.headers.get('Location') || res.headers.get('location');
-            if (location) {
-              jsonBlobId = location.split('/').pop();
-              localStorage.setItem('sefas_shop_blob_id', jsonBlobId);
-              if(document.getElementById('manualCloudId')) { document.getElementById('manualCloudId').value = jsonBlobId; }
-            }
-          }
-        } else {
-          // BESTEHENDE ID UPDATEN (PUT - funktioniert meist direkt)
-          res = await fetch(`https://jsonblob.com/api/jsonBlob/${jsonBlobId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          if (res && res.status === 404) {
-             jsonBlobId = '';
-             localStorage.removeItem('sefas_shop_blob_id');
-             return pushToCloudManual(); 
-          }
-        }
-
-        if (res && res.ok) {
-          setStatus("Verbunden", "bg-green-500");
-          alert("✅ Daten erfolgreich in der Cloud gespeichert!");
-        } else {
-          throw new Error("Server hat die Anfrage abgelehnt.");
-        }
-      } catch(e) {
-        setStatus("Netzwerkfehler", "bg-red-500");
-        
-        // DAS IST DER AUTO-DOWNLOAD: Deine Daten sind SOFORT gesichert.
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload));
-        const dlElem = document.createElement('a');
-        dlElem.setAttribute("href", dataStr);
-        dlElem.setAttribute("download", "Sefas3DShop_Notfall_Backup.json");
-        document.body.appendChild(dlElem);
-        dlElem.click();
-        dlElem.remove();
-
-        alert(`❌ Dein Browser hat die Cloud weiterhin knallhart blockiert.\n\n🚨 ABER DEINE DATEN SIND SICHER: Es wurde gerade automatisch eine Datei ('Sefas3DShop_Notfall_Backup.json') heruntergeladen, damit du nichts von deiner Arbeit verlierst!`);
-      }
-    }
-
-    // ORIGINAL HINTERGRUND-SYNC (mit silent error catch)
-    function saveAllData() {
-      saveLocalOnly();
-      renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
-      updateCustomerDropdowns(); updatePrinterDropdowns();
-      
-      if (jsonBlobId) {
-        fetch(`https://jsonblob.com/api/jsonBlob/${jsonBlobId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ orders, spools, expenses, printers, products })
-        }).catch(e => console.log("Bg Sync fail"));
-      }
     }
 
     function addPrinterPrompt() {
