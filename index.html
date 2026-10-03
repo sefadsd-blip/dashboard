@@ -56,7 +56,10 @@
             <div class="flex justify-between text-[11px] text-purple-400 border-b border-slate-700 pb-1.5 mb-1.5"><span>+ Bearbeitung (fix):</span> <span>1,50 €</span></div>
             <div class="flex justify-between font-bold text-white text-[13px] mt-1"><span>Empf. Verkaufspreis:</span> <span id="calcFinalPrice" class="text-emerald-400" data-raw-price="0">0,00 €</span></div>
           </div>
-          <button onclick="transferToCatalogFromSub()" class="w-full bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 border border-emerald-500/50 rounded py-2 text-xs font-bold transition cursor-pointer shadow-sm"><i class="fa-solid fa-arrow-down mr-1"></i> Preis in Katalog übernehmen</button>
+          <div class="flex gap-2">
+            <button onclick="transferToCatalogFromSub()" class="w-full bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 border border-emerald-500/50 rounded py-2 text-xs font-bold transition cursor-pointer shadow-sm"><i class="fa-solid fa-arrow-down mr-1"></i> Preis in Katalog übernehmen</button>
+            <button onclick="transferWeightToCatalogFromSub()" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 rounded px-3 py-2 text-xs font-bold transition cursor-pointer shadow-sm" title="Gramm in das Maße-Feld übernehmen"><i class="fa-solid fa-weight-scale mr-1"></i> Gramm übernehmen</button>
+          </div>
         </div>
       </section>
 
@@ -67,8 +70,9 @@
         </div>
         <form id="productForm" onsubmit="addProduct(event)" class="flex flex-col sm:flex-row gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
           <input type="text" id="prodName" placeholder="Artikelname (z.B. Vase, Halter...)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white flex-1 focus:outline-none focus:border-amber-500 transition">
-          <input type="number" step="0.01" id="prodPrice" placeholder="Verkaufspreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full sm:w-48 focus:outline-none focus:border-amber-500 transition">
-          <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-1.5 px-4 text-xs transition cursor-pointer whitespace-nowrap">+ Im Katalog speichern</button>
+          <input type="text" id="prodDims" placeholder="Maße / Gewicht (z.B. 45g oder 10x5cm)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full sm:w-48 focus:outline-none focus:border-amber-500 transition">
+          <input type="number" step="0.01" id="prodPrice" placeholder="Verkaufspreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full sm:w-36 focus:outline-none focus:border-amber-500 transition">
+          <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-1.5 px-4 text-xs transition cursor-pointer whitespace-nowrap">+ Speichern</button>
         </form>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1" id="productsList">
           <!-- Artikel werden hier per JS geladen -->
@@ -208,7 +212,7 @@
       </div>
       <form id="expenseForm" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
         <input type="text" id="expDesc" placeholder="Beschreibung" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙️️ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷️ Sonstiges / eBay Gebühren</option></select>
+        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙️ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷️ Sonstiges / eBay Gebühren</option></select>
         <input type="number" step="0.01" id="expAmount" placeholder="Betrag (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <input type="date" id="expDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg py-1.5 text-xs transition cursor-pointer">+ Ausgabe eintragen</button>
@@ -269,10 +273,10 @@
     ];
 
     const BACKUP_PRODUCTS = [
-      { id: 1, name: "Einkaufswagenlöser", price: 2.50 },
-      { id: 2, name: "Tannenzapfen", price: 5.00 },
-      { id: 3, name: "Küchenrollenhalter", price: 12.00 },
-      { id: 4, name: "Vase", price: 15.00 }
+      { id: 1, name: "Einkaufswagenlöser", dims: "15g", price: 2.50 },
+      { id: 2, name: "Tannenzapfen", dims: "40g", price: 5.00 },
+      { id: 3, name: "Küchenrollenhalter", dims: "120g", price: 12.00 },
+      { id: 4, name: "Vase", dims: "180g", price: 15.00 }
     ];
 
     let editingIndex = -1;
@@ -354,15 +358,30 @@
       document.getElementById('calcFinalPrice').innerText = finalPrice.toFixed(2).replace('.', ',') + ' €';
       
       document.getElementById('calcFinalPrice').dataset.rawPrice = finalPrice.toFixed(2);
+      document.getElementById('calcFinalPrice').dataset.rawGrams = grams;
     }
     
     function transferToCatalogFromSub() {
       const rawPrice = document.getElementById('calcFinalPrice').dataset.rawPrice;
+      const rawGrams = document.getElementById('calcFinalPrice').dataset.rawGrams;
       if (rawPrice && parseFloat(rawPrice) > 0) {
         document.getElementById('prodPrice').value = rawPrice;
+        if (rawGrams && parseFloat(rawGrams) > 0) {
+          document.getElementById('prodDims').value = rawGrams + 'g';
+        }
         document.getElementById('prodName').focus();
       } else {
         alert('Bitte gib zuerst Zeit und Gewicht im Rechner ein!');
+      }
+    }
+
+    function transferWeightToCatalogFromSub() {
+      const rawGrams = document.getElementById('calcFinalPrice').dataset.rawGrams;
+      if (rawGrams && parseFloat(rawGrams) > 0) {
+        document.getElementById('prodDims').value = rawGrams + 'g';
+        document.getElementById('prodName').focus();
+      } else {
+        alert('Bitte gib zuerst ein Gewicht im Rechner ein!');
       }
     }
 
@@ -370,10 +389,11 @@
     function addProduct(e) {
       e.preventDefault();
       const name = document.getElementById('prodName').value.trim();
+      const dims = document.getElementById('prodDims').value.trim();
       const price = parseFloat(document.getElementById('prodPrice').value) || 0;
       if (!name) return;
       
-      products.push({ id: Date.now(), name, price });
+      products.push({ id: Date.now(), name, dims, price });
       saveAllData();
       document.getElementById('productForm').reset();
     }
@@ -390,9 +410,13 @@
       if (list) {
         list.innerHTML = '';
         products.forEach(p => {
+          let dimsHtml = p.dims ? `<span class="bg-slate-800 text-purple-300 px-1.5 py-0.5 rounded text-[10px] border border-slate-700">${p.dims}</span>` : '';
           list.innerHTML += `
             <div class="bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg flex items-center justify-between gap-3 text-xs">
-              <span class="text-white font-medium">${p.name}</span>
+              <div class="flex items-center gap-2">
+                <span class="text-white font-medium">${p.name}</span>
+                ${dimsHtml}
+              </div>
               <div class="flex items-center gap-2">
                 <span class="text-amber-400 font-bold">${p.price.toFixed(2).replace('.', ',')} €</span>
                 <button type="button" onclick="deleteProduct(${p.id})" class="text-red-400 hover:text-red-300 ml-1" title="Löschen"><i class="fa-solid fa-xmark"></i></button>
@@ -405,13 +429,19 @@
       if (quickAdds) {
         quickAdds.innerHTML = '<span class="text-[10px] text-slate-400 self-center mr-1"><i class="fa-solid fa-bolt text-amber-400"></i> Katalog-Schnellwahl:</span>';
         products.forEach(p => {
-          quickAdds.innerHTML += `<button type="button" onclick="addPresetArticle('${p.name}', ${p.price})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-700 cursor-pointer shadow-sm transition">+ ${p.name} <span class="text-amber-400/80">(${p.price.toFixed(2).replace('.',',')}€)</span></button>`;
+          let dimText = p.dims ? ` (${p.dims})` : '';
+          let numericGrams = 0;
+          if (p.dims) {
+            let match = p.dims.match(/(\d+)/);
+            if (match) numericGrams = parseInt(match[1]) || 0;
+          }
+          quickAdds.innerHTML += `<button type="button" onclick="addPresetArticleFromCatalog('${p.name}', ${p.price}, ${numericGrams})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-700 cursor-pointer shadow-sm transition">+ ${p.name}${dimText} <span class="text-amber-400/80">(${p.price.toFixed(2).replace('.',',')}€)</span></button>`;
         });
       }
     }
 
-    function addPresetArticle(nameVal = '', addPrice = 0) {
-      addArticleInputRow(nameVal);
+    function addPresetArticleFromCatalog(nameVal = '', addPrice = 0, weightVal = 0) {
+      addArticleInputRow(nameVal, '', weightVal > 0 ? weightVal : '');
       if (addPrice > 0) {
         const priceInput = document.getElementById('price');
         let currentPrice = parseFloat(priceInput.value) || 0;
