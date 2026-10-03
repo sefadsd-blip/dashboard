@@ -37,7 +37,15 @@
         </button>
       </div>
 
-      <!-- KOSTENRECHNER AUF DER UNTERSEITE -->
+      <!-- JSONBIN CLOUD EINSTELLUNGEN -->
+      <section class="card p-4 rounded-xl space-y-2 border border-blue-500/30 bg-blue-950/10">
+        <h2 class="text-xs font-semibold text-blue-400"><i class="fa-solid fa-cloud mr-1.5"></i> jsonbin.io Cloud-Verbindung</h2>
+        <p class="text-[10px] text-slate-400">Dein Master-Key ist fest hinterlegt. Falls du eine bestehende Bin-ID hast, trage sie hier ein (wird sonst beim Speichern automatisch erstellt):</p>
+        <input type="text" id="jsonbinIdInput" placeholder="Bin-ID (z.B. 65c... oder wird automatisch gefüllt)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full focus:outline-none focus:border-blue-500 font-mono">
+        <button onclick="saveBinIdOnly()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-1.5 rounded-lg text-xs transition cursor-pointer">Bin-ID speichern</button>
+      </section>
+
+      <!-- KOSTENRECHNER -->
       <section class="card p-4 rounded-xl space-y-2 border border-emerald-500/30 bg-emerald-950/10">
         <div class="flex justify-between items-center border-b border-slate-700/60 pb-2">
           <h2 class="text-xs font-semibold text-emerald-400"><i class="fa-solid fa-calculator mr-1.5"></i> Kostenrechner (+ 35% & 1,50€)</h2>
@@ -60,7 +68,7 @@
         </div>
       </section>
 
-      <!-- ARTIKEL & PREISLISTE AUF DER UNTERSEITE -->
+      <!-- ARTIKEL & PREISLISTE -->
       <section class="card p-4 rounded-xl space-y-3">
         <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
           <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-tags mr-1.5 text-amber-400"></i> Artikel-Katalog & Preisliste</h2>
@@ -100,7 +108,7 @@
         </div>
         <div>
           <h1 class="text-lg font-bold text-white flex items-center gap-2">Sefas<span class="text-cyan-400">3d</span>shop</h1>
-          <p class="text-slate-400 text-[11px] flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-green-500" id="statusDot"></span><span id="syncStatus">Bereit</span></p>
+          <p class="text-slate-400 text-[11px] flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-green-500" id="statusDot"></span><span id="syncStatus">Cloud bereit</span></p>
         </div>
       </div>
       
@@ -250,7 +258,7 @@
   </div>
 
   <script>
-    // JSONBIN.IO CLOUD CONFIG (Fest hinterlegt)
+    // FEST HINTERLEGTER MASTER-KEY
     const jsonbinKey = "$2a$10$hnafVmeRLZAKTKvsRJICNut84QHZvWJaBSM6AAyLDB/ACywOhb66";
     let jsonbinId = localStorage.getItem('sefas_shop_jsonbin_id') || '';
 
@@ -281,39 +289,17 @@
     let printers = [];
     let products = [];
 
-    try {
-      let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
-      orders = (Array.isArray(savedOrders)) ? savedOrders : [];
-
-      const savedSpools = JSON.parse(localStorage.getItem('sefas_shop_spools_permanent'));
-      spools = (Array.isArray(savedSpools) && savedSpools.length > 0) ? savedSpools : BACKUP_SPOOLS;
-
-      const savedExpenses = JSON.parse(localStorage.getItem('sefas_shop_expenses_permanent'));
-      expenses = (Array.isArray(savedExpenses)) ? savedExpenses : [];
-
-      const savedPrinters = JSON.parse(localStorage.getItem('sefas_shop_printers'));
-      printers = (Array.isArray(savedPrinters) && savedPrinters.length > 0) ? savedPrinters : BACKUP_PRINTERS;
-
-      const savedProducts = JSON.parse(localStorage.getItem('sefas_shop_products'));
-      products = (Array.isArray(savedProducts) && savedProducts.length > 0) ? savedProducts : BACKUP_PRODUCTS;
-    } catch(e) {}
-
     const todayStr = new Date().toISOString().slice(0, 10);
 
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = todayStr;
       document.getElementById('expDate').value = todayStr;
-
-      checkAndMigrateExistingOrderPostage();
-
-      renderPrinters();
-      updateMonthFilterDropdown();
-      renderOrders();
-      renderSpools();
-      renderExpenses();
-      renderProducts();
-      updateCustomerDropdowns();
-      updatePrinterDropdowns();
+      if(document.getElementById('jsonbinIdInput')) {
+        document.getElementById('jsonbinIdInput').value = jsonbinId;
+      }
+      
+      // Beim Start direkt aus der Cloud laden!
+      loadCloudData();
     });
 
     function setStatus(text, color) {
@@ -324,12 +310,24 @@
     function openSubPage() { document.getElementById('subPageOverlay').classList.remove('hidden'); }
     function closeSubPage() { document.getElementById('subPageOverlay').classList.add('hidden'); }
 
+    function saveBinIdOnly() {
+      const idVal = document.getElementById('jsonbinIdInput').value.trim();
+      if (!idVal) return alert("Bitte Bin-ID eingeben!");
+      jsonbinId = idVal;
+      localStorage.setItem('sefas_shop_jsonbin_id', jsonbinId);
+      alert('✅ Bin-ID gespeichert!');
+      closeSubPage();
+      loadCloudData();
+    }
+
     async function loadCloudData() {
       if (!jsonbinId) {
-        alert("⚠ Noch keine Bin-ID vorhanden. Klicke einmal auf '📤 Speichern', um automatisch eine Bin in deinem jsonbin-Account anzulegen.");
+        // Wenn keine ID da ist, versuchen wir Standard-Daten zu laden oder initialisieren
+        spools = BACKUP_SPOOLS; printers = BACKUP_PRINTERS; products = BACKUP_PRODUCTS;
+        renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
         return;
       }
-      setStatus("Lade...", "bg-yellow-500");
+      setStatus("Lade Cloud...", "bg-yellow-500");
       try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${jsonbinId}/latest`, {
           headers: { 'X-Master-Key': jsonbinKey },
@@ -341,42 +339,42 @@
           if (data) {
             if (Array.isArray(data.orders)) orders = data.orders;
             if (Array.isArray(data.spools) && data.spools.length > 0) spools = data.spools;
+            else spools = BACKUP_SPOOLS;
+            
             if (Array.isArray(data.expenses)) expenses = data.expenses;
+            
             if (Array.isArray(data.printers) && data.printers.length > 0) printers = data.printers;
+            else printers = BACKUP_PRINTERS;
+            
             if (Array.isArray(data.products) && data.products.length > 0) products = data.products;
+            else products = BACKUP_PRODUCTS;
             
             checkAndMigrateExistingOrderPostage();
-            saveLocalOnly();
             renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
             updateCustomerDropdowns(); updatePrinterDropdowns();
-            setStatus("Verbunden", "bg-green-500");
-            alert("✅ Daten erfolgreich von der jsonbin-Cloud abgerufen!");
+            setStatus("Mit Cloud verbunden", "bg-green-500");
           }
         } else {
           throw new Error("Fehler " + res.status);
         }
       } catch(e) {
-        alert("❌ Fehler beim Laden der Cloud.");
-        setStatus("Fehler", "bg-red-500");
+        setStatus("Verbindungsfehler", "bg-red-500");
       }
     }
 
     async function pushToCloudManual() {
-      saveLocalOnly();
-      setStatus("Speichere...", "bg-yellow-500");
-      
+      setStatus("Speichere Cloud...", "bg-yellow-500");
       const payload = { orders, spools, expenses, printers, products };
 
       try {
         let res;
         if (!jsonbinId) {
+          // Erstelle eine neue Bin über POST (ohne störende Header)
           res = await fetch('https://api.jsonbin.io/v3/b', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'X-Master-Key': jsonbinKey,
-              'X-Private': 'true',
-              'X-Bin-Name': 'Sefas3DShop'
+              'X-Master-Key': jsonbinKey
             },
             body: JSON.stringify(payload)
           });
@@ -385,6 +383,7 @@
             if (json.metadata && json.metadata.id) {
               jsonbinId = json.metadata.id;
               localStorage.setItem('sefas_shop_jsonbin_id', jsonbinId);
+              document.getElementById('jsonbinIdInput').value = jsonbinId;
             }
           }
         } else {
@@ -399,29 +398,18 @@
         }
 
         if (res && res.ok) {
-          setStatus("Verbunden", "bg-green-500");
-          alert("✅ Daten erfolgreich in der jsonbin-Cloud gespeichert!");
+          setStatus("Mit Cloud verbunden", "bg-green-500");
+          alert("✅ Erfolgreich in der Cloud gespeichert!");
         } else {
-          throw new Error("Server hat abgelehnt.");
+          throw new Error("Server abgelehnt.");
         }
       } catch(e) {
-        setStatus("Netzwerkfehler", "bg-red-500");
-        alert("❌ Fehler beim Speichern in der Cloud. Bitte Internetverbindung prüfen.");
+        setStatus("Fehler beim Speichern", "bg-red-500");
+        alert("❌ Fehler beim Speichern in der Cloud. Bitte prüfen.");
       }
     }
 
-    function saveLocalOnly() {
-      try {
-        localStorage.setItem('sefas_shop_orders_permanent', JSON.stringify(orders));
-        localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
-        localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
-        localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
-        localStorage.setItem('sefas_shop_products', JSON.stringify(products));
-      } catch(e) {}
-    }
-
     function saveAllData() {
-      saveLocalOnly();
       renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
       updateCustomerDropdowns(); updatePrinterDropdowns();
       
@@ -433,7 +421,7 @@
             'X-Master-Key': jsonbinKey
           },
           body: JSON.stringify({ orders, spools, expenses, printers, products })
-        }).catch(e => console.log("Bg Sync fail"));
+        }).catch(e => console.log("Cloud auto-sync fail"));
       }
     }
 
@@ -531,7 +519,6 @@
           }
         }
       });
-      if (added) saveLocalOnly();
     }
 
     function addPrinterPrompt() {
