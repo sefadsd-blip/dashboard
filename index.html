@@ -252,6 +252,8 @@
   </div>
 
   <script>
+    const BLOB_API = 'https://superjsonblob.com/api/jsonBlob';
+    const CORS_PROXY = 'https://corsproxy.io/?';
     let blobId = localStorage.getItem('sefas_shop_blob_id') || '';
 
     const BACKUP_SPOOLS = [
@@ -478,7 +480,7 @@
       } catch(e) {}
     }
 
-    // CLOUD SYNCHRONISATION (SUPERJSONBLOB - VOLL ANONYM, SCHNELL & FEHLERFREI)
+    // CLOUD SYNCHRONISATION (ÜBER CORS-PROXY FÜR FEHLERFREIES POST/GET)
     async function loadCloudData() {
       if (!blobId) {
         alert("ℹ️ Noch keine Cloud-ID vorhanden. Klicke einmal auf 'Speichern', um eine Cloud-ID zu generieren.");
@@ -486,7 +488,7 @@
       }
       document.getElementById('syncStatus').innerText = "Lade von Cloud...";
       try {
-        const res = await fetch(`https://superjsonblob.com/api/jsonBlob/${blobId}`);
+        const res = await fetch(CORS_PROXY + encodeURIComponent(`${BLOB_API}/${blobId}`), { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
           if (json) {
@@ -525,9 +527,9 @@
 
       try {
         if (!blobId) {
-          const res = await fetch('https://superjsonblob.com/api/jsonBlob', {
+          const res = await fetch(CORS_PROXY + encodeURIComponent(BLOB_API), {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify(payload)
           });
           if (res.ok) {
@@ -540,18 +542,19 @@
             throw new Error("Erstellung fehlgeschlagen");
           }
         } else {
-          const res = await fetch(`https://superjsonblob.com/api/jsonBlob/${blobId}`, {
+          const res = await fetch(CORS_PROXY + encodeURIComponent(`${BLOB_API}/${blobId}`), {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify(payload)
           });
           if (res.ok) {
             document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
             alert("✅ Daten erfolgreich in der Cloud gespeichert!");
           } else {
-            const resPost = await fetch('https://superjsonblob.com/api/jsonBlob', {
+            // Fallback: Neue ID erstellen falls die alte abgelaufen ist
+            const resPost = await fetch(CORS_PROXY + encodeURIComponent(BLOB_API), {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
               body: JSON.stringify(payload)
             });
             if (resPost.ok) {
@@ -582,9 +585,9 @@
       updatePrinterDropdowns();
 
       if (blobId) {
-        fetch(`https://superjsonblob.com/api/jsonBlob/${blobId}`, {
+        fetch(CORS_PROXY + encodeURIComponent(`${BLOB_API}/${blobId}`), {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify({ orders, spools, expenses, printers, products })
         }).catch(e => console.log("Hintergrund-Sync fehlgeschlagen", e));
       }
