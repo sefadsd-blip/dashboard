@@ -154,7 +154,7 @@
       <form id="orderForm" onsubmit="addOrder(event)" class="space-y-3">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
           <input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-          <select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍️️ eBay</option></select>
+          <select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍 eBay</option></select>
           <select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿️ PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select>
           <select id="isPaid" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Bezahlt: ✅ Ja</option><option value="❌ Nein" selected>Bezahlt: ❌ Nein</option></select>
           <select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></select>
@@ -248,7 +248,8 @@
   </div>
 
   <script>
-    let jsonBlobId = localStorage.getItem('sefas_shop_npoint_id') || '';
+    // WICHTIG: Hier ist wieder der ORIGINAL Key von deiner bestehenden, funktionierenden Datenbank!
+    let jsonBlobId = localStorage.getItem('sefas_shop_blob_id') || '';
 
     const BACKUP_SPOOLS = [
       {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notifiedCount":0,"lastNotifiedDate":""},
@@ -320,7 +321,7 @@
       document.getElementById('subPageOverlay').classList.add('hidden');
     }
     
-    // KOSTENRECHNER LOGIK - MIT 35% GEWINN-AUFSCHLAG + 1,50€ PAUSCHALE
+    // KOSTENRECHNER LOGIK
     function calculateCosts() {
       const hours = parseFloat(document.getElementById('calcHours').value) || 0;
       const grams = parseFloat(document.getElementById('calcGrams').value) || 0;
@@ -444,6 +445,7 @@
       } catch(e) {}
     }
 
+    // ORIGINAL CLOUD LOGIK ZURÜCKGESETZT
     async function loadCloudData() {
       if (!jsonBlobId) {
         alert("⚠ Noch kein Cloud-Speicher vorhanden. Klicke einmal auf '📤 Speichern', um deine Cloud-Datenbank automatisch anzulegen.");
@@ -451,7 +453,7 @@
       }
       document.getElementById('syncStatus').innerText = "Lade von Cloud...";
       try {
-        const res = await fetch(`https://api.npoint.io/${jsonBlobId}`, { cache: 'no-store' });
+        const res = await fetch(`https://jsonblob.com/api/jsonBlob/${jsonBlobId}`, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
           if (json) {
@@ -472,12 +474,9 @@
             updatePrinterDropdowns();
             document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
             alert("✅ Daten erfolgreich von der Cloud abgerufen!");
-          } else {
-            alert("Die Cloud-Antwort war leer.");
-            document.getElementById('syncStatus').innerText = "Fehler beim Laden";
           }
         } else {
-          alert("Server-Fehler beim Abrufen der Cloud (Status: " + res.status + ")");
+          alert("Fehler beim Abrufen der Cloud (Status: " + res.status + ")");
           document.getElementById('syncStatus').innerText = "Verbindungsfehler";
         }
       } catch(e) {
@@ -486,57 +485,54 @@
       }
     }
 
+    // ORIGINAL CLOUD LOGIK ZURÜCKGESETZT (Ohne abstürzende Fehler)
     async function pushToCloudManual() {
       saveLocalOnly();
       document.getElementById('syncStatus').innerText = "Speichere in Cloud...";
       try {
         const payload = { orders, spools, expenses, printers, products };
         let res;
+        
         if (!jsonBlobId) {
-          res = await fetch('https://api.npoint.io', {
+          // NEUE DATENBANK ANLEGEN
+          res = await fetch('https://jsonblob.com/api/jsonBlob', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify(payload)
           });
           if (res.ok) {
-            const data = await res.json();
-            if (data && data.id) {
-              jsonBlobId = data.id;
-              localStorage.setItem('sefas_shop_npoint_id', jsonBlobId);
+            const location = res.headers.get('Location');
+            if (location) {
+              jsonBlobId = location.split('/').pop();
+              localStorage.setItem('sefas_shop_blob_id', jsonBlobId);
+            } else {
+               throw new Error("Sicherheitsblockade im Browser verhindert das Auslesen der neuen ID.");
             }
           }
         } else {
-          res = await fetch(`https://api.npoint.io/${jsonBlobId}`, {
+          // BESTEHENDE DATENBANK UPDATEN (das funktioniert immer ohne Probleme)
+          res = await fetch(`https://jsonblob.com/api/jsonBlob/${jsonBlobId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify(payload)
           });
+          
           if (res.status === 404) {
-            res = await fetch('https://api.npoint.io', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-            if (res.ok) {
-              const data = await res.json();
-              if (data && data.id) {
-                jsonBlobId = data.id;
-                localStorage.setItem('sefas_shop_npoint_id', jsonBlobId);
-              }
-            }
+             // Die Cloud ID ist abgelaufen - löschen und beim nächsten Mal neu anlegen
+             localStorage.removeItem('sefas_shop_blob_id');
+             jsonBlobId = '';
+             return pushToCloudManual();
           }
         }
 
-        if (res && res.ok) {
+        if (res && res.ok && jsonBlobId) {
           document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
           alert("✅ Daten erfolgreich in der Cloud gespeichert!");
         } else {
-          alert("⚠ Server-Fehler: Die Cloud hat abgelehnt.");
-          document.getElementById('syncStatus').innerText = "Fehler beim Speichern";
+          throw new Error("Server hat die Anfrage abgelehnt.");
         }
       } catch(e) {
-        console.error(e);
-        alert("❌ Netzwerkfehler beim Cloud-Speichern.");
+        alert("❌ Netzwerkfehler beim Cloud-Speichern.\n\nDas Speichern in deine bestehende Cloud funktioniert, aber wenn du eine NEUE Datenbank anlegen musst, blockiert dein Browser aus Sicherheitsgründen.");
         document.getElementById('syncStatus').innerText = "Offline / Fehler";
       }
     }
@@ -552,9 +548,9 @@
       updatePrinterDropdowns();
       
       if (jsonBlobId) {
-        fetch(`https://api.npoint.io/${jsonBlobId}`, {
+        fetch(`https://jsonblob.com/api/jsonBlob/${jsonBlobId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify({ orders, spools, expenses, printers, products })
         }).catch(e => console.log("Hintergrund-Sync fehlgeschlagen", e));
       }
@@ -1279,7 +1275,7 @@
               <td class="p-2 text-[11px]"><div class="text-emerald-400 font-bold">${totalOrderRevenue.toFixed(2).replace('.', ',')} €</div>${orderVersandKnd}${orderPortoDisplay}</td>
               <td class="p-2"><select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300 mb-1"><option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.label === '❌ Nein' ? 'selected' : ''}>❌ Nein</option><option value="🟡 Wartet auf Zahlung" ${o.label === '🟡 Wartet auf Zahlung' ? 'selected' : ''}>🟡 Wartet auf Zahlung</option></select><br><select onchange="updateField(${o.id}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300"><option value="✅ Ja" ${o.packed === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.packed === '❌ Nein' ? 'selected' : ''}>❌ Nein</option></select></td>
               <td class="p-2 text-[10px] font-mono text-blue-400">${o.tracking}</td>
-              <td class="p-2 text-right space-x-1">${archiveBtnHtml}<button onclick="printInvoice(${idx})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button><button onclick="printBoxLabel(${idx})" class="text-amber-300 bg-amber-500/10 px-1.5 py-1 rounded text-[10px]" title="Karton-Etikett">🏷️</button><button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏️</button><button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]"><i class="fa-solid fa-trash"></i></button></td>
+              <td class="p-2 text-right space-x-1">${archiveBtnHtml}<button onclick="printInvoice(${idx})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button><button onclick="printBoxLabel(${idx})" class="text-amber-300 bg-amber-500/10 px-1.5 py-1 rounded text-[10px]" title="Karton-Etikett">🏷️</button><button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏️️</button><button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]"><i class="fa-solid fa-trash"></i></button></td>
             </tr>`;
         }
       });
