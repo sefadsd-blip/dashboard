@@ -248,8 +248,15 @@
   </div>
 
   <script>
-    // WICHTIG: Hier ist wieder der ORIGINAL Key von deiner bestehenden, funktionierenden Datenbank!
-    let jsonBlobId = localStorage.getItem('sefas_shop_blob_id') || '';
+    // DUAL-CLOUD-SYSTEM: Erkennung und Fallback
+    let cloudId = localStorage.getItem('sefas_shop_blob_id') || '';
+    let cloudProvider = localStorage.getItem('sefas_cloud_provider') || '';
+
+    // Falls noch ein alter jsonblob vorhanden ist, wird er automatisch als 'jsonblob' erkannt
+    if (cloudId && !cloudProvider) {
+      cloudProvider = (cloudId.length === 24 && /^[0-9a-fA-F]{24}$/.test(cloudId)) ? 'jsonbin' : 'jsonblob';
+      localStorage.setItem('sefas_cloud_provider', cloudProvider);
+    }
 
     const BACKUP_SPOOLS = [
       {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notifiedCount":0,"lastNotifiedDate":""},
@@ -313,15 +320,9 @@
       updatePrinterDropdowns();
     });
 
-    // UNTERSEITE / OVERLAY STEUERUNG
-    function openSubPage() {
-      document.getElementById('subPageOverlay').classList.remove('hidden');
-    }
-    function closeSubPage() {
-      document.getElementById('subPageOverlay').classList.add('hidden');
-    }
+    function openSubPage() { document.getElementById('subPageOverlay').classList.remove('hidden'); }
+    function closeSubPage() { document.getElementById('subPageOverlay').classList.add('hidden'); }
     
-    // KOSTENRECHNER LOGIK
     function calculateCosts() {
       const hours = parseFloat(document.getElementById('calcHours').value) || 0;
       const grams = parseFloat(document.getElementById('calcGrams').value) || 0;
@@ -335,9 +336,7 @@
       const handlingFee = 1.50;
       
       let finalPrice = 0;
-      if (hours > 0 || grams > 0) {
-        finalPrice = totalCost + markup + handlingFee;
-      }
+      if (hours > 0 || grams > 0) finalPrice = totalCost + markup + handlingFee;
 
       document.getElementById('calcPrintCost').innerText = printCost.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('calcElecCost').innerText = elecCost.toFixed(2).replace('.', ',') + ' €';
@@ -359,13 +358,11 @@
       }
     }
 
-    // ARTIKEL & PREISLISTE LOGIK
     function addProduct(e) {
       e.preventDefault();
       const name = document.getElementById('prodName').value.trim();
       const price = parseFloat(document.getElementById('prodPrice').value) || 0;
       if (!name) return;
-      
       products.push({ id: Date.now(), name, price });
       saveAllData();
       document.getElementById('productForm').reset();
@@ -388,7 +385,7 @@
               <span class="text-white font-medium">${p.name}</span>
               <div class="flex items-center gap-2">
                 <span class="text-amber-400 font-bold">${p.price.toFixed(2).replace('.', ',')} €</span>
-                <button type="button" onclick="deleteProduct(${p.id})" class="text-red-400 hover:text-red-300 ml-1" title="Löschen"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" onclick="deleteProduct(${p.id})" class="text-red-400 hover:text-red-300 ml-1"><i class="fa-solid fa-xmark"></i></button>
               </div>
             </div>`;
         });
@@ -421,13 +418,7 @@
           const descSearch = `Porto / Label für ${o.customer} (${invNum})`;
           const exists = expenses.some(ex => ex.description === descSearch || (ex.description.includes(o.customer) && ex.amount === lCost));
           if (!exists) {
-            expenses.unshift({
-              id: Date.now() + Math.random(),
-              description: descSearch,
-              category: 'DHL / Versand',
-              amount: lCost,
-              date: o.orderDate || todayStr
-            });
+            expenses.unshift({ id: Date.now() + Math.random(), description: descSearch, category: 'DHL / Versand', amount: lCost, date: o.orderDate || todayStr });
             added = true;
           }
         }
@@ -445,114 +436,123 @@
       } catch(e) {}
     }
 
-    // ORIGINAL CLOUD LOGIK ZURÜCKGESETZT
+    // SICHERE CLOUD-LADE FUNKTION (Unterstützt BEIDE Systeme)
     async function loadCloudData() {
-      if (!jsonBlobId) {
+      if (!cloudId) {
         alert("⚠ Noch kein Cloud-Speicher vorhanden. Klicke einmal auf '📤 Speichern', um deine Cloud-Datenbank automatisch anzulegen.");
         return;
       }
       document.getElementById('syncStatus').innerText = "Lade von Cloud...";
       try {
-        const res = await fetch(`https://jsonblob.com/api/jsonBlob/${jsonBlobId}`, { cache: 'no-store' });
-        if (res.ok) {
-          const json = await res.json();
-          if (json) {
-            if (Array.isArray(json.orders)) orders = json.orders;
-            if (Array.isArray(json.spools) && json.spools.length > 0) spools = json.spools;
-            if (Array.isArray(json.expenses)) expenses = json.expenses;
-            if (Array.isArray(json.printers) && json.printers.length > 0) printers = json.printers;
-            if (Array.isArray(json.products) && json.products.length > 0) products = json.products;
-            
-            checkAndMigrateExistingOrderPostage();
-            saveLocalOnly();
-            renderOrders();
-            renderSpools();
-            renderExpenses();
-            renderPrinters();
-            renderProducts();
-            updateCustomerDropdowns();
-            updatePrinterDropdowns();
-            document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
-            alert("✅ Daten erfolgreich von der Cloud abgerufen!");
+        let json = null;
+        if (cloudProvider === 'jsonbin') {
+          const res = await fetch(`https://api.jsonbin.io/v3/b/${cloudId}/latest`, { cache: 'no-store' });
+          if (res.ok) {
+            const wrap = await res.json();
+            json = wrap.record;
           }
         } else {
-          alert("Fehler beim Abrufen der Cloud (Status: " + res.status + ")");
-          document.getElementById('syncStatus').innerText = "Verbindungsfehler";
+          const res = await fetch(`https://jsonblob.com/api/jsonBlob/${cloudId}`, { cache: 'no-store' });
+          if (res.ok) json = await res.json();
+        }
+
+        if (json) {
+          if (Array.isArray(json.orders)) orders = json.orders;
+          if (Array.isArray(json.spools) && json.spools.length > 0) spools = json.spools;
+          if (Array.isArray(json.expenses)) expenses = json.expenses;
+          if (Array.isArray(json.printers) && json.printers.length > 0) printers = json.printers;
+          if (Array.isArray(json.products) && json.products.length > 0) products = json.products;
+          
+          checkAndMigrateExistingOrderPostage();
+          saveLocalOnly();
+          renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
+          updateCustomerDropdowns(); updatePrinterDropdowns();
+          document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
+          alert("✅ Daten erfolgreich von der Cloud abgerufen!");
+        } else {
+          throw new Error("Daten konnten nicht gelesen werden.");
         }
       } catch(e) {
-        alert("❌ Netzwerkfehler beim Cloud-Laden.");
+        alert("❌ Fehler beim Laden. Die Cloud-Verbindung wurde möglicherweise blockiert.");
         document.getElementById('syncStatus').innerText = "Offline / Fehler";
       }
     }
 
-    // ORIGINAL CLOUD LOGIK ZURÜCKGESETZT (Ohne abstürzende Fehler)
+    // SICHERE CLOUD-SPEICHER FUNKTION (Umgeht den Browser-Header-Blocker)
     async function pushToCloudManual() {
       saveLocalOnly();
       document.getElementById('syncStatus').innerText = "Speichere in Cloud...";
       try {
         const payload = { orders, spools, expenses, printers, products };
-        let res;
-        
-        if (!jsonBlobId) {
-          // NEUE DATENBANK ANLEGEN
-          res = await fetch('https://jsonblob.com/api/jsonBlob', {
+
+        if (!cloudId) {
+          // NEUE DATENBANK: Nutzt JSONBin, weil die ID im Body zurückkommt (Browser blockiert Body nicht, nur Header)
+          const res = await fetch('https://api.jsonbin.io/v3/b', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-Bin-Private': 'false' },
             body: JSON.stringify(payload)
           });
           if (res.ok) {
-            const location = res.headers.get('Location');
-            if (location) {
-              jsonBlobId = location.split('/').pop();
-              localStorage.setItem('sefas_shop_blob_id', jsonBlobId);
-            } else {
-               throw new Error("Sicherheitsblockade im Browser verhindert das Auslesen der neuen ID.");
+            const data = await res.json();
+            if (data && data.metadata && data.metadata.id) {
+              cloudId = data.metadata.id;
+              cloudProvider = 'jsonbin';
+              localStorage.setItem('sefas_shop_blob_id', cloudId);
+              localStorage.setItem('sefas_cloud_provider', 'jsonbin');
+            }
+          } else { throw new Error("Netzwerk-Abbruch beim Erstellen"); }
+        } else {
+          // BESTEHENDE DATENBANK UPDATEN
+          let res;
+          if (cloudProvider === 'jsonbin') {
+            res = await fetch(`https://api.jsonbin.io/v3/b/${cloudId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+          } else {
+            res = await fetch(`https://jsonblob.com/api/jsonBlob/${cloudId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            // Falls alte JSONBlob-ID abgelaufen ist (404), löschen und neu über JSONBin anlegen
+            if (res.status === 404) {
+              cloudId = '';
+              cloudProvider = '';
+              localStorage.removeItem('sefas_shop_blob_id');
+              localStorage.removeItem('sefas_cloud_provider');
+              return pushToCloudManual(); 
             }
           }
-        } else {
-          // BESTEHENDE DATENBANK UPDATEN (das funktioniert immer ohne Probleme)
-          res = await fetch(`https://jsonblob.com/api/jsonBlob/${jsonBlobId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          
-          if (res.status === 404) {
-             // Die Cloud ID ist abgelaufen - löschen und beim nächsten Mal neu anlegen
-             localStorage.removeItem('sefas_shop_blob_id');
-             jsonBlobId = '';
-             return pushToCloudManual();
-          }
+          if (!res.ok) throw new Error("Update fehlgeschlagen.");
         }
 
-        if (res && res.ok && jsonBlobId) {
-          document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
-          alert("✅ Daten erfolgreich in der Cloud gespeichert!");
-        } else {
-          throw new Error("Server hat die Anfrage abgelehnt.");
-        }
+        document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
+        alert("✅ Daten erfolgreich in der Cloud gespeichert!");
       } catch(e) {
-        alert("❌ Netzwerkfehler beim Cloud-Speichern.\n\nDas Speichern in deine bestehende Cloud funktioniert, aber wenn du eine NEUE Datenbank anlegen musst, blockiert dein Browser aus Sicherheitsgründen.");
+        alert("❌ Unerwarteter Netzwerkfehler. Dein Browser blockiert weiterhin externe Anfragen.");
         document.getElementById('syncStatus').innerText = "Offline / Fehler";
       }
     }
 
+    // AUTOMATISCHER HINTERGRUND-SYNC (Ebenfalls umgebaut)
     function saveAllData() {
       saveLocalOnly();
-      renderOrders();
-      renderSpools();
-      renderExpenses();
-      renderPrinters();
-      renderProducts();
-      updateCustomerDropdowns();
-      updatePrinterDropdowns();
+      renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
+      updateCustomerDropdowns(); updatePrinterDropdowns();
       
-      if (jsonBlobId) {
-        fetch(`https://jsonblob.com/api/jsonBlob/${jsonBlobId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ orders, spools, expenses, printers, products })
-        }).catch(e => console.log("Hintergrund-Sync fehlgeschlagen", e));
+      if (cloudId) {
+        const payload = { orders, spools, expenses, printers, products };
+        if (cloudProvider === 'jsonbin') {
+          fetch(`https://api.jsonbin.io/v3/b/${cloudId}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+          }).catch(e => console.log("Bg Sync fail"));
+        } else {
+          fetch(`https://jsonblob.com/api/jsonBlob/${cloudId}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload)
+          }).catch(e => console.log("Bg Sync fail"));
+        }
       }
     }
 
@@ -586,7 +586,6 @@
       const date = document.getElementById('expDate').value || new Date().toISOString().slice(0, 10);
 
       if (!desc || amount <= 0) return alert("Bitte Beschreibung und Betrag angeben!");
-
       expenses.unshift({ id: Date.now(), description: desc, category: cat, amount: amount, date: date });
       saveAllData();
       document.getElementById('expDesc').value = ''; document.getElementById('expAmount').value = ''; document.getElementById('expDate').value = todayStr;
@@ -934,13 +933,7 @@
 
       if (newLabelCost > 0 && newLabelCost !== oldLabelCost) {
         const invNum = generateInvoiceNumberForExisting(orders[idx]);
-        expenses.unshift({
-          id: Date.now(),
-          description: `Porto / Label für ${orders[idx].customer} (${invNum})`,
-          category: 'DHL / Versand',
-          amount: newLabelCost,
-          date: orders[idx].orderDate || todayStr
-        });
+        expenses.unshift({ id: Date.now(), description: `Porto / Label für ${orders[idx].customer} (${invNum})`, category: 'DHL / Versand', amount: newLabelCost, date: orders[idx].orderDate || todayStr });
       }
 
       orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value || '-';
@@ -1070,7 +1063,7 @@
               <div style="font-size: 10px;">
                 <p style="margin: 0 0 2px 0;"><strong>Zahlungsinformationen:</strong></p>
                 <p style="margin: 1px 0;">Bezahlt mit: <strong>${o.paymentMethod || 'Überweisung'}</strong> ${o.isPaid === '✅ Ja' ? '(Vielen Dank für deine Zahlung!)' : ''}</p>
-                <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08 | Revolut</p>
+                <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08 | C24 Bank</p>
               </div>
               <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;" id="sepaQrCodeTarget"></div>
             </div>
@@ -1133,7 +1126,7 @@
             </table>
             <div style="text-align: right; margin-bottom: 15px;"><strong>Gesamtbetrag: ${totalAmountNum.toFixed(2).replace('.', ',')} €</strong></div>
             <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px;">
-              <div style="font-size: 10px;"><p style="margin: 1px 0;">Bezahlt mit: <strong>${o.paymentMethod || 'Überweisung'}</strong> ${o.isPaid === '✅ Ja' ? '(Vielen Dank!)' : ''}</p>IBAN: DE20 1001 0178 0592 6798 08 (Revolut)</div>
+              <div style="font-size: 10px;"><p style="margin: 1px 0;">Bezahlt mit: <strong>${o.paymentMethod || 'Überweisung'}</strong> ${o.isPaid === '✅ Ja' ? '(Vielen Dank!)' : ''}</p>IBAN: DE20 1001 0178 0592 6798 08 (C24 Bank)</div>
               <div style="background: white; padding: 4px;" id="batchSepaQr_${index}" data-payload="${encodeURIComponent(sepsPayloadStr)}"></div>
             </div>
           </div>`;
@@ -1275,7 +1268,7 @@
               <td class="p-2 text-[11px]"><div class="text-emerald-400 font-bold">${totalOrderRevenue.toFixed(2).replace('.', ',')} €</div>${orderVersandKnd}${orderPortoDisplay}</td>
               <td class="p-2"><select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300 mb-1"><option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.label === '❌ Nein' ? 'selected' : ''}>❌ Nein</option><option value="🟡 Wartet auf Zahlung" ${o.label === '🟡 Wartet auf Zahlung' ? 'selected' : ''}>🟡 Wartet auf Zahlung</option></select><br><select onchange="updateField(${o.id}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300"><option value="✅ Ja" ${o.packed === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.packed === '❌ Nein' ? 'selected' : ''}>❌ Nein</option></select></td>
               <td class="p-2 text-[10px] font-mono text-blue-400">${o.tracking}</td>
-              <td class="p-2 text-right space-x-1">${archiveBtnHtml}<button onclick="printInvoice(${idx})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button><button onclick="printBoxLabel(${idx})" class="text-amber-300 bg-amber-500/10 px-1.5 py-1 rounded text-[10px]" title="Karton-Etikett">🏷️</button><button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏️️</button><button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]"><i class="fa-solid fa-trash"></i></button></td>
+              <td class="p-2 text-right space-x-1">${archiveBtnHtml}<button onclick="printInvoice(${idx})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button><button onclick="printBoxLabel(${idx})" class="text-amber-300 bg-amber-500/10 px-1.5 py-1 rounded text-[10px]" title="Karton-Etikett">🏷️</button><button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏</button><button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]"><i class="fa-solid fa-trash"></i></button></td>
             </tr>`;
         }
       });
@@ -1291,24 +1284,19 @@
           openC++;
           if (o.items && Array.isArray(o.items)) { o.items.forEach(i => totalW += (parseInt(i.weight) || 0)); }
         }
-
         let isEbay = o.platform === 'eBay';
         let orderAmount = o.price;
         let lCost = o.labelCost || 0;
-
         if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') { ebayBalanceOpen += Math.round((o.price - lCost) * 100) / 100; }
-
         let targetDate = o.orderDate || '';
         if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
           totalRev += orderAmount;
           totalExp += lCost;
         }
       });
-
       expenses.forEach(ex => {
         if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) { totalExp += ex.amount; }
       });
-
       let netProfit = totalRev - totalExp;
       ebayBalanceOpen = Math.round(ebayBalanceOpen * 100) / 100;
 
