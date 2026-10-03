@@ -68,7 +68,6 @@
       </div>
     </section>
 
-    <!-- HIER IST DER NEUE AUFBAU MIT DEM KOSTENRECHNER -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <section class="lg:col-span-2 space-y-2">
         <div class="flex justify-between items-center"><h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-print mr-1.5 text-blue-400"></i> Drucker-Übersicht</h2><button onclick="addPrinterPrompt()" class="bg-slate-800 hover:bg-slate-700 text-blue-300 text-[11px] px-2 py-0.5 rounded border border-blue-500/35 cursor-pointer">+ Drucker</button></div>
@@ -103,6 +102,22 @@
       </div>
     </div>
 
+    <!-- ARTIKEL & PREISLISTE -->
+    <section class="card p-4 rounded-xl space-y-3">
+      <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
+        <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-tags mr-1.5 text-amber-400"></i> Artikel-Katalog & Preisliste</h2>
+      </div>
+      <form id="productForm" onsubmit="addProduct(event)" class="flex flex-col sm:flex-row gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+        <input type="text" id="prodName" placeholder="Artikelname (z.B. Vase, Halter...)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white flex-1 focus:outline-none">
+        <input type="number" step="0.01" id="prodPrice" placeholder="Standard-Preis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full sm:w-48 focus:outline-none">
+        <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-1.5 px-4 text-xs transition cursor-pointer whitespace-nowrap">+ Im Katalog speichern</button>
+      </form>
+      <div class="flex flex-wrap gap-2 pt-1" id="productsList">
+        <!-- Artikel werden hier per JS geladen -->
+      </div>
+    </section>
+
+    <!-- AUFTRAG ANLEGEN -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex justify-between items-center">
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-plus-circle mr-1.5 text-blue-400"></i> Neuen Auftrag anlegen</h2>
@@ -115,7 +130,7 @@
           <select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿️ PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select>
           <select id="isPaid" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Bezahlt: ✅ Ja</option><option value="❌ Nein" selected>Bezahlt: ❌ Nein</option></select>
           <select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></select>
-          <input type="number" step="0.01" id="price" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+          <input type="number" step="0.01" id="price" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none border-blue-500/50 bg-blue-950/20">
           
           <input type="number" step="0.01" id="shippingFee" placeholder="Versand v. Kunden (€)" value="5.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           <input type="number" step="0.01" id="labelCost" placeholder="Porto / Label (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
@@ -136,16 +151,14 @@
         <div class="border-t border-slate-700/60 pt-2.5 space-y-2">
           <div class="flex justify-between items-center">
             <label class="text-[11px] font-semibold text-slate-300">Artikel, Farbe & Gewicht (g):</label>
-            <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-[11px] cursor-pointer">+ Artikel</button>
+            <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-[11px] cursor-pointer">+ Leeren Artikel</button>
           </div>
-          <div class="flex flex-wrap gap-1 py-0.5">
-            <span class="text-[10px] text-slate-400 self-center mr-1">Schnell:</span>
-            <button type="button" onclick="addPresetArticle('Einkaufswagenlöser')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded border border-slate-700 cursor-pointer">+ Einkaufswagenlöser</button>
-            <button type="button" onclick="addPresetArticle('Tannenzapfen')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded border border-slate-700 cursor-pointer">+ Tannenzapfen</button>
-            <button type="button" onclick="addPresetArticle('Küchenrollenhalter')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded border border-slate-700 cursor-pointer">+ Küchenrollenhalter</button>
-            <button type="button" onclick="addPresetArticle('Vase')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded border border-slate-700 cursor-pointer">+ Vase</button>
-            <button type="button" onclick="addPresetArticle('Akkuhalter')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded border border-slate-700 cursor-pointer">+ Akkuhalter</button>
+          
+          <!-- DYNAMISCHE SCHNELL-BUTTONS AUS DEM KATALOG -->
+          <div class="flex flex-wrap gap-1.5 py-0.5" id="quickAddButtons">
+            <!-- Wird per JS befüllt -->
           </div>
+
           <div id="articleInputRows" class="space-y-1.5">
             <div class="flex gap-2 items-center article-row">
               <input type="text" placeholder="Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
@@ -158,6 +171,7 @@
       </form>
     </section>
 
+    <!-- AUSGABEN -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-receipt mr-1.5 text-red-400"></i> Betriebsausgaben & Einkäufe</h2>
@@ -174,6 +188,7 @@
       </div>
     </section>
 
+    <!-- AUFTRÄGE TABELLE -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div class="flex items-center space-x-2"><h2 id="tableTitle" class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-list-check mr-1.5 text-blue-400"></i> Bestellungen (Aktiv)</h2></div>
@@ -191,6 +206,7 @@
       </div>
     </section>
 
+    <!-- VORLAGEN -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-700/60 pb-2.5">
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-comments mr-1.5 text-blue-400"></i> Kleinanzeigen & Kunden-Vorlagen</h2>
@@ -222,12 +238,20 @@
       { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
     ];
 
+    const BACKUP_PRODUCTS = [
+      { id: 1, name: "Einkaufswagenlöser", price: 2.50 },
+      { id: 2, name: "Tannenzapfen", price: 5.00 },
+      { id: 3, name: "Küchenrollenhalter", price: 12.00 },
+      { id: 4, name: "Vase", price: 15.00 }
+    ];
+
     let editingIndex = -1;
     let showingArchive = false;
     let orders = [];
     let spools = [];
     let expenses = [];
     let printers = [];
+    let products = [];
 
     try {
       let savedOrders = JSON.parse(localStorage.getItem('sefas_shop_orders_permanent'));
@@ -241,6 +265,9 @@
 
       const savedPrinters = JSON.parse(localStorage.getItem('sefas_shop_printers'));
       printers = (Array.isArray(savedPrinters) && savedPrinters.length > 0) ? savedPrinters : BACKUP_PRINTERS;
+
+      const savedProducts = JSON.parse(localStorage.getItem('sefas_shop_products'));
+      products = (Array.isArray(savedProducts) && savedProducts.length > 0) ? savedProducts : BACKUP_PRODUCTS;
     } catch(e) {}
 
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -256,11 +283,12 @@
       renderOrders();
       renderSpools();
       renderExpenses();
+      renderProducts();
       updateCustomerDropdowns();
       updatePrinterDropdowns();
     });
     
-    // NEU: Berechnung der Kosten im Kalkulator
+    // KOSTENRECHNER LOGIK
     function calculateCosts() {
       const hours = parseFloat(document.getElementById('calcHours').value) || 0;
       const grams = parseFloat(document.getElementById('calcGrams').value) || 0;
@@ -274,6 +302,60 @@
       document.getElementById('calcElecCost').innerText = elecCost.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('calcMatCost').innerText = matCost.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('calcTotalCost').innerText = total.toFixed(2).replace('.', ',') + ' €';
+    }
+
+    // ARTIKEL & PREISLISTE LOGIK
+    function addProduct(e) {
+      e.preventDefault();
+      const name = document.getElementById('prodName').value.trim();
+      const price = parseFloat(document.getElementById('prodPrice').value) || 0;
+      if (!name) return;
+      
+      products.push({ id: Date.now(), name, price });
+      saveAllData();
+      document.getElementById('productForm').reset();
+    }
+
+    function deleteProduct(id) {
+      if(confirm('Artikel wirklich aus dem Katalog löschen?')) {
+        products = products.filter(p => p.id !== id);
+        saveAllData();
+      }
+    }
+
+    function renderProducts() {
+      const list = document.getElementById('productsList');
+      if (list) {
+        list.innerHTML = '';
+        products.forEach(p => {
+          list.innerHTML += `
+            <div class="bg-slate-900 border border-slate-700 px-2.5 py-1.5 rounded-lg flex items-center justify-between gap-3 text-xs">
+              <span class="text-white font-medium">${p.name}</span>
+              <div class="flex items-center gap-2">
+                <span class="text-amber-400 font-bold">${p.price.toFixed(2).replace('.', ',')} €</span>
+                <button type="button" onclick="deleteProduct(${p.id})" class="text-red-400 hover:text-red-300 ml-1" title="Löschen"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+            </div>`;
+        });
+      }
+      
+      // Update the quick add buttons in the order form
+      const quickAdds = document.getElementById('quickAddButtons');
+      if (quickAdds) {
+        quickAdds.innerHTML = '<span class="text-[10px] text-slate-400 self-center mr-1"><i class="fa-solid fa-bolt text-amber-400"></i> Katalog-Schnellwahl:</span>';
+        products.forEach(p => {
+          quickAdds.innerHTML += `<button type="button" onclick="addPresetArticle('${p.name}', ${p.price})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-700 cursor-pointer shadow-sm transition">+ ${p.name} <span class="text-amber-400/80">(${p.price.toFixed(2).replace('.',',')}€)</span></button>`;
+        });
+      }
+    }
+
+    function addPresetArticle(nameVal = '', addPrice = 0) {
+      addArticleInputRow(nameVal);
+      if (addPrice > 0) {
+        const priceInput = document.getElementById('price');
+        let currentPrice = parseFloat(priceInput.value) || 0;
+        priceInput.value = (currentPrice + addPrice).toFixed(2);
+      }
     }
 
     function checkAndMigrateExistingOrderPostage() {
@@ -305,6 +387,7 @@
         localStorage.setItem('sefas_shop_spools_permanent', JSON.stringify(spools));
         localStorage.setItem('sefas_shop_expenses_permanent', JSON.stringify(expenses));
         localStorage.setItem('sefas_shop_printers', JSON.stringify(printers));
+        localStorage.setItem('sefas_shop_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -319,6 +402,7 @@
             if (Array.isArray(json.spools) && json.spools.length > 0) spools = json.spools;
             if (Array.isArray(json.expenses)) expenses = json.expenses;
             if (Array.isArray(json.printers) && json.printers.length > 0) printers = json.printers;
+            if (Array.isArray(json.products) && json.products.length > 0) products = json.products;
             
             checkAndMigrateExistingOrderPostage();
             saveLocalOnly();
@@ -326,6 +410,7 @@
             renderSpools();
             renderExpenses();
             renderPrinters();
+            renderProducts();
             updateCustomerDropdowns();
             updatePrinterDropdowns();
             document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
@@ -351,7 +436,7 @@
         const res = await fetch(CORS_PROXY + encodeURIComponent(NPOINT_URL), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orders, spools, expenses, printers })
+          body: JSON.stringify({ orders, spools, expenses, printers, products })
         });
         if (res.ok) {
           document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
@@ -372,13 +457,14 @@
       renderSpools();
       renderExpenses();
       renderPrinters();
+      renderProducts();
       updateCustomerDropdowns();
       updatePrinterDropdowns();
       
       fetch(CORS_PROXY + encodeURIComponent(NPOINT_URL), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orders, spools, expenses, printers })
+        body: JSON.stringify({ orders, spools, expenses, printers, products })
       }).catch(e => console.log("Hintergrund-Sync fehlgeschlagen", e));
     }
 
@@ -602,8 +688,6 @@
         <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1.5 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>`;
       container.appendChild(div);
     }
-
-    function addPresetArticle(presetName) { addArticleInputRow(presetName); }
 
     function addEditArticleRow(name = '', color = '', weight = '') {
       const container = document.getElementById('editArticleRows');
@@ -1176,4 +1260,4 @@
     }
   </script>
 </body>
-</html>
+</html>,
