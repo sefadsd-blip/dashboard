@@ -250,7 +250,7 @@
   </div>
 
   <script>
-    // FEST HINTERLEGTER MASTER-KEY & DEINE FESTE BIN-ID
+    // 100% REINE CLOUD-VERBINDUNG
     const jsonbinKey = "$2a$10$hnafVmeRLZAKTKvsRJICNut84QHZvWJaBSM6AAyLDB/ACywOhb66";
     const jsonbinId = "6ac18cafac6210605a10f4e7";
 
@@ -287,7 +287,7 @@
       document.getElementById('orderDate').value = todayStr;
       document.getElementById('expDate').value = todayStr;
       
-      // Direkt beim Start aus der Cloud laden!
+      // Direkt aus der Cloud laden
       loadCloudData();
     });
 
@@ -303,24 +303,21 @@
       setStatus("Lade Cloud...", "bg-yellow-500");
       try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${jsonbinId}/latest`, {
-          headers: { 'X-Master-Key': jsonbinKey },
+          method: 'GET',
+          headers: {
+            'X-Master-Key': jsonbinKey
+          },
           cache: 'no-store'
         });
         if (res.ok) {
           const json = await res.json();
           const data = json.record;
           if (data) {
-            if (Array.isArray(data.orders)) orders = data.orders;
-            if (Array.isArray(data.spools) && data.spools.length > 0) spools = data.spools;
-            else spools = BACKUP_SPOOLS;
-            
-            if (Array.isArray(data.expenses)) expenses = data.expenses;
-            
-            if (Array.isArray(data.printers) && data.printers.length > 0) printers = data.printers;
-            else printers = BACKUP_PRINTERS;
-            
-            if (Array.isArray(data.products) && data.products.length > 0) products = data.products;
-            else products = BACKUP_PRODUCTS;
+            orders = Array.isArray(data.orders) ? data.orders : [];
+            spools = (Array.isArray(data.spools) && data.spools.length > 0) ? data.spools : BACKUP_SPOOLS;
+            expenses = Array.isArray(data.expenses) ? data.expenses : [];
+            printers = (Array.isArray(data.printers) && data.printers.length > 0) ? data.printers : BACKUP_PRINTERS;
+            products = (Array.isArray(data.products) && data.products.length > 0) ? data.products : BACKUP_PRODUCTS;
             
             checkAndMigrateExistingOrderPostage();
             renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
@@ -328,10 +325,11 @@
             setStatus("Mit Cloud verbunden", "bg-green-500");
           }
         } else {
-          throw new Error("Fehler " + res.status);
+          throw new Error("HTTP Fehler " + res.status);
         }
       } catch(e) {
         setStatus("Verbindungsfehler", "bg-red-500");
+        console.error(e);
       }
     }
 
@@ -357,7 +355,7 @@
         }
       } catch(e) {
         setStatus("Fehler beim Speichern", "bg-red-500");
-        alert("❌ Fehler beim Speichern in der Cloud. Bitte prüfen.");
+        alert("❌ Fehler beim Speichern in der Cloud. Bitte Internetverbindung prüfen.");
       }
     }
 
