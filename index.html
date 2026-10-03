@@ -81,10 +81,10 @@
           <div id="spoolsList" class="space-y-1.5 max-h-[180px] overflow-y-auto pr-1"></div>
         </section>
 
-        <!-- KOSTENRECHNER WIDGET -->
+        <!-- VERBESSERTER KOSTENRECHNER MIT +25% AUFSCHLAG -->
         <section class="card p-3 rounded-xl space-y-2 border border-emerald-500/30 bg-emerald-950/10">
           <div class="flex justify-between items-center border-b border-slate-700/60 pb-1.5">
-            <h2 class="text-xs font-semibold text-emerald-400"><i class="fa-solid fa-calculator mr-1.5"></i> Kostenrechner</h2>
+            <h2 class="text-xs font-semibold text-emerald-400"><i class="fa-solid fa-calculator mr-1.5"></i> Kostenrechner (+ 25% Aufschlag)</h2>
           </div>
           <div class="space-y-2 pt-1">
             <div class="flex items-center gap-2">
@@ -95,8 +95,11 @@
               <div class="flex justify-between text-[10px] text-slate-400"><span>Druckzeit (0,25 €/h):</span> <span id="calcPrintCost">0,00 €</span></div>
               <div class="flex justify-between text-[10px] text-slate-400"><span>Strom (0,12 €/h):</span> <span id="calcElecCost">0,00 €</span></div>
               <div class="flex justify-between text-[10px] text-slate-400 border-b border-slate-700 pb-1 mb-1"><span>Material (0,02 €/g):</span> <span id="calcMatCost">0,00 €</span></div>
-              <div class="flex justify-between font-bold text-white text-[11px]"><span>Herstellungskosten:</span> <span id="calcTotalCost" class="text-emerald-400">0,00 €</span></div>
+              <div class="flex justify-between text-[10px] text-slate-300"><span>Herstellung (Netto):</span> <span id="calcTotalCost">0,00 €</span></div>
+              <div class="flex justify-between text-[10px] text-amber-400 border-b border-slate-700 pb-1 mb-1"><span>+ 25% Gewinn-Aufschlag:</span> <span id="calcMarkup">0,00 €</span></div>
+              <div class="flex justify-between font-bold text-white text-[12px] mt-1"><span>Empf. Verkaufspreis:</span> <span id="calcFinalPrice" class="text-emerald-400" data-raw-price="0">0,00 €</span></div>
             </div>
+            <button onclick="transferToCatalog()" class="w-full bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 border border-emerald-500/50 rounded py-1.5 text-[11px] font-bold transition cursor-pointer shadow-sm"><i class="fa-solid fa-arrow-down mr-1"></i> Preis in Katalog übernehmen</button>
           </div>
         </section>
       </div>
@@ -108,8 +111,8 @@
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-tags mr-1.5 text-amber-400"></i> Artikel-Katalog & Preisliste</h2>
       </div>
       <form id="productForm" onsubmit="addProduct(event)" class="flex flex-col sm:flex-row gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
-        <input type="text" id="prodName" placeholder="Artikelname (z.B. Vase, Halter...)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white flex-1 focus:outline-none">
-        <input type="number" step="0.01" id="prodPrice" placeholder="Standard-Preis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full sm:w-48 focus:outline-none">
+        <input type="text" id="prodName" placeholder="Artikelname (z.B. Vase, Halter...)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white flex-1 focus:outline-none focus:border-amber-500 transition">
+        <input type="number" step="0.01" id="prodPrice" placeholder="Verkaufspreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full sm:w-48 focus:outline-none focus:border-amber-500 transition">
         <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-1.5 px-4 text-xs transition cursor-pointer whitespace-nowrap">+ Im Katalog speichern</button>
       </form>
       <div class="flex flex-wrap gap-2 pt-1" id="productsList">
@@ -154,7 +157,6 @@
             <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-[11px] cursor-pointer">+ Leeren Artikel</button>
           </div>
           
-          <!-- DYNAMISCHE SCHNELL-BUTTONS AUS DEM KATALOG -->
           <div class="flex flex-wrap gap-1.5 py-0.5" id="quickAddButtons">
             <!-- Wird per JS befüllt -->
           </div>
@@ -288,7 +290,7 @@
       updatePrinterDropdowns();
     });
     
-    // KOSTENRECHNER LOGIK
+    // KOSTENRECHNER LOGIK - MIT 25% GEWINN-AUFSCHLAG
     function calculateCosts() {
       const hours = parseFloat(document.getElementById('calcHours').value) || 0;
       const grams = parseFloat(document.getElementById('calcGrams').value) || 0;
@@ -296,12 +298,35 @@
       const printCost = hours * 0.25;
       const elecCost = hours * 0.12;
       const matCost = grams * 0.02;
-      const total = printCost + elecCost + matCost;
+      
+      const totalCost = printCost + elecCost + matCost;
+      const markup = totalCost * 0.25; // Exakt 25% Marge oben drauf
+      const finalPrice = totalCost + markup;
 
       document.getElementById('calcPrintCost').innerText = printCost.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('calcElecCost').innerText = elecCost.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('calcMatCost').innerText = matCost.toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('calcTotalCost').innerText = total.toFixed(2).replace('.', ',') + ' €';
+      document.getElementById('calcTotalCost').innerText = totalCost.toFixed(2).replace('.', ',') + ' €';
+      
+      document.getElementById('calcMarkup').innerText = '+' + markup.toFixed(2).replace('.', ',') + ' €';
+      document.getElementById('calcFinalPrice').innerText = finalPrice.toFixed(2).replace('.', ',') + ' €';
+      
+      // Verstecktes Feld um den exakten berechneten Preis an den Katalog zu übergeben
+      document.getElementById('calcFinalPrice').dataset.rawPrice = finalPrice.toFixed(2);
+    }
+    
+    // PREIS IN DEN KATALOG ÜBERNEHMEN
+    function transferToCatalog() {
+      const rawPrice = document.getElementById('calcFinalPrice').dataset.rawPrice;
+      if (rawPrice && parseFloat(rawPrice) > 0) {
+        document.getElementById('prodPrice').value = rawPrice;
+        document.getElementById('prodName').focus(); // Setzt den Cursor direkt in das Namens-Feld
+        
+        // Scrollt die Seite sanft zum Katalog
+        document.getElementById('productForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        alert('Bitte gib zuerst Zeit und Gewicht im Rechner ein!');
+      }
     }
 
     // ARTIKEL & PREISLISTE LOGIK
@@ -1260,4 +1285,4 @@
     }
   </script>
 </body>
-</html>,
+</html>
