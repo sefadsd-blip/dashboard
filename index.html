@@ -77,7 +77,7 @@
 
   <div id="mainApp" class="max-w-[1700px] mx-auto space-y-4">
     
-    <!-- HEADER MIT HAMBURGER-MENÜ -->
+    <!-- HEADER -->
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800 p-3 rounded-2xl border border-slate-700 gap-3 relative">
       <div class="flex items-center space-x-3">
         <button onclick="openSubPage()" class="bg-slate-900 hover:bg-slate-700 text-cyan-400 p-2.5 rounded-xl border border-slate-700 transition flex items-center justify-center cursor-pointer shadow-md" title="Tools & Katalog öffnen">
@@ -100,7 +100,7 @@
         </div>
         <div>
           <h1 class="text-lg font-bold text-white flex items-center gap-2">Sefas<span class="text-cyan-400">3d</span>shop</h1>
-          <p class="text-slate-400 text-[11px] flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-green-500"></span><span id="syncStatus">Mit Cloud verbunden</span></p>
+          <p class="text-slate-400 text-[11px] flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-green-500"></span><span id="syncStatus">Bereit</span></p>
         </div>
       </div>
       
@@ -113,6 +113,7 @@
       </div>
     </header>
 
+    <!-- STATISTIK -->
     <section class="space-y-2">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800/60 p-2.5 rounded-xl border border-slate-700 gap-2">
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-chart-pie mr-1.5 text-blue-400"></i> Statistik-Auswertung</h2>
@@ -130,6 +131,7 @@
       </div>
     </section>
 
+    <!-- DRUCKER & FILAMENT -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <section class="lg:col-span-2 space-y-2">
         <div class="flex justify-between items-center"><h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-print mr-1.5 text-blue-400"></i> Drucker-Übersicht</h2><button onclick="addPrinterPrompt()" class="bg-slate-800 hover:bg-slate-700 text-blue-300 text-[11px] px-2 py-0.5 rounded border border-blue-500/35 cursor-pointer">+ Drucker</button></div>
@@ -248,15 +250,8 @@
   </div>
 
   <script>
-    // DUAL-CLOUD-SYSTEM: Erkennung und Fallback
-    let cloudId = localStorage.getItem('sefas_shop_blob_id') || '';
-    let cloudProvider = localStorage.getItem('sefas_cloud_provider') || '';
-
-    // Falls noch ein alter jsonblob vorhanden ist, wird er automatisch als 'jsonblob' erkannt
-    if (cloudId && !cloudProvider) {
-      cloudProvider = (cloudId.length === 24 && /^[0-9a-fA-F]{24}$/.test(cloudId)) ? 'jsonbin' : 'jsonblob';
-      localStorage.setItem('sefas_cloud_provider', cloudProvider);
-    }
+    // DIE ORIGINALE CLOUD-ID LOGIK
+    let jsonBlobId = localStorage.getItem('sefas_shop_blob_id') || '';
 
     const BACKUP_SPOOLS = [
       {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notifiedCount":0,"lastNotifiedDate":""},
@@ -326,15 +321,12 @@
     function calculateCosts() {
       const hours = parseFloat(document.getElementById('calcHours').value) || 0;
       const grams = parseFloat(document.getElementById('calcGrams').value) || 0;
-
       const printCost = hours * 0.25;
       const elecCost = hours * 0.12;
       const matCost = grams * 0.02;
-      
       const totalCost = printCost + elecCost + matCost;
       const markup = totalCost * 0.35;
       const handlingFee = 1.50;
-      
       let finalPrice = 0;
       if (hours > 0 || grams > 0) finalPrice = totalCost + markup + handlingFee;
 
@@ -344,7 +336,6 @@
       document.getElementById('calcTotalCost').innerText = totalCost.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('calcMarkup').innerText = '+' + markup.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('calcFinalPrice').innerText = finalPrice.toFixed(2).replace('.', ',') + ' €';
-      
       document.getElementById('calcFinalPrice').dataset.rawPrice = finalPrice.toFixed(2);
     }
     
@@ -353,9 +344,7 @@
       if (rawPrice && parseFloat(rawPrice) > 0) {
         document.getElementById('prodPrice').value = rawPrice;
         document.getElementById('prodName').focus();
-      } else {
-        alert('Bitte gib zuerst Zeit und Gewicht im Rechner ein!');
-      }
+      } else { alert('Bitte gib zuerst Zeit und Gewicht im Rechner ein!'); }
     }
 
     function addProduct(e) {
@@ -436,123 +425,94 @@
       } catch(e) {}
     }
 
-    // SICHERE CLOUD-LADE FUNKTION (Unterstützt BEIDE Systeme)
+    // DIE ORIGINALE LOAD FUNKTION
     async function loadCloudData() {
-      if (!cloudId) {
+      if (!jsonBlobId) {
         alert("⚠ Noch kein Cloud-Speicher vorhanden. Klicke einmal auf '📤 Speichern', um deine Cloud-Datenbank automatisch anzulegen.");
         return;
       }
       document.getElementById('syncStatus').innerText = "Lade von Cloud...";
       try {
-        let json = null;
-        if (cloudProvider === 'jsonbin') {
-          const res = await fetch(`https://api.jsonbin.io/v3/b/${cloudId}/latest`, { cache: 'no-store' });
-          if (res.ok) {
-            const wrap = await res.json();
-            json = wrap.record;
+        const res = await fetch(`https://jsonblob.com/api/jsonBlob/${jsonBlobId}`, { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json) {
+            if (Array.isArray(json.orders)) orders = json.orders;
+            if (Array.isArray(json.spools) && json.spools.length > 0) spools = json.spools;
+            if (Array.isArray(json.expenses)) expenses = json.expenses;
+            if (Array.isArray(json.printers) && json.printers.length > 0) printers = json.printers;
+            if (Array.isArray(json.products) && json.products.length > 0) products = json.products;
+            
+            checkAndMigrateExistingOrderPostage();
+            saveLocalOnly();
+            renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
+            updateCustomerDropdowns(); updatePrinterDropdowns();
+            document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
+            alert("✅ Daten erfolgreich von der Cloud abgerufen!");
           }
         } else {
-          const res = await fetch(`https://jsonblob.com/api/jsonBlob/${cloudId}`, { cache: 'no-store' });
-          if (res.ok) json = await res.json();
-        }
-
-        if (json) {
-          if (Array.isArray(json.orders)) orders = json.orders;
-          if (Array.isArray(json.spools) && json.spools.length > 0) spools = json.spools;
-          if (Array.isArray(json.expenses)) expenses = json.expenses;
-          if (Array.isArray(json.printers) && json.printers.length > 0) printers = json.printers;
-          if (Array.isArray(json.products) && json.products.length > 0) products = json.products;
-          
-          checkAndMigrateExistingOrderPostage();
-          saveLocalOnly();
-          renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
-          updateCustomerDropdowns(); updatePrinterDropdowns();
-          document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
-          alert("✅ Daten erfolgreich von der Cloud abgerufen!");
-        } else {
-          throw new Error("Daten konnten nicht gelesen werden.");
+          alert("Fehler beim Abrufen der Cloud (Status: " + res.status + ")");
+          document.getElementById('syncStatus').innerText = "Verbindungsfehler";
         }
       } catch(e) {
-        alert("❌ Fehler beim Laden. Die Cloud-Verbindung wurde möglicherweise blockiert.");
+        alert("❌ Netzwerkfehler beim Cloud-Laden.");
         document.getElementById('syncStatus').innerText = "Offline / Fehler";
       }
     }
 
-    // SICHERE CLOUD-SPEICHER FUNKTION (Umgeht den Browser-Header-Blocker)
+    // DIE ORIGINALE SAVE FUNKTION EXAKT WIE SIE WAR
     async function pushToCloudManual() {
       saveLocalOnly();
       document.getElementById('syncStatus').innerText = "Speichere in Cloud...";
       try {
         const payload = { orders, spools, expenses, printers, products };
-
-        if (!cloudId) {
-          // NEUE DATENBANK: Nutzt JSONBin, weil die ID im Body zurückkommt (Browser blockiert Body nicht, nur Header)
-          const res = await fetch('https://api.jsonbin.io/v3/b', {
+        let res;
+        
+        if (!jsonBlobId) {
+          res = await fetch('https://jsonblob.com/api/jsonBlob', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Bin-Private': 'false' },
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify(payload)
           });
           if (res.ok) {
-            const data = await res.json();
-            if (data && data.metadata && data.metadata.id) {
-              cloudId = data.metadata.id;
-              cloudProvider = 'jsonbin';
-              localStorage.setItem('sefas_shop_blob_id', cloudId);
-              localStorage.setItem('sefas_cloud_provider', 'jsonbin');
-            }
-          } else { throw new Error("Netzwerk-Abbruch beim Erstellen"); }
-        } else {
-          // BESTEHENDE DATENBANK UPDATEN
-          let res;
-          if (cloudProvider === 'jsonbin') {
-            res = await fetch(`https://api.jsonbin.io/v3/b/${cloudId}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-          } else {
-            res = await fetch(`https://jsonblob.com/api/jsonBlob/${cloudId}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-            // Falls alte JSONBlob-ID abgelaufen ist (404), löschen und neu über JSONBin anlegen
-            if (res.status === 404) {
-              cloudId = '';
-              cloudProvider = '';
-              localStorage.removeItem('sefas_shop_blob_id');
-              localStorage.removeItem('sefas_cloud_provider');
-              return pushToCloudManual(); 
+            const location = res.headers.get('Location');
+            if (location) {
+              jsonBlobId = location.split('/').pop();
+              localStorage.setItem('sefas_shop_blob_id', jsonBlobId);
             }
           }
-          if (!res.ok) throw new Error("Update fehlgeschlagen.");
+        } else {
+          res = await fetch(`https://jsonblob.com/api/jsonBlob/${jsonBlobId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(payload)
+          });
         }
 
-        document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
-        alert("✅ Daten erfolgreich in der Cloud gespeichert!");
+        if (res && res.ok) {
+          document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
+          alert("✅ Daten erfolgreich in der Cloud gespeichert!");
+        } else {
+          throw new Error("Server hat die Anfrage abgelehnt.");
+        }
       } catch(e) {
-        alert("❌ Unerwarteter Netzwerkfehler. Dein Browser blockiert weiterhin externe Anfragen.");
+        alert("❌ Netzwerkfehler beim Cloud-Speichern.");
         document.getElementById('syncStatus').innerText = "Offline / Fehler";
       }
     }
 
-    // AUTOMATISCHER HINTERGRUND-SYNC (Ebenfalls umgebaut)
+    // ORIGINAL HINTERGRUND-SYNC
     function saveAllData() {
       saveLocalOnly();
       renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
       updateCustomerDropdowns(); updatePrinterDropdowns();
       
-      if (cloudId) {
-        const payload = { orders, spools, expenses, printers, products };
-        if (cloudProvider === 'jsonbin') {
-          fetch(`https://api.jsonbin.io/v3/b/${cloudId}`, {
-            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-          }).catch(e => console.log("Bg Sync fail"));
-        } else {
-          fetch(`https://jsonblob.com/api/jsonBlob/${cloudId}`, {
-            method: 'PUT', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload)
-          }).catch(e => console.log("Bg Sync fail"));
-        }
+      if (jsonBlobId) {
+        fetch(`https://jsonblob.com/api/jsonBlob/${jsonBlobId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ orders, spools, expenses, printers, products })
+        }).catch(e => console.log("Hintergrund-Sync fehlgeschlagen", e));
       }
     }
 
@@ -838,43 +798,22 @@
       const lCostVal = parseFloat(document.getElementById('labelCost').value) || 0;
 
       if (lCostVal > 0) {
-        expenses.unshift({
-          id: Date.now(),
-          description: `Porto / Label für ${document.getElementById('customer').value} (${fixedInvoiceNum})`,
-          category: 'DHL / Versand',
-          amount: lCostVal,
-          date: customDate
-        });
+        expenses.unshift({ id: Date.now(), description: `Porto / Label für ${document.getElementById('customer').value} (${fixedInvoiceNum})`, category: 'DHL / Versand', amount: lCostVal, date: customDate });
       }
       
       orders.unshift({
-        id: Date.now(),
-        customer: document.getElementById('customer').value,
-        platform: plat,
-        paymentMethod: payMethod,
-        isPaid: document.getElementById('isPaid').value,
-        ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A',
-        address: document.getElementById('address').value || '',
-        printer: document.getElementById('printer').value,
-        status: "Offen",
-        label: document.getElementById('label').value,
-        packed: document.getElementById('packed').value,
-        price: parseFloat(document.getElementById('price').value) || 0,
-        shippingFee: parseFloat(document.getElementById('shippingFee').value) || 0,
-        labelCost: lCostVal,
-        tracking: document.getElementById('tracking').value || '-',
-        orderDate: customDate,
-        invoiceNumber: fixedInvoiceNum,
-        shipDate: '',
-        archived: false,
-        items: itemsList
+        id: Date.now(), customer: document.getElementById('customer').value, platform: plat, paymentMethod: payMethod,
+        isPaid: document.getElementById('isPaid').value, ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A',
+        address: document.getElementById('address').value || '', printer: document.getElementById('printer').value,
+        status: "Offen", label: document.getElementById('label').value, packed: document.getElementById('packed').value,
+        price: parseFloat(document.getElementById('price').value) || 0, shippingFee: parseFloat(document.getElementById('shippingFee').value) || 0,
+        labelCost: lCostVal, tracking: document.getElementById('tracking').value || '-', orderDate: customDate,
+        invoiceNumber: fixedInvoiceNum, shipDate: '', archived: false, items: itemsList
       });
       saveAllData();
       document.getElementById('orderForm').reset();
-      document.getElementById('orderDate').value = todayStr;
-      document.getElementById('labelCost').value = "0.00";
-      document.getElementById('shippingFee').value = "5.00";
-      document.getElementById('existingCustomerSelect').value = "";
+      document.getElementById('orderDate').value = todayStr; document.getElementById('labelCost').value = "0.00";
+      document.getElementById('shippingFee').value = "5.00"; document.getElementById('existingCustomerSelect').value = "";
     }
 
     function startEdit(idx) { editingIndex = idx; renderOrders(); }
@@ -938,7 +877,6 @@
 
       orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value || '-';
       orders[idx].orderDate = document.getElementById(`edit-date-${idx}`)?.value || orders[idx].orderDate;
-      
       const newInvInput = document.getElementById(`edit-inv-${idx}`);
       if (newInvInput && newInvInput.value.trim()) orders[idx].invoiceNumber = newInvInput.value.trim();
 
