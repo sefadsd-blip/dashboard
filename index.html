@@ -37,14 +37,6 @@
         </button>
       </div>
 
-      <!-- JSONBIN CLOUD EINSTELLUNGEN -->
-      <section class="card p-4 rounded-xl space-y-2 border border-blue-500/30 bg-blue-950/10">
-        <h2 class="text-xs font-semibold text-blue-400"><i class="fa-solid fa-cloud mr-1.5"></i> jsonbin.io Cloud-Verbindung</h2>
-        <p class="text-[10px] text-slate-400">Dein Master-Key ist fest hinterlegt. Falls du eine bestehende Bin-ID hast, trage sie hier ein (wird sonst beim Speichern automatisch erstellt):</p>
-        <input type="text" id="jsonbinIdInput" placeholder="Bin-ID (z.B. 65c... oder wird automatisch gefüllt)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full focus:outline-none focus:border-blue-500 font-mono">
-        <button onclick="saveBinIdOnly()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-1.5 rounded-lg text-xs transition cursor-pointer">Bin-ID speichern</button>
-      </section>
-
       <!-- KOSTENRECHNER -->
       <section class="card p-4 rounded-xl space-y-2 border border-emerald-500/30 bg-emerald-950/10">
         <div class="flex justify-between items-center border-b border-slate-700/60 pb-2">
@@ -258,9 +250,9 @@
   </div>
 
   <script>
-    // FEST HINTERLEGTER MASTER-KEY
+    // FEST HINTERLEGTER MASTER-KEY & DEINE FESTE BIN-ID
     const jsonbinKey = "$2a$10$hnafVmeRLZAKTKvsRJICNut84QHZvWJaBSM6AAyLDB/ACywOhb66";
-    let jsonbinId = localStorage.getItem('sefas_shop_jsonbin_id') || '';
+    const jsonbinId = "6ac18cafac6210605a10f4e7";
 
     const BACKUP_SPOOLS = [
       {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notifiedCount":0,"lastNotifiedDate":""},
@@ -294,11 +286,8 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = todayStr;
       document.getElementById('expDate').value = todayStr;
-      if(document.getElementById('jsonbinIdInput')) {
-        document.getElementById('jsonbinIdInput').value = jsonbinId;
-      }
       
-      // Beim Start direkt aus der Cloud laden!
+      // Direkt beim Start aus der Cloud laden!
       loadCloudData();
     });
 
@@ -310,23 +299,7 @@
     function openSubPage() { document.getElementById('subPageOverlay').classList.remove('hidden'); }
     function closeSubPage() { document.getElementById('subPageOverlay').classList.add('hidden'); }
 
-    function saveBinIdOnly() {
-      const idVal = document.getElementById('jsonbinIdInput').value.trim();
-      if (!idVal) return alert("Bitte Bin-ID eingeben!");
-      jsonbinId = idVal;
-      localStorage.setItem('sefas_shop_jsonbin_id', jsonbinId);
-      alert('✅ Bin-ID gespeichert!');
-      closeSubPage();
-      loadCloudData();
-    }
-
     async function loadCloudData() {
-      if (!jsonbinId) {
-        // Wenn keine ID da ist, versuchen wir Standard-Daten zu laden oder initialisieren
-        spools = BACKUP_SPOOLS; printers = BACKUP_PRINTERS; products = BACKUP_PRODUCTS;
-        renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
-        return;
-      }
       setStatus("Lade Cloud...", "bg-yellow-500");
       try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${jsonbinId}/latest`, {
@@ -367,37 +340,16 @@
       const payload = { orders, spools, expenses, printers, products };
 
       try {
-        let res;
-        if (!jsonbinId) {
-          // Erstelle eine neue Bin über POST (ohne störende Header)
-          res = await fetch('https://api.jsonbin.io/v3/b', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Master-Key': jsonbinKey
-            },
-            body: JSON.stringify(payload)
-          });
-          if (res.ok) {
-            const json = await res.json();
-            if (json.metadata && json.metadata.id) {
-              jsonbinId = json.metadata.id;
-              localStorage.setItem('sefas_shop_jsonbin_id', jsonbinId);
-              document.getElementById('jsonbinIdInput').value = jsonbinId;
-            }
-          }
-        } else {
-          res = await fetch(`https://api.jsonbin.io/v3/b/${jsonbinId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Master-Key': jsonbinKey
-            },
-            body: JSON.stringify(payload)
-          });
-        }
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${jsonbinId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': jsonbinKey
+          },
+          body: JSON.stringify(payload)
+        });
 
-        if (res && res.ok) {
+        if (res.ok) {
           setStatus("Mit Cloud verbunden", "bg-green-500");
           alert("✅ Erfolgreich in der Cloud gespeichert!");
         } else {
@@ -413,16 +365,14 @@
       renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
       updateCustomerDropdowns(); updatePrinterDropdowns();
       
-      if (jsonbinId) {
-        fetch(`https://api.jsonbin.io/v3/b/${jsonbinId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': jsonbinKey
-          },
-          body: JSON.stringify({ orders, spools, expenses, printers, products })
-        }).catch(e => console.log("Cloud auto-sync fail"));
-      }
+      fetch(`https://api.jsonbin.io/v3/b/${jsonbinId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': jsonbinKey
+        },
+        body: JSON.stringify({ orders, spools, expenses, printers, products })
+      }).catch(e => console.log("Cloud auto-sync fail"));
     }
 
     function calculateCosts() {
@@ -506,7 +456,6 @@
     }
 
     function checkAndMigrateExistingOrderPostage() {
-      let added = false;
       orders.forEach(o => {
         const lCost = parseFloat(o.labelCost) || 0;
         const invNum = generateInvoiceNumberForExisting(o);
@@ -515,7 +464,6 @@
           const exists = expenses.some(ex => ex.description === descSearch || (ex.description.includes(o.customer) && ex.amount === lCost));
           if (!exists) {
             expenses.unshift({ id: Date.now() + Math.random(), description: descSearch, category: 'DHL / Versand', amount: lCost, date: o.orderDate || todayStr });
-            added = true;
           }
         }
       });
