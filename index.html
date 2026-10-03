@@ -81,10 +81,9 @@
 
   <div id="mainApp" class="max-w-[1700px] mx-auto space-y-4">
     
-    <!-- HEADER MIT HAMBURGER-MENÜ (OBEN LINKS) -->
+    <!-- HEADER MIT HAMBURGER-MENÜ -->
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800 p-3 rounded-2xl border border-slate-700 gap-3 relative">
       <div class="flex items-center space-x-3">
-        <!-- HAMBURGER-MENÜ BUTTON (3 STRICHE) -->
         <button onclick="openSubPage()" class="bg-slate-900 hover:bg-slate-700 text-cyan-400 p-2.5 rounded-xl border border-slate-700 transition flex items-center justify-center cursor-pointer shadow-md" title="Tools & Katalog öffnen">
           <i class="fa-solid fa-bars text-sm"></i>
         </button>
@@ -253,8 +252,7 @@
   </div>
 
   <script>
-    const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
-    const CORS_PROXY = 'https://corsproxy.io/?';
+    let blobId = localStorage.getItem('sefas_shop_blob_id') || '';
 
     const BACKUP_SPOOLS = [
       {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notifiedCount":0,"lastNotifiedDate":""},
@@ -316,6 +314,10 @@
       renderProducts();
       updateCustomerDropdowns();
       updatePrinterDropdowns();
+
+      if (blobId) {
+        loadCloudData();
+      }
     });
 
     // UNTERSEITE / OVERLAY STEUERUNG
@@ -476,10 +478,15 @@
       } catch(e) {}
     }
 
+    // CLOUD SYNCHRONISATION (SUPERJSONBLOB - VOLL ANONYM, SCHNELL & FEHLERFREI)
     async function loadCloudData() {
+      if (!blobId) {
+        alert("ℹ️ Noch keine Cloud-ID vorhanden. Klicke einmal auf 'Speichern', um eine Cloud-ID zu generieren.");
+        return;
+      }
       document.getElementById('syncStatus').innerText = "Lade von Cloud...";
       try {
-        const res = await fetch(CORS_PROXY + encodeURIComponent(NPOINT_URL), { cache: 'no-store' });
+        const res = await fetch(`https://superjsonblob.com/api/jsonBlob/${blobId}`);
         if (res.ok) {
           const json = await res.json();
           if (json) {
@@ -500,39 +507,67 @@
             updatePrinterDropdowns();
             document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
             alert("✅ Daten erfolgreich von der Cloud abgerufen!");
-          } else {
-            alert("Die Cloud-Antwort war leer.");
-            document.getElementById('syncStatus').innerText = "Fehler beim Laden";
           }
         } else {
-          alert("Server-Fehler beim Abrufen der Cloud (Status: " + res.status + ")");
           document.getElementById('syncStatus').innerText = "Verbindungsfehler";
+          alert("⚠ Cloud-ID nicht gefunden oder Server-Fehler.");
         }
       } catch(e) {
-        alert("❌ Netzwerkfehler beim Cloud-Laden.");
-        document.getElementById('syncStatus').innerText = "Offline / Fehler";
+        document.getElementById('syncStatus').innerText = "Offline";
+        alert("❌ Netzwerkfehler beim Laden.");
       }
     }
 
     async function pushToCloudManual() {
       saveLocalOnly();
       document.getElementById('syncStatus').innerText = "Speichere in Cloud...";
+      const payload = { orders, spools, expenses, printers, products };
+
       try {
-        const res = await fetch(CORS_PROXY + encodeURIComponent(NPOINT_URL), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orders, spools, expenses, printers, products })
-        });
-        if (res.ok) {
-          document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
-          alert("✅ Daten erfolgreich in der Cloud gespeichert!");
+        if (!blobId) {
+          const res = await fetch('https://superjsonblob.com/api/jsonBlob', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            const data = await res.json();
+            blobId = data.id;
+            localStorage.setItem('sefas_shop_blob_id', blobId);
+            document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
+            alert("✅ Cloud-Speicher erfolgreich eingerichtet & gespeichert!\nID: " + blobId);
+          } else {
+            throw new Error("Erstellung fehlgeschlagen");
+          }
         } else {
-          alert("⚠ Server-Fehler: Die Cloud hat abgelehnt.");
-          document.getElementById('syncStatus').innerText = "Fehler beim Speichern";
+          const res = await fetch(`https://superjsonblob.com/api/jsonBlob/${blobId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
+            alert("✅ Daten erfolgreich in der Cloud gespeichert!");
+          } else {
+            const resPost = await fetch('https://superjsonblob.com/api/jsonBlob', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            if (resPost.ok) {
+              const data = await resPost.json();
+              blobId = data.id;
+              localStorage.setItem('sefas_shop_blob_id', blobId);
+              document.getElementById('syncStatus').innerText = "Mit Cloud verbunden";
+              alert("✅ Neue Cloud-ID erstellt & gespeichert!");
+            } else {
+              throw new Error("Speichern fehlgeschlagen");
+            }
+          }
         }
       } catch(e) {
-        alert("❌ Netzwerkfehler beim Cloud-Speichern.");
-        document.getElementById('syncStatus').innerText = "Offline / Fehler";
+        document.getElementById('syncStatus').innerText = "Fehler";
+        alert("❌ Cloud-Fehler beim Speichern.");
       }
     }
 
@@ -545,12 +580,14 @@
       renderProducts();
       updateCustomerDropdowns();
       updatePrinterDropdowns();
-      
-      fetch(CORS_PROXY + encodeURIComponent(NPOINT_URL), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orders, spools, expenses, printers, products })
-      }).catch(e => console.log("Hintergrund-Sync fehlgeschlagen", e));
+
+      if (blobId) {
+        fetch(`https://superjsonblob.com/api/jsonBlob/${blobId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orders, spools, expenses, printers, products })
+        }).catch(e => console.log("Hintergrund-Sync fehlgeschlagen", e));
+      }
     }
 
     function addPrinterPrompt() {
