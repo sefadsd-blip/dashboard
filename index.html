@@ -187,7 +187,7 @@
 
           <div id="articleInputRows" class="space-y-1.5">
             <div class="flex gap-2 items-center article-row">
-              <input type="text" placeholder="Artikelbezeichnung" required class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
+              <input type="text" placeholder="Artikelbezeichnung" class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
               <select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-44 focus:outline-none"><option value="">-- Farbe --</option></select>
               <input type="number" placeholder="Gramm (g)" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none">
             </div>
@@ -390,11 +390,15 @@
           const json = await res.json();
           if (json) {
             orders = Array.isArray(json.orders) ? json.orders : [];
-            // Erzwinge Backup-Spulen, falls Cloud leer ist oder keine Spulen hat
-            spools = (Array.isArray(json.spools) && json.spools.length > 0) ? json.spools : [...BACKUP_SPOOLS];
             expenses = Array.isArray(json.expenses) ? json.expenses : [];
             printers = (Array.isArray(json.printers) && json.printers.length > 0) ? json.printers : [...BACKUP_PRINTERS];
             products = (Array.isArray(json.products) && json.products.length >= BACKUP_PRODUCTS.length) ? json.products : [...BACKUP_PRODUCTS];
+            
+            if (Array.isArray(json.spools) && json.spools.length > 0 && json.spools.some(s => s.remainingGrams > 0)) {
+              spools = json.spools;
+            } else {
+              spools = [...BACKUP_SPOOLS];
+            }
             
             checkAndMigrateExistingOrderPostage();
             renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
@@ -767,7 +771,7 @@
       let optionsHtml = '<option value="">-- Farbe --</option>';
       spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === colorVal ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
       div.innerHTML = `
-        <input type="text" placeholder="Artikelbezeichnung" value="${nameVal}" required class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
+        <input type="text" placeholder="Artikelbezeichnung" value="${nameVal}" class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
         <select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-44 focus:outline-none">${optionsHtml}</select>
         <input type="number" placeholder="Gramm (g)" value="${weightVal}" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none">
         <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1.5 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>`;
@@ -782,7 +786,7 @@
       let optionsHtml = '<option value="">-- Farbe --</option>';
       spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
       div.innerHTML = `
-        <input type="text" placeholder="Artikelbezeichnung" value="${name}" required class="edit-art-name bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white flex-1 focus:outline-none">
+        <input type="text" placeholder="Artikelbezeichnung" value="${name}" class="edit-art-name bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white flex-1 focus:outline-none">
         <select class="edit-art-color bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-32 focus:outline-none">${optionsHtml}</select>
         <input type="number" placeholder="Gramm" value="${weight}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-16 focus:outline-none">
         <button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1.5 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>`;
