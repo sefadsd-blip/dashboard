@@ -70,7 +70,7 @@
             <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-1.5 px-3 text-xs transition cursor-pointer whitespace-nowrap">+ Speichern</button>
           </div>
         </form>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1" id="productsList"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 max-h-[350px] overflow-y-auto pr-1" id="productsList"></div>
       </section>
     </div>
   </div>
@@ -134,7 +134,7 @@
         <div id="printersGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
       </section>
       <section class="card p-3 rounded-xl space-y-2">
-        <div class="flex justify-between items-center"><h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-layer-group mr-1.5 text-purple-400"></i> Filament-Lager</h2><button onclick="addSpoolPrompt()" class="bg-slate-800 hover:bg-slate-700 text-purple-300 text-[11px] px-2 py-0.5 rounded border border-purple-500/35 cursor-pointer">+ Spule</button></div>
+        <div class="flex justify-between items-center"><h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-layer-group mr-1.5 text-purple-400"></i> Filament-Lager</h2><button onclick="addSpoolPrompt()" class="bg-slate-800 hover:bg-slate-700 text-purple-300 text-[11px] px-2 py-0.5 rounded border border-blue-500/35 cursor-pointer">+ Spule</button></div>
         <div id="spoolWarningBanner" class="hidden bg-red-500/10 border border-red-500/40 p-2 rounded-lg text-[11px] flex items-start gap-2 text-red-300"></div>
         <div id="spoolsList" class="space-y-1.5 max-h-[180px] overflow-y-auto pr-1"></div>
       </section>
@@ -378,7 +378,9 @@
             spools = (Array.isArray(json.spools) && json.spools.length > 0) ? json.spools : BACKUP_SPOOLS;
             expenses = Array.isArray(json.expenses) ? json.expenses : [];
             printers = (Array.isArray(json.printers) && json.printers.length > 0) ? json.printers : BACKUP_PRINTERS;
-            products = (Array.isArray(json.products) && json.products.length > 0) ? json.products : BACKUP_PRODUCTS;
+            
+            // WICHTIG: Erzwingt die 87 Artikel, falls die Cloud weniger oder gar keine hat!
+            products = (Array.isArray(json.products) && json.products.length >= BACKUP_PRODUCTS.length) ? json.products : BACKUP_PRODUCTS;
             
             checkAndMigrateExistingOrderPostage();
             renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
@@ -391,7 +393,12 @@
       } catch(e) {
         setStatus("Verbindungsfehler", "bg-red-500");
         console.error(e);
-        alert("❌ Fehler beim Laden von der Cloud.");
+        // Fallback bei Netzwerkfehler auf lokale Backups
+        products = BACKUP_PRODUCTS;
+        spools = BACKUP_SPOOLS;
+        printers = BACKUP_PRINTERS;
+        renderProducts(); renderSpools(); renderPrinters();
+        alert("❌ Fehler beim Laden von der Cloud (Lokale Daten aktiv).");
       }
     }
 
@@ -1260,6 +1267,7 @@
       const grid = document.getElementById('printersGrid');
       if (!grid) return;
       grid.innerHTML = '';
+      printers.push((p, idx) => {}); // Safe guard
       printers.forEach((p, idx) => {
         let statusColor = 'text-blue-400';
         if (p.status === 'In Arbeit') statusColor = 'text-yellow-400 font-bold';
