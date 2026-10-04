@@ -58,10 +58,11 @@
         </div>
       </section>
 
+      <!-- Artikel-Katalog Sektion mit Suchleiste -->
       <section class="card p-4 rounded-xl space-y-3">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-700/60 pb-2.5">
           <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-tags mr-1.5 text-amber-400"></i> Artikel-Katalog & Preisliste</h2>
-          <input type="text" id="productSearchInput" oninput="renderProducts()" placeholder="🔍 Artikel durchsuchen..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-full sm:w-60 focus:outline-none focus:border-amber-500 transition">
+          <input type="text" id="productSearchInput" oninput="renderProducts()" placeholder="🔍 Artikel durchsuchen..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full sm:w-64 focus:outline-none focus:border-amber-500 transition">
         </div>
         
         <form id="productForm" onsubmit="addProduct(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
@@ -198,7 +199,7 @@
       </div>
       <form id="expenseForm" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
         <input type="text" id="expDesc" placeholder="Beschreibung" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙️ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷️ Sonstiges / eBay Gebühren</option></select>
+        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙️ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷️️ Sonstiges / eBay Gebühren</option></select>
         <input type="number" step="0.01" id="expAmount" placeholder="Betrag (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <input type="date" id="expDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg py-1.5 text-xs transition cursor-pointer">+ Ausgabe eintragen</button>
@@ -243,9 +244,16 @@
   <script>
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
 
+    // Dein vollständiges Filament-Lager mit allen Farben und Gramm-Zahlen
     const BACKUP_SPOOLS = [
-      {"id":1,"name":"PLA Schwarz","remainingGrams":4160,"notifiedCount":0,"lastNotifiedDate":""},
-      {"id":2,"name":"PETG Weiß","remainingGrams":650,"notifiedCount":0,"lastNotifiedDate":""}
+      {"id": 1, "name": "PLA Schwarz", "remainingGrams": 4160, "notifiedCount": 0, "lastNotifiedDate": ""},
+      {"id": 2, "name": "PETG Weiß", "remainingGrams": 650, "notifiedCount": 0, "lastNotifiedDate": ""},
+      {"id": 3, "name": "PLA Weiß", "remainingGrams": 1000, "notifiedCount": 0, "lastNotifiedDate": ""},
+      {"id": 4, "name": "PLA Grau", "remainingGrams": 850, "notifiedCount": 0, "lastNotifiedDate": ""},
+      {"id": 5, "name": "PLA Rot", "remainingGrams": 500, "notifiedCount": 0, "lastNotifiedDate": ""},
+      {"id": 6, "name": "PLA Blau", "remainingGrams": 900, "notifiedCount": 0, "lastNotifiedDate": ""},
+      {"id": 7, "name": "PLA Gold / Silk", "remainingGrams": 750, "notifiedCount": 0, "lastNotifiedDate": ""},
+      {"id": 8, "name": "PLA Silber / Silk", "remainingGrams": 600, "notifiedCount": 0, "lastNotifiedDate": ""}
     ];
 
     const BACKUP_PRINTERS = [
@@ -348,10 +356,10 @@
     let editingIndex = -1;
     let showingArchive = false;
     let orders = [];
-    let spools = [];
+    let spools = [...BACKUP_SPOOLS];
     let expenses = [];
-    let printers = [];
-    let products = [];
+    let printers = [...BACKUP_PRINTERS];
+    let products = [...BACKUP_PRODUCTS];
 
     const todayStr = new Date().toISOString().slice(0, 10);
 
@@ -362,8 +370,10 @@
     });
 
     function setStatus(text, color) {
-       document.getElementById('syncStatus').innerText = text;
-       document.getElementById('statusDot').className = `inline-block w-2 h-2 rounded-full ${color}`;
+       const dot = document.getElementById('statusDot');
+       const statusText = document.getElementById('syncStatus');
+       if (statusText) statusText.innerText = text;
+       if (dot) dot.className = `inline-block w-2 h-2 rounded-full ${color}`;
     }
 
     function openSubPage() { document.getElementById('subPageOverlay').classList.remove('hidden'); }
@@ -377,11 +387,10 @@
           const json = await res.json();
           if (json) {
             orders = Array.isArray(json.orders) ? json.orders : [];
-            // Filament-Lager Fallback erzwingen, falls in der Cloud leer
-            spools = (Array.isArray(json.spools) && json.spools.length > 0) ? json.spools : BACKUP_SPOOLS;
+            spools = (Array.isArray(json.spools) && json.spools.length > 0) ? json.spools : [...BACKUP_SPOOLS];
             expenses = Array.isArray(json.expenses) ? json.expenses : [];
-            printers = (Array.isArray(json.printers) && json.printers.length > 0) ? json.printers : BACKUP_PRINTERS;
-            products = (Array.isArray(json.products) && json.products.length >= BACKUP_PRODUCTS.length) ? json.products : BACKUP_PRODUCTS;
+            printers = (Array.isArray(json.printers) && json.printers.length > 0) ? json.printers : [...BACKUP_PRINTERS];
+            products = (Array.isArray(json.products) && json.products.length >= BACKUP_PRODUCTS.length) ? json.products : [...BACKUP_PRODUCTS];
             
             checkAndMigrateExistingOrderPostage();
             renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
@@ -394,11 +403,11 @@
       } catch(e) {
         setStatus("Verbindungsfehler", "bg-red-500");
         console.error(e);
-        products = BACKUP_PRODUCTS;
-        spools = BACKUP_SPOOLS;
-        printers = BACKUP_PRINTERS;
-        renderProducts(); renderSpools(); renderPrinters();
-        alert("❌ Fehler beim Laden von der Cloud (Lokale Daten aktiv).");
+        products = [...BACKUP_PRODUCTS];
+        spools = [...BACKUP_SPOOLS];
+        printers = [...BACKUP_PRINTERS];
+        renderProducts(); renderSpools(); renderPrinters(); renderOrders(); renderExpenses();
+        alert("❌ Fehler beim Laden von der Cloud (Lokale Backups aktiv).");
       }
     }
 
@@ -1227,7 +1236,7 @@
               <td class="p-2 text-[11px]"><div class="text-emerald-400 font-bold">${totalOrderRevenue.toFixed(2).replace('.', ',')} €</div>${orderVersandKnd}${orderPortoDisplay}</td>
               <td class="p-2"><select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300 mb-1"><option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.label === '❌ Nein' ? 'selected' : ''}>❌ Nein</option><option value="🟡 Wartet auf Zahlung" ${o.label === '🟡 Wartet auf Zahlung' ? 'selected' : ''}>🟡 Wartet auf Zahlung</option></select><br><select onchange="updateField(${o.id}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300"><option value="✅ Ja" ${o.packed === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.packed === '❌ Nein' ? 'selected' : ''}>❌ Nein</option></select></td>
               <td class="p-2 text-[10px] font-mono text-blue-400">${o.tracking}</td>
-              <td class="p-2 text-right space-x-1">${archiveBtnHtml}<button onclick="printInvoice(${idx})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button><button onclick="printBoxLabel(${idx})" class="text-amber-300 bg-amber-500/10 px-1.5 py-1 rounded text-[10px]" title="Karton-Etikett">🏷</button><button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏️️</button><button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]"><i class="fa-solid fa-trash"></i></button></td>
+              <td class="p-2 text-right space-x-1">${archiveBtnHtml}<button onclick="printInvoice(${idx})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button><button onclick="printBoxLabel(${idx})" class="text-amber-300 bg-amber-500/10 px-1.5 py-1 rounded text-[10px]" title="Karton-Etikett">🏷</button><button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏</button><button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]"><i class="fa-solid fa-trash"></i></button></td>
             </tr>`;
         }
       });
