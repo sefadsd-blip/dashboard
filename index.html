@@ -174,12 +174,16 @@
         </div>
 
         <div class="border-t border-slate-700/60 pt-2.5 space-y-2">
-          <div class="flex justify-between items-center">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <label class="text-[11px] font-semibold text-slate-300">Artikel, Farbe & Gewicht (g):</label>
-            <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-[11px] cursor-pointer">+ Leeren Artikel</button>
+            <input type="text" id="orderArticleSearch" oninput="renderQuickAddButtons()" placeholder="🔍 Katalog durchsuchen..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-full sm:w-64 focus:outline-none focus:border-blue-500 transition">
           </div>
           
-          <div class="flex flex-wrap gap-1.5 py-0.5" id="quickAddButtons"></div>
+          <div class="flex flex-wrap gap-1.5 py-0.5 max-h-[120px] overflow-y-auto pr-1" id="quickAddButtons"></div>
+
+          <div class="flex justify-end">
+            <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-[11px] cursor-pointer">+ Leeren Artikel</button>
+          </div>
 
           <div id="articleInputRows" class="space-y-1.5">
             <div class="flex gap-2 items-center article-row">
@@ -199,7 +203,7 @@
       </div>
       <form id="expenseForm" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
         <input type="text" id="expDesc" placeholder="Beschreibung" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙️ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷️️ Sonstiges / eBay Gebühren</option></select>
+        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙️ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷 Sonstiges / eBay Gebühren</option></select>
         <input type="number" step="0.01" id="expAmount" placeholder="Betrag (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <input type="date" id="expDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg py-1.5 text-xs transition cursor-pointer">+ Ausgabe eintragen</button>
@@ -244,7 +248,6 @@
   <script>
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
 
-    // Dein vollständiges Filament-Lager mit allen Farben und Gramm-Zahlen
     const BACKUP_SPOOLS = [
       {"id": 1, "name": "PLA Schwarz", "remainingGrams": 4160, "notifiedCount": 0, "lastNotifiedDate": ""},
       {"id": 2, "name": "PETG Weiß", "remainingGrams": 650, "notifiedCount": 0, "lastNotifiedDate": ""},
@@ -387,6 +390,7 @@
           const json = await res.json();
           if (json) {
             orders = Array.isArray(json.orders) ? json.orders : [];
+            // Erzwinge Backup-Spulen, falls Cloud leer ist oder keine Spulen hat
             spools = (Array.isArray(json.spools) && json.spools.length > 0) ? json.spools : [...BACKUP_SPOOLS];
             expenses = Array.isArray(json.expenses) ? json.expenses : [];
             printers = (Array.isArray(json.printers) && json.printers.length > 0) ? json.printers : [...BACKUP_PRINTERS];
@@ -407,7 +411,6 @@
         spools = [...BACKUP_SPOOLS];
         printers = [...BACKUP_PRINTERS];
         renderProducts(); renderSpools(); renderPrinters(); renderOrders(); renderExpenses();
-        alert("❌ Fehler beim Laden von der Cloud (Lokale Backups aktiv).");
       }
     }
 
@@ -513,12 +516,17 @@
             </div>`;
         });
       }
-      
+      renderQuickAddButtons();
+    }
+
+    function renderQuickAddButtons() {
       const quickAdds = document.getElementById('quickAddButtons');
+      const orderSearch = (document.getElementById('orderArticleSearch')?.value || '').toLowerCase();
       if (quickAdds) {
-        quickAdds.innerHTML = '<span class="text-[10px] text-slate-400 self-center mr-1"><i class="fa-solid fa-bolt text-amber-400"></i> Katalog-Schnellwahl:</span>';
+        quickAdds.innerHTML = '';
         products.forEach(p => {
-          quickAdds.innerHTML += `<button type="button" onclick="addPresetArticle('${p.name.replace(/'/g, "\\'")}', ${p.price})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-700 cursor-pointer shadow-sm transition">+ ${p.name} <span class="text-slate-400 text-[9px]">(${p.size})</span> <span class="text-amber-400/80">(${p.price.toFixed(2).replace('.',',')}€)</span></button>`;
+          if (orderSearch && !p.name.toLowerCase().includes(orderSearch)) return;
+          quickAdds.innerHTML += `<button type="button" onclick="addPresetArticle('${p.name.replace(/'/g, "\\'")}', ${p.price})" class="bg-slate-900 hover:bg-slate-800 text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-700 cursor-pointer shadow-sm transition">+ ${p.name} <span class="text-slate-400 text-[9px]">(${p.size})</span> <span class="text-amber-400/80">(${p.price.toFixed(2).replace('.',',')}€)</span></button>`;
         });
       }
     }
