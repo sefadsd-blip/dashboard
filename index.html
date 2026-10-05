@@ -126,7 +126,7 @@
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Gesamt-Umsatz (Monat)</p><h3 id="statRevenue" class="text-xl font-bold text-emerald-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Gesamt-Ausgaben (Monat)</p><h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Reingewinn (Einnahmen - Ausgaben)</p><h3 id="statProfit" class="text-xl font-bold text-blue-400">0,00 €</h3></div></div>
-        <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍️ eBay-Guthaben (Netto)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt markieren</button></div>
+        <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍️️ eBay-Guthaben (Netto)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt markieren</button></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Offene Aufträge / Material</p><h3 id="statOpenOrders" class="text-lg font-bold text-yellow-400">0 <span class="text-[11px] text-slate-400 font-normal" id="statFilament">0g</span></h3></div></div>
       </div>
     </section>
@@ -166,8 +166,7 @@
           <input type="number" step="0.01" id="labelCost" placeholder="Porto / Label (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           
           <div class="flex gap-1">
-            <input type="number" step="0.01" id="discountVal" placeholder="Rabatt" value="0" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none w-full">
-            <select id="discountType" class="bg-slate-900 border border-slate-700 rounded-lg px-1.5 py-1.5 text-xs text-amber-400 focus:outline-none"><option value="eur">€</option><option value="percent">%</option></select>
+            <input type="number" step="0.01" id="discountPercent" placeholder="Rabatt (%)" value="0" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 focus:outline-none w-full" title="Prozentualer Rabatt">
           </div>
 
           <div class="flex flex-col">
@@ -721,8 +720,7 @@
       document.getElementById('price').value = order.price || '';
       document.getElementById('shippingFee').value = order.shippingFee !== undefined ? order.shippingFee : 5.00;
       document.getElementById('labelCost').value = order.labelCost !== undefined ? order.labelCost : 0;
-      document.getElementById('discountVal').value = order.discountVal !== undefined ? order.discountVal : 0;
-      document.getElementById('discountType').value = order.discountType || 'eur';
+      document.getElementById('discountPercent').value = order.discountPercent !== undefined ? order.discountPercent : 0;
       
       const isPickup = order.tracking === 'Selbstabholer';
       document.getElementById('isPickup').checked = isPickup;
@@ -919,14 +917,14 @@
         address: document.getElementById('address').value || '', printer: document.getElementById('printer').value,
         status: "Offen", label: document.getElementById('label').value, packed: document.getElementById('packed').value,
         price: parseFloat(document.getElementById('price').value) || 0, shippingFee: sFeeVal,
-        labelCost: lCostVal, discountVal: parseFloat(document.getElementById('discountVal').value) || 0, discountType: document.getElementById('discountType').value,
+        labelCost: lCostVal, discountPercent: parseFloat(document.getElementById('discountPercent').value) || 0,
         tracking: trackVal, orderDate: customDate,
         invoiceNumber: fixedInvoiceNum, shipDate: '', archived: false, items: itemsList
       });
       saveAllData();
       document.getElementById('orderForm').reset();
       document.getElementById('orderDate').value = todayStr; document.getElementById('labelCost').value = "0.00";
-      document.getElementById('shippingFee').value = "5.00"; document.getElementById('discountVal').value = "0";
+      document.getElementById('shippingFee').value = "5.00"; document.getElementById('discountPercent').value = "0";
       document.getElementById('isPickup').checked = false; togglePickupModalState(false);
       document.getElementById('existingCustomerSelect').value = "";
     }
@@ -1002,8 +1000,7 @@
       orders[idx].packed = document.getElementById(`edit-packed-${idx}`).value;
       orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
       orders[idx].shippingFee = isPickupEdit ? 0 : (parseFloat(document.getElementById(`edit-shipfee-${idx}`).value) || 0);
-      orders[idx].discountVal = parseFloat(document.getElementById(`edit-discval-${idx}`).value) || 0;
-      orders[idx].discountType = document.getElementById(`edit-disctype-${idx}`).value;
+      orders[idx].discountPercent = parseFloat(document.getElementById(`edit-discperc-${idx}`).value) || 0;
       
       const newLabelCost = isPickupEdit ? 0 : (parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0);
       const oldLabelCost = orders[idx].labelCost || 0;
@@ -1102,15 +1099,10 @@
       }
 
       let discountAmount = 0;
-      const dVal = parseFloat(o.discountVal) || 0;
-      if (dVal > 0) {
-        if (o.discountType === 'percent') {
-          discountAmount = (o.price * dVal) / 100;
-          itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #b91c1c;">Rabatt (${dVal}%)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td></tr>`;
-        } else {
-          discountAmount = dVal;
-          itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #b91c1c;">Rabatt</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td></tr>`;
-        }
+      const dPerc = parseFloat(o.discountPercent) || 0;
+      if (dPerc > 0) {
+        discountAmount = (o.price * dPerc) / 100;
+        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #b91c1c;">Rabatt (${dPerc}%)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td></tr>`;
       }
 
       const totalAmountNum = Math.max(0, o.price - discountAmount);
@@ -1207,15 +1199,10 @@
         }
 
         let discountAmount = 0;
-        const dVal = parseFloat(o.discountVal) || 0;
-        if (dVal > 0) {
-          if (o.discountType === 'percent') {
-            discountAmount = (o.price * dVal) / 100;
-            itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #b91c1c;">Rabatt (${dVal}%)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td></tr>`;
-          } else {
-            discountAmount = dVal;
-            itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #b91c1c;">Rabatt</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td></tr>`;
-          }
+        const dPerc = parseFloat(o.discountPercent) || 0;
+        if (dPerc > 0) {
+          discountAmount = (o.price * dPerc) / 100;
+          itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #b91c1c;">Rabatt (${dPerc}%)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td></tr>`;
         }
 
         const totalAmountNum = Math.max(0, o.price - discountAmount);
@@ -1267,25 +1254,21 @@
 
     function exportAccountingCSV() {
       let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-      csvContent += "Typ;Plattform;Bezahlt?;Zahlungsart;eBay Guthaben Status;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Umsatz (€);Porto-Ausgabe (€);Rabatt\n";
+      csvContent += "Typ;Plattform;Bezahlt?;Zahlungsart;eBay Guthaben Status;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Umsatz (€);Porto-Ausgabe (€);Rabatt (%)\n";
       orders.forEach(o => {
-        let dAmount = 0;
-        const dVal = parseFloat(o.discountVal) || 0;
-        if (dVal > 0) {
-          dAmount = o.discountType === 'percent' ? (o.price * dVal) / 100 : dVal;
-        }
+        let dPerc = parseFloat(o.discountPercent) || 0;
+        let dAmount = (o.price * dPerc) / 100;
         let total = Math.max(0, o.price - dAmount);
         let type = o.archived ? "Einnahme (Archiviert)" : "Einnahme (Aktiv)";
         let date = o.orderDate || "";
         let inv = generateInvoiceNumberForExisting(o);
         let cust = o.customer.replace(/;/g, ",");
         let lCost = (o.labelCost || 0);
-        let discStr = dVal > 0 ? (o.discountType === 'percent' ? dVal + "%" : dVal.toFixed(2) + "€") : "0";
-        csvContent += `${type};${o.platform || 'Kleinanzeigen'};${o.isPaid === '✅ Ja' ? '✅ Ja' : '❌ Nein'};${o.paymentMethod || 'Überweisung'};${o.ebayBalancePaid || 'N/A'};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${lCost.toFixed(2).replace('.', ',')};${discStr}\n`;
+        csvContent += `${type};${o.platform || 'Kleinanzeigen'};${o.isPaid === '✅ Ja' ? '✅ Ja' : '❌ Nein'};${o.paymentMethod || 'Überweisung'};${o.ebayBalancePaid || 'N/A'};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${lCost.toFixed(2).replace('.', ',')};${dPerc > 0 ? dPerc + '%' : '0%'}\n`;
       });
       expenses.forEach(ex => {
         let desc = ex.description.replace(/;/g, ",");
-        csvContent += `Ausgabe;Shop;✅ Ja;Gebühr;N/A;${ex.date || ""};${desc};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')};0,00;0\n`;
+        csvContent += `Ausgabe;Shop;✅ Ja;Gebühr;N/A;${ex.date || ""};${desc};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')};0,00;0%\n`;
       });
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
@@ -1326,14 +1309,10 @@
         const fixedInvNum = generateInvoiceNumberForExisting(o);
         const lCostVal = o.labelCost !== undefined ? o.labelCost : 0;
         const sFeeVal = o.shippingFee !== undefined ? o.shippingFee : 0;
-        const discVal = o.discountVal !== undefined ? o.discountVal : 0;
-        const discType = o.discountType || 'eur';
+        const discPerc = o.discountPercent !== undefined ? o.discountPercent : 0;
         const isPickupOrder = o.tracking === 'Selbstabholer';
         
-        let discountCalculated = 0;
-        if (discVal > 0) {
-          discountCalculated = discType === 'percent' ? (o.price * discVal) / 100 : discVal;
-        }
+        let discountCalculated = (o.price * discPerc) / 100;
         const totalOrderRevenue = Math.max(0, o.price - discountCalculated);
         const isEbay = o.platform === 'eBay';
 
@@ -1364,7 +1343,7 @@
                 <div>Ums.: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-14"></div>
                 <div>Knd.V.: <input type="number" step="0.01" id="edit-shipfee-${idx}" value="${sFeeVal}" ${isPickupOrder ? 'disabled' : ''} class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-yellow-300 w-14"></div>
                 <div>Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCostVal}" ${isPickupOrder ? 'disabled' : ''} class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-red-300 w-14"></div>
-                <div class="flex gap-1">Rab: <input type="number" step="0.01" id="edit-discval-${idx}" value="${discVal}" class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[11px] text-amber-300 w-10"><select id="edit-disctype-${idx}" class="bg-slate-950 border border-blue-500 rounded text-[10px] text-amber-300"><option value="eur" ${discType==='eur'?'selected':''}>€</option><option value="percent" ${discType==='percent'?'selected':''}>%</option></select></div>
+                <div>Rab.%: <input type="number" step="0.01" id="edit-discperc-${idx}" value="${discPerc}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-amber-300 w-14"></div>
               </td>
               <td class="p-2"><select id="edit-label-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white mb-1"><option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>❌ Nein</option><option value="🟡 Wartet auf Zahlung" ${o.label==='🟡 Wartet auf Zahlung'?'selected':''}>🟡 Wartet auf Zahlung</option></select><br><select id="edit-packed-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>❌ Nein</option></select></td>
               <td class="p-2"><input type="text" id="edit-track-${idx}" value="${o.tracking}" ${isPickupOrder ? 'disabled' : ''} class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-16"></td>
@@ -1383,7 +1362,7 @@
 
           let orderPortoDisplay = lCostVal > 0 ? `<div class="text-red-400 text-[10px]">Porto: -${lCostVal.toFixed(2).replace('.', ',')} €</div>` : `<div class="text-slate-500 text-[10px]">Porto: 0,00 €</div>`;
           let orderVersandKnd = sFeeVal > 0 ? `<div class="text-yellow-400 text-[10px]">Knd.V.: +${sFeeVal.toFixed(2).replace('.', ',')} €</div>` : `<div class="text-slate-500 text-[10px]">Knd.V.: 0,00 €</div>`;
-          let orderDiscountDisplay = discVal > 0 ? `<div class="text-amber-400 text-[10px]">Rabatt: -${discType === 'percent' ? discVal + '%' : discVal.toFixed(2).replace('.', ',') + '€'}</div>` : '';
+          let orderDiscountDisplay = discPerc > 0 ? `<div class="text-amber-400 text-[10px]">Rabatt: -${discPerc}%</div>` : '';
           let trackingDisplay = isPickupOrder ? `<span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.5 rounded text-[10px] font-bold">🏠 Selbstabholer</span>` : `<span class="font-mono text-blue-400">${o.tracking}</span>`;
 
           tbody.innerHTML += `
@@ -1415,9 +1394,8 @@
           if (o.items && Array.isArray(o.items)) { o.items.forEach(i => totalW += (parseInt(i.weight) || 0)); }
         }
         let isEbay = o.platform === 'eBay';
-        let dAmount = 0;
-        const dVal = parseFloat(o.discountVal) || 0;
-        if (dVal > 0) { dAmount = o.discountType === 'percent' ? (o.price * dVal) / 100 : dVal; }
+        let discPerc = parseFloat(o.discountPercent) || 0;
+        let dAmount = (o.price * discPerc) / 100;
         let orderAmount = Math.max(0, o.price - dAmount);
         let lCost = o.labelCost || 0;
         if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') { ebayBalanceOpen += Math.round((orderAmount - lCost) * 100) / 100; }
