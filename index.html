@@ -126,7 +126,7 @@
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Gesamt-Umsatz (Monat)</p><h3 id="statRevenue" class="text-xl font-bold text-emerald-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Gesamt-Ausgaben (Monat)</p><h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Reingewinn (Einnahmen - Ausgaben)</p><h3 id="statProfit" class="text-xl font-bold text-blue-400">0,00 €</h3></div></div>
-        <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍️️ eBay-Guthaben (Netto)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt markieren</button></div>
+        <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍 eBay-Guthaben (Netto)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt markieren</button></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Offene Aufträge / Material</p><h3 id="statOpenOrders" class="text-lg font-bold text-yellow-400">0 <span class="text-[11px] text-slate-400 font-normal" id="statFilament">0g</span></h3></div></div>
       </div>
     </section>
@@ -150,22 +150,26 @@
       </div>
       <form id="orderForm" onsubmit="addOrder(event)" class="space-y-3">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
-          <input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-          <select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍 eBay</option></select>
-          <select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿️ PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select>
-          <select id="isPaid" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Bezahlt: ✅ Ja</option><option value="❌ Nein" selected>Bezahlt: ❌ Nein</option></select>
-          <select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></select>
-          <input type="number" step="0.01" id="price" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none border-blue-500/50 bg-blue-950/20">
           
-          <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1">
-            <input type="checkbox" id="isPickup" onchange="togglePickupMode()" class="rounded border-slate-700 text-blue-600 focus:ring-0 cursor-pointer">
-            <label for="isPickup" class="text-[11px] text-emerald-400 font-medium cursor-pointer">🏠 Selbstabholer</label>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Kunde:</label><input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Plattform:</label><select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍 eBay</option></select></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Zahlungsart:</label><select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿️ PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Bezahlstatus:</label><select id="isPaid" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Bezahlt: ✅ Ja</option><option value="❌ Nein" selected>Bezahlt: ❌ Nein</option></select></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Drucker:</label><select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></select></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Gesamtpreis (€):</label><input type="number" step="0.01" id="price" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none border-blue-500/50 bg-blue-950/20"></div>
+          
+          <div class="flex flex-col justify-end">
+            <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5">
+              <input type="checkbox" id="isPickup" onchange="togglePickupMode()" class="rounded border-slate-700 text-blue-600 focus:ring-0 cursor-pointer">
+              <label for="isPickup" class="text-[11px] text-emerald-400 font-medium cursor-pointer">🏠 Selbstabholer</label>
+            </div>
           </div>
           
-          <input type="number" step="0.01" id="shippingFee" placeholder="Versand v. Kunden (€)" value="5.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-          <input type="number" step="0.01" id="labelCost" placeholder="Porto / Label (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Versand v. Kunden (€):</label><input type="number" step="0.01" id="shippingFee" placeholder="Versand v. Kunden (€)" value="5.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Porto / Label (€):</label><input type="number" step="0.01" id="labelCost" placeholder="Porto / Label (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
           
-          <div class="flex gap-1">
+          <div class="flex flex-col">
+            <label class="text-[9px] text-slate-400 mb-0.5">Rabatt (%):</label>
             <input type="number" step="0.01" id="discountPercent" placeholder="Rabatt (%)" value="0" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 focus:outline-none w-full" title="Prozentualer Rabatt">
           </div>
 
@@ -173,9 +177,10 @@
             <label class="text-[9px] text-slate-400 mb-0.5">Erstellungsdatum:</label>
             <input type="date" id="orderDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none">
           </div>
-          <select id="label" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none self-end"><option value="✅ Ja">Label gedruckt: ✅ Ja</option><option value="❌ Nein" selected>Label gedruckt: ❌ Nein</option></select>
-          <select id="packed" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none self-end"><option value="❌ Nein">Verpackt: ❌ Nein</option><option value="✅ Ja">Verpackt: ✅ Ja</option></select>
-          <input type="text" id="tracking" placeholder="Tracking-Nummer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none self-end">
+          
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Label gedruckt:</label><select id="label" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Label gedruckt: ✅ Ja</option><option value="❌ Nein" selected>Label gedruckt: ❌ Nein</option></select></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Verpackt:</label><select id="packed" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="❌ Nein">Verpackt: ❌ Nein</option><option value="✅ Ja">Verpackt: ✅ Ja</option></select></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Tracking-Nummer:</label><input type="text" id="tracking" placeholder="Tracking-Nummer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <input type="text" id="address" placeholder="Lieferadresse" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
