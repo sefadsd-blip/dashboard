@@ -157,14 +157,24 @@
           <select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></select>
           <input type="number" step="0.01" id="price" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none border-blue-500/50 bg-blue-950/20">
           
+          <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1">
+            <input type="checkbox" id="isPickup" onchange="togglePickupMode()" class="rounded border-slate-700 text-blue-600 focus:ring-0 cursor-pointer">
+            <label for="isPickup" class="text-[11px] text-emerald-400 font-medium cursor-pointer">🏠 Selbstabholer</label>
+          </div>
+          
           <input type="number" step="0.01" id="shippingFee" placeholder="Versand v. Kunden (€)" value="5.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           <input type="number" step="0.01" id="labelCost" placeholder="Porto / Label (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+          
+          <div class="flex gap-1">
+            <input type="number" step="0.01" id="discountVal" placeholder="Rabatt" value="0" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none w-full">
+            <select id="discountType" class="bg-slate-900 border border-slate-700 rounded-lg px-1.5 py-1.5 text-xs text-amber-400 focus:outline-none"><option value="eur">€</option><option value="percent">%</option></select>
+          </div>
 
           <div class="flex flex-col">
             <label class="text-[9px] text-slate-400 mb-0.5">Erstellungsdatum:</label>
             <input type="date" id="orderDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none">
           </div>
-          <select id="label" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none self-end"><option value="✅ Ja">Label gedruckt: ✅ Ja</option><option value="❌ Nein">Label gedruckt: ❌ Nein</option></select>
+          <select id="label" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none self-end"><option value="✅ Ja">Label gedruckt: ✅ Ja</option><option value="❌ Nein" selected>Label gedruckt: ❌ Nein</option></select>
           <select id="packed" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none self-end"><option value="❌ Nein">Verpackt: ❌ Nein</option><option value="✅ Ja">Verpackt: ✅ Ja</option></select>
           <input type="text" id="tracking" placeholder="Tracking-Nummer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none self-end">
         </div>
@@ -381,6 +391,30 @@
 
     function openSubPage() { document.getElementById('subPageOverlay').classList.remove('hidden'); }
     function closeSubPage() { document.getElementById('subPageOverlay').classList.add('hidden'); }
+
+    function togglePickupMode() {
+      const isPickup = document.getElementById('isPickup').checked;
+      const shipFeeInput = document.getElementById('shippingFee');
+      const labelCostInput = document.getElementById('labelCost');
+      const trackingInput = document.getElementById('tracking');
+      const labelSelect = document.getElementById('label');
+      
+      if (isPickup) {
+        shipFeeInput.value = "0.00";
+        labelCostInput.value = "0.00";
+        shipFeeInput.disabled = true;
+        labelCostInput.disabled = true;
+        trackingInput.value = "Selbstabholer";
+        trackingInput.disabled = true;
+        labelSelect.value = "✅ Ja";
+      } else {
+        shipFeeInput.disabled = false;
+        labelCostInput.disabled = false;
+        shipFeeInput.value = "5.00";
+        trackingInput.value = "";
+        trackingInput.disabled = false;
+      }
+    }
 
     async function loadCloudData() {
       setStatus("Lade von Cloud...", "bg-yellow-500");
@@ -687,9 +721,35 @@
       document.getElementById('price').value = order.price || '';
       document.getElementById('shippingFee').value = order.shippingFee !== undefined ? order.shippingFee : 5.00;
       document.getElementById('labelCost').value = order.labelCost !== undefined ? order.labelCost : 0;
+      document.getElementById('discountVal').value = order.discountVal !== undefined ? order.discountVal : 0;
+      document.getElementById('discountType').value = order.discountType || 'eur';
+      
+      const isPickup = order.tracking === 'Selbstabholer';
+      document.getElementById('isPickup').checked = isPickup;
+      togglePickupModalState(isPickup);
+
       document.getElementById('label').value = order.label || '✅ Ja';
       document.getElementById('packed').value = order.packed || '❌ Nein';
       if (order.orderDate) document.getElementById('orderDate').value = order.orderDate;
+    }
+
+    function togglePickupModalState(isPickup) {
+      const shipFeeInput = document.getElementById('shippingFee');
+      const labelCostInput = document.getElementById('labelCost');
+      const trackingInput = document.getElementById('tracking');
+      if (isPickup) {
+        shipFeeInput.value = "0.00";
+        labelCostInput.value = "0.00";
+        shipFeeInput.disabled = true;
+        labelCostInput.disabled = true;
+        trackingInput.value = "Selbstabholer";
+        trackingInput.disabled = true;
+      } else {
+        shipFeeInput.disabled = false;
+        labelCostInput.disabled = false;
+        trackingInput.disabled = false;
+        if (trackingInput.value === 'Selbstabholer') trackingInput.value = "";
+      }
     }
 
     function updateTemplatePreview() {
@@ -697,11 +757,18 @@
       if (!orderId) return;
       const o = orders.find(item => item.id == orderId);
       if (!o) return;
-      const track = (o.tracking && o.tracking !== '-') ? o.tracking : '[Sendungsnummer einfügen]';
+      const isPickup = o.tracking === 'Selbstabholer';
+      const track = (!isPickup && o.tracking && o.tracking !== '-') ? o.tracking : '[Sendungsnummer einfügen]';
+      
       document.getElementById('templateText1').value = `Hallo ${o.customer},\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.`;
       document.getElementById('templateText2').value = `Hallo ${o.customer},\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!`;
       document.getElementById('templateText3').value = `Hallo ${o.customer},\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.`;
-      document.getElementById('templateText4').value = `Hallo ${o.customer},\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n${track}\n\nLink: https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${track}\n\nViel Freude damit!`;
+      
+      if (isPickup) {
+        document.getElementById('templateText4').value = `Hallo ${o.customer},\n\ndeine Bestellung ist fertig und abholbereit!\n\nAbholadresse:\nNeuer Weg 42, 32369 Rahden\n\nViel Freude damit!`;
+      } else {
+        document.getElementById('templateText4').value = `Hallo ${o.customer},\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n${track}\n\nLink: https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${track}\n\nViel Freude damit!`;
+      }
     }
 
     function copyTemplate(num) {
@@ -837,7 +904,10 @@
       const fixedInvoiceNum = generateNewInvoiceNumber(customDate);
       const plat = document.getElementById('platform').value;
       const payMethod = document.getElementById('paymentMethod').value;
-      const lCostVal = parseFloat(document.getElementById('labelCost').value) || 0;
+      const isPickup = document.getElementById('isPickup').checked;
+      const lCostVal = isPickup ? 0 : (parseFloat(document.getElementById('labelCost').value) || 0);
+      const sFeeVal = isPickup ? 0 : (parseFloat(document.getElementById('shippingFee').value) || 0);
+      const trackVal = isPickup ? "Selbstabholer" : (document.getElementById('tracking').value || '-');
 
       if (lCostVal > 0) {
         expenses.unshift({ id: Date.now(), description: `Porto / Label für ${document.getElementById('customer').value} (${fixedInvoiceNum})`, category: 'DHL / Versand', amount: lCostVal, date: customDate });
@@ -848,18 +918,41 @@
         isPaid: document.getElementById('isPaid').value, ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A',
         address: document.getElementById('address').value || '', printer: document.getElementById('printer').value,
         status: "Offen", label: document.getElementById('label').value, packed: document.getElementById('packed').value,
-        price: parseFloat(document.getElementById('price').value) || 0, shippingFee: parseFloat(document.getElementById('shippingFee').value) || 0,
-        labelCost: lCostVal, tracking: document.getElementById('tracking').value || '-', orderDate: customDate,
+        price: parseFloat(document.getElementById('price').value) || 0, shippingFee: sFeeVal,
+        labelCost: lCostVal, discountVal: parseFloat(document.getElementById('discountVal').value) || 0, discountType: document.getElementById('discountType').value,
+        tracking: trackVal, orderDate: customDate,
         invoiceNumber: fixedInvoiceNum, shipDate: '', archived: false, items: itemsList
       });
       saveAllData();
       document.getElementById('orderForm').reset();
       document.getElementById('orderDate').value = todayStr; document.getElementById('labelCost').value = "0.00";
-      document.getElementById('shippingFee').value = "5.00"; document.getElementById('existingCustomerSelect').value = "";
+      document.getElementById('shippingFee').value = "5.00"; document.getElementById('discountVal').value = "0";
+      document.getElementById('isPickup').checked = false; togglePickupModalState(false);
+      document.getElementById('existingCustomerSelect').value = "";
     }
 
     function startEdit(idx) { editingIndex = idx; renderOrders(); }
     function cancelEdit() { editingIndex = -1; renderOrders(); }
+
+    function toggleEditPickupMode(idx) {
+      const isPickup = document.getElementById(`edit-ispickup-${idx}`).checked;
+      const shipFeeInput = document.getElementById(`edit-shipfee-${idx}`);
+      const labelCostInput = document.getElementById(`edit-labelcost-${idx}`);
+      const trackingInput = document.getElementById(`edit-track-${idx}`);
+      
+      if (isPickup) {
+        if(shipFeeInput) { shipFeeInput.value = "0.00"; shipFeeInput.disabled = true; }
+        if(labelCostInput) { labelCostInput.value = "0.00"; labelCostInput.disabled = true; }
+        if(trackingInput) { trackingInput.value = "Selbstabholer"; trackingInput.disabled = true; }
+      } else {
+        if(shipFeeInput) shipFeeInput.disabled = false;
+        if(labelCostInput) labelCostInput.disabled = false;
+        if(trackingInput) {
+          trackingInput.disabled = false;
+          if(trackingInput.value === 'Selbstabholer') trackingInput.value = "";
+        }
+      }
+    }
 
     function saveEdit(idx) {
       const nameInputs = document.querySelectorAll('.edit-art-name');
@@ -895,6 +988,8 @@
         }
       });
 
+      const isPickupEdit = document.getElementById(`edit-ispickup-${idx}`).checked;
+
       orders[idx].customer = document.getElementById(`edit-cust-${idx}`).value;
       orders[idx].platform = document.getElementById(`edit-plat-${idx}`).value;
       orders[idx].paymentMethod = document.getElementById(`edit-paymeth-${idx}`).value;
@@ -906,9 +1001,11 @@
       orders[idx].label = document.getElementById(`edit-label-${idx}`).value;
       orders[idx].packed = document.getElementById(`edit-packed-${idx}`).value;
       orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
-      orders[idx].shippingFee = parseFloat(document.getElementById(`edit-shipfee-${idx}`).value) || 0;
+      orders[idx].shippingFee = isPickupEdit ? 0 : (parseFloat(document.getElementById(`edit-shipfee-${idx}`).value) || 0);
+      orders[idx].discountVal = parseFloat(document.getElementById(`edit-discval-${idx}`).value) || 0;
+      orders[idx].discountType = document.getElementById(`edit-disctype-${idx}`).value;
       
-      const newLabelCost = parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0;
+      const newLabelCost = isPickupEdit ? 0 : (parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0);
       const oldLabelCost = orders[idx].labelCost || 0;
       orders[idx].labelCost = newLabelCost;
 
@@ -917,7 +1014,7 @@
         expenses.unshift({ id: Date.now(), description: `Porto / Label für ${orders[idx].customer} (${invNum})`, category: 'DHL / Versand', amount: newLabelCost, date: orders[idx].orderDate || todayStr });
       }
 
-      orders[idx].tracking = document.getElementById(`edit-track-${idx}`).value || '-';
+      orders[idx].tracking = isPickupEdit ? "Selbstabholer" : (document.getElementById(`edit-track-${idx}`).value || '-');
       orders[idx].orderDate = document.getElementById(`edit-date-${idx}`)?.value || orders[idx].orderDate;
       const newInvInput = document.getElementById(`edit-inv-${idx}`);
       if (newInvInput && newInvInput.value.trim()) orders[idx].invoiceNumber = newInvInput.value.trim();
@@ -943,8 +1040,9 @@
 
     function printBoxLabel(idx) {
       const o = orders[idx];
+      const isPickup = o.tracking === 'Selbstabholer';
       let itemsSummary = o.items.map(i => `${i.name} (${i.color || 'Standard'}, ${i.weight || 0}g)`).join("<br>• ");
-      const trackingUrl = (o.tracking && o.tracking !== '-') ? `https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${o.tracking}` : `Sefas3DShop - ${o.customer}`;
+      const trackingUrl = !isPickup && o.tracking && o.tracking !== '-' ? `https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${o.tracking}` : `Sefas3DShop - ${o.customer} (Selbstabholer)`;
 
       const printWin = window.open('', '_blank', 'width=500,height=600');
       printWin.document.write(`
@@ -954,17 +1052,17 @@
         <body style="font-family: Arial, sans-serif;">
           <div style="border: 2px solid #000; padding: 15px; width: 340px; background: #fff; border-radius: 6px; margin: 20px auto;">
             <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px;">
-              <strong>Sefas3DShop</strong><span style="font-size: 10px; background: #000; color: #fff; padding: 2px 4px;">KARTON-ETIKETT</span>
+              <strong>Sefas3DShop</strong><span style="font-size: 10px; background: #000; color: #fff; padding: 2px 4px;">${isPickup ? 'SELBSTABHOLER' : 'KARTON-ETIKETT'}</span>
             </div>
             <div style="margin-top: 8px; font-size: 12px;">
-              <p style="margin: 2px 0;"><strong>Empfänger:</strong> ${o.customer}</p>
+              <p style="margin: 2px 0;"><strong>Kunde:</strong> ${o.customer}</p>
               <p style="margin: 2px 0; font-size: 11px; color: #444;">${o.address || ''}</p>
             </div>
             <div style="margin-top: 8px; border-top: 1px dashed #666; padding-top: 5px; font-size: 11px;">
               <strong>Inhalt:</strong><br>• ${itemsSummary}
             </div>
             <div style="margin-top: 8px; border-top: 1px dashed #666; padding-top: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
-              <div><strong>Tracking:</strong> ${o.tracking}</div><div id="qrcodeContainer"></div>
+              <div><strong>Art:</strong> ${isPickup ? '<span style="color: #059669; font-weight: bold;">Selbstabholung</span>' : o.tracking}</div><div id="qrcodeContainer"></div>
             </div>
           </div>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
@@ -984,8 +1082,9 @@
       const o = orders[idx];
       const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
       const invoiceNumber = generateInvoiceNumberForExisting(o);
+      const isPickup = o.tracking === 'Selbstabholer';
       
-      let displayShippingCost = (o.platform === 'eBay') ? (o.labelCost || 0) : (o.shippingFee || 0);
+      let displayShippingCost = isPickup ? 0 : ((o.platform === 'eBay') ? (o.labelCost || 0) : (o.shippingFee || 0));
       let itemsNetTotal = Math.max(0, o.price - displayShippingCost);
       let itemsListHtml = o.items.map(i => `• ${i.name} ${i.color ? '(' + i.color + ')' : ''}`).join('<br>');
       
@@ -996,11 +1095,25 @@
         <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${itemsNetTotal.toFixed(2).replace('.', ',')} €</td>
       </tr>`;
       
-      if (displayShippingCost > 0) {
+      if (isPickup) {
+        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #059669;">Selbstabholung (Neuer Weg 42, 32369 Rahden)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">0,00 €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">0,00 €</td></tr>`;
+      } else if (displayShippingCost > 0) {
         itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">Versandkosten</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td></tr>`;
       }
 
-      const totalAmountNum = o.price;
+      let discountAmount = 0;
+      const dVal = parseFloat(o.discountVal) || 0;
+      if (dVal > 0) {
+        if (o.discountType === 'percent') {
+          discountAmount = (o.price * dVal) / 100;
+          itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #b91c1c;">Rabatt (${dVal}%)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td></tr>`;
+        } else {
+          discountAmount = dVal;
+          itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #b91c1c;">Rabatt</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td></tr>`;
+        }
+      }
+
+      const totalAmountNum = Math.max(0, o.price - discountAmount);
       const sepsPayloadStr = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
       const logoSvg = `<svg width="45" height="45" viewBox="0 0 100 100" fill="currentColor"><polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/><polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/></svg>`;
 
@@ -1074,8 +1187,9 @@
       activeOrders.forEach((o, index) => {
         const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
         const invoiceNumber = generateInvoiceNumberForExisting(o);
+        const isPickup = o.tracking === 'Selbstabholer';
         
-        let displayShippingCost = (o.platform === 'eBay') ? (o.labelCost || 0) : (o.shippingFee || 0);
+        let displayShippingCost = isPickup ? 0 : ((o.platform === 'eBay') ? (o.labelCost || 0) : (o.shippingFee || 0));
         let itemsNetTotal = Math.max(0, o.price - displayShippingCost);
         let itemsListHtml = o.items.map(i => `• ${i.name} ${i.color ? '(' + i.color + ')' : ''}`).join('<br>');
         
@@ -1086,11 +1200,25 @@
           <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${itemsNetTotal.toFixed(2).replace('.', ',')} €</td>
         </tr>`;
         
-        if (displayShippingCost > 0) {
+        if (isPickup) {
+          itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #059669;">Selbstabholung (Neuer Weg 42, 32369 Rahden)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">0,00 €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">0,00 €</td></tr>`;
+        } else if (displayShippingCost > 0) {
           itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">Versandkosten</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td></tr>`;
         }
 
-        const totalAmountNum = o.price;
+        let discountAmount = 0;
+        const dVal = parseFloat(o.discountVal) || 0;
+        if (dVal > 0) {
+          if (o.discountType === 'percent') {
+            discountAmount = (o.price * dVal) / 100;
+            itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #b91c1c;">Rabatt (${dVal}%)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td></tr>`;
+          } else {
+            discountAmount = dVal;
+            itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #b91c1c;">Rabatt</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td></tr>`;
+          }
+        }
+
+        const totalAmountNum = Math.max(0, o.price - discountAmount);
         const sepsPayloadStr = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
 
         allInvoicesHtml += `
@@ -1139,19 +1267,25 @@
 
     function exportAccountingCSV() {
       let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-      csvContent += "Typ;Plattform;Bezahlt?;Zahlungsart;eBay Guthaben Status;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Umsatz (€);Porto-Ausgabe (€)\n";
+      csvContent += "Typ;Plattform;Bezahlt?;Zahlungsart;eBay Guthaben Status;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Umsatz (€);Porto-Ausgabe (€);Rabatt\n";
       orders.forEach(o => {
-        let total = o.price;
+        let dAmount = 0;
+        const dVal = parseFloat(o.discountVal) || 0;
+        if (dVal > 0) {
+          dAmount = o.discountType === 'percent' ? (o.price * dVal) / 100 : dVal;
+        }
+        let total = Math.max(0, o.price - dAmount);
         let type = o.archived ? "Einnahme (Archiviert)" : "Einnahme (Aktiv)";
         let date = o.orderDate || "";
         let inv = generateInvoiceNumberForExisting(o);
         let cust = o.customer.replace(/;/g, ",");
         let lCost = (o.labelCost || 0);
-        csvContent += `${type};${o.platform || 'Kleinanzeigen'};${o.isPaid === '✅ Ja' ? '✅ Ja' : '❌ Nein'};${o.paymentMethod || 'Überweisung'};${o.ebayBalancePaid || 'N/A'};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${lCost.toFixed(2).replace('.', ',')}\n`;
+        let discStr = dVal > 0 ? (o.discountType === 'percent' ? dVal + "%" : dVal.toFixed(2) + "€") : "0";
+        csvContent += `${type};${o.platform || 'Kleinanzeigen'};${o.isPaid === '✅ Ja' ? '✅ Ja' : '❌ Nein'};${o.paymentMethod || 'Überweisung'};${o.ebayBalancePaid || 'N/A'};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${lCost.toFixed(2).replace('.', ',')};${discStr}\n`;
       });
       expenses.forEach(ex => {
         let desc = ex.description.replace(/;/g, ",");
-        csvContent += `Ausgabe;Shop;✅ Ja;Gebühr;N/A;${ex.date || ""};${desc};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')};0,00\n`;
+        csvContent += `Ausgabe;Shop;✅ Ja;Gebühr;N/A;${ex.date || ""};${desc};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')};0,00;0\n`;
       });
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
@@ -1192,8 +1326,16 @@
         const fixedInvNum = generateInvoiceNumberForExisting(o);
         const lCostVal = o.labelCost !== undefined ? o.labelCost : 0;
         const sFeeVal = o.shippingFee !== undefined ? o.shippingFee : 0;
+        const discVal = o.discountVal !== undefined ? o.discountVal : 0;
+        const discType = o.discountType || 'eur';
+        const isPickupOrder = o.tracking === 'Selbstabholer';
+        
+        let discountCalculated = 0;
+        if (discVal > 0) {
+          discountCalculated = discType === 'percent' ? (o.price * discVal) / 100 : discVal;
+        }
+        const totalOrderRevenue = Math.max(0, o.price - discountCalculated);
         const isEbay = o.platform === 'eBay';
-        const totalOrderRevenue = o.price;
 
         if (editingIndex === idx) {
           let editItemsHtml = `<div id="editArticleRows" class="space-y-1.5 my-1.5">`;
@@ -1217,9 +1359,15 @@
               <td class="p-2"><select id="edit-ispaid-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="✅ Ja" ${o.isPaid==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.isPaid==='❌ Nein'?'selected':''}>❌ Nein</option></select><select id="edit-paymeth-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white mt-1 w-full"><option value="eBay" ${o.paymentMethod==='eBay'?'selected':''}>eBay</option><option value="PayPal" ${o.paymentMethod==='PayPal'?'selected':''}>PayPal</option><option value="Überweisung" ${o.paymentMethod==='Überweisung'?'selected':''}>Überweisung</option><option value="Bar" ${o.paymentMethod==='Bar'?'selected':''}>Bar</option></select></td>
               <td class="p-2">${ebayBalSelectEdit}</td>
               <td class="p-2"><select id="edit-stat-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="Offen" ${o.status==='Offen'?'selected':''}>Offen</option><option value="In Arbeit" ${o.status==='In Arbeit'?'selected':''}>In Arbeit</option><option value="Fertig" ${o.status==='Fertig'?'selected':''}>Fertig</option></select></td>
-              <td class="p-2 space-y-1"><div>Ums.: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-14"></div><div>Knd.V.: <input type="number" step="0.01" id="edit-shipfee-${idx}" value="${sFeeVal}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-yellow-300 w-14"></div><div>Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCostVal}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-red-300 w-14"></div></td>
+              <td class="p-2 space-y-1">
+                <div class="flex items-center gap-1 mb-1 bg-slate-950 p-1 rounded border border-slate-800"><input type="checkbox" id="edit-ispickup-${idx}" ${isPickupOrder ? 'checked' : ''} onchange="toggleEditPickupMode(${idx})" class="cursor-pointer"><label for="edit-ispickup-${idx}" class="text-[10px] text-emerald-400 font-medium cursor-pointer">Selbstabholer</label></div>
+                <div>Ums.: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-14"></div>
+                <div>Knd.V.: <input type="number" step="0.01" id="edit-shipfee-${idx}" value="${sFeeVal}" ${isPickupOrder ? 'disabled' : ''} class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-yellow-300 w-14"></div>
+                <div>Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCostVal}" ${isPickupOrder ? 'disabled' : ''} class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-red-300 w-14"></div>
+                <div class="flex gap-1">Rab: <input type="number" step="0.01" id="edit-discval-${idx}" value="${discVal}" class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[11px] text-amber-300 w-10"><select id="edit-disctype-${idx}" class="bg-slate-950 border border-blue-500 rounded text-[10px] text-amber-300"><option value="eur" ${discType==='eur'?'selected':''}>€</option><option value="percent" ${discType==='percent'?'selected':''}>%</option></select></div>
+              </td>
               <td class="p-2"><select id="edit-label-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white mb-1"><option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>❌ Nein</option><option value="🟡 Wartet auf Zahlung" ${o.label==='🟡 Wartet auf Zahlung'?'selected':''}>🟡 Wartet auf Zahlung</option></select><br><select id="edit-packed-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>❌ Nein</option></select></td>
-              <td class="p-2"><input type="text" id="edit-track-${idx}" value="${o.tracking}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-16"></td>
+              <td class="p-2"><input type="text" id="edit-track-${idx}" value="${o.tracking}" ${isPickupOrder ? 'disabled' : ''} class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-16"></td>
               <td class="p-2 text-right"><button onclick="saveEdit(${idx})" class="bg-green-600 text-white px-2 py-0.5 rounded text-[11px] mr-1"><i class="fa-solid fa-check"></i></button><button onclick="cancelEdit()" class="bg-slate-700 text-white px-2 py-0.5 rounded text-[11px]"><i class="fa-solid fa-xmark"></i></button></td>
             </tr>`;
         } else {
@@ -1235,6 +1383,8 @@
 
           let orderPortoDisplay = lCostVal > 0 ? `<div class="text-red-400 text-[10px]">Porto: -${lCostVal.toFixed(2).replace('.', ',')} €</div>` : `<div class="text-slate-500 text-[10px]">Porto: 0,00 €</div>`;
           let orderVersandKnd = sFeeVal > 0 ? `<div class="text-yellow-400 text-[10px]">Knd.V.: +${sFeeVal.toFixed(2).replace('.', ',')} €</div>` : `<div class="text-slate-500 text-[10px]">Knd.V.: 0,00 €</div>`;
+          let orderDiscountDisplay = discVal > 0 ? `<div class="text-amber-400 text-[10px]">Rabatt: -${discType === 'percent' ? discVal + '%' : discVal.toFixed(2).replace('.', ',') + '€'}</div>` : '';
+          let trackingDisplay = isPickupOrder ? `<span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.5 rounded text-[10px] font-bold">🏠 Selbstabholer</span>` : `<span class="font-mono text-blue-400">${o.tracking}</span>`;
 
           tbody.innerHTML += `
             <tr class="hover:bg-slate-800/40 border-b border-slate-800">
@@ -1245,9 +1395,9 @@
               <td class="p-2"><select onchange="updateField(${o.id}, 'isPaid', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-emerald-300 mb-1"><option value="✅ Ja" ${o.isPaid === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.isPaid === '❌ Nein' ? 'selected' : ''}>❌ Nein</option></select><br><select onchange="updateField(${o.id}, 'paymentMethod', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-cyan-300"><option value="eBay" ${o.paymentMethod === 'eBay' ? 'selected' : ''}>eBay</option><option value="PayPal" ${o.paymentMethod === 'PayPal' ? 'selected' : ''}>PayPal</option><option value="Überweisung" ${o.paymentMethod === 'Überweisung' ? 'selected' : ''}>Überweisung</option><option value="Bar" ${o.paymentMethod === 'Bar' ? 'selected' : ''}>Bar</option></select></td>
               <td class="p-2">${ebayBalanceCell}</td>
               <td class="p-2"><select onchange="updateField(${o.id}, 'status', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-yellow-300"><option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option><option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option><option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option></select></td>
-              <td class="p-2 text-[11px]"><div class="text-emerald-400 font-bold">${totalOrderRevenue.toFixed(2).replace('.', ',')} €</div>${orderVersandKnd}${orderPortoDisplay}</td>
+              <td class="p-2 text-[11px]"><div class="text-emerald-400 font-bold">${totalOrderRevenue.toFixed(2).replace('.', ',')} €</div>${orderVersandKnd}${orderPortoDisplay}${orderDiscountDisplay}</td>
               <td class="p-2"><select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300 mb-1"><option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.label === '❌ Nein' ? 'selected' : ''}>❌ Nein</option><option value="🟡 Wartet auf Zahlung" ${o.label === '🟡 Wartet auf Zahlung' ? 'selected' : ''}>🟡 Wartet auf Zahlung</option></select><br><select onchange="updateField(${o.id}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300"><option value="✅ Ja" ${o.packed === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.packed === '❌ Nein' ? 'selected' : ''}>❌ Nein</option></select></td>
-              <td class="p-2 text-[10px] font-mono text-blue-400">${o.tracking}</td>
+              <td class="p-2 text-[10px]">${trackingDisplay}</td>
               <td class="p-2 text-right space-x-1">${archiveBtnHtml}<button onclick="printInvoice(${idx})" class="text-emerald-300 bg-emerald-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button><button onclick="printBoxLabel(${idx})" class="text-amber-300 bg-amber-500/10 px-1.5 py-1 rounded text-[10px]" title="Karton-Etikett">🏷</button><button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏</button><button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]"><i class="fa-solid fa-trash"></i></button></td>
             </tr>`;
         }
@@ -1265,9 +1415,12 @@
           if (o.items && Array.isArray(o.items)) { o.items.forEach(i => totalW += (parseInt(i.weight) || 0)); }
         }
         let isEbay = o.platform === 'eBay';
-        let orderAmount = o.price;
+        let dAmount = 0;
+        const dVal = parseFloat(o.discountVal) || 0;
+        if (dVal > 0) { dAmount = o.discountType === 'percent' ? (o.price * dVal) / 100 : dVal; }
+        let orderAmount = Math.max(0, o.price - dAmount);
         let lCost = o.labelCost || 0;
-        if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') { ebayBalanceOpen += Math.round((o.price - lCost) * 100) / 100; }
+        if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') { ebayBalanceOpen += Math.round((orderAmount - lCost) * 100) / 100; }
         let targetDate = o.orderDate || '';
         if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
           totalRev += orderAmount;
