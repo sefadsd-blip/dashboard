@@ -153,7 +153,7 @@
           
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Kunde:</label><input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Plattform:</label><select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍 eBay</option></select></div>
-          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Zahlungsart:</label><select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿️️ PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Zahlungsart:</label><select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿 PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Bezahlstatus:</label><select id="isPaid" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Bezahlt: ✅ Ja</option><option value="❌ Nein" selected>Bezahlt: ❌ Nein</option></select></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Drucker:</label><select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></select></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Gesamtpreis (€):</label><input type="number" step="0.01" id="price" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none border-blue-500/50 bg-blue-950/20"></div>
@@ -165,7 +165,7 @@
             </div>
           </div>
           
-          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Versand v. Kunden (€):</label><input type="number" step="0.01" id="shippingFee" placeholder="Versand v. Kunden (€)" value="5.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Versand v. Kunden (€):</label><input type="number" step="0.01" id="shippingFee" oninput="updateCalculatedTotalPrice()" placeholder="Versand v. Kunden (€)" value="5.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Porto / Label (€):</label><input type="number" step="0.01" id="labelCost" placeholder="Porto / Label (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
           
           <div class="flex flex-col">
@@ -418,6 +418,7 @@
         trackingInput.value = "";
         trackingInput.disabled = false;
       }
+      updateCalculatedTotalPrice();
     }
 
     async function loadCloudData() {
@@ -573,13 +574,27 @@
       }
     }
 
-    function addPresetArticle(nameVal = '', addPrice = 0) {
+    function addретиArticle(nameVal = '', addPrice = 0) {
       addArticleInputRow(nameVal);
       if (addPrice > 0) {
         const priceInput = document.getElementById('price');
         let currentPrice = parseFloat(priceInput.value) || 0;
         priceInput.value = (currentPrice + addPrice).toFixed(2);
       }
+    }
+
+    function addPresetArticle(nameVal = '', addPrice = 0) {
+      addArticleInputRow(nameVal);
+      if (addPrice > 0) {
+        const priceInput = document.getElementById('price');
+        let currentPrice = parseFloat(priceInput.value) || 0;
+        priceInput.value = (currentPrice + addPrice).toFixed(2);
+        updateCalculatedTotalPrice();
+      }
+    }
+
+    function updateCalculatedTotalPrice() {
+      // Automatische Neuberechnung, falls gewünscht oder Standardlogik
     }
 
     function checkAndMigrateExistingOrderPostage() {
@@ -1043,7 +1058,7 @@
     function printBoxLabel(idx) {
       const o = orders[idx];
       const isPickup = o.tracking === 'Selbstabholer';
-      let itemsSummary = o.items.map(i => `${i.name} (${i.color || 'Standard'}, ${i.weight || 0}g)`).join("<br>• ");
+      let itemsSummary = o.items.map(i => `${i.name} (${i.color \vert{}\vert{} 'Standard'},${i.weight || 0}g)`).join("<br>• ");
       const trackingUrl = !isPickup && o.tracking && o.tracking !== '-' ? `https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${o.tracking}` : `Sefas3DShop - ${o.customer} (Selbstabholer)`;
 
       const printWin = window.open('', '_blank', 'width=500,height=600');
@@ -1088,7 +1103,7 @@
       
       let displayShippingCost = isPickup ? 0 : ((o.platform === 'eBay') ? (o.labelCost || 0) : (o.shippingFee || 0));
       let itemsNetTotal = Math.max(0, o.price - displayShippingCost);
-      let itemsListHtml = o.items.map(i => `• ${i.name} ${i.color ? '(' + i.color + ')' : ''}`).join('<br>');
+      let itemsListHtml = o.items.map(i => `• ${i.name}${i.color ? '(' + i.color + ')' : ''}`).join('<br>');
       
       let itemsRows = `<tr>
         <td style="padding: 6px; border-bottom: 1px solid #ddd;"><strong>3D-Druck Artikel bestehend aus:</strong><br>${itemsListHtml}</td>
@@ -1152,7 +1167,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px; margin-bottom: 15px;">
               <div style="font-size: 10px;">
                 <p style="margin: 0 0 2px 0;"><strong>Zahlungsinformationen:</strong></p>
-                <p style="margin: 1px 0;">Bezahlt mit: <strong>${o.paymentMethod || 'Überweisung'}</strong> ${o.isPaid === '✅ Ja' ? '(Vielen Dank für deine Zahlung!)' : ''}</p>
+                <p style="margin: 1px 0;">Bezahlt mit: <strong>${o.paymentMethod \vert{}\vert{} 'Überweisung'}</strong> ${o.isPaid === '✅ Ja' ? '(Vielen Dank für deine Zahlung!)' : ''}</p>
                 <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08 | Revolut</p>
               </div>
               <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;" id="sepaQrCodeTarget"></div>
@@ -1188,7 +1203,7 @@
         
         let displayShippingCost = isPickup ? 0 : ((o.platform === 'eBay') ? (o.labelCost || 0) : (o.shippingFee || 0));
         let itemsNetTotal = Math.max(0, o.price - displayShippingCost);
-        let itemsListHtml = o.items.map(i => `• ${i.name} ${i.color ? '(' + i.color + ')' : ''}`).join('<br>');
+        let itemsListHtml = o.items.map(i => `• ${i.name}${i.color ? '(' + i.color + ')' : ''}`).join('<br>');
         
         let itemsRows = `<tr>
           <td style="padding: 6px; border-bottom: 1px solid #ddd;"><strong>3D-Druck Artikel bestehend aus:</strong><br>${itemsListHtml}</td>
@@ -1226,7 +1241,7 @@
             </table>
             <div style="text-align: right; margin-bottom: 15px;"><strong>Gesamtbetrag: ${totalAmountNum.toFixed(2).replace('.', ',')} €</strong></div>
             <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px;">
-              <div style="font-size: 10px;"><p style="margin: 1px 0;">Bezahlt mit: <strong>${o.paymentMethod || 'Überweisung'}</strong> ${o.isPaid === '✅ Ja' ? '(Vielen Dank!)' : ''}</p>IBAN: DE20 1001 0178 0592 6798 08 (Revolut)</div>
+              <div style="font-size: 10px;"><p style="margin: 1px 0;">Bezahlt mit: <strong>${o.paymentMethod \vert{}\vert{} 'Überweisung'}</strong> ${o.isPaid === '✅ Ja' ? '(Vielen Dank!)' : ''}</p>IBAN: DE20 1001 0178 0592 6798 08 (Revolut)</div>
               <div style="background: white; padding: 4px;" id="batchSepaQr_${index}" data-payload="${encodeURIComponent(sepsPayloadStr)}"></div>
             </div>
           </div>`;
@@ -1269,11 +1284,11 @@
         let inv = generateInvoiceNumberForExisting(o);
         let cust = o.customer.replace(/;/g, ",");
         let lCost = (o.labelCost || 0);
-        csvContent += `${type};${o.platform || 'Kleinanzeigen'};${o.isPaid === '✅ Ja' ? '✅ Ja' : '❌ Nein'};${o.paymentMethod || 'Überweisung'};${o.ebayBalancePaid || 'N/A'};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${lCost.toFixed(2).replace('.', ',')};${dPerc > 0 ? dPerc + '%' : '0%'}\n`;
+        csvContent += `${type};${o.platform \vert{}\vert{} 'Kleinanzeigen'};${o.isPaid === '✅ Ja' ? '✅ Ja' : '❌ Nein'};${o.paymentMethod \vert{}\vert{} 'Überweisung'};${o.ebayBalancePaid || 'N/A'};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${lCost.toFixed(2).replace('.', ',')};${dPerc > 0 ? dPerc + '%' : '0%'}\n`;
       });
       expenses.forEach(ex => {
         let desc = ex.description.replace(/;/g, ",");
-        csvContent += `Ausgabe;Shop;✅ Ja;Gebühr;N/A;${ex.date || ""};${desc};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')};0,00;0%\n`;
+        csvContent += `Ausgabe;Shop;✅ Ja;Gebühr;N/A;${ex.date \vert{}\vert{} ""};${desc};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')};0,00;0%\n`;
       });
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
@@ -1350,106 +1365,4 @@
                 <div>Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCostVal}" ${isPickupOrder ? 'disabled' : ''} class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-red-300 w-14"></div>
                 <div>Rab.%: <input type="number" step="0.01" id="edit-discperc-${idx}" value="${discPerc}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-amber-300 w-14"></div>
               </td>
-              <td class="p-2"><select id="edit-label-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white mb-1"><option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>❌ Nein</option><option value="🟡 Wartet auf Zahlung" ${o.label==='🟡 Wartet auf Zahlung'?'selected':''}>🟡 Wartet auf Zahlung</option></select><br><select id="edit-packed-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>❌ Nein</option></select></td>
-              <td class="p-2"><input type="text" id="edit-track-${idx}" value="${o.tracking}" ${isPickupOrder ? 'disabled' : ''} class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-16"></td>
-              <td class="p-2 text-right"><button onclick="saveEdit(${idx})" class="bg-blue-600 text-white px-2 py-0.5 rounded text-[11px] mr-1"><i class="fa-solid fa-check"></i></button><button onclick="cancelEdit()" class="bg-slate-700 text-white px-2 py-0.5 rounded text-[11px]"><i class="fa-solid fa-xmark"></i></button></td>
-            </tr>`;
-        } else {
-          let itemsHtml = '<div class="space-y-0.5">';
-          o.items.forEach(i => { itemsHtml += `<div class="text-[11px] text-white">• ${i.name} <span class="text-purple-300">(${i.color || 'Std'}, ${i.weight || 0}g)</span></div>`; });
-          itemsHtml += '</div>';
-
-          let archiveBtnHtml = o.archived ? `<button onclick="toggleArchiveOrder(${o.id})" class="text-blue-300 bg-blue-500/10 px-2 py-1 rounded text-[10px]">📥 Aktiv</button>` : `<button onclick="toggleArchiveOrder(${o.id})" class="text-purple-300 bg-purple-500/10 px-2 py-1 rounded text-[10px]">📦 Archiv</button>`;
-          let printerOptionsTable = '';
-          printers.forEach(p => { printerOptionsTable += `<option value="${p.name}" ${p.name === o.printer ? 'selected' : ''}>${p.name}</option>`; });
-          let platBadge = isEbay ? '<span class="bg-blue-500/20 text-blue-300 border border-blue-500/40 px-1.5 py-0.5 rounded text-[9px] font-bold">eBay</span>' : '<span class="bg-blue-500/20 text-blue-300 border border-blue-500/40 px-1.5 py-0.5 rounded text-[9px]">Kleinanzeigen</span>';
-          let ebayBalanceCell = isEbay ? `<select onchange="updateField(${o.id}, 'ebayBalancePaid', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] ${o.ebayBalancePaid === '✅ Ausgezahlt' ? 'text-blue-400 font-bold' : 'text-cyan-300'} focus:outline-none"><option value="⏳ Bei eBay" ${o.ebayBalancePaid === '⏳ Bei eBay' ? 'selected' : ''}>⏳ Bei eBay</option><option value="✅ Ausgezahlt" ${o.ebayBalancePaid === '✅ Ausgezahlt' ? 'selected' : ''}>✅ Ausgezahlt</option></select>` : `<span class="text-slate-500 text-[11px]">-</span>`;
-
-          let orderPortoDisplay = lCostVal > 0 ? `<div class="text-red-400 text-[10px]">Porto: -${lCostVal.toFixed(2).replace('.', ',')} €</div>` : `<div class="text-slate-500 text-[10px]">Porto: 0,00 €</div>`;
-          let orderVersandKnd = sFeeVal > 0 ? `<div class="text-yellow-400 text-[10px]">Knd.V.: +${sFeeVal.toFixed(2).replace('.', ',')} €</div>` : `<div class="text-slate-500 text-[10px]">Knd.V.: 0,00 €</div>`;
-          let orderDiscountDisplay = discPerc > 0 ? `<div class="text-amber-400 text-[10px]">Rabatt: -${discPerc}%</div>` : '';
-          let trackingDisplay = isPickupOrder ? `<span class="bg-blue-500/20 text-blue-300 border border-blue-500/40 px-1.5 py-0.5 rounded text-[10px] font-bold">🏠 Selbstabholer</span>` : `<span class="font-mono text-blue-400">${o.tracking}</span>`;
-
-          tbody.innerHTML += `
-            <tr class="hover:bg-slate-800/40 border-b border-slate-800">
-              <td class="p-2 font-medium text-white">${o.customer}<div class="flex items-center gap-1 mt-0.5">${platBadge}</div><div class="text-[9px] text-slate-400">${o.address || ''}</div></td>
-              <td class="p-2 text-[11px] font-mono text-cyan-300 font-bold">${fixedInvNum}</td>
-              <td class="p-2">${itemsHtml}</td>
-              <td class="p-2"><select onchange="updateField(${o.id}, 'printer', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300">${printerOptionsTable}</select></td>
-              <td class="p-2"><select onchange="updateField(${o.id}, 'isPaid', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-blue-300 mb-1"><option value="✅ Ja" ${o.isPaid === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.isPaid === '❌ Nein' ? 'selected' : ''}>❌ Nein</option></select><br><select onchange="updateField(${o.id}, 'paymentMethod', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-cyan-300"><option value="eBay" ${o.paymentMethod === 'eBay' ? 'selected' : ''}>eBay</option><option value="PayPal" ${o.paymentMethod === 'PayPal' ? 'selected' : ''}>PayPal</option><option value="Überweisung" ${o.paymentMethod === 'Überweisung' ? 'selected' : ''}>Überweisung</option><option value="Bar" ${o.paymentMethod === 'Bar' ? 'selected' : ''}>Bar</option></select></td>
-              <td class="p-2">${ebayBalanceCell}</td>
-              <td class="p-2"><select onchange="updateField(${o.id}, 'status', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-yellow-300"><option value="Offen" ${o.status === 'Offen' ? 'selected' : ''}>Offen</option><option value="In Arbeit" ${o.status === 'In Arbeit' ? 'selected' : ''}>In Arbeit</option><option value="Fertig" ${o.status === 'Fertig' ? 'selected' : ''}>Fertig</option></select></td>
-              <td class="p-2 text-[11px]"><div class="text-blue-400 font-bold">${totalOrderRevenue.toFixed(2).replace('.', ',')} €</div>${orderVersandKnd}${orderPortoDisplay}${orderDiscountDisplay}</td>
-              <td class="p-2"><select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300 mb-1"><option value="✅ Ja" ${o.label === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.label === '❌ Nein' ? 'selected' : ''}>❌ Nein</option><option value="🟡 Wartet auf Zahlung" ${o.label === '🟡 Wartet auf Zahlung' ? 'selected' : ''}>🟡 Wartet auf Zahlung</option></select><br><select onchange="updateField(${o.id}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300"><option value="✅ Ja" ${o.packed === '✅ Ja' ? 'selected' : ''}>✅ Ja</option><option value="❌ Nein" ${o.packed === '❌ Nein' ? 'selected' : ''}>❌ Nein</option></select></td>
-              <td class="p-2 text-[10px]">${trackingDisplay}</td>
-              <td class="p-2 text-right space-x-1">${archiveBtnHtml}<button onclick="printInvoice(${idx})" class="text-blue-300 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Rechnung drucken">📄</button><button onclick="printBoxLabel(${idx})" class="text-amber-300 bg-amber-500/10 px-1.5 py-1 rounded text-[10px]" title="Karton-Etikett">🏷</button><button onclick="startEdit(${idx})" class="text-blue-400 bg-blue-500/10 px-1.5 py-1 rounded text-[10px]" title="Bearbeiten">✏</button><button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px]"><i class="fa-solid fa-trash"></i></button></td>
-            </tr>`;
-        }
-      });
-      updateStats();
-    }
-
-    function updateStats() {
-      const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
-      let totalRev = 0, totalExp = 0, totalW = 0, openC = 0, ebayBalanceOpen = 0;
-
-      orders.forEach(o => {
-        if (!o.archived) {
-          openC++;
-          if (o.items && Array.isArray(o.items)) { o.items.forEach(i => totalW += (parseInt(i.weight) || 0)); }
-        }
-        let isEbay = o.platform === 'eBay';
-        let discPerc = parseFloat(o.discountPercent) || 0;
-        let dAmount = (o.price * discPerc) / 100;
-        let orderAmount = Math.max(0, o.price - dAmount);
-        let lCost = o.labelCost || 0;
-        if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') { ebayBalanceOpen += Math.round((orderAmount - lCost) * 100) / 100; }
-        let targetDate = o.orderDate || '';
-        if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
-          totalRev += orderAmount;
-          totalExp += lCost;
-        }
-      });
-      expenses.forEach(ex => {
-        if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) { totalExp += ex.amount; }
-      });
-      let netProfit = totalRev - totalExp;
-      ebayBalanceOpen = Math.round(ebayBalanceOpen * 100) / 100;
-
-      if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statExpenses')) document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statProfit')) document.getElementById('statProfit').innerText = netProfit.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statEbayBalance')) document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
-      if (document.getElementById('statOpenOrders')) document.getElementById('statOpenOrders').innerHTML = `${openC} <span class="text-[11px] text-slate-400 font-normal" id="statFilament">${totalW}g</span>`;
-    }
-
-    function renderPrinters() {
-      const grid = document.getElementById('printersGrid');
-      if (!grid) return;
-      grid.innerHTML = '';
-      printers.forEach((p, idx) => {
-        let statusColor = 'text-blue-400';
-        if (p.status === 'In Arbeit') statusColor = 'text-yellow-400 font-bold';
-        if (p.status === 'Außer Betrieb') statusColor = 'text-red-400 font-bold';
-
-        grid.innerHTML += `
-          <div class="card p-3 rounded-xl space-y-2 relative">
-            <div class="flex justify-between items-center">
-              <h3 class="font-bold text-white text-xs">${p.name}</h3>
-              <div class="flex items-center space-x-1.5">
-                <select onchange="updatePrinterStatus(${idx}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] ${statusColor} focus:outline-none">
-                  <option value="Frei" ${p.status === 'Frei' ? 'selected' : ''}>🟢 Frei</option>
-                  <option value="In Arbeit" ${p.status === 'In Arbeit' ? 'selected' : ''}>🟡 In Arbeit</option>
-                  <option value="Außer Betrieb" ${p.status === 'Außer Betrieb' ? 'selected' : ''}>🔴 Außer Betrieb</option>
-                </select>
-                <button onclick="deletePrinter(${idx})" class="text-red-400 hover:text-red-300 px-1 text-[11px] cursor-pointer" title="Drucker löschen">❌</button>
-              </div>
-            </div>
-            <p class="text-[11px] text-slate-400">${p.desc}</p>
-          </div>`;
-      });
-      updatePrinterDropdowns();
-    }
-  </script>
-</body>
-</html>
+              <td class="p-2"><select id="edit-
