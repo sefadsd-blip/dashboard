@@ -58,7 +58,6 @@
         </div>
       </section>
 
-      <!-- Artikel-Katalog Sektion mit Suchleiste -->
       <section class="card p-4 rounded-xl space-y-3">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-700/60 pb-2.5">
           <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-tags mr-1.5 text-amber-400"></i> Artikel-Katalog & Preisliste</h2>
@@ -123,10 +122,10 @@
         </div>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Gesamt-Umsatz (Monat)</p><h3 id="statRevenue" class="text-xl font-bold text-blue-400">0,00 €</h3></div></div>
-        <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Gesamt-Ausgaben (Monat)</p><h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3></div></div>
+        <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Gesamt-Umsatz</p><h3 id="statRevenue" class="text-xl font-bold text-blue-400">0,00 €</h3></div></div>
+        <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Gesamt-Ausgaben</p><h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Reingewinn (Einnahmen - Ausgaben)</p><h3 id="statProfit" class="text-xl font-bold text-blue-400">0,00 €</h3></div></div>
-        <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍 eBay-Guthaben (Netto)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt markieren</button></div>
+        <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍 eBay-Guthaben (Offen)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt markieren</button></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Offene Aufträge / Material</p><h3 id="statOpenOrders" class="text-lg font-bold text-yellow-400">0 <span class="text-[11px] text-slate-400 font-normal" id="statFilament">0g</span></h3></div></div>
       </div>
     </section>
@@ -150,13 +149,12 @@
       </div>
       <form id="orderForm" onsubmit="addOrder(event)" class="space-y-3">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
-          
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Kunde:</label><input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Plattform:</label><select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍 eBay</option></select></div>
-          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Zahlungsart:</label><select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿️️ PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Zahlungsart:</label><select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿 PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Bezahlstatus:</label><select id="isPaid" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Bezahlt: ✅ Ja</option><option value="❌ Nein" selected>Bezahlt: ❌ Nein</option></select></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Drucker:</label><select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></select></div>
-          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Gesamtpreis (€):</label><input type="number" step="0.01" id="price" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none border-blue-500/50 bg-blue-950/20"></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Artikelpreis (€):</label><input type="number" step="0.01" id="price" placeholder="Artikelpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none border-blue-500/50 bg-blue-950/20"></div>
           
           <div class="flex flex-col justify-end">
             <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5">
@@ -381,10 +379,25 @@
     const todayStr = new Date().toISOString().slice(0, 10);
 
     window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('orderDate').value = todayStr;
-      document.getElementById('expDate').value = todayStr;
-      loadCloudData();
+      try {
+        if (document.getElementById('orderDate')) document.getElementById('orderDate').value = todayStr;
+        if (document.getElementById('expDate')) document.getElementById('expDate').value = todayStr;
+        renderAllViews();
+        loadCloudData();
+      } catch (err) {
+        console.error("Fehler beim Starten:", err);
+      }
     });
+
+    function renderAllViews() {
+      try { renderOrders(); } catch(e) { console.error("renderOrders fail", e); }
+      try { renderSpools(); } catch(e) { console.error("renderSpools fail", e); }
+      try { renderExpenses(); } catch(e) { console.error("renderExpenses fail", e); }
+      try { renderPrinters(); } catch(e) { console.error("renderPrinters fail", e); }
+      try { renderProducts(); } catch(e) { console.error("renderProducts fail", e); }
+      try { updateCustomerDropdowns(); } catch(e) {}
+      try { updatePrinterDropdowns(); } catch(e) {}
+    }
 
     function setStatus(text, color) {
        const dot = document.getElementById('statusDot');
@@ -438,9 +451,7 @@
               spools = [...BACKUP_SPOOLS];
             }
             
-            checkAndMigrateExistingOrderPostage();
-            renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
-            updateCustomerDropdowns(); updatePrinterDropdowns();
+            renderAllViews();
             setStatus("Mit Cloud verbunden", "bg-blue-500");
           }
         } else {
@@ -448,11 +459,8 @@
         }
       } catch(e) {
         setStatus("Verbindungsfehler", "bg-red-500");
-        console.error(e);
-        products = [...BACKUP_PRODUCTS];
-        spools = [...BACKUP_SPOOLS];
-        printers = [...BACKUP_PRINTERS];
-        renderProducts(); renderSpools(); renderPrinters(); renderOrders(); renderExpenses();
+        console.error("Cloud-Ladefehler:", e);
+        renderAllViews();
       }
     }
 
@@ -480,8 +488,7 @@
     }
 
     function saveAllData() {
-      renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
-      updateCustomerDropdowns(); updatePrinterDropdowns();
+      renderAllViews();
       
       fetch(NPOINT_URL, {
         method: 'POST',
@@ -580,20 +587,6 @@
         let currentPrice = parseFloat(priceInput.value) || 0;
         priceInput.value = (currentPrice + addPrice).toFixed(2);
       }
-    }
-
-    function checkAndMigrateExistingOrderPostage() {
-      orders.forEach(o => {
-        const lCost = parseFloat(o.labelCost) || 0;
-        const invNum = generateInvoiceNumberForExisting(o);
-        if (lCost > 0) {
-          const descSearch = `Porto / Label für ${o.customer} (${invNum})`;
-          const exists = expenses.some(ex => ex.description === descSearch || (ex.description.includes(o.customer) && ex.amount === lCost));
-          if (!exists) {
-            expenses.unshift({ id: Date.now() + Math.random(), description: descSearch, category: 'DHL / Versand', amount: lCost, date: o.orderDate || todayStr });
-          }
-        }
-      });
     }
 
     function addPrinterPrompt() {
@@ -768,7 +761,7 @@
       document.getElementById('templateText3').value = `Hallo ${o.customer},\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.`;
       
       if (isPickup) {
-        document.getElementById('templateText4').value = `Hallo ${o.customer},\n\ndeine Bestellung ist fertig und abholbereit!\n\nAbholadresse:\nNeuer Weg 4, 32369 Rahden\n\nViel Freude damit!`;
+        document.getElementById('templateText4').value = `Hallo ${o.customer},\n\ndeine Bestellung ist fertig und abholbereit!\n\nAbholadresse:\nNeuer Weg 42, 32369 Rahden\n\nViel Freude damit!`;
       } else {
         document.getElementById('templateText4').value = `Hallo ${o.customer},\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n${track}\n\nLink: https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${track}\n\nViel Freude damit!`;
       }
@@ -836,6 +829,7 @@
 
     function addArticleInputRow(nameVal = '', colorVal = '', weightVal = '') {
       const container = document.getElementById('articleInputRows');
+      if (!container) return;
       const div = document.createElement('div');
       div.className = "flex gap-2 items-center article-row";
       let optionsHtml = '<option value="">-- Farbe --</option>';
@@ -911,10 +905,6 @@
       const lCostVal = isPickup ? 0 : (parseFloat(document.getElementById('labelCost').value) || 0);
       const sFeeVal = isPickup ? 0 : (parseFloat(document.getElementById('shippingFee').value) || 0);
       const trackVal = isPickup ? "Selbstabholer" : (document.getElementById('tracking').value || '-');
-
-      if (lCostVal > 0) {
-        expenses.unshift({ id: Date.now(), description: `Porto / Label für ${document.getElementById('customer').value} (${fixedInvoiceNum})`, category: 'DHL / Versand', amount: lCostVal, date: customDate });
-      }
       
       orders.unshift({
         id: Date.now(), customer: document.getElementById('customer').value, platform: plat, paymentMethod: payMethod,
@@ -997,7 +987,7 @@
       orders[idx].platform = document.getElementById(`edit-plat-${idx}`).value;
       orders[idx].paymentMethod = document.getElementById(`edit-paymeth-${idx}`).value;
       orders[idx].isPaid = document.getElementById(`edit-ispaid-${idx}`).value;
-      orders[idx].ebayBalancePaid = document.getElementById(`edit-ebaybal-${idx}`).value;
+      orders[idx].ebayBalancePaid = document.getElementById(`edit-ebaybal-${idx}`) ? document.getElementById(`edit-ebaybal-${idx}`).value : 'N/A';
       orders[idx].address = document.getElementById(`edit-addr-${idx}`).value;
       orders[idx].printer = document.getElementById(`edit-print-${idx}`).value;
       orders[idx].status = document.getElementById(`edit-stat-${idx}`).value;
@@ -1006,16 +996,7 @@
       orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0;
       orders[idx].shippingFee = isPickupEdit ? 0 : (parseFloat(document.getElementById(`edit-shipfee-${idx}`).value) || 0);
       orders[idx].discountPercent = parseFloat(document.getElementById(`edit-discperc-${idx}`).value) || 0;
-      
-      const newLabelCost = isPickupEdit ? 0 : (parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0);
-      const oldLabelCost = orders[idx].labelCost || 0;
-      orders[idx].labelCost = newLabelCost;
-
-      if (newLabelCost > 0 && newLabelCost !== oldLabelCost) {
-        const invNum = generateInvoiceNumberForExisting(orders[idx]);
-        expenses.unshift({ id: Date.now(), description: `Porto / Label für ${orders[idx].customer} (${invNum})`, category: 'DHL / Versand', amount: newLabelCost, date: orders[idx].orderDate || todayStr });
-      }
-
+      orders[idx].labelCost = isPickupEdit ? 0 : (parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0);
       orders[idx].tracking = isPickupEdit ? "Selbstabholer" : (document.getElementById(`edit-track-${idx}`).value || '-');
       orders[idx].orderDate = document.getElementById(`edit-date-${idx}`)?.value || orders[idx].orderDate;
       const newInvInput = document.getElementById(`edit-inv-${idx}`);
@@ -1086,8 +1067,8 @@
       const invoiceNumber = generateInvoiceNumberForExisting(o);
       const isPickup = o.tracking === 'Selbstabholer';
       
-      let displayShippingCost = isPickup ? 0 : ((o.platform === 'eBay') ? (o.labelCost || 0) : (o.shippingFee || 0));
-      let itemsNetTotal = Math.max(0, o.price - displayShippingCost);
+      let displayShippingCost = isPickup ? 0 : (o.shippingFee || 0);
+      let itemsNetTotal = Math.max(0, o.price);
       let itemsListHtml = o.items.map(i => `• ${i.name} ${i.color ? '(' + i.color + ')' : ''}`).join('<br>');
       
       let itemsRows = `<tr>
@@ -1098,7 +1079,7 @@
       </tr>`;
       
       if (isPickup) {
-        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #2563eb;">Selbstabholung (Neuer Weg 4, 32369 Rahden)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">0,00 €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">0,00 €</td></tr>`;
+        itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #2563eb;">Selbstabholung (Neuer Weg 42, 32369 Rahden)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">0,00 €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">0,00 €</td></tr>`;
       } else if (displayShippingCost > 0) {
         itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">Versandkosten</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td></tr>`;
       }
@@ -1110,7 +1091,7 @@
         itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #b91c1c;">Rabatt (${dPerc}%)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td></tr>`;
       }
 
-      const totalAmountNum = Math.max(0, o.price - discountAmount);
+      const totalAmountNum = Math.max(0, (o.price + displayShippingCost) - discountAmount);
       const sepsPayloadStr = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
       const logoSvg = `<svg width="45" height="45" viewBox="0 0 100 100" fill="currentColor"><polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/><polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/></svg>`;
 
@@ -1126,7 +1107,7 @@
                 ${logoSvg}
                 <div>
                   <h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0 0 2px 0;">Sefas3DShop</h1>
-                  <p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden</p>
+                  <p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 42 | 32369 Rahden</p>
                   <p style="margin: 1px 0 0 0; color: #555;">Steuernummer: 52063271982</p>
                 </div>
               </div>
@@ -1153,7 +1134,7 @@
               <div style="font-size: 10px;">
                 <p style="margin: 0 0 2px 0;"><strong>Zahlungsinformationen:</strong></p>
                 <p style="margin: 1px 0;">Bezahlt mit: <strong>${o.paymentMethod || 'Überweisung'}</strong> ${o.isPaid === '✅ Ja' ? '(Vielen Dank für deine Zahlung!)' : ''}</p>
-                <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08 | Revolut</p>
+                <p style="margin: 1px 0;">IBAN: DE20 1001 0178 0592 6798 08 | C24 Bank</p>
               </div>
               <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;" id="sepaQrCodeTarget"></div>
             </div>
@@ -1186,8 +1167,8 @@
         const invoiceNumber = generateInvoiceNumberForExisting(o);
         const isPickup = o.tracking === 'Selbstabholer';
         
-        let displayShippingCost = isPickup ? 0 : ((o.platform === 'eBay') ? (o.labelCost || 0) : (o.shippingFee || 0));
-        let itemsNetTotal = Math.max(0, o.price - displayShippingCost);
+        let displayShippingCost = isPickup ? 0 : (o.shippingFee || 0);
+        let itemsNetTotal = Math.max(0, o.price);
         let itemsListHtml = o.items.map(i => `• ${i.name} ${i.color ? '(' + i.color + ')' : ''}`).join('<br>');
         
         let itemsRows = `<tr>
@@ -1198,7 +1179,7 @@
         </tr>`;
         
         if (isPickup) {
-          itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #2563eb;">Selbstabholung (Neuer Weg 4, 32369 Rahden)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">0,00 €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">0,00 €</td></tr>`;
+          itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #2563eb;">Selbstabholung (Neuer Weg 42, 32369 Rahden)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">0,00 €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">0,00 €</td></tr>`;
         } else if (displayShippingCost > 0) {
           itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd;">Versandkosten</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td></tr>`;
         }
@@ -1210,13 +1191,13 @@
           itemsRows += `<tr><td style="padding: 6px; border-bottom: 1px solid #ddd; color: #b91c1c;">Rabatt (${dPerc}%)</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: center;">1</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td><td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; color: #b91c1c;">-${discountAmount.toFixed(2).replace('.', ',')} €</td></tr>`;
         }
 
-        const totalAmountNum = Math.max(0, o.price - discountAmount);
+        const totalAmountNum = Math.max(0, (o.price + displayShippingCost) - discountAmount);
         const sepsPayloadStr = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
 
         allInvoicesHtml += `
           <div style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto 30px auto; color: #000; font-size: 11px; line-height: 1.3; background: #fff; padding: 10px; page-break-after: always; break-after: page;">
             <div style="display: flex; justify-content: space-between; align-items: start; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 15px;">
-              <div style="display: flex; gap: 10px; align-items: center;">${logoSvg}<div><h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0 0 2px 0;">Sefas3DShop</h1><p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden</p></div></div>
+              <div style="display: flex; gap: 10px; align-items: center;">${logoSvg}<div><h1 style="font-size: 18px; font-weight: bold; color: #2563eb; margin: 0 0 2px 0;">Sefas3DShop</h1><p style="margin: 2px 0 0 0; color: #555;">Inh. Sefa Demir | Neuer Weg 42 | 32369 Rahden</p></div></div>
               <div style="text-align: right;"><h2 style="font-size: 16px; font-weight: bold; margin: 0;">RECHNUNG</h2><p style="margin: 1px 0;">Nr: ${invoiceNumber}</p><p style="margin: 1px 0;">Datum: ${invoiceDate}</p></div>
             </div>
             <div style="font-weight: bold; font-size: 12px; margin-bottom: 15px;">${o.customer}<br><span style="font-weight: normal; color: #444;">${o.address || ''}</span></div>
@@ -1226,7 +1207,7 @@
             </table>
             <div style="text-align: right; margin-bottom: 15px;"><strong>Gesamtbetrag: ${totalAmountNum.toFixed(2).replace('.', ',')} €</strong></div>
             <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px;">
-              <div style="font-size: 10px;"><p style="margin: 1px 0;">Bezahlt mit: <strong>${o.paymentMethod || 'Überweisung'}</strong> ${o.isPaid === '✅ Ja' ? '(Vielen Dank!)' : ''}</p>IBAN: DE20 1001 0178 0592 6798 08 (Revolut)</div>
+              <div style="font-size: 10px;"><p style="margin: 1px 0;">Bezahlt mit: <strong>${o.paymentMethod || 'Überweisung'}</strong> ${o.isPaid === '✅ Ja' ? '(Vielen Dank!)' : ''}</p>IBAN: DE20 1001 0178 0592 6798 08 (C24 Bank)</div>
               <div style="background: white; padding: 4px;" id="batchSepaQr_${index}" data-payload="${encodeURIComponent(sepsPayloadStr)}"></div>
             </div>
           </div>`;
@@ -1259,21 +1240,20 @@
 
     function exportAccountingCSV() {
       let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-      csvContent += "Typ;Plattform;Bezahlt?;Zahlungsart;eBay Guthaben Status;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Umsatz (€);Porto-Ausgabe (€);Rabatt (%)\n";
+      csvContent += "Typ;Plattform;Bezahlt?;Zahlungsart;eBay Guthaben Status;Datum;Rechnungsnummer / Beschreibung;Kunde / Kategorie;Artikelpreis (€);Versand knd (€);Porto-Ausgabe (€);Rabatt (%)\n";
       orders.forEach(o => {
         let dPerc = parseFloat(o.discountPercent) || 0;
-        let dAmount = (o.price * dPerc) / 100;
-        let total = Math.max(0, o.price - dAmount);
+        let sFee = o.shippingFee || 0;
         let type = o.archived ? "Einnahme (Archiviert)" : "Einnahme (Aktiv)";
         let date = o.orderDate || "";
         let inv = generateInvoiceNumberForExisting(o);
         let cust = o.customer.replace(/;/g, ",");
         let lCost = (o.labelCost || 0);
-        csvContent += `${type};${o.platform || 'Kleinanzeigen'};${o.isPaid === '✅ Ja' ? '✅ Ja' : '❌ Nein'};${o.paymentMethod || 'Überweisung'};${o.ebayBalancePaid || 'N/A'};${date};${inv};${cust};${total.toFixed(2).replace('.', ',')};${lCost.toFixed(2).replace('.', ',')};${dPerc > 0 ? dPerc + '%' : '0%'}\n`;
+        csvContent += `${type};${o.platform || 'Kleinanzeigen'};${o.isPaid === '✅ Ja' ? '✅ Ja' : '❌ Nein'};${o.paymentMethod || 'Überweisung'};${o.ebayBalancePaid || 'N/A'};${date};${inv};${cust};${o.price.toFixed(2).replace('.', ',')};${sFee.toFixed(2).replace('.', ',')};${lCost.toFixed(2).replace('.', ',')};${dPerc > 0 ? dPerc + '%' : '0%'}\n`;
       });
       expenses.forEach(ex => {
         let desc = ex.description.replace(/;/g, ",");
-        csvContent += `Ausgabe;Shop;✅ Ja;Gebühr;N/A;${ex.date || ""};${desc};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')};0,00;0%\n`;
+        csvContent += `Ausgabe;Shop;✅ Ja;Gebühr;N/A;${ex.date || ""};${desc};${ex.category};-${ex.amount.toFixed(2).replace('.', ',')};0,00;0,00;0%\n`;
       });
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
@@ -1318,16 +1298,18 @@
         const isPickupOrder = o.tracking === 'Selbstabholer';
         
         let discountCalculated = (o.price * discPerc) / 100;
-        const totalOrderRevenue = Math.max(0, o.price - discountCalculated);
+        const totalOrderRevenue = Math.max(0, (o.price + sFeeVal) - discountCalculated);
         const isEbay = o.platform === 'eBay';
 
         if (editingIndex === idx) {
           let editItemsHtml = `<div id="editArticleRows" class="space-y-1.5 my-1.5">`;
-          o.items.forEach(i => {
-            let optionsHtml = '<option value="">-- Farbe --</option>';
-            spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === i.color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
-            editItemsHtml += `<div class="flex gap-1.5 items-center edit-article-row bg-slate-950 p-1.5 rounded-lg border border-slate-800"><input type="text" value="${i.name}" class="edit-art-name bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white flex-1"><select class="edit-art-color bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-32">${optionsHtml}</select><input type="number" value="${i.weight || ''}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-16"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1"><i class="fa-solid fa-xmark"></i></button></div>`;
-          });
+          if (o.items && Array.isArray(o.items)) {
+            o.items.forEach(i => {
+              let optionsHtml = '<option value="">-- Farbe --</option>';
+              spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === i.color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
+              editItemsHtml += `<div class="flex gap-1.5 items-center edit-article-row bg-slate-950 p-1.5 rounded-lg border border-slate-800"><input type="text" value="${i.name}" class="edit-art-name bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white flex-1"><select class="edit-art-color bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-32">${optionsHtml}</select><input type="number" value="${i.weight || ''}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-16"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1"><i class="fa-solid fa-xmark"></i></button></div>`;
+            });
+          }
           editItemsHtml += `</div><button type="button" onclick="addEditArticleRow()" class="bg-slate-800 text-blue-400 text-[11px] px-2 py-0.5 rounded">+ Artikel</button>`;
 
           let printerOptionsEdit = '';
@@ -1345,7 +1327,7 @@
               <td class="p-2"><select id="edit-stat-${idx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white"><option value="Offen" ${o.status==='Offen'?'selected':''}>Offen</option><option value="In Arbeit" ${o.status==='In Arbeit'?'selected':''}>In Arbeit</option><option value="Fertig" ${o.status==='Fertig'?'selected':''}>Fertig</option></select></td>
               <td class="p-2 space-y-1">
                 <div class="flex items-center gap-1 mb-1 bg-slate-950 p-1 rounded border border-slate-800"><input type="checkbox" id="edit-ispickup-${idx}" ${isPickupOrder ? 'checked' : ''} onchange="toggleEditPickupMode(${idx})" class="cursor-pointer"><label for="edit-ispickup-${idx}" class="text-[10px] text-blue-400 font-medium cursor-pointer">Selbstabholer</label></div>
-                <div>Ums.: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-14"></div>
+                <div>Art.P.: <input type="number" step="0.01" id="edit-price-${idx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-white w-14"></div>
                 <div>Knd.V.: <input type="number" step="0.01" id="edit-shipfee-${idx}" value="${sFeeVal}" ${isPickupOrder ? 'disabled' : ''} class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-yellow-300 w-14"></div>
                 <div>Porto: <input type="number" step="0.01" id="edit-labelcost-${idx}" value="${lCostVal}" ${isPickupOrder ? 'disabled' : ''} class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-red-300 w-14"></div>
                 <div>Rab.%: <input type="number" step="0.01" id="edit-discperc-${idx}" value="${discPerc}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[11px] text-amber-300 w-14"></div>
@@ -1356,7 +1338,9 @@
             </tr>`;
         } else {
           let itemsHtml = '<div class="space-y-0.5">';
-          o.items.forEach(i => { itemsHtml += `<div class="text-[11px] text-white">• ${i.name} <span class="text-purple-300">(${i.color || 'Std'}, ${i.weight || 0}g)</span></div>`; });
+          if (o.items && Array.isArray(o.items)) {
+            o.items.forEach(i => { itemsHtml += `<div class="text-[11px] text-white">• ${i.name} <span class="text-purple-300">(${i.color || 'Std'}, ${i.weight || 0}g)</span></div>`; });
+          }
           itemsHtml += '</div>';
 
           let archiveBtnHtml = o.archived ? `<button onclick="toggleArchiveOrder(${o.id})" class="text-blue-300 bg-blue-500/10 px-2 py-1 rounded text-[10px]">📥 Aktiv</button>` : `<button onclick="toggleArchiveOrder(${o.id})" class="text-purple-300 bg-purple-500/10 px-2 py-1 rounded text-[10px]">📦 Archiv</button>`;
@@ -1401,18 +1385,27 @@
         let isEbay = o.platform === 'eBay';
         let discPerc = parseFloat(o.discountPercent) || 0;
         let dAmount = (o.price * discPerc) / 100;
-        let orderAmount = Math.max(0, o.price - dAmount);
+        let sFee = o.shippingFee || 0;
+        let orderAmount = Math.max(0, (o.price + sFee) - dAmount);
         let lCost = o.labelCost || 0;
-        if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') { ebayBalanceOpen += Math.round((orderAmount - lCost) * 100) / 100; }
+        
         let targetDate = o.orderDate || '';
-        if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
-          totalRev += orderAmount;
-          totalExp += lCost;
+        let isMonthMatch = (selectedMonth === 'all' || targetDate.startsWith(selectedMonth));
+
+        if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') {
+          ebayBalanceOpen += Math.round((orderAmount - lCost) * 100) / 100;
+        } else {
+          if (isMonthMatch) {
+            totalRev += orderAmount;
+            totalExp += lCost;
+          }
         }
       });
+
       expenses.forEach(ex => {
         if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) { totalExp += ex.amount; }
       });
+
       let netProfit = totalRev - totalExp;
       ebayBalanceOpen = Math.round(ebayBalanceOpen * 100) / 100;
 
