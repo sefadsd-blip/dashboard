@@ -259,7 +259,6 @@
         <select id="templateCustomerSelect" onchange="updateTemplatePreview()" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-[11px] text-slate-300 focus:outline-none w-full sm:w-64"><option value="">👤 Kunden auswählen...</option></select>
       </div>
       
-      <!-- NEU EINGEFÜGT: Dankes-Zettel Funktion -->
       <div class="bg-slate-900 p-3 rounded-lg border border-pink-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 mb-2">
         <div class="flex items-center gap-2"><i class="fa-solid fa-heart text-pink-400 text-base"></i><div><h3 class="text-xs font-bold text-white">Persönlicher Dankes-Zettel (A4)</h3></div></div>
         <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -389,6 +388,27 @@
       { id: 87, name: "Fensterstopper oder Balkontürstopper | Fensterkeil Klemmschutz", size: "Standard", price: 4.00 }
     ];
 
+    // DIESES BACKUP WIRD GENUTZT, UM DEINE KAPUTTEN DATEN BEIM START AUTOMATISCH ZU REPARIEREN
+    const REPAIR_ORDERS = [
+      {"customer":"Laura pasch","invoiceNumber":"RE-2026-0017","items":[{"name":"1xKürbis","color":"PLA Schwarz","weight":0},{"name":"1xKürbis","color":"Pla Weiß","weight":0},{"name":"1xKürbis","color":"PETG Orange","weight":0},{"name":"2X scharf","color":"PLA Hellbraun ","weight":0},{"name":"1x scharf","color":"Pla Weiß","weight":0}]},
+      {"customer":"Isabell Zubiller","invoiceNumber":"RE-2026-0016","items":[{"name":"1xKürbis Hoch","color":"PLA Schwarz","weight":0},{"name":"1xKürbis klein","color":"PLA Schwarz","weight":0},{"name":"1xKürbis klein","color":"Pla Weiß","weight":0}]},
+      {"customer":"ELVIRA FELK","invoiceNumber":"RE-2026-0015","items":[{"name":"Schönes Wandregal rund / Metall-Regal Schwarz – Neu 3D-Druck","color":"","weight":0}]},
+      {"customer":"Thomas Siepmann","invoiceNumber":"RE-2026-0014","items":[{"name":"Design Küchenrollenhalter | 3D-Druck","color":"PLA Schwarz","weight":0}]},
+      {"customer":"Jennifer Habenicht","invoiceNumber":"RE-2026-0013","items":[{"name":"More Halter 4x","color":"ASA Grau","weight":0}]},
+      {"customer":"Annett Hanitzsch","invoiceNumber":"RE-2026-00012","items":[{"name":"Süßer Blumentopf mit Herz-Händen 12x12","color":"Pla Weiß","weight":150}]},
+      {"customer":"Iris Diekmann","invoiceNumber":"RE-2026-00011","items":[{"name":"3x Kürbis","color":"","weight":0},{"name":"3x Katze","color":"","weight":0}]},
+      {"customer":"Silke Schwarzer","invoiceNumber":"RE-2026-0010","items":[{"name":"2x Tannenzapfen","color":"PLA Dunkelrot ","weight":180},{"name":"2x Tannenzapfen","color":"PLA Olivgrün","weight":180}]},
+      {"customer":"Familie Tchoffo","invoiceNumber":"RE-2026-0009","items":[{"name":"Küchenrollnhalter 2X","color":"PLA Schwarz","weight":460}]},
+      {"customer":"Renate Evelin - Veere","invoiceNumber":"RE-2026-0008","items":[{"name":"1x Japandi Vogel","color":"PLA grün","weight":50},{"name":"1x Kürbis","color":"PETG Orange","weight":0},{"name":"1x Modernes Eichhörnchen","color":"PLA Hellbraun ","weight":180},{"name":"2x Zapfenhäuschen","color":"PLA Olivgrün","weight":180},{"name":"2x Zapfenhäuschen","color":"PLA Hellbraun ","weight":180}]},
+      {"customer":"Ralf Hartmann","invoiceNumber":"RE-2026-0007","items":[{"name":"6x Rentier","color":"","weight":0}]},
+      {"customer":"Sabine Beewen","invoiceNumber":"RE-2026-0006","items":[{"name":"1x Fernbedienungshalter","color":"","weight":0}]},
+      {"customer":"Dunja marcinkowski","invoiceNumber":"RE-2026-0005","items":[{"name":"6x Weinhalter schwarz","color":"PLA Schwarz","weight":0},{"name":"9x Bäume","color":"","weight":0}]},
+      {"customer":"Tobias von der Famile Ulm","invoiceNumber":"RE-2026-0004","items":[{"name":"3x Suppenhalter 6cm","color":"PLA Schwarz","weight":0},{"name":"4x Backpulverhalter","color":"PLA Schwarz","weight":0},{"name":"4x Backpulverhalter 6cm","color":"PLA Schwarz","weight":0},{"name":"1x Abroller Alufolie","color":"PLA Schwarz","weight":0}]},
+      {"customer":"Antje Nanninga","invoiceNumber":"RE-2026-0003","items":[{"name":"1x Vase weiß","color":"","weight":0}]},
+      {"customer":"Gabi Thomas","invoiceNumber":"RE-2026-0002","items":[{"name":"1x Dogge lila","color":"PLA lila ","weight":490}]},
+      {"customer":"Paul Hartmann","invoiceNumber":"RE-2026-001","items":[{"name":"3x Makita Akkuhalter","color":"","weight":0}]}
+    ];
+
     let editingIndex = -1;
     let showingArchive = false;
     let orders = [];
@@ -439,7 +459,6 @@
       }
     }
 
-    // Verbesserter Cloud-Ladeaufruf mit CORS-Modus für Mobilbrowser
     async function loadCloudData() {
       setStatus("Lade von Cloud...", "bg-yellow-500");
       try {
@@ -458,6 +477,25 @@
             printers = (Array.isArray(json.printers) && json.printers.length > 0) ? json.printers : [...BACKUP_PRINTERS];
             products = (Array.isArray(json.products) && json.products.length >= BACKUP_PRODUCTS.length) ? json.products : [...BACKUP_PRODUCTS];
             spools = (Array.isArray(json.spools) && json.spools.length > 0) ? json.spools : [...BACKUP_SPOOLS];
+            
+            // --- AUTO REPARATUR ---
+            let countRepaired = 0;
+            orders.forEach(liveOrder => {
+              const match = REPAIR_ORDERS.find(b => b.invoiceNumber === liveOrder.invoiceNumber && b.customer === liveOrder.customer);
+              if (match) {
+                if (liveOrder.items && liveOrder.items.length > 0) {
+                  const firstItemName = liveOrder.items[0].name;
+                  if (firstItemName.includes("3D-Druck Artikel") || firstItemName.includes("Importierter Artikel")) {
+                    liveOrder.items = match.items;
+                    countRepaired++;
+                  }
+                }
+              }
+            });
+            if (countRepaired > 0) {
+              console.log(countRepaired + " Einträge erfolgreich aus Backup repariert!");
+              saveAllData(); 
+            }
             
             renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
             updateCustomerDropdowns(); updatePrinterDropdowns();
@@ -821,7 +859,6 @@
       }
     }
 
-    // NEU EINGEFÜGT: Die Funktion unterstützt nun auch das Dropdown für den Dankes-Zettel
     function updateCustomerDropdowns() {
       const sel1 = document.getElementById('existingCustomerSelect');
       const sel2 = document.getElementById('templateCustomerSelect');
@@ -841,7 +878,6 @@
       }
     }
 
-    // NEU EINGEFÜGT: Die Druck-Funktion für den Dankes-Zettel
     function printThankYouNoteFromDropdown() {
       const orderId = document.getElementById('thankYouCustomerSelect').value;
       if (!orderId) return alert("Bitte wähle zuerst einen Kunden aus dem Dropdown aus!");
