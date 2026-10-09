@@ -269,39 +269,42 @@
   <script>
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
 
+    // Deine echten CSV-Daten als Backup-Standard im Code, falls Cloud leer ist
     const FALLBACK_ORDERS = [
-      {
-        "id": 1,
-        "customer": "Renate Evelin - Veere",
-        "platform": "Kleinanzeigen",
-        "paymentMethod": "Überweisung",
-        "isPaid": "❌ Nein",
-        "ebayBalancePaid": "N/A",
-        "address": "Heinrich - Zillestr.11 04668 Grimma",
-        "printer": "Anycubic Kobra",
-        "status": "Offen",
-        "label": "🟡 Wartet auf Zahlung",
-        "packed": "❌ Nein",
-        "tracking": "-",
-        "price": 43,
-        "shippingFee": 7,
-        "labelCost": 0,
-        "discountPercent": 0,
-        "orderDate": "2026-09-20",
-        "invoiceNumber": "RE-2026-0017",
-        "shipDate": "",
-        "archived": false,
-        "items": [
-          {"name": "1x Japandi Vogel", "color": "PLA Grün", "weight": 80},
-          {"name": "1x Kürbis", "color": "PETG Orange", "weight": 120},
-          {"name": "1x Modernes Eichhörnchen", "color": "PLA Hellbraun", "weight": 90},
-          {"name": "4x Zapfenhäuschen", "color": "PLA Olivgrün", "weight": 110}
-        ]
-      }
+      { id: 1, customer: "Renate Evelin Veere", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 50.00, shippingFee: 6.19, labelCost: 6.19, discountPercent: 0, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0008", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 100}] },
+      { id: 2, customer: "Michael Müller", platform: "Kleinanzeigen", paymentMethod: "PayPal", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Offen", label: "✅ Ja", packed: "✅ Ja", price: 10.00, shippingFee: 4.19, labelCost: 4.19, discountPercent: 0, tracking: "-", orderDate: "2026-10-08", invoiceNumber: "RE-2026-0023", archived: false, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 100}] },
+      { id: 3, customer: "Michaela Wilbert", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Offen", label: "✅ Ja", packed: "✅ Ja", price: 10.00, shippingFee: 0.00, labelCost: 0.00, discountPercent: 0, tracking: "-", orderDate: "2026-10-07", invoiceNumber: "RE-2026-0022", archived: false, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 100}] },
+      { id: 4, customer: "Sylvia Grützmann", platform: "Kleinanzeigen", paymentMethod: "PayPal", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 9.00, shippingFee: 4.19, labelCost: 4.19, discountPercent: 0, tracking: "-", orderDate: "2026-10-05", invoiceNumber: "RE-2026-0021", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 100}] },
+      { id: 5, customer: "Maik Mahler", platform: "Kleinanzeigen", paymentMethod: "PayPal", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 40.00, shippingFee: 5.19, labelCost: 5.19, discountPercent: 0, tracking: "-", orderDate: "2026-10-05", invoiceNumber: "RE-2026-0020", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 100}] },
+      { id: 6, customer: "leo", platform: "Kleinanzeigen", paymentMethod: "Bar", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Offen", label: "✅ Ja", packed: "✅ Ja", price: 45.00, shippingFee: 0.00, labelCost: 0.00, discountPercent: 0, tracking: "-", orderDate: "2026-10-04", invoiceNumber: "RE-2026-0019", archived: false, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 100}] },
+      { id: 7, customer: "özgül kulak", platform: "eBay", paymentMethod: "eBay", isPaid: "✅ Ja", ebayBalancePaid: "✅ Ausgezahlt", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 15.18, shippingFee: 5.19, labelCost: 5.19, discountPercent: 0, tracking: "-", orderDate: "2026-10-04", invoiceNumber: "RE-2026-0018", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 100}] },
+      { id: 8, customer: "Laura pasch", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 27.00, shippingFee: 6.19, labelCost: 6.19, discountPercent: 0, tracking: "-", orderDate: "2026-10-03", invoiceNumber: "RE-2026-0017", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 100}] },
+      { id: 9, customer: "Isabell Zubiller", platform: "Kleinanzeigen", paymentMethod: "PayPal", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 15.00, shippingFee: 6.19, labelCost: 6.19, discountPercent: 0, tracking: "-", orderDate: "2026-10-01", invoiceNumber: "RE-2026-0016", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 100}] },
+      { id: 10, customer: "ELVIRA FELK", platform: "eBay", paymentMethod: "eBay", isPaid: "✅ Ja", ebayBalancePaid: "✅ Ausgezahlt", address: "", printer: "CR-10 Smart Pro #1", status: "Fertig", label: "✅ Ja", packed: "✅ Ja", price: 19.99, shippingFee: 6.99, labelCost: 6.99, discountPercent: 0, tracking: "-", orderDate: "2026-09-27", invoiceNumber: "RE-2026-0015", archived: true, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 100}] },
+      { id: 11, customer: "Dunja marcinkowski", platform: "Kleinanzeigen", paymentMethod: "Überweisung", isPaid: "✅ Ja", ebayBalancePaid: "N/A", address: "", printer: "CR-10 Smart Pro #1", status: "Offen", label: "✅ Ja", packed: "✅ Ja", price: 200.00, shippingFee: 0.00, labelCost: 0.00, discountPercent: 0, tracking: "-", orderDate: "2026-09-24", invoiceNumber: "RE-2026-0005", archived: false, items: [{name: "3D-Druck Artikel", color: "PLA Schwarz", weight: 100}] }
+    ];
+
+    const FALLBACK_EXPENSES = [
+      { id: 1, description: "Porto / Label für Michael Müller (RE-2026-0023)", category: "DHL / Versand", amount: 4.19, date: "2026-10-08" },
+      { id: 2, description: "Porto / Label für Sylvia Grützmann (RE-2026-0021)", category: "DHL / Versand", amount: 4.19, date: "2026-10-05" },
+      { id: 3, description: "Porto / Label für Maik Mahler (RE-2026-0020)", category: "DHL / Versand", amount: 5.19, date: "2026-10-05" },
+      { id: 4, description: "3x kleinanzeigenwerbung", category: "Sonstiges", amount: 10.50, date: "2026-10-05" },
+      { id: 5, description: "Porto / Label für özgül kulak (RE-2026-0018)", category: "DHL / Versand", amount: 5.19, date: "2026-10-04" },
+      { id: 6, description: "Porto / Label für Laura pasch (RE-2026-0017)", category: "DHL / Versand", amount: 6.19, date: "2026-10-03" },
+      { id: 7, description: "Porto / Label für Isabell Zubiller (RE-2026-0016)", category: "DHL / Versand", amount: 6.19, date: "2026-10-01" },
+      { id: 8, description: "Filamentkauf", category: "Filament", amount: 40.00, date: "2026-09-30" },
+      { id: 9, description: "anycubic kobra Reperatur", category: "Sonstiges", amount: 50.00, date: "2026-09-26" },
+      { id: 10, description: "2x SD-Karten für Drucker", category: "Zubehör / Ersatzteile", amount: 17.90, date: "2026-09-25" },
+      { id: 11, description: "2x Druckerwartung CR-10 SP", category: "Sonstiges", amount: 99.98, date: "2026-09-25" }
     ];
 
     let orders = [];
-    let spools = [];
+    let spools = [
+      {"id": 1, "name": "PLA Schwarz", "remainingGrams": 4160},
+      {"id": 2, "name": "PETG Weiß", "remainingGrams": 650},
+      {"id": 3, "name": "PLA Grün", "remainingGrams": 900},
+      {"id": 4, "name": "PETG Orange", "remainingGrams": 800}
+    ];
     let expenses = [];
     let printers = [
       { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
@@ -309,7 +312,11 @@
       { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
       { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
     ];
-    let products = [];
+    let products = [
+      { id: 1, name: "Flavor / Sirup Flaschen Halter", size: "Standard", price: 5.00 },
+      { id: 2, name: "Tannenzapfen-Häuschen", size: "Standard", price: 6.00 },
+      { id: 3, name: "Küchenrollenhalter", size: "Standard", price: 15.00 }
+    ];
     let editingIndex = -1;
     let showingArchive = false;
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -333,23 +340,24 @@
         const res = await fetch(NPOINT_URL, { method: 'GET', headers: { 'Accept': 'application/json' }, cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
-          if (json && Array.isArray(json.orders)) {
+          if (json && Array.isArray(json.orders) && json.orders.length > 0) {
             orders = json.orders;
             expenses = Array.isArray(json.expenses) ? json.expenses : [];
             printers = (Array.isArray(json.printers) && json.printers.length > 0) ? json.printers : printers;
-            products = Array.isArray(json.products) ? json.products : [];
-            spools = Array.isArray(json.spools) ? json.spools : [];
+            products = Array.isArray(json.products) ? json.products : products;
+            spools = Array.isArray(json.spools) ? json.spools : spools;
             
             renderAll();
-            setStatus("Mit npoint.io verbunden", "bg-blue-500");
+            setStatus("Mit npoint.io verbunden (Echte Daten)", "bg-blue-500");
             return;
           }
         }
-        throw new Error("Cloud-Daten leer");
+        throw new Error("Cloud leer");
       } catch(e) {
         orders = [...FALLBACK_ORDERS];
+        expenses = [...FALLBACK_EXPENSES];
         renderAll();
-        setStatus("Cloud-Fehler (Fallback aktiv)", "bg-red-500");
+        setStatus("Cloud-Fallback (Echte CSV-Daten aktiv)", "bg-emerald-500");
       }
     }
 
@@ -365,9 +373,7 @@
         });
         if (res.ok) {
           setStatus("Mit npoint.io verbunden", "bg-blue-500");
-        } else {
-          throw new Error("Fehler beim Speichern");
-        }
+        } else { throw new Error(); }
       } catch(e) {
         setStatus("Speicherfehler (Offline)", "bg-red-500");
       }
@@ -398,7 +404,7 @@
       const reader = new FileReader();
       reader.onload = async function(e) {
         const lines = e.target.result.split(/\r\n|\n|\r/);
-        if (lines.length < 2) return alert("CSV ist leer!");
+        if (lines.length < 2) return alert("CSV leer!");
         let importedOrders = [];
         let importedExpenses = [];
 
@@ -446,7 +452,7 @@
           orders = importedOrders;
           expenses = importedExpenses;
           await saveAllData();
-          alert(`✅ ${importedOrders.length} Aufträge & ${importedExpenses.length} Ausgaben in die Cloud geladen!`);
+          alert(`✅ Erfolgreich ${importedOrders.length} echte Aufträge & ${importedExpenses.length} Ausgaben geladen!`);
         }
       };
       reader.readAsText(file, 'UTF-8');
@@ -634,139 +640,4 @@
     function updateTemplatePreview() {
       const orderId = document.getElementById('templateCustomerSelect').value;
       if (!orderId) return;
-      const o = orders.find(item => item.id == orderId);
-      if (!o) return;
-      document.getElementById('templateText1').value = `Hallo ${o.customer},\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.`;
-    }
-
-    function copyTemplate(num) {
-      navigator.clipboard.writeText(document.getElementById(`templateText${num}`).value).then(() => alert("Kopiert!"));
-    }
-
-    function renderSpools() {
-      const container = document.getElementById('spoolsList');
-      if (!container) return;
-      container.innerHTML = '';
-      spools.forEach((s, idx) => {
-        container.innerHTML += `<div class="p-2 rounded-lg border text-[11px] flex justify-between items-center bg-slate-900 border-slate-700/60"><span class="font-semibold text-white">${s.name}</span><div class="flex items-center space-x-1.5"><span class="text-slate-300">${s.remainingGrams}g</span><button onclick="deleteSpool(${idx})" class="text-red-400"><i class="fa-solid fa-xmark"></i></button></div></div>`;
-      });
-      updateSpoolDropdowns();
-    }
-
-    function addSpoolPrompt() {
-      const name = prompt("Spulen-Name/Farbe:");
-      if (!name) return;
-      spools.push({ id: Date.now(), name, remainingGrams: 1000 });
-      saveAllData();
-    }
-
-    function deleteSpool(idx) { spools.splice(idx, 1); saveAllData(); }
-
-    function updateSpoolDropdowns() {
-      document.querySelectorAll('.art-color, .edit-art-color').forEach(select => {
-        const current = select.value;
-        select.innerHTML = '<option value="">-- Farbe --</option>';
-        spools.forEach(s => { select.innerHTML += `<option value="${s.name}" ${s.name === current ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
-      });
-    }
-
-    function addArticleInputRow(nameVal = '', colorVal = '', weightVal = '') {
-      const container = document.getElementById('articleInputRows');
-      const div = document.createElement('div');
-      div.className = "flex gap-2 items-center article-row";
-      let optionsHtml = '<option value="">-- Farbe --</option>';
-      spools.forEach(s => { optionsHtml += `<option value="${s.name}">${s.name}</option>`; });
-      div.innerHTML = `<input type="text" placeholder="Artikelbezeichnung" value="${nameVal}" class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1"><select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-44">${optionsHtml}</select><input type="number" placeholder="Gramm (g)" value="${weightVal}" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24"><button type="button" onclick="this.parentElement.remove()" class="text-red-400"><i class="fa-solid fa-xmark"></i></button>`;
-      container.appendChild(div);
-    }
-
-    function generateNewInvoiceNumber(orderDateStr) {
-      const year = orderDateStr ? orderDateStr.slice(0, 4) : new Date().getFullYear().toString();
-      let maxNum = 0;
-      orders.forEach(o => {
-        if (o.invoiceNumber && o.invoiceNumber.startsWith(`RE-${year}-`)) {
-          let num = parseInt(o.invoiceNumber.split('-')[2]) || 0;
-          if (num > maxNum) maxNum = num;
-        }
-      });
-      return `RE-${year}-${(maxNum + 1).toString().padStart(4, '0')}`;
-    }
-
-    function addOrder(e) {
-      e.preventDefault();
-      const nameInputs = document.querySelectorAll('.art-name');
-      const colorInputs = document.querySelectorAll('.art-color');
-      const weightInputs = document.querySelectorAll('.art-weight');
-      const itemsList = [];
-
-      nameInputs.forEach((inp, idx) => {
-        const val = inp.value.trim();
-        if (val) {
-          const w = parseInt(weightInputs[idx].value) || 0;
-          const col = colorInputs[idx].value;
-          itemsList.push({ name: val, color: col, weight: w });
-        }
-      });
-      if (itemsList.length === 0) return alert("Mindestens ein Artikel!");
-
-      const customDate = document.getElementById('orderDate').value || todayStr;
-      const fixedInvoiceNum = generateNewInvoiceNumber(customDate);
-      const plat = document.getElementById('platform').value;
-
-      orders.unshift({
-        id: Date.now(), customer: document.getElementById('customer').value, platform: plat,
-        paymentMethod: document.getElementById('paymentMethod').value, isPaid: document.getElementById('isPaid').value,
-        ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A', address: document.getElementById('address').value,
-        printer: document.getElementById('printer').value, status: "Offen", label: document.getElementById('label').value,
-        packed: document.getElementById('packed').value, price: parseFloat(document.getElementById('price').value) || 0,
-        shippingFee: parseFloat(document.getElementById('shippingFee').value) || 0, labelCost: parseFloat(document.getElementById('labelCost').value) || 0,
-        discountPercent: parseFloat(document.getElementById('discountPercent').value) || 0, tracking: document.getElementById('tracking').value || '-',
-        orderDate: customDate, invoiceNumber: fixedInvoiceNum, archived: false, items: itemsList
-      });
-      saveAllData();
-      document.getElementById('orderForm').reset();
-    }
-
-    function deleteOrder(id) { orders = orders.filter(o => o.id !== id); saveAllData(); }
-
-    function printInvoice(idx) {
-      const o = orders[idx];
-      const win = window.open('', '_blank', 'width=800,height=900');
-      win.document.write(`<h1>Rechnung ${o.invoiceNumber || ''}</h1><p>Kunde: ${o.customer}</p><p>Preis: ${o.price} €</p>`);
-      win.document.close();
-      win.print();
-    }
-
-    function printAllInvoices() { alert("Alle Rechnungen drucken..."); }
-    function exportAccountingCSV() { alert("CSV Export..."); }
-
-    function renderOrders() {
-      const tbody = document.getElementById('ordersTableBody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      orders.forEach((o, idx) => {
-        if (Boolean(o.archived) !== showingArchive) return;
-        let itemsHtml = o.items.map(i => `• ${i.name} (${i.weight || 0}g)`).join('<br>');
-        tbody.innerHTML += `<tr class="border-b border-slate-800"><td class="p-2 text-white">${o.customer}</td><td class="p-2 text-cyan-300 font-mono">${o.invoiceNumber || '-'}</td><td class="p-2 text-slate-300">${itemsHtml}</td><td class="p-2 text-blue-400 font-bold">${o.price} €</td><td class="p-2 text-right"><button onclick="printInvoice(${idx})" class="text-blue-300">📄</button> <button onclick="deleteOrder(${o.id})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></td></tr>`;
-      });
-      updateStats();
-    }
-
-    function updateStats() {
-      let totalRev = 0;
-      orders.forEach(o => { if (!o.archived) totalRev += o.price; });
-      if (document.getElementById('statRevenue')) document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
-    }
-
-    function renderPrinters() {
-      const grid = document.getElementById('printersGrid');
-      if (!grid) return;
-      grid.innerHTML = '';
-      printers.forEach((p, idx) => {
-        grid.innerHTML += `<div class="card p-3 rounded-xl"><h3 class="font-bold text-white text-xs">${p.name}</h3><p class="text-[11px] text-slate-400">${p.desc}</p></div>`;
-      });
-      updatePrinterDropdowns();
-    }
-  </script>
-</body>
-</html>
+      const o = orders.find(item => item.id == orderId
