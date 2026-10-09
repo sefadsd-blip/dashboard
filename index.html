@@ -6,24 +6,29 @@
   <title>Sefas3DShop - Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
     .card { background-color: #1e293b; border: 1px solid #334155; }
+    @keyframes pulse-red {
+      0%, 100% { border-color: rgba(239, 68, 68, 0.4); }
+      50% { border-color: rgba(239, 68, 68, 0.9); }
+    }
+    .pulse-low-spool { animation: pulse-red 2s infinite; }
   </style>
 </head>
 <body class="p-3 md:p-5 min-h-screen text-xs">
 
   <input type="file" id="csvFileInput" accept=".csv" onchange="importAccountingCSV(event)" class="hidden">
 
-  <!-- Overlay für Katalog & Kostenrechner -->
   <div id="subPageOverlay" class="hidden fixed inset-0 bg-slate-950/95 z-50 overflow-y-auto p-3 md:p-6">
     <div class="max-w-4xl mx-auto space-y-4">
       <div class="flex justify-between items-center bg-slate-800 p-4 rounded-2xl border border-slate-700">
         <div class="flex items-center space-x-3">
           <div class="bg-slate-900 p-2.5 rounded-xl border border-cyan-500/30 flex items-center justify-center shadow-lg"><i class="fa-solid fa-toolbox text-cyan-400 text-lg"></i></div>
-          <div><h2 class="text-base font-bold text-white">Sefas3DShop - Tools & Katalog</h2><p class="text-slate-400 text-[11px]">Kostenrechner & Artikel-Verwaltung</p></div>
+          <div><h2 class="text-base font-bold text-white">Sefas3DShop - Tools & Katalog</h2><p class="text-slate-400 text-[11px]">Kostenrechner & Cloud-Verwaltung</p></div>
         </div>
-        <button onclick="closeSubPage()" class="bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/50 px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer"><i class="fa-solid fa-xmark text-sm mr-1"></i> Schließen & Zurück</button>
+        <button onclick="closeSubPage()" class="bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"><i class="fa-solid fa-xmark text-sm"></i> Schließen & Zurück</button>
       </div>
 
       <section class="card p-4 rounded-xl space-y-2 border border-blue-500/30 bg-blue-950/10">
@@ -42,7 +47,7 @@
             <div class="flex justify-between text-[11px] text-purple-400 border-b border-slate-700 pb-1.5 mb-1.5"><span>+ Bearbeitung (fix):</span> <span>1,50 €</span></div>
             <div class="flex justify-between font-bold text-white text-[13px] mt-1"><span>Empf. Verkaufspreis:</span> <span id="calcFinalPrice" class="text-blue-400" data-raw-price="0">0,00 €</span></div>
           </div>
-          <button onclick="transferToCatalogFromSub()" class="w-full bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-500/50 rounded py-2 text-xs font-bold transition cursor-pointer shadow-sm">Preis in Katalog übernehmen</button>
+          <button onclick="transferToCatalogFromSub()" class="w-full bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-500/50 rounded py-2 text-xs font-bold transition cursor-pointer shadow-sm"><i class="fa-solid fa-arrow-down mr-1"></i> Preis in Katalog übernehmen</button>
         </div>
       </section>
 
@@ -56,7 +61,7 @@
           <input type="text" id="prodSize" placeholder="Maße" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           <div class="flex gap-2">
             <input type="number" step="0.01" id="prodPrice" placeholder="Preis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white flex-1 focus:outline-none">
-            <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-1.5 px-3 text-xs transition cursor-pointer">+ Speichern</button>
+            <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-1.5 px-3 text-xs transition cursor-pointer whitespace-nowrap">+ Speichern</button>
           </div>
         </form>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 max-h-[350px] overflow-y-auto pr-1" id="productsList"></div>
@@ -79,15 +84,16 @@
         </div>
         <div>
           <h1 class="text-lg font-bold text-white flex items-center gap-2">Sefas<span class="text-cyan-400">3d</span>shop</h1>
-          <p class="text-slate-400 text-[11px] flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-blue-500" id="statusDot"></span><span id="syncStatus">Lokal geladen</span></p>
+          <p class="text-slate-400 text-[11px] flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-blue-500" id="statusDot"></span><span id="syncStatus">Cloud bereit</span></p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-1.5">
         <button onclick="document.getElementById('csvFileInput').click()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-file-import mr-1"></i> CSV Import</button>
         <button onclick="exportAccountingCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-file-excel mr-1"></i> CSV Export</button>
+        <button onclick="printAllInvoices()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-print mr-1"></i> Alle Rechnungen</button>
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-box-archive mr-1"></i> Archiv</button>
         <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-rotate mr-1"></i> Laden</button>
-        <button onclick="pushToCloudManual()" class="bg-blue-600 hover:bg-blue-500 text-white border border-blue-500/50 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer shadow-lg animate-pulse"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Speichern</button>
+        <button onclick="pushToCloudManual()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Speichern</button>
       </div>
     </header>
 
@@ -202,6 +208,7 @@
         <select id="templateCustomerSelect" onchange="updateTemplatePreview()" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-[11px] text-slate-300 focus:outline-none w-full sm:w-64"><option value="">👤 Kunden auswählen...</option></select>
       </div>
 
+      <!-- Dankes-Zettel Generator -->
       <div class="bg-slate-900 p-3 rounded-lg border border-pink-500/30 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div class="flex items-center gap-2"><i class="fa-solid fa-heart text-pink-400 text-base"></i><div><h3 class="text-xs font-bold text-white">Persönlicher Dankes-Zettel (A4)</h3></div></div>
         <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -229,63 +236,72 @@
         </div>
       </div>
     </section>
+
   </div>
 
   <script>
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
 
     const BACKUP_SPOOLS = [
-      {"id": 1, "name": "PLA Schwarz", "remainingGrams": 4160}, {"id": 2, "name": "PETG Weiß", "remainingGrams": 650},
-      {"id": 3, "name": "PLA Weiß", "remainingGrams": 1000}, {"id": 4, "name": "PLA Grau", "remainingGrams": 850},
-      {"id": 5, "name": "PLA Rot", "remainingGrams": 500}, {"id": 6, "name": "PLA Blau", "remainingGrams": 900},
-      {"id": 7, "name": "PLA Gold", "remainingGrams": 750}, {"id": 8, "name": "PLA Silber", "remainingGrams": 600}
+      {"id": 1, "name": "PLA Schwarz", "remainingGrams": 4160},
+      {"id": 2, "name": "PETG Weiß", "remainingGrams": 650},
+      {"id": 3, "name": "PLA Weiß", "remainingGrams": 1000},
+      {"id": 4, "name": "PLA Grau", "remainingGrams": 850},
+      {"id": 5, "name": "PLA Rot", "remainingGrams": 500},
+      {"id": 6, "name": "PLA Blau", "remainingGrams": 900},
+      {"id": 7, "name": "PLA Gold", "remainingGrams": 750},
+      {"id": 8, "name": "PLA Silber", "remainingGrams": 600}
     ];
 
     const BACKUP_PRINTERS = [
-      { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" }, { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
-      { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" }, { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
+      { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
+      { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
+      { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
+      { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
     ];
 
-    const BACKUP_PRODUCTS = [{ id: 1, name: "Flavor Flaschen Halter", size: "Standard", price: 5 }];
-
-    // DEINE 19 GERETTETEN BESTELLUNGEN!
-    const RECOVERED_ORDERS = [
-      {"id":1791028918385,"customer":"Laura pasch","platform":"Kleinanzeigen","paymentMethod":"Überweisung","isPaid":"✅ Ja","ebayBalancePaid":"N/A","address":"18184 Poppendorf, Dorfstraße 19a","printer":"CR-10 Smart Pro #1","status":"In Arbeit","label":"✅ Ja","packed":"❌ Nein","price":32,"shippingFee":5,"labelCost":6.19,"tracking":"-358076534781","orderDate":"2026-10-03","invoiceNumber":"RE-2026-0017","shipDate":"","archived":false,"items":[{"name":"1xKürbis","color":"PLA Schwarz","weight":0},{"name":"1xKürbis","color":"Pla Weiß","weight":0},{"name":"1xKürbis","color":"PETG Orange","weight":0},{"name":"2X scharf","color":"PLA Hellbraun ","weight":0},{"name":"1x scharf","color":"Pla Weiß","weight":0}]},
-      {"id":1790886969415,"customer":"Isabell Zubiller","platform":"Kleinanzeigen","paymentMethod":"PayPal","isPaid":"✅ Ja","ebayBalancePaid":"N/A","address":"Gauersheimerstraße 23  67294 ilbesheim","printer":"CR-10 Smart Pro #1","status":"Fertig","label":"✅ Ja","packed":"✅ Ja","price":20,"shippingFee":0,"labelCost":6.19,"tracking":"-","orderDate":"2026-10-01","invoiceNumber":"RE-2026-0016","shipDate":"2026-10-03","archived":true,"items":[{"name":"1xKürbis Hoch","color":"PLA Schwarz","weight":0},{"name":"1xKürbis klein","color":"PLA Schwarz","weight":0},{"name":"1xKürbis klein","color":"Pla Weiß","weight":0}]},
-      {"id":1790522031947,"items":[{"name":"Schönes Wandregal rund / Metall-Regal Schwarz – Neu 3D-Druck","color":"","weight":0}],"label":"✅ Ja","price":19.99,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Offen","address":"LAUCHHEIMERSTR. 11 94469 DEGGENDORF","printer":"CR-10 Smart Pro #1","archived":true,"customer":"ELVIRA FELK","platform":"eBay","shipDate":"2026-10-01","tracking":"02270136002720","labelCost":6.99,"orderDate":"2026-09-27","shippingFee":0,"invoiceNumber":"RE-2026-0015","paymentMethod":"eBay","ebayBalancePaid":"⏳ Bei eBay"},
-      {"id":1790506736457,"items":[{"name":"Design Küchenrollenhalter | 3D-Druck","color":"PLA Schwarz","weight":0}],"label":"✅ Ja","price":15.18,"isPaid":"✅ Ja","packed":"❌ Nein","status":"Offen","address":"Droste-Hülshoff-Weg 20 58642 Iserlohn","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Thomas Siepmann","platform":"eBay","shipDate":"2026-10-01","tracking":"995500929907","labelCost":5.19,"orderDate":"2026-09-27","paymentDate":"2026-09-27","shippingFee":0,"shippingCost":5,"invoiceNumber":"RE-2026-0014","paymentMethod":"eBay","ebayBalancePaid":"⏳ Bei eBay"},
-      {"id":1790489745269,"items":[{"name":"More Halter 4x","color":"ASA Grau","weight":0}],"label":"✅ Ja","price":15,"isPaid":"✅ Ja","packed":"❌ Nein","status":"Fertig","address":"Trockener Kamp 10 31139 Hildesheim","printer":"Anycubic Kobra","archived":true,"customer":"Jennifer Habenicht","platform":"Kleinanzeigen","shipDate":"2026-10-01","tracking":"-356601127551","labelCost":5,"orderDate":"2026-09-27","paymentDate":"2026-09-27","shippingFee":5,"shippingCost":5,"invoiceNumber":"RE-2026-0013","paymentMethod":"PayPal","ebayBalancePaid":"N/A"},
-      {"id":1790449236772,"items":[{"name":"Süßer Blumentopf mit Herz-Händen 12x12","color":"Pla Weiß","weight":150}],"label":"✅ Ja","price":15,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Offen","address":"Badergraben 18a, 04808 Wurzen","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Annett Hanitzsch","platform":"Kleinanzeigen","shipDate":"2026-10-01","tracking":"-358074757567","labelCost":6.99,"orderDate":"2026-09-26","paymentDate":"","shippingFee":5,"shippingCost":7,"invoiceNumber":"RE-2026-00012","paymentMethod":"PayPal","ebayBalancePaid":"N/A"},
-      {"id":1790098916977,"items":[{"name":"3x Kürbis","color":"","weight":0},{"name":"3x Katze","color":"","weight":0}],"label":"✅ Ja","price":25,"isPaid":"✅ Ja","packed":"✅ Ja","status":"In Arbeit","address":"Am Wellenweiher 4 49401 Damme","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Iris Diekmann","platform":"Kleinanzeigen","shipDate":"2026-10-01","tracking":"-","labelCost":4.19,"orderDate":"2026-09-24","paymentDate":"2026-09-24","shippingFee":5,"shippingCost":7,"invoiceNumber":"RE-2026-00011","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
-      {"id":1789933732086,"items":[{"name":"2x Tannenzapfen","color":"PLA Dunkelrot ","weight":180},{"name":"2x Tannenzapfen","color":"PLA Olivgrün","weight":180}],"label":"✅ Ja","notes":"","price":25,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":0,"address":"Gartenweg 10d 04862 Mockrehna","printer":"Ender 3 V3","archived":true,"customer":"Silke Schwarzer","platform":"Kleinanzeigen","shipDate":"2026-09-24","tracking":"-356408386839","labelCost":4.19,"orderDate":"2026-09-24","paymentDate":"","shippingCost":5,"invoiceNumber":"RE-2026-0010","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
-      {"id":1789933658205,"items":[{"name":"Küchenrollnhalter 2X","color":"PLA Schwarz","weight":460}],"label":"✅ Ja","notes":"","price":11,"isPaid":"✅ Ja","packed":"✅ Ja","status":"In Arbeit","weight":460,"address":"Prämienstraße 62 52428 Jülich","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Familie Tchoffo","platform":"Kleinanzeigen","shipDate":"2026-09-22","tracking":"358072667188","labelCost":5.19,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"shippingCost":5,"invoiceNumber":"RE-2026-0009","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
-      {"id":1001,"items":[{"name":"1x Japandi Vogel","color":"PLA grün","weight":50},{"name":"1x Kürbis","color":"PETG Orange","weight":0},{"name":"1x Modernes Eichhörnchen","color":"PLA Hellbraun ","weight":180},{"name":"2x Zapfenhäuschen","color":"PLA Olivgrün","weight":180},{"name":"2x Zapfenhäuschen","color":"PLA Hellbraun ","weight":180}],"label":"✅ Ja","notes":"Bitte gut verpacken","price":45,"isPaid":"✅ Ja","packed":"✅ Ja","status":"In Arbeit","weight":0,"address":"Heinrich - Zillestr.11 04668 Grimma","printer":"Anycubic Kobra","archived":true,"customer":"Renate Evelin - Veere","platform":"Kleinanzeigen","shipDate":"2026-09-26","tracking":"-358073187096","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"shippingCost":7,"invoiceNumber":"RE-2026-0008","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
-      {"id":2,"items":[{"name":"6x Rentier","color":"","weight":0}],"label":"✅ Ja","notes":"","price":40,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":120,"address":"Eichelweg 1 49377 Vechta","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Ralf Hartmann","platform":"Kleinanzeigen","shipDate":"2026-09-21","tracking":"358070447889","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"shippingCost":5,"invoiceNumber":"RE-2026-0007","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
-      {"id":3,"items":[{"name":"1x Fernbedienungshalter","color":"","weight":0}],"label":"✅ Ja","notes":"","price":10,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":0,"address":"Bremer Str 62 a  49356 Diepholz","printer":"Anycubic Kobra","archived":true,"customer":"Sabine Beewen","platform":"Kleinanzeigen","shipDate":"2026-09-21","tracking":"-356600769079","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"shippingCost":5,"invoiceNumber":"RE-2026-0006","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
-      {"id":4,"items":[{"name":"6x Weinhalter schwarz","color":"PLA Schwarz","weight":0},{"name":"9x Bäume","color":"","weight":0}],"label":"✅ Ja","notes":"","price":0,"packed":"❌ Nein","status":"In Arbeit","weight":240,"address":"","printer":"Ender 3 V3","archived":false,"customer":"Dunja marcinkowski","platform":"Kleinanzeigen","shipDate":"","tracking":"-","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingCost":0,"invoiceNumber":"RE-2026-0005","paymentMethod":"Überweisung"},
-      {"id":5,"items":[{"name":"3x Suppenhalter 6cm","color":"PLA Schwarz","weight":0},{"name":"4x Backpulverhalter","color":"PLA Schwarz","weight":0},{"name":"4x Backpulverhalter 6cm","color":"PLA Schwarz","weight":0},{"name":"1x Abroller Alufolie","color":"PLA Schwarz","weight":0}],"label":"✅ Ja","notes":"","price":35,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":0,"address":"","printer":"Anycubic Kobra","archived":true,"customer":"Tobias von der Famile Ulm","platform":"Kleinanzeigen","shipDate":"2026-09-22","tracking":"358072492915","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"shippingCost":7,"invoiceNumber":"RE-2026-0004","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
-      {"id":6,"items":[{"name":"1x Vase weiß","color":"","weight":0}],"label":"✅ Ja","notes":"","price":10,"isPaid":"✅ Ja","packed":"✅ Ja","status":"Fertig","weight":110,"address":"Rinderhagenstraße 27 in 26802 Moormerland","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Antje Nanninga","platform":"Kleinanzeigen","shipDate":"2026-09-21","tracking":"-358072667172","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingFee":5,"shippingCost":6,"invoiceNumber":"RE-2026-0003","paymentMethod":"Überweisung","ebayBalancePaid":"N/A"},
-      {"id":7,"items":[{"name":"1x Dogge lila","color":"PLA lila ","weight":490}],"label":"✅ Ja","notes":"","price":0,"packed":"❌ Nein","status":"Offen","weight":85,"address":"Goerdelerstr. 141, 27755 delmenhorst","printer":"Ender 3 V3","archived":true,"customer":"Gabi Thomas","platform":"Kleinanzeigen","shipDate":"2026-10-03","tracking":"358072492921","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingCost":0,"invoiceNumber":"RE-2026-0002","paymentMethod":"Überweisung"},
-      {"id":8,"items":[{"name":"3x Makita Akkuhalter","color":"","weight":0}],"label":"✅ Ja","notes":"","price":14,"packed":"✅ Ja","status":"In Arbeit","weight":95,"address":"Ellernstraße 40  32457 Porta Westfalica","printer":"CR-10 Smart Pro #1","archived":true,"customer":"Paul Hartmann","platform":"Kleinanzeigen","shipDate":"2026-09-22","tracking":"-","labelCost":0,"orderDate":"2026-09-24","paymentDate":"","shippingCost":5,"invoiceNumber":"RE-2026-001","paymentMethod":"Überweisung"},
-      {"id":1002,"items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}],"label":"✅ Ja","price":10,"packed":"✅ Ja","status":"Fertig","address":"Rahden","printer":"Ender 3 V3","archived":true,"customer":"Paul Hartmann","platform":"Kleinanzeigen","shipDate":"2026-02-01","tracking":"-","labelCost":0,"orderDate":"2026-02-01","paymentDate":"2026-02-01","shippingCost":7,"invoiceNumber":"RE-2026-0001","paymentMethod":"Überweisung"},
-      {"id":11,"items":[{"name":"3D-Druck Artikel","color":"PLA Schwarz","weight":50}],"label":"✅ Ja","price":10,"packed":"✅ Ja","status":"Fertig","address":"Rahden","printer":"Ender 3 V3","archived":true,"customer":"Iris","platform":"Kleinanzeigen","shipDate":"2026-02-11","tracking":"-","labelCost":0,"orderDate":"2026-02-11","paymentDate":"2026-02-11","shippingCost":7,"invoiceNumber":"RE-2026-0011","paymentMethod":"Überweisung"}
+    // Komprimiertes Array für 100%ige Code-Ausgabe
+    const BACKUP_PRODUCTS = [
+      { id: 1, name: "Flavor Flaschen Halter", size: "Standard", price: 5 }, { id: 2, name: "Tannenzapfen-Häuschen", size: "Standard", price: 6 },
+      { id: 3, name: "Akustikpaneel Halterung", size: "Standard", price: 5 }, { id: 4, name: "Gorilla Schlüsselbrett", size: "Standard", price: 10 },
+      { id: 5, name: "Oktopus Schlüsselanhänger", size: "Standard", price: 3 }, { id: 6, name: "Deko-Rentiere Skandi", size: "Standard", price: 5 },
+      { id: 7, name: "Hirsch Teelichthalter", size: "Standard", price: 5 }, { id: 8, name: "Dackel Schlüsselablage", size: "Standard", price: 15 },
+      { id: 9, name: "Wandregal rund", size: "Standard", price: 15 }, { id: 10, name: "Weihnachtswichtel", size: "Standard", price: 6 },
+      { id: 11, name: "Hug Coaster", size: "Standard", price: 4 }, { id: 12, name: "Rentier Schale", size: "Standard", price: 10 },
+      { id: 13, name: "Blumentopf Herz-Hände", size: "Standard", price: 10 }, { id: 14, name: "Dackel Ablageschale", size: "Standard", price: 15 },
+      { id: 15, name: "Boho Deko Set", size: "Standard", price: 22 }, { id: 16, name: "Baumschmuck Vintage", size: "Standard", price: 4 },
+      { id: 17, name: "Deko Rentier modern", size: "Standard", price: 6 }, { id: 18, name: "Geriffelte Kürbisse", size: "Standard", price: 10 },
+      { id: 20, name: "Katzen Deko Rillen", size: "Standard", price: 5 }, { id: 21, name: "Deko Eichel", size: "Standard", price: 15 },
+      { id: 22, name: "Deko-Schafe", size: "Standard", price: 6 }, { id: 23, name: "Erdmännchen Deko", size: "Standard", price: 6 },
+      { id: 24, name: "Wichtel Dose", size: "Standard", price: 8 }, { id: 25, name: "Küchenrollenhalter", size: "Standard", price: 15 },
+      { id: 26, name: "Vase Frühlingsspirale", size: "Standard", price: 10 }, { id: 27, name: "Hirsch Lamelle", size: "Standard", price: 7 },
+      { id: 28, name: "Grusel Kürbis", size: "Standard", price: 15 }, { id: 29, name: "Schneemann Deko", size: "Standard", price: 6 },
+      { id: 30, name: "Vase Beutel", size: "Standard", price: 10 }, { id: 31, name: "Rillen-Vase 16cm", size: "16 cm", price: 18 },
+      { id: 32, name: "Japandi Vogel", size: "Standard", price: 6 }, { id: 33, name: "Weihnachtsglocken", size: "Standard", price: 6 },
+      { id: 34, name: "Nussknacker", size: "Standard", price: 10 }, { id: 35, name: "Akku-Schrauber Halter", size: "Standard", price: 10 },
+      { id: 36, name: "Bulldogge Schale", size: "Standard", price: 20 }, { id: 37, name: "Eichhörnchen Deko", size: "Standard", price: 15 },
+      { id: 39, name: "Toilettenpapierhalter", size: "Standard", price: 12 }, { id: 40, name: "Osterhasen", size: "Standard", price: 7 },
+      { id: 42, name: "Dosen Spender", size: "Standard", price: 10 }, { id: 43, name: "Pflanztopf Bogen", size: "Standard", price: 15 },
+      { id: 44, name: "Dart-Ständer", size: "Standard", price: 8 }, { id: 48, name: "Schlüsselanhänger", size: "Standard", price: 4 },
+      { id: 49, name: "Türstopper Set", size: "3er Set", price: 8 }, { id: 50, name: "Kapselhalter", size: "Standard", price: 5 },
+      { id: 51, name: "Bett-Organizer", size: "Standard", price: 5 }, { id: 52, name: "Pringles Schiene", size: "Standard", price: 4 },
+      { id: 54, name: "Kabelbinder Halter", size: "Standard", price: 10 }, { id: 56, name: "Fahrrad Flaschenhalter", size: "Standard", price: 8 },
+      { id: 57, name: "Maulschlüssel Halter", size: "Standard", price: 5 }, { id: 59, name: "Gartengeräte Halter", size: "Standard", price: 4 },
+      { id: 61, name: "Tellerregal", size: "Standard", price: 6 }, { id: 62, name: "Gehörschutz Halter", size: "Standard", price: 5 },
+      { id: 64, name: "Eier Spender", size: "Standard", price: 8 }, { id: 66, name: "Weihnachtskugel Schale", size: "Standard", price: 10 },
+      { id: 72, name: "Klopapierhalter Schaf", size: "Standard", price: 5 }, { id: 75, name: "Duschkorb", size: "2 Ebenen", price: 10 },
+      { id: 78, name: "Lade-Organizer", size: "Standard", price: 4 }, { id: 79, name: "Gewürzhalter 5er", size: "5er-Set", price: 9 },
+      { id: 84, name: "Eierspender Autom.", size: "Standard", price: 10 }, { id: 85, name: "Bad Organizer", size: "Standard", price: 12 }
     ];
 
     let editingIndex = -1, showingArchive = false;
-    let orders = [...RECOVERED_ORDERS]; // Läd beim Start automatisch deine reparierten Kunden
-    let spools = [...BACKUP_SPOOLS], expenses = [], printers = [...BACKUP_PRINTERS], products = [...BACKUP_PRODUCTS];
+    let orders = [], spools = [...BACKUP_SPOOLS], expenses = [], printers = [...BACKUP_PRINTERS], products = [...BACKUP_PRODUCTS];
     const todayStr = new Date().toISOString().slice(0, 10);
 
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = todayStr;
       document.getElementById('expDate').value = todayStr;
-      
-      // HINWEIS: Wir rufen loadCloudData() absichtlich JETZT nicht auf, 
-      // damit die geretteten Daten nicht von der "kaputten" Cloud überschrieben werden.
-      // Sobald du auf "Speichern" drückst, ist die Cloud wieder perfekt!
-      
-      renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
-      updateCustomerDropdowns(); updatePrinterDropdowns();
+      loadCloudData();
     });
 
     function setStatus(text, color) {
@@ -301,18 +317,29 @@
       document.getElementById('shippingFee').disabled = isPickup;
       document.getElementById('labelCost').disabled = isPickup;
       if (isPickup) {
-        document.getElementById('shippingFee').value = "0.00"; document.getElementById('labelCost').value = "0.00";
-        document.getElementById('tracking').value = "Selbstabholer"; document.getElementById('tracking').disabled = true;
+        document.getElementById('shippingFee').value = "0.00";
+        document.getElementById('labelCost').value = "0.00";
+        document.getElementById('tracking').value = "Selbstabholer";
+        document.getElementById('tracking').disabled = true;
         document.getElementById('label').value = "✅ Ja";
       } else {
-        document.getElementById('shippingFee').value = "5.00"; document.getElementById('tracking').value = ""; document.getElementById('tracking').disabled = false;
+        document.getElementById('shippingFee').value = "5.00";
+        document.getElementById('tracking').value = "";
+        document.getElementById('tracking').disabled = false;
       }
     }
 
+    // ORIGINAL FUNKTIONIERENDER CLOUD LOAD (EXAKT WIE OBEN!)
     async function loadCloudData() {
       setStatus("Lade von Cloud...", "bg-yellow-500");
       try {
-        const res = await fetch(NPOINT_URL, { method: 'GET', mode: 'cors', headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+        const res = await fetch(NPOINT_URL, { 
+          method: 'GET',
+          mode: 'cors',
+          headers: { 'Accept': 'application/json' },
+          cache: 'no-store' 
+        });
+        
         if (res.ok) {
           const json = await res.json();
           if (json && Array.isArray(json.orders)) {
@@ -321,80 +348,78 @@
             printers = (Array.isArray(json.printers) && json.printers.length > 0) ? json.printers : [...BACKUP_PRINTERS];
             products = (Array.isArray(json.products) && json.products.length > 0) ? json.products : [...BACKUP_PRODUCTS];
             spools = (Array.isArray(json.spools) && json.spools.length > 0) ? json.spools : [...BACKUP_SPOOLS];
+            
             renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
             updateCustomerDropdowns(); updatePrinterDropdowns();
-            setStatus("Mit Cloud verbunden", "bg-blue-500"); return;
+            setStatus("Mit Cloud verbunden", "bg-blue-500");
+            return;
           }
         }
         throw new Error("Cloud-Daten ungültig");
       } catch(e) {
-        setStatus("Verbindungsfehler", "bg-red-500"); console.error("Cloud-Ladefehler:", e);
+        setStatus("Verbindungsfehler", "bg-red-500");
+        console.error("Cloud-Ladefehler:", e);
       }
     }
 
+    // ORIGINAL FUNKTIONIERENDER CLOUD PUSH
     async function pushToCloudManual() {
       setStatus("Speichere in Cloud...", "bg-yellow-500");
+      const payload = { orders, spools, expenses, printers, products };
+
       try {
-        const res = await fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orders, spools, expenses, printers, products }) });
-        if (res.ok) { setStatus("Mit Cloud verbunden", "bg-blue-500"); alert("✅ Erfolgreich gespeichert!"); } else throw new Error();
-      } catch(e) { setStatus("Fehler", "bg-red-500"); alert("❌ Fehler beim Speichern in der Cloud."); }
+        const res = await fetch(NPOINT_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          setStatus("Mit Cloud verbunden", "bg-blue-500");
+          alert("✅ Erfolgreich gespeichert!");
+        } else throw new Error();
+      } catch(e) {
+        setStatus("Fehler", "bg-red-500");
+        alert("❌ Fehler beim Speichern in der Cloud.");
+      }
     }
 
     function saveAllData() {
       renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
       updateCustomerDropdowns(); updatePrinterDropdowns();
-      fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orders, spools, expenses, printers, products }) }).catch(e => console.log("Auto-sync fail"));
-    }
-
-    function importAccountingCSV(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        const lines = e.target.result.split(/\r\n|\n|\r/);
-        if (lines.length < 2) return alert("Die CSV-Datei ist leer oder ungültig!");
-        let importedOrders = [], importedExpenses = [];
-        for (let i = 1; i < lines.length; i++) {
-          const l = lines[i].trim(); if (!l) continue;
-          const cols = l.split(';').map(c => c.replace(/^"|"$/g, '').trim());
-          if (cols.length < 8) continue;
-          
-          const typ = cols[0], plat = cols[1]||'Kleinanzeigen', isPaid = cols[2]||'✅ Ja', payM = cols[3]||'Überweisung', ebayBal = cols[4]||'N/A', dat = cols[5]||todayStr, inv = cols[6], kund = cols[7], ums = parseFloat(cols[8].replace(',','.'))||0, port = parseFloat(cols[9].replace(',','.'))||0;
-          if (typ.includes('Einnahme')) {
-            let artikelName = inv ? inv : "Importierter Artikel";
-            importedOrders.push({ id: Date.now()+Math.random(), customer: kund, platform: plat, paymentMethod: payM, isPaid: isPaid.includes('Ja')?'✅ Ja':'❌ Nein', ebayBalancePaid: plat==='eBay'?(ebayBal.includes('Ausgezahlt')?'✅ Ausgezahlt':'⏳ Bei eBay'):'N/A', address: '', printer: printers[0]?.name||'Standard', status: 'Fertig', label: '✅ Ja', packed: '✅ Ja', price: ums, shippingFee: port, labelCost: port, discountPercent: 0, tracking: '-', orderDate: dat, invoiceNumber: inv, archived: typ.includes('Archiviert'), items: [{ name: artikelName, color: '-', weight: 0 }] });
-          } else if (typ.includes('Ausgabe')) {
-            importedExpenses.push({ id: Date.now()+Math.random(), description: inv, category: kund||'Sonstiges', amount: Math.abs(ums), date: dat });
-          }
-        }
-        if (importedOrders.length > 0 || importedExpenses.length > 0) {
-          if(confirm(`${importedOrders.length} neue Bestellungen gefunden!\n\nMöchtest du diese an deine jetzigen Cloud-Daten ANHÄNGEN?\n(Wenn du auf 'Abbrechen' drückst, werden deine jetzigen Daten ÜBERSCHRIEBEN!)`)) {
-            orders = [...importedOrders, ...orders];
-            expenses = [...importedExpenses, ...expenses];
-          } else { orders = importedOrders; expenses = importedExpenses; }
-          saveAllData(); await pushToCloudManual(); alert(`✅ CSV erfolgreich importiert!`);
-        }
-      };
-      reader.readAsText(file, 'UTF-8');
+      fetch(NPOINT_URL, {
+        method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orders, spools, expenses, printers, products })
+      }).catch(e => console.log("Auto-sync fail"));
     }
 
     function calculateCosts() {
-      const h = parseFloat(document.getElementById('calcHours').value) || 0, g = parseFloat(document.getElementById('calcGrams').value) || 0;
-      const t = (h * 0.25) + (h * 0.12) + (g * 0.02), m = t * 0.35, f = (h > 0 || g > 0) ? (t + m + 1.50) : 0;
-      document.getElementById('calcFinalPrice').innerText = f.toFixed(2).replace('.', ',') + ' €'; document.getElementById('calcFinalPrice').dataset.rawPrice = f.toFixed(2);
+      const hours = parseFloat(document.getElementById('calcHours').value) || 0;
+      const grams = parseFloat(document.getElementById('calcGrams').value) || 0;
+      const totalCost = (hours * 0.25) + (hours * 0.12) + (grams * 0.02);
+      const markup = totalCost * 0.35;
+      const finalPrice = (hours > 0 || grams > 0) ? (totalCost + markup + 1.50) : 0;
+      document.getElementById('calcFinalPrice').innerText = finalPrice.toFixed(2).replace('.', ',') + ' €';
+      document.getElementById('calcFinalPrice').dataset.rawPrice = finalPrice.toFixed(2);
     }
+    
     function transferToCatalogFromSub() {
-      const r = document.getElementById('calcFinalPrice').dataset.rawPrice; if (r > 0) { document.getElementById('prodPrice').value = r; document.getElementById('prodName').focus(); }
+      const rawPrice = document.getElementById('calcFinalPrice').dataset.rawPrice;
+      if (rawPrice > 0) { document.getElementById('prodPrice').value = rawPrice; document.getElementById('prodName').focus(); }
     }
 
     function addProduct(e) {
-      e.preventDefault(); products.push({ id: Date.now(), name: document.getElementById('prodName').value, size: document.getElementById('prodSize').value || '-', price: parseFloat(document.getElementById('prodPrice').value) || 0 }); saveAllData(); document.getElementById('productForm').reset();
+      e.preventDefault();
+      products.push({ id: Date.now(), name: document.getElementById('prodName').value, size: document.getElementById('prodSize').value || '-', price: parseFloat(document.getElementById('prodPrice').value) || 0 });
+      saveAllData(); document.getElementById('productForm').reset();
     }
     function deleteProduct(id) { if(confirm('Löschen?')) { products = products.filter(p => p.id !== id); saveAllData(); } }
     
     function renderProducts() {
-      const list = document.getElementById('productsList'), q = (document.getElementById('productSearchInput')?.value || '').toLowerCase();
-      if (!list) return; list.innerHTML = '';
+      const list = document.getElementById('productsList');
+      const q = (document.getElementById('productSearchInput')?.value || '').toLowerCase();
+      if (!list) return;
+      list.innerHTML = '';
       products.forEach(p => {
         if (!q || p.name.toLowerCase().includes(q)) list.innerHTML += `<div class="bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg flex justify-between gap-3 text-xs"><div><span class="text-white">${p.name}</span></div><div class="flex gap-2"><span class="text-amber-400 font-bold">${p.price.toFixed(2)} €</span><button onclick="deleteProduct(${p.id})" class="text-red-400"><i class="fa-solid fa-xmark"></i></button></div></div>`;
       });
@@ -402,30 +427,43 @@
     }
 
     function renderQuickAddButtons() {
-      const qA = document.getElementById('quickAddButtons'), oS = (document.getElementById('orderArticleSearch')?.value || '').toLowerCase();
-      if (!qA) return; qA.innerHTML = '';
+      const qA = document.getElementById('quickAddButtons');
+      const oS = (document.getElementById('orderArticleSearch')?.value || '').toLowerCase();
+      if (!qA) return;
+      qA.innerHTML = '';
       products.forEach(p => {
         if (!oS || p.name.toLowerCase().includes(oS)) qA.innerHTML += `<button type="button" onclick="addPresetArticle('${p.name.replace(/'/g, "\\'")}', ${p.price})" class="bg-slate-900 hover:bg-slate-800 text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ ${p.name}</button>`;
       });
     }
 
-    function addPresetArticle(nameVal, addPrice) { addArticleInputRow(nameVal); const pIn = document.getElementById('price'); pIn.value = ((parseFloat(pIn.value) || 0) + addPrice).toFixed(2); }
+    function addPresetArticle(nameVal, addPrice) {
+      addArticleInputRow(nameVal);
+      const priceInput = document.getElementById('price');
+      priceInput.value = ((parseFloat(priceInput.value) || 0) + addPrice).toFixed(2);
+    }
 
-    function addPrinterPrompt() { const name = prompt("Drucker-Name:"); if (name) { printers.push({ name: name.trim(), desc: "Standard", status: "Frei" }); saveAllData(); } }
+    function addPrinterPrompt() {
+      const name = prompt("Drucker-Name:");
+      if (name) { printers.push({ name: name.trim(), desc: "Standard", status: "Frei" }); saveAllData(); }
+    }
     function updatePrinterDropdowns() {
       document.querySelectorAll('#printer').forEach(sel => {
-        const cVal = sel.value; sel.innerHTML = ''; printers.forEach(p => sel.innerHTML += `<option value="${p.name}" ${p.name===cVal?'selected':''}>${p.name}</option>`);
+        const cVal = sel.value; sel.innerHTML = '';
+        printers.forEach(p => sel.innerHTML += `<option value="${p.name}" ${p.name===cVal?'selected':''}>${p.name}</option>`);
       });
     }
 
     function addExpense(e) {
-      e.preventDefault(); expenses.unshift({ id: Date.now(), description: document.getElementById('expDesc').value, category: document.getElementById('expCategory').value, amount: parseFloat(document.getElementById('expAmount').value), date: document.getElementById('expDate').value });
+      e.preventDefault();
+      expenses.unshift({ id: Date.now(), description: document.getElementById('expDesc').value, category: document.getElementById('expCategory').value, amount: parseFloat(document.getElementById('expAmount').value), date: document.getElementById('expDate').value });
       saveAllData(); document.getElementById('expDesc').value = ''; document.getElementById('expAmount').value = '';
     }
     function deleteExpense(id) { expenses = expenses.filter(ex => ex.id !== id); saveAllData(); }
     function renderExpenses() {
-      const tbody = document.getElementById('expensesTableBody'), m = document.getElementById('statsMonthFilter')?.value || 'all';
-      if (!tbody) return; tbody.innerHTML = '';
+      const tbody = document.getElementById('expensesTableBody');
+      const m = document.getElementById('statsMonthFilter')?.value || 'all';
+      if (!tbody) return;
+      tbody.innerHTML = '';
       expenses.forEach(ex => {
         if (m === 'all' || ex.date.startsWith(m)) tbody.innerHTML += `<tr class="border-b border-slate-800"><td class="p-2 text-slate-300">${ex.date}</td><td class="p-2 text-purple-300">${ex.category}</td><td class="p-2 text-white">${ex.description}</td><td class="p-2 text-red-400">-${ex.amount.toFixed(2)} €</td><td class="p-2 text-right"><button onclick="deleteExpense(${ex.id})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></td></tr>`;
       });
@@ -437,7 +475,8 @@
 
     function updateCustomerDropdowns() {
       const fill = (el) => {
-        if(!el) return; const cV = el.value;
+        if(!el) return;
+        const cV = el.value;
         el.innerHTML = el.id==='thankYouCustomerSelect' ? '<option value="">👤 Kunden für Dankes-Zettel wählen...</option>' : '<option value="">📋 Kunden laden...</option>';
         orders.forEach(o => el.innerHTML += `<option value="${o.id}" ${o.id==cV?'selected':''}>${o.customer}</option>`);
       };
@@ -447,22 +486,13 @@
     function autofillCustomerData(orderId) {
       const o = orders.find(x => x.id == orderId);
       if(!o) return;
-      document.getElementById('customer').value = o.customer||''; 
-      document.getElementById('platform').value = o.platform||'Kleinanzeigen';
-      document.getElementById('paymentMethod').value = o.paymentMethod||'Überweisung';
-      document.getElementById('address').value = o.address||''; 
-      document.getElementById('tracking').value = (o.tracking!=='-')?o.tracking:'';
-      if(o.price) document.getElementById('price').value = o.price;
-      
-      const container = document.getElementById('articleInputRows');
-      if (container && o.items && o.items.length > 0) {
-        container.innerHTML = ''; 
-        o.items.forEach(item => { addArticleInputRow(item.name, item.color, item.weight); });
-      }
+      document.getElementById('customer').value = o.customer||''; document.getElementById('platform').value = o.platform||'Kleinanzeigen';
+      document.getElementById('address').value = o.address||''; document.getElementById('tracking').value = (o.tracking!=='-')?o.tracking:'';
     }
 
     function copyTemplate(n) { navigator.clipboard.writeText(document.getElementById(`templateText${n}`).value).then(()=>alert("Kopiert!")); }
 
+    // DER NEUE DANKES ZETTEL GENERATOR
     function printThankYouNoteFromDropdown() {
       const orderId = document.getElementById('thankYouCustomerSelect').value;
       if (!orderId) return alert("Bitte wähle zuerst einen Kunden aus!");
@@ -474,7 +504,8 @@
     }
 
     function renderSpools() {
-      const c = document.getElementById('spoolsList'); if(!c) return; c.innerHTML = '';
+      const c = document.getElementById('spoolsList');
+      if(!c) return; c.innerHTML = '';
       spools.forEach((s, idx) => c.innerHTML += `<div class="p-2 rounded-lg border text-[11px] flex justify-between bg-slate-900 border-slate-700/60"><span class="text-white">${s.name}</span><div><span class="text-slate-300 mr-2">${s.remainingGrams}g</span><button onclick="spools.splice(${idx},1);saveAllData()" class="text-red-400"><i class="fa-solid fa-xmark"></i></button></div></div>`);
       updateSpoolDropdowns();
     }
@@ -486,21 +517,12 @@
       });
     }
 
-    function addArticleInputRow(nameVal = '', colorVal = '', weightVal = '') {
-      const div = document.createElement('div'); div.className = "flex gap-2 items-center article-row";
-      let opts = '<option value="">-- Farbe --</option>'; 
-      spools.forEach(s => { const selected = (s.name === colorVal) ? 'selected' : ''; opts += `<option value="${s.name}" ${selected}>${s.name}</option>`; });
-      div.innerHTML = `<input type="text" placeholder="Bezeichnung" value="${nameVal}" class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none"><select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-44 focus:outline-none">${opts}</select><input type="number" placeholder="g" value="${weightVal}" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none"><button type="button" onclick="this.parentElement.remove()" class="text-red-400"><i class="fa-solid fa-xmark"></i></button>`;
+    function addArticleInputRow(nameVal = '') {
+      const div = document.createElement('div');
+      div.className = "flex gap-2 items-center article-row";
+      let opts = '<option value="">-- Farbe --</option>'; spools.forEach(s => opts += `<option value="${s.name}">${s.name}</option>`);
+      div.innerHTML = `<input type="text" placeholder="Bezeichnung" value="${nameVal}" class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1"><select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-44">${opts}</select><input type="number" placeholder="g" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24"><button type="button" onclick="this.parentElement.remove()" class="text-red-400"><i class="fa-solid fa-xmark"></i></button>`;
       document.getElementById('articleInputRows').appendChild(div);
-    }
-
-    function exportAccountingCSV() {
-      let csv = "Typ;Plattform;Zahlungsart;Bezahlt;eBay Guthaben;Datum;Rechnung/Beschreibung;Kunde/Kategorie;Betrag;Porto/Label\n";
-      orders.forEach(o => { csv += `Einnahme ${o.archived?'(Archiviert)':'(Aktiv)'};${o.platform};${o.paymentMethod};${o.isPaid};${o.ebayBalancePaid};${o.orderDate};${o.invoiceNumber};${o.customer};${o.price.toFixed(2)};${o.labelCost||0}\n`; });
-      expenses.forEach(e => { csv += `Ausgabe;N/A;N/A;✅ Ja;N/A;${e.date};${e.description};${e.category};-${e.amount.toFixed(2)};0\n`; });
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Sefas3DShop_Buchhaltung_${todayStr}.csv`;
-      document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
     function addOrder(e) {
@@ -520,16 +542,16 @@
         packed: document.getElementById('packed').value, price: parseFloat(document.getElementById('price').value)||0,
         shippingFee: parseFloat(document.getElementById('shippingFee').value)||0, labelCost: parseFloat(document.getElementById('labelCost').value)||0,
         discountPercent: parseFloat(document.getElementById('discountPercent').value)||0, tracking: document.getElementById('tracking').value||'-',
-        orderDate: document.getElementById('orderDate').value, invoiceNumber: `RE-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`, archived: false, items: itemsList
+        orderDate: document.getElementById('orderDate').value, invoiceNumber: `RE-2026-${Date.now().toString().slice(-4)}`, archived: false, items: itemsList
       });
       saveAllData(); document.getElementById('orderForm').reset();
-      document.getElementById('articleInputRows').innerHTML = ''; addArticleInputRow();
     }
 
     function deleteOrder(id) { orders = orders.filter(o => o.id !== id); saveAllData(); }
     
     function renderOrders() {
-      const tb = document.getElementById('ordersTableBody'), m = document.getElementById('statsMonthFilter')?.value || 'all';
+      const tb = document.getElementById('ordersTableBody');
+      const m = document.getElementById('statsMonthFilter')?.value || 'all';
       if (!tb) return; tb.innerHTML = '';
       
       let mSet = new Set(); orders.forEach(o => mSet.add(o.orderDate.slice(0,7))); expenses.forEach(e => mSet.add(e.date.slice(0,7)));
@@ -539,20 +561,24 @@
 
       orders.forEach(o => {
         if (Boolean(o.archived) !== showingArchive || (m !== 'all' && !o.orderDate.startsWith(m))) return;
-        let iH = '<div class="space-y-0.5">'; o.items.forEach(i => iH += `<div class="text-[11px] text-white">• ${i.name} <span class="text-purple-300">(${i.color || '-'}, ${i.weight}g)</span></div>`); iH+='</div>';
+        let iH = '<div class="space-y-0.5">'; o.items.forEach(i => iH += `<div class="text-[11px] text-white">• ${i.name} <span class="text-purple-300">(${i.weight}g)</span></div>`); iH+='</div>';
         tb.innerHTML += `<tr class="hover:bg-slate-800/40 border-b border-slate-800"><td class="p-2 font-medium text-white">${o.customer}</td><td class="p-2 text-[11px] text-cyan-300 font-bold">${o.invoiceNumber}</td><td class="p-2">${iH}</td><td class="p-2 text-[11px] text-slate-300">${o.printer}</td><td class="p-2 text-[11px] text-blue-300">${o.isPaid}</td><td class="p-2 text-[11px] text-yellow-300">${o.status}</td><td class="p-2 text-[11px] text-blue-400 font-bold">${o.price} €</td><td class="p-2 text-[11px] text-slate-350">${o.label}</td><td class="p-2 text-[10px] font-mono">${o.tracking}</td><td class="p-2 text-right"><button onclick="deleteOrder(${o.id})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></td></tr>`;
       });
       updateStats();
     }
 
     function updateStats() {
-      const m = document.getElementById('statsMonthFilter')?.value || 'all', c = parseFloat(document.getElementById('statCorrection')?.value)||0;
+      const m = document.getElementById('statsMonthFilter')?.value || 'all';
+      const c = parseFloat(document.getElementById('statCorrection')?.value)||0;
       let tR=0, tE=0, tW=0, oC=0, eB=0;
       orders.forEach(o => {
-        if (!o.archived) { oC++; o.items.forEach(i => tW+=(parseInt(i.weight)||0)); }
+        if (!o.archived) { oC++; o.items.forEach(i => tW+=i.weight); }
         let oA = o.price - (o.price*(o.discountPercent||0)/100);
         if (o.platform==='eBay' && o.ebayBalancePaid==='⏳ Bei eBay') eB += (oA - (o.labelCost||0));
-        if (m==='all' || o.orderDate.startsWith(m)) { if (o.platform!=='eBay' || o.ebayBalancePaid==='✅ Ausgezahlt') tR += oA; tE += o.labelCost||0; }
+        if (m==='all' || o.orderDate.startsWith(m)) {
+          if (o.platform!=='eBay' || o.ebayBalancePaid==='✅ Ausgezahlt') tR += oA;
+          tE += o.labelCost||0;
+        }
       });
       expenses.forEach(ex => { if (m==='all' || ex.date.startsWith(m)) tE += ex.amount; });
       document.getElementById('statRevenue').innerText = tR.toFixed(2)+' €'; document.getElementById('statExpenses').innerText = tE.toFixed(2)+' €';
