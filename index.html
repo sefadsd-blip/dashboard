@@ -388,7 +388,6 @@
       { id: 87, name: "Fensterstopper oder Balkontürstopper | Fensterkeil Klemmschutz", size: "Standard", price: 4.00 }
     ];
 
-    // DIESES BACKUP WIRD GENUTZT, UM DEINE KAPUTTEN DATEN BEIM START AUTOMATISCH ZU REPARIEREN
     const REPAIR_ORDERS = [
       {"customer":"Laura pasch","invoiceNumber":"RE-2026-0017","items":[{"name":"1xKürbis","color":"PLA Schwarz","weight":0},{"name":"1xKürbis","color":"Pla Weiß","weight":0},{"name":"1xKürbis","color":"PETG Orange","weight":0},{"name":"2X scharf","color":"PLA Hellbraun ","weight":0},{"name":"1x scharf","color":"Pla Weiß","weight":0}]},
       {"customer":"Isabell Zubiller","invoiceNumber":"RE-2026-0016","items":[{"name":"1xKürbis Hoch","color":"PLA Schwarz","weight":0},{"name":"1xKürbis klein","color":"PLA Schwarz","weight":0},{"name":"1xKürbis klein","color":"Pla Weiß","weight":0}]},
@@ -399,7 +398,7 @@
       {"customer":"Iris Diekmann","invoiceNumber":"RE-2026-00011","items":[{"name":"3x Kürbis","color":"","weight":0},{"name":"3x Katze","color":"","weight":0}]},
       {"customer":"Silke Schwarzer","invoiceNumber":"RE-2026-0010","items":[{"name":"2x Tannenzapfen","color":"PLA Dunkelrot ","weight":180},{"name":"2x Tannenzapfen","color":"PLA Olivgrün","weight":180}]},
       {"customer":"Familie Tchoffo","invoiceNumber":"RE-2026-0009","items":[{"name":"Küchenrollnhalter 2X","color":"PLA Schwarz","weight":460}]},
-      {"customer":"Renate Evelin - Veere","invoiceNumber":"RE-2026-0008","items":[{"name":"1x Japandi Vogel","color":"PLA grün","weight":50},{"name":"1x Kürbis","color":"PETG Orange","weight":0},{"name":"1x Modernes Eichhörnchen","color":"PLA Hellbraun ","weight":180},{"name":"2x Zapfenhäuschen","color":"PLA Olivgrün","weight":180},{"name":"2x Zapfenhäuschen","color":"PLA Hellbraun ","weight":180}]},
+      {"customer":"Renate Evelin - Veere","invoiceNumber":"RE-2026-0008","items":[{"name":"1x Japandi Vogel","color":"PLA grün","weight":0},{"name":"1x Kürbis","color":"PETG Orange","weight":0},{"name":"1x Modernes Eichhörnchen","color":"PLA Hellbraun","weight":0},{"name":"2x Zapfenhäuschen","color":"PLA Olivgrün","weight":0},{"name":"2x Zapfenhäuschen","color":"PLA Hellbraun","weight":0}]},
       {"customer":"Ralf Hartmann","invoiceNumber":"RE-2026-0007","items":[{"name":"6x Rentier","color":"","weight":0}]},
       {"customer":"Sabine Beewen","invoiceNumber":"RE-2026-0006","items":[{"name":"1x Fernbedienungshalter","color":"","weight":0}]},
       {"customer":"Dunja marcinkowski","invoiceNumber":"RE-2026-0005","items":[{"name":"6x Weinhalter schwarz","color":"PLA Schwarz","weight":0},{"name":"9x Bäume","color":"","weight":0}]},
@@ -481,7 +480,7 @@
             // --- AUTO REPARATUR ---
             let countRepaired = 0;
             orders.forEach(liveOrder => {
-              const match = REPAIR_ORDERS.find(b => b.invoiceNumber === liveOrder.invoiceNumber && b.customer === liveOrder.customer);
+              const match = REPAIR_ORDERS.find(b => b.invoiceNumber === liveOrder.invoiceNumber && b.customer.toLowerCase().trim() === liveOrder.customer.toLowerCase().trim());
               if (match) {
                 if (liveOrder.items && liveOrder.items.length > 0) {
                   const firstItemName = liveOrder.items[0].name;
@@ -601,11 +600,11 @@
               custAddr = 'Heinrich-Zille-Str. 11, 04668 Grimma';
               trackingNum = '358073187096';
               custItems = [
-                { name: 'Japandi Vogel', color: 'PLA Grün', weight: 80 },
-                { name: 'Kürbis', color: 'PETG Orange', weight: 120 },
-                { name: 'Modernes Eichhörnchen', color: 'PLA Hellbraun', weight: 90 },
-                { name: '2x Zapfenhäuschen', color: 'PLA Olivgrün', weight: 110 },
-                { name: '2x Zapfenhäuschen', color: 'PLA Hellbraun', weight: 110 }
+                { name: '1x Japandi Vogel', color: 'PLA grün', weight: 0 },
+                { name: '1x Kürbis', color: 'PETG Orange', weight: 0 },
+                { name: '1x Modernes Eichhörnchen', color: 'PLA Hellbraun', weight: 0 },
+                { name: '2x Zapfenhäuschen', color: 'PLA Olivgrün', weight: 0 },
+                { name: '2x Zapfenhäuschen', color: 'PLA Hellbraun', weight: 0 }
               ];
             } else if (kundeOrCat.toLowerCase().includes('tchoffo')) {
               custAddr = 'Prämienstraße 62, 52428 Jülich';
