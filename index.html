@@ -886,13 +886,13 @@
       
       let itemsListHtml = "";
       if (o.items && o.items.length > 0) {
-        itemsListHtml = "<ul style='list-style-type: disc; text-align: left; display: inline-block; margin: 10px 0; font-size: 18px; color: #334155;'>";
+        itemsListHtml = "<ul style='list-style-type: disc; text-align: left; display: inline-block; margin: 5px 0; font-size: 13px; color: #334155; line-height: 1.3;'>";
         o.items.forEach(i => {
           itemsListHtml += `<li><b>${i.name}</b> ${i.color ? '(' + i.color + ')' : ''}</li>`;
         });
         itemsListHtml += "</ul>";
       } else {
-        itemsListHtml = '<p class="highlight">deine Bestellung</p>';
+        itemsListHtml = '<span class="highlight">deine Bestellung</span>';
       }
       
       const win = window.open('', '_blank', 'width=800,height=1000');
@@ -902,21 +902,25 @@
         <head>
           <title>Dankes-Zettel - ${o.customer}</title>
           <style>
-            body { font-family: sans-serif; padding: 60px; text-align: center; }
-            h1 { color: #2563eb; }
-            p { font-size: 18px; line-height: 1.5; color: #334155; }
+            @page { size: A4; margin: 15mm; }
+            body { font-family: sans-serif; padding: 20px; text-align: center; color: #1e293b; margin: 0; }
+            h1 { color: #2563eb; font-size: 22px; margin-bottom: 10px; }
+            p { font-size: 13px; line-height: 1.4; color: #334155; margin: 8px 0; }
             .highlight { font-weight: bold; color: #2563eb; }
+            .box { max-width: 450px; margin: 0 auto; border: 2px dashed #cbd5e1; padding: 25px; border-radius: 12px; background: #f8fafc; }
           </style>
         </head>
         <body>
-          <h1>Vielen Dank für deine Bestellung! 📦</h1>
-          <p>Hallo <span class="highlight">${o.customer}</span>,</p>
-          <p>vielen Dank! Es hat mir Spaß gemacht, folgende Artikel für dich im 3D-Druck anzufertigen:</p>
-          ${itemsListHtml}
-          <p>Ich hoffe, die Sachen gefallen dir! Ich würde mich riesig über eine positive Bewertung auf der Plattform freuen.</p>
-          <p>Sollte etwas nicht passen, melde dich einfach.</p>
-          <br><br>
-          <p><strong>Dein Sefas3DShop</strong></p>
+          <div class="box">
+            <h1>Vielen Dank für deine Bestellung! 📦</h1>
+            <p>Hallo <span class="highlight">${o.customer}</span>,</p>
+            <p>vielen Dank! Es hat mir riesigen Spaß gemacht, folgende Artikel für dich im 3D-Druck anzufertigen:</p>
+            ${itemsListHtml}
+            <p>Ich hoffe, die Sachen gefallen dir! Über eine positive Bewertung auf der Plattform würde ich mich sehr freuen.</p>
+            <p>Sollte etwas nicht passen, melde dich jederzeit gerne.</p>
+            <br>
+            <p><strong>Dein Sefas3DShop</strong></p>
+          </div>
           <script>
             window.onload = function() {
               setTimeout(() => window.print(), 400);
