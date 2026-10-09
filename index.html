@@ -884,7 +884,16 @@
       const o = orders.find(item => item.id == orderId);
       if (!o) return;
       
-      const firstItem = (o.items && o.items.length > 0) ? o.items[0].name : "deine Bestellung";
+      let itemsListHtml = "";
+      if (o.items && o.items.length > 0) {
+        itemsListHtml = "<ul style='list-style-type: disc; text-align: left; display: inline-block; margin: 10px 0; font-size: 18px; color: #334155;'>";
+        o.items.forEach(i => {
+          itemsListHtml += `<li><b>${i.name}</b> ${i.color ? '(' + i.color + ')' : ''}</li>`;
+        });
+        itemsListHtml += "</ul>";
+      } else {
+        itemsListHtml = '<p class="highlight">deine Bestellung</p>';
+      }
       
       const win = window.open('', '_blank', 'width=800,height=1000');
       win.document.write(`
@@ -895,15 +904,16 @@
           <style>
             body { font-family: sans-serif; padding: 60px; text-align: center; }
             h1 { color: #2563eb; }
-            p { font-size: 20px; line-height: 1.6; color: #334155; }
+            p { font-size: 18px; line-height: 1.5; color: #334155; }
             .highlight { font-weight: bold; color: #2563eb; }
           </style>
         </head>
         <body>
           <h1>Vielen Dank für deine Bestellung! 📦</h1>
           <p>Hallo <span class="highlight">${o.customer}</span>,</p>
-          <p>vielen Dank! Es hat mir Spaß gemacht, deinen Artikel (<span class="highlight">${firstItem}</span>) im 3D-Druck anzufertigen.</p>
-          <p>Ich hoffe, das Teil gefällt dir! Ich würde mich riesig über eine positive Bewertung auf der Plattform freuen.</p>
+          <p>vielen Dank! Es hat mir Spaß gemacht, folgende Artikel für dich im 3D-Druck anzufertigen:</p>
+          ${itemsListHtml}
+          <p>Ich hoffe, die Sachen gefallen dir! Ich würde mich riesig über eine positive Bewertung auf der Plattform freuen.</p>
           <p>Sollte etwas nicht passen, melde dich einfach.</p>
           <br><br>
           <p><strong>Dein Sefas3DShop</strong></p>
