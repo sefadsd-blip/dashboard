@@ -199,7 +199,7 @@
         <div class="border-t border-slate-700/60 pt-2.5 space-y-2">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <label class="text-[11px] font-semibold text-slate-300">Artikel, Farbe & Gewicht (g):</label>
-            <input type="text" id="orderArticleSearch" oninput="renderQuickAddButtons()" placeholder="🔍 Katalog durchsuchen..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-full sm:w-64 focus:outline-none focus:border-blue-500 transition">
+            <input type="text" id="orderArticleSearch" oninput="renderQuickAddButtons()" placeholder="🔍 Katalog durchsuchen & hinzufügen..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-full sm:w-72 focus:outline-none focus:border-blue-500 transition">
           </div>
           
           <div class="flex flex-wrap gap-1.5 py-0.5 max-h-[120px] overflow-y-auto pr-1" id="quickAddButtons"></div>
@@ -740,8 +740,12 @@
       const orderSearch = (document.getElementById('orderArticleSearch')?.value || '').toLowerCase();
       if (quickAdds) {
         quickAdds.innerHTML = '';
+        if (!orderSearch) {
+          quickAdds.innerHTML = '<span class="text-[10px] text-slate-500 italic">Tippe oben in die Suche, um Artikel aus dem Katalog direkt hinzuzufügen...</span>';
+          return;
+        }
         products.forEach(p => {
-          if (orderSearch && !p.name.toLowerCase().includes(orderSearch)) return;
+          if (!p.name.toLowerCase().includes(orderSearch)) return;
           quickAdds.innerHTML += `<button type="button" onclick="addPresetArticle('${p.name.replace(/'/g, "\\'")}', ${p.price})" class="bg-slate-900 hover:bg-slate-800 text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-700 cursor-pointer shadow-sm transition">+ ${p.name} <span class="text-slate-400 text-[9px]">(${p.size})</span> <span class="text-amber-400/80">(${p.price.toFixed(2).replace('.',',')}€)</span></button>`;
         });
       }
@@ -754,6 +758,37 @@
         let currentPrice = parseFloat(priceInput.value) || 0;
         priceInput.value = (currentPrice + addPrice).toFixed(2);
       }
+      document.getElementById('orderArticleSearch').value = '';
+      renderQuickAddButtons();
+    }
+
+    // NEU: Schnell-Hinzufügen direkt im Editier-Modus einer bestehenden Bestellung
+    function renderEditQuickAddButtons(idx) {
+      const container = document.getElementById(`editQuickAddButtons-${idx}`);
+      const searchInp = document.getElementById(`editArticleSearch-${idx}`);
+      if (!container || !searchInp) return;
+      
+      const query = searchInp.value.toLowerCase();
+      container.innerHTML = '';
+      if (!query) {
+        container.innerHTML = '<span class="text-[10px] text-slate-500 italic">Tippe in die Suche, um Katalog-Artikel hinzuzufügen...</span>';
+        return;
+      }
+      products.forEach(p => {
+        if (!p.name.toLowerCase().includes(query)) return;
+        container.innerHTML += `<button type="button" onclick="addPresetArticleToEdit(${idx}, '${p.name.replace(/'/g, "\\'")}', ${p.price})" class="bg-slate-900 hover:bg-slate-800 text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-700 cursor-pointer shadow-sm transition">+ ${p.name} <span class="text-amber-400">(${p.price.toFixed(2).replace('.',',')}€)</span></button>`;
+      });
+    }
+
+    function addPresetArticleToEdit(idx, nameVal, addPrice) {
+      addEditArticleRow(nameVal);
+      const priceInput = document.getElementById(`edit-price-${idx}`);
+      if (priceInput) {
+        let currentPrice = parseFloat(priceInput.value) || 0;
+        priceInput.value = (currentPrice + addPrice).toFixed(2);
+      }
+      document.getElementById(`editArticleSearch-${idx}`).value = '';
+      renderEditQuickAddButtons(idx);
     }
 
     function addPrinterPrompt() {
@@ -1543,13 +1578,18 @@
         const isEbay = o.platform === 'eBay';
 
         if (editingIndex === idx) {
-          let editItemsHtml = `<div id="editArticleRows" class="space-y-1.5 my-1.5">`;
+          let editItemsHtml = `<div class="space-y-1 mb-2">
+            <input type="text" id="editArticleSearch-${idx}" oninput="renderEditQuickAddButtons(${idx})" placeholder="🔍 Katalog durchsuchen..." class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[11px] text-white w-full focus:outline-none focus:border-blue-500">
+            <div id="editQuickAddButtons-${idx}" class="flex flex-wrap gap-1 max-h-[90px] overflow-y-auto py-0.5"></div>
+          </div>
+          <div id="editArticleRows" class="space-y-1.5 my-1.5">`;
+          
           o.items.forEach(i => {
             let optionsHtml = '<option value="">-- Farbe --</option>';
             spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === i.color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
             editItemsHtml += `<div class="flex gap-1.5 items-center edit-article-row bg-slate-950 p-1.5 rounded-lg border border-slate-800"><input type="text" value="${i.name}" class="edit-art-name bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white flex-1"><select class="edit-art-color bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-32">${optionsHtml}</select><input type="number" value="${i.weight || ''}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-16"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1"><i class="fa-solid fa-xmark"></i></button></div>`;
           });
-          editItemsHtml += `</div><button type="button" onclick="addEditArticleRow()" class="bg-slate-800 text-blue-400 text-[11px] px-2 py-0.5 rounded">+ Artikel</button>`;
+          editItemsHtml += `</div><button type="button" onclick="addEditArticleRow()" class="bg-slate-800 text-blue-400 text-[11px] px-2 py-0.5 rounded">+ Leeren Artikel</button>`;
 
           let printerOptionsEdit = '';
           printers.forEach(p => { printerOptionsEdit += `<option value="${p.name}" ${p.name === o.printer ? 'selected' : ''}>${p.name}</option>`; });
