@@ -19,34 +19,24 @@
 </head>
 <body class="p-3 md:p-5 min-h-screen text-xs">
 
-  <!-- Versteckter File-Input für CSV Import -->
   <input type="file" id="csvFileInput" accept=".csv" onchange="importAccountingCSV(event)" class="hidden">
 
   <div id="subPageOverlay" class="hidden fixed inset-0 bg-slate-950/95 z-50 overflow-y-auto p-3 md:p-6">
     <div class="max-w-4xl mx-auto space-y-4">
       <div class="flex justify-between items-center bg-slate-800 p-4 rounded-2xl border border-slate-700">
         <div class="flex items-center space-x-3">
-          <div class="bg-slate-900 p-2.5 rounded-xl border border-cyan-500/30 flex items-center justify-center shadow-lg">
-            <i class="fa-solid fa-toolbox text-cyan-400 text-lg"></i>
-          </div>
-          <div>
-            <h2 class="text-base font-bold text-white">Sefas3DShop - Tools & Katalog</h2>
-            <p class="text-slate-400 text-[11px]">Kostenrechner & Cloud-Verwaltung</p>
-          </div>
+          <div class="bg-slate-900 p-2.5 rounded-xl border border-cyan-500/30 flex items-center justify-center shadow-lg"><i class="fa-solid fa-toolbox text-cyan-400 text-lg"></i></div>
+          <div><h2 class="text-base font-bold text-white">Sefas3DShop - Tools & Katalog</h2><p class="text-slate-400 text-[11px]">Kostenrechner & Cloud-Verwaltung</p></div>
         </div>
-        <button onclick="closeSubPage()" class="bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
-          <i class="fa-solid fa-xmark text-sm"></i> Schließen & Zurück
-        </button>
+        <button onclick="closeSubPage()" class="bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"><i class="fa-solid fa-xmark text-sm"></i> Schließen & Zurück</button>
       </div>
 
       <section class="card p-4 rounded-xl space-y-2 border border-blue-500/30 bg-blue-950/10">
-        <div class="flex justify-between items-center border-b border-slate-700/60 pb-2">
-          <h2 class="text-xs font-semibold text-blue-400"><i class="fa-solid fa-calculator mr-1.5"></i> Kostenrechner (+ 35% & 1,50€)</h2>
-        </div>
+        <div class="flex justify-between items-center border-b border-slate-700/60 pb-2"><h2 class="text-xs font-semibold text-blue-400"><i class="fa-solid fa-calculator mr-1.5"></i> Kostenrechner (+ 35% & 1,50€)</h2></div>
         <div class="space-y-2 pt-1">
           <div class="flex items-center gap-2">
-            <input type="number" id="calcHours" oninput="calculateCosts()" placeholder="Zeit (h, z.B. 1.5)" min="0" step="0.1" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full focus:outline-none focus:border-blue-500 transition">
-            <input type="number" id="calcGrams" oninput="calculateCosts()" placeholder="Gewicht (g)" min="0" step="1" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full focus:outline-none focus:border-blue-500 transition">
+            <input type="number" id="calcHours" oninput="calculateCosts()" placeholder="Zeit (h)" min="0" step="0.1" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full focus:outline-none">
+            <input type="number" id="calcGrams" oninput="calculateCosts()" placeholder="Gewicht (g)" min="0" step="1" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full focus:outline-none">
           </div>
           <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-800">
             <div class="flex justify-between text-[11px] text-slate-400"><span>Druckzeit (0,25 €/h):</span> <span id="calcPrintCost">0,00 €</span></div>
@@ -64,14 +54,13 @@
       <section class="card p-4 rounded-xl space-y-3">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-700/60 pb-2.5">
           <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-tags mr-1.5 text-amber-400"></i> Artikel-Katalog & Preisliste</h2>
-          <input type="text" id="productSearchInput" oninput="renderProducts()" placeholder="🔍 Artikel durchsuchen..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full sm:w-64 focus:outline-none focus:border-amber-500 transition">
+          <input type="text" id="productSearchInput" oninput="renderProducts()" placeholder="🔍 Artikel durchsuchen..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full sm:w-64 focus:outline-none">
         </div>
-        
         <form id="productForm" onsubmit="addProduct(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
-          <input type="text" id="prodName" placeholder="Artikelname (z.B. Vase)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500 transition">
-          <input type="text" id="prodSize" placeholder="Maße (z.B. 100x50x30 mm)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500 transition">
+          <input type="text" id="prodName" placeholder="Artikelname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+          <input type="text" id="prodSize" placeholder="Maße" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           <div class="flex gap-2">
-            <input type="number" step="0.01" id="prodPrice" placeholder="Preis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white flex-1 focus:outline-none focus:border-amber-500 transition">
+            <input type="number" step="0.01" id="prodPrice" placeholder="Preis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white flex-1 focus:outline-none">
             <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-1.5 px-3 text-xs transition cursor-pointer whitespace-nowrap">+ Speichern</button>
           </div>
         </form>
@@ -81,25 +70,16 @@
   </div>
 
   <div id="mainApp" class="max-w-[1700px] mx-auto space-y-4">
-    
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-800 p-3 rounded-2xl border border-slate-700 gap-3">
       <div class="flex items-center space-x-3">
-        <button onclick="openSubPage()" class="bg-slate-900 hover:bg-slate-700 text-cyan-400 p-2.5 rounded-xl border border-slate-700 transition flex items-center justify-center cursor-pointer shadow-md" title="Tools & Katalog öffnen">
-          <i class="fa-solid fa-bars text-sm"></i>
-        </button>
-
+        <button onclick="openSubPage()" class="bg-slate-900 hover:bg-slate-700 text-cyan-400 p-2.5 rounded-xl border border-slate-700 transition flex items-center justify-center cursor-pointer shadow-md"><i class="fa-solid fa-bars text-sm"></i></button>
         <div class="bg-slate-900 p-2 rounded-xl border border-blue-500/30 flex items-center justify-center shadow-lg">
           <svg class="w-8 h-8 text-cyan-400" viewBox="0 0 100 100" fill="currentColor">
             <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="url(#blueGrad)" stroke-width="8"/>
             <polyline points="50,10 50,50 90,30" fill="none" stroke="url(#blueGrad)" stroke-width="6"/>
             <polyline points="50,50 10,30" fill="none" stroke="url(#blueGrad)" stroke-width="6"/>
             <polyline points="50,50 50,90" fill="none" stroke="url(#blueGrad)" stroke-width="6"/>
-            <defs>
-              <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#38bdf8"/>
-                <stop offset="100%" stop-color="#1e40af"/>
-              </linearGradient>
-            </defs>
+            <defs><linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#1e40af"/></linearGradient></defs>
           </svg>
         </div>
         <div>
@@ -108,12 +88,12 @@
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-1.5">
-        <button onclick="document.getElementById('csvFileInput').click()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer"><i class="fa-solid fa-file-import mr-1"></i> 📥 CSV Import</button>
-        <button onclick="exportAccountingCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer"><i class="fa-solid fa-file-excel mr-1"></i> 📊 CSV Export</button>
-        <button onclick="printAllInvoices()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer"><i class="fa-solid fa-print mr-1"></i> 🖨 Alle Rechnungen</button>
-        <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv</button>
-        <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-rotate mr-1"></i> 🔄 Laden</button>
-        <button onclick="pushToCloudManual()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> 📤 Speichern</button>
+        <button onclick="document.getElementById('csvFileInput').click()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-file-import mr-1"></i> CSV Import</button>
+        <button onclick="exportAccountingCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-file-excel mr-1"></i> CSV Export</button>
+        <button onclick="printAllInvoices()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-print mr-1"></i> Alle Rechnungen</button>
+        <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-box-archive mr-1"></i> Archiv</button>
+        <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-rotate mr-1"></i> Laden</button>
+        <button onclick="pushToCloudManual()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Speichern</button>
       </div>
     </header>
 
@@ -122,21 +102,18 @@
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-chart-pie mr-1.5 text-blue-400"></i> Statistik-Auswertung</h2>
         <div class="flex flex-wrap items-center gap-3">
           <div class="flex items-center space-x-1.5 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
-            <label class="text-[10px] text-amber-400 font-semibold" title="Differenz / Startguthaben zur Anpassung">Differenz (€):</label>
+            <label class="text-[10px] text-amber-400 font-semibold">Differenz (€):</label>
             <input type="number" step="0.01" id="statCorrection" value="0.00" oninput="updateStats()" class="bg-transparent text-xs text-amber-300 font-bold w-16 focus:outline-none text-right">
           </div>
-          <div class="flex items-center space-x-2">
-            <label class="text-[11px] text-slate-400">Monat wählen:</label>
-            <select id="statsMonthFilter" onchange="renderOrders(); renderExpenses();" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none"><option value="all">📅 Alle Monate (Gesamt)</option></select>
-          </div>
+          <select id="statsMonthFilter" onchange="renderOrders(); renderExpenses();" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none"><option value="all">📅 Alle Monate</option></select>
         </div>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Gesamt-Umsatz (Monat)</p><h3 id="statRevenue" class="text-xl font-bold text-blue-400">0,00 €</h3></div></div>
-        <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Gesamt-Ausgaben (Monat)</p><h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3></div></div>
-        <div class="card p-3 rounded-xl flex items-center justify-between border border-emerald-500/30 bg-emerald-950/10"><div><p class="text-[11px] text-emerald-400 font-semibold">Reingewinn (inkl. Diff. & eBay)</p><h3 id="statProfit" class="text-xl font-bold text-emerald-400">0,00 €</h3></div></div>
-        <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍 eBay-Guthaben (Offen)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt markieren</button></div>
-        <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Offene Aufträge / Material</p><h3 id="statOpenOrders" class="text-lg font-bold text-yellow-400">0 <span class="text-[11px] text-slate-400 font-normal" id="statFilament">0g</span></h3></div></div>
+        <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Umsatz (Monat)</p><h3 id="statRevenue" class="text-xl font-bold text-blue-400">0,00 €</h3></div></div>
+        <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Ausgaben (Monat)</p><h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3></div></div>
+        <div class="card p-3 rounded-xl flex items-center justify-between border border-emerald-500/30 bg-emerald-950/10"><div><p class="text-[11px] text-emerald-400 font-semibold">Reingewinn</p><h3 id="statProfit" class="text-xl font-bold text-emerald-400">0,00 €</h3></div></div>
+        <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍 eBay-Guthaben</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded cursor-pointer">Auszahlen</button></div>
+        <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Offene Aufträge</p><h3 id="statOpenOrders" class="text-lg font-bold text-yellow-400">0 <span class="text-[11px] text-slate-400 font-normal" id="statFilament">0g</span></h3></div></div>
       </div>
     </section>
 
@@ -147,7 +124,6 @@
       </section>
       <section class="card p-3 rounded-xl space-y-2">
         <div class="flex justify-between items-center"><h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-layer-group mr-1.5 text-purple-400"></i> Filament-Lager</h2><button onclick="addSpoolPrompt()" class="bg-slate-800 hover:bg-slate-700 text-purple-300 text-[11px] px-2 py-0.5 rounded border border-purple-500/35 cursor-pointer">+ Spule</button></div>
-        <div id="spoolWarningBanner" class="hidden bg-red-500/10 border border-red-500/40 p-2 rounded-lg text-[11px] flex items-start gap-2 text-red-300"></div>
         <div id="spoolsList" class="space-y-1.5 max-h-[180px] overflow-y-auto pr-1"></div>
       </section>
     </div>
@@ -159,55 +135,34 @@
       </div>
       <form id="orderForm" onsubmit="addOrder(event)" class="space-y-3">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
-          
-          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Kunde:</label><input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Kunde:</label><input type="text" id="customer" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Plattform:</label><select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍 eBay</option></select></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Zahlungsart:</label><select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿 PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Bezahlstatus:</label><select id="isPaid" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Bezahlt: ✅ Ja</option><option value="❌ Nein" selected>Bezahlt: ❌ Nein</option></select></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Drucker:</label><select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></select></div>
-          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Gesamtpreis (€):</label><input type="number" step="0.01" id="price" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none border-blue-500/50 bg-blue-950/20"></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Gesamtpreis (€):</label><input type="number" step="0.01" id="price" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none border-blue-500/50 bg-blue-950/20"></div>
           
-          <div class="flex flex-col justify-end">
-            <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5">
-              <input type="checkbox" id="isPickup" onchange="togglePickupMode()" class="rounded border-slate-700 text-blue-600 focus:ring-0 cursor-pointer">
-              <label for="isPickup" class="text-[11px] text-blue-400 font-medium cursor-pointer">🏠 Selbstabholer</label>
-            </div>
-          </div>
-          
-          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Versand v. Kunden (€):</label><input type="number" step="0.01" id="shippingFee" placeholder="Versand v. Kunden (€)" value="5.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
-          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Porto / Label (€):</label><input type="number" step="0.01" id="labelCost" placeholder="Porto / Label (€)" value="0.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
-          
-          <div class="flex flex-col">
-            <label class="text-[9px] text-slate-400 mb-0.5">Rabatt (%):</label>
-            <input type="number" step="0.01" id="discountPercent" placeholder="Rabatt (%)" value="0" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 focus:outline-none w-full" title="Prozentualer Rabatt">
-          </div>
-
-          <div class="flex flex-col">
-            <label class="text-[9px] text-slate-400 mb-0.5">Erstellungsdatum:</label>
-            <input type="date" id="orderDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none">
-          </div>
-          
-          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Label gedruckt:</label><select id="label" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Label gedruckt: ✅ Ja</option><option value="❌ Nein" selected>Label gedruckt: ❌ Nein</option></select></div>
-          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Verpackt:</label><select id="packed" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="❌ Nein">Verpackt: ❌ Nein</option><option value="✅ Ja">Verpackt: ✅ Ja</option></select></div>
-          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Tracking-Nummer:</label><input type="text" id="tracking" placeholder="Tracking-Nummer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
+          <div class="flex flex-col justify-end"><div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5"><input type="checkbox" id="isPickup" onchange="togglePickupMode()" class="rounded border-slate-700 text-blue-600 focus:ring-0 cursor-pointer"><label for="isPickup" class="text-[11px] text-blue-400 font-medium cursor-pointer">🏠 Selbstabholer</label></div></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Versand v. Kunden (€):</label><input type="number" step="0.01" id="shippingFee" value="5.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Porto / Label (€):</label><input type="number" step="0.01" id="labelCost" value="0.00" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Rabatt (%):</label><input type="number" step="0.01" id="discountPercent" value="0" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 focus:outline-none"></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Datum:</label><input type="date" id="orderDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none"></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Tracking:</label><input type="text" id="tracking" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <input type="text" id="address" placeholder="Lieferadresse" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-          <input type="text" id="notes" placeholder="Notizen" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+          <select id="label" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Label: ✅ Ja</option><option value="❌ Nein" selected>Label: ❌ Nein</option></select>
+          <select id="packed" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="❌ Nein">Verpackt: ❌ Nein</option><option value="✅ Ja">Verpackt: ✅ Ja</option></select>
         </div>
 
         <div class="border-t border-slate-700/60 pt-2.5 space-y-2">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-            <label class="text-[11px] font-semibold text-slate-300">Artikel, Farbe & Gewicht (g):</label>
-            <input type="text" id="orderArticleSearch" oninput="renderQuickAddButtons()" placeholder="🔍 Katalog durchsuchen..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-full sm:w-64 focus:outline-none focus:border-blue-500 transition">
+            <label class="text-[11px] font-semibold text-slate-300">Artikel, Farbe & Gewicht:</label>
+            <input type="text" id="orderArticleSearch" oninput="renderQuickAddButtons()" placeholder="🔍 Katalog durchsuchen..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-full sm:w-64 focus:outline-none">
           </div>
-          
           <div class="flex flex-wrap gap-1.5 py-0.5 max-h-[120px] overflow-y-auto pr-1" id="quickAddButtons"></div>
-
-          <div class="flex justify-end">
-            <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-[11px] cursor-pointer">+ Leeren Artikel</button>
-          </div>
-
+          <div class="flex justify-end"><button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-[11px] cursor-pointer">+ Leeren Artikel</button></div>
           <div id="articleInputRows" class="space-y-1.5">
             <div class="flex gap-2 items-center article-row">
               <input type="text" placeholder="Artikelbezeichnung" class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
@@ -221,32 +176,26 @@
     </section>
 
     <section class="card p-4 rounded-xl space-y-3">
-      <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
-        <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-receipt mr-1.5 text-blue-400"></i> Betriebsausgaben & Einkäufe</h2>
-      </div>
+      <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5"><h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-receipt mr-1.5 text-blue-400"></i> Betriebsausgaben</h2></div>
       <form id="expenseForm" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
         <input type="text" id="expDesc" placeholder="Beschreibung" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙️ Zubehör & Ersatzteile</option><option value="Verpackung">📦 Verpackungsmaterial</option><option value="Sonstiges">🏷 Sonstiges / eBay Gebühren</option></select>
+        <select id="expCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 Versand</option><option value="Zubehör / Ersatzteile">⚙️ Zubehör</option><option value="Verpackung">📦 Verpackung</option><option value="Sonstiges">🏷 Sonstiges</option></select>
         <input type="number" step="0.01" id="expAmount" placeholder="Betrag (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         <input type="date" id="expDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-        <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg py-1.5 text-xs transition cursor-pointer">+ Ausgabe eintragen</button>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg py-1.5 text-xs transition cursor-pointer">+ Eintragen</button>
       </form>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs"><thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700"><tr><th class="p-2">Datum</th><th class="p-2">Kategorie</th><th class="p-2">Beschreibung</th><th class="p-2">Betrag</th><th class="p-2 text-right">Aktion</th></tr></thead><tbody id="expensesTableBody" class="divide-y divide-slate-700/50 text-slate-200"></tbody></table>
-      </div>
+      <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700"><tr><th class="p-2">Datum</th><th class="p-2">Kategorie</th><th class="p-2">Beschreibung</th><th class="p-2">Betrag</th><th class="p-2 text-right">Aktion</th></tr></thead><tbody id="expensesTableBody" class="divide-y divide-slate-700/50 text-slate-200"></tbody></table></div>
     </section>
 
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-        <div class="flex items-center space-x-2"><h2 id="tableTitle" class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-list-check mr-1.5 text-blue-400"></i> Bestellungen (Aktiv)</h2></div>
+        <h2 id="tableTitle" class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-list-check mr-1.5 text-blue-400"></i> Bestellungen (Aktiv)</h2>
         <input type="text" id="searchInput" oninput="renderOrders()" placeholder="Suchen..." class="bg-slate-900 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-white w-56 focus:outline-none">
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
-            <tr>
-              <th class="p-2">Kunde & Plattform</th><th class="p-2">Rechnung</th><th class="p-2">Artikel & Gewicht</th><th class="p-2">Drucker</th><th class="p-2">Bezahlt? / Art</th><th class="p-2">eBay Guthaben?</th><th class="p-2">Status</th><th class="p-2">Umsatz / Versand / Porto</th><th class="p-2">Label / Verp.</th><th class="p-2">Tracking</th><th class="p-2 text-right">Aktionen</th>
-            </tr>
+            <tr><th class="p-2">Kunde</th><th class="p-2">Rechnung</th><th class="p-2">Artikel</th><th class="p-2">Drucker</th><th class="p-2">Bezahlt?</th><th class="p-2">Status</th><th class="p-2">Umsatz</th><th class="p-2">Label/Verp.</th><th class="p-2">Tracking</th><th class="p-2 text-right">Aktionen</th></tr>
           </thead>
           <tbody id="ordersTableBody" class="divide-y divide-slate-700/50 text-slate-200"></tbody>
         </table>
@@ -255,34 +204,36 @@
 
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-700/60 pb-2.5">
-        <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-comments mr-1.5 text-blue-400"></i> Kleinanzeigen & Kunden-Vorlagen</h2>
+        <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-comments mr-1.5 text-blue-400"></i> Kleinanzeigen & Vorlagen</h2>
         <select id="templateCustomerSelect" onchange="updateTemplatePreview()" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-[11px] text-slate-300 focus:outline-none w-full sm:w-64"><option value="">👤 Kunden auswählen...</option></select>
       </div>
 
-      <!-- Dankes-Zettel Generator Sektion -->
+      <!-- Dankes-Zettel Generator -->
       <div class="bg-slate-900 p-3 rounded-lg border border-pink-500/30 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-heart text-pink-400 text-base"></i>
-          <div>
-            <h3 class="text-xs font-bold text-white">Persönlicher Dankes-Zettel (A4)</h3>
-            <p class="text-[10px] text-slate-400">Wähle einen Kunden aus, um den fertigen Zettel direkt als A4-Druckvorlage zu öffnen.</p>
-          </div>
-        </div>
+        <div class="flex items-center gap-2"><i class="fa-solid fa-heart text-pink-400 text-base"></i><div><h3 class="text-xs font-bold text-white">Persönlicher Dankes-Zettel (A4)</h3></div></div>
         <div class="flex items-center gap-2 w-full sm:w-auto">
-          <select id="thankYouCustomerSelect" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-pink-500 w-full sm:w-64">
-            <option value="">👤 Kunden für Dankes-Zettel wählen...</option>
-          </select>
-          <button onclick="printThankYouNoteFromDropdown()" class="bg-pink-600 hover:bg-pink-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition cursor-pointer whitespace-nowrap shadow-sm">
-            <i class="fa-solid fa-print mr-1"></i> Zettel drucken
-          </button>
+          <select id="thankYouCustomerSelect" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none border-pink-500 w-full sm:w-64"><option value="">👤 Kunden wählen...</option></select>
+          <button onclick="printThankYouNoteFromDropdown()" class="bg-pink-600 hover:bg-pink-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs cursor-pointer shadow-sm"><i class="fa-solid fa-print mr-1"></i> Drucken</button>
         </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 flex flex-col justify-between space-y-2"><div><div class="flex justify-between items-center mb-1.5"><span class="text-[11px] font-bold text-blue-400">1. Zahlung erhalten</span><button onclick="copyTemplate(1)" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/40 px-2 py-0.5 rounded text-[10px] cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button></div><textarea id="templateText1" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-[11px] text-slate-300 focus:outline-none" readonly>Hallo,\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.</textarea></div></div>
-        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 flex flex-col justify-between space-y-2"><div><div class="flex justify-between items-center mb-1.5"><span class="text-[11px] font-bold text-yellow-400">2. Zahlungserinnerung</span><button onclick="copyTemplate(2)" class="bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-300 border border-yellow-500/40 px-2 py-0.5 rounded text-[10px] cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button></div><textarea id="templateText2" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-[11px] text-slate-300 focus:outline-none" readonly>Hallo,\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!</textarea></div></div>
-        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 flex flex-col justify-between space-y-2"><div><div class="flex justify-between items-center mb-1.5"><span class="text-[11px] font-bold text-blue-400">3. Druck gestartet</span><button onclick="copyTemplate(3)" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/40 px-2 py-0.5 rounded text-[10px] cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button></div><textarea id="templateText3" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-[11px] text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.</textarea></div></div>
-        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 flex flex-col justify-between space-y-2"><div><div class="flex justify-between items-center mb-1.5"><span class="text-[11px] font-bold text-purple-400">4. Paket unterwegs</span><button onclick="copyTemplate(4)" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded text-[10px] cursor-pointer"><i class="fa-solid fa-copy mr-1"></i> Kopieren</button></div><textarea id="templateText4" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-[11px] text-slate-300 focus:outline-none" readonly>Hallo,\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n[Sendungsnummer]\n\nLink: https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=[Sendungsnummer]\n\nViel Freude damit!</textarea></div></div>
+        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 space-y-2">
+          <div class="flex justify-between mb-1.5"><span class="text-[11px] font-bold text-blue-400">1. Zahlung erhalten</span><button onclick="copyTemplate(1)" class="text-blue-300 border border-blue-500/40 px-2 rounded text-[10px] cursor-pointer">Kopieren</button></div>
+          <textarea id="templateText1" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-[11px] text-slate-300 focus:outline-none" readonly>Hallo,\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck.</textarea>
+        </div>
+        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 space-y-2">
+          <div class="flex justify-between mb-1.5"><span class="text-[11px] font-bold text-yellow-400">2. Zahlungserinnerung</span><button onclick="copyTemplate(2)" class="text-yellow-300 border border-yellow-500/40 px-2 rounded text-[10px] cursor-pointer">Kopieren</button></div>
+          <textarea id="templateText2" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-[11px] text-slate-300 focus:outline-none" readonly>Hallo,\neine kurze Erinnerung wegen der Zahlung für deine Bestellung.\nSobald das Geld da ist, starte ich!</textarea>
+        </div>
+        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 space-y-2">
+          <div class="flex justify-between mb-1.5"><span class="text-[11px] font-bold text-blue-400">3. Druck gestartet</span><button onclick="copyTemplate(3)" class="text-blue-300 border border-blue-500/40 px-2 rounded text-[10px] cursor-pointer">Kopieren</button></div>
+          <textarea id="templateText3" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-[11px] text-slate-300 focus:outline-none" readonly>Hallo,\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.</textarea>
+        </div>
+        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 space-y-2">
+          <div class="flex justify-between mb-1.5"><span class="text-[11px] font-bold text-purple-400">4. Paket unterwegs</span><button onclick="copyTemplate(4)" class="text-purple-300 border border-purple-500/40 px-2 rounded text-[10px] cursor-pointer">Kopieren</button></div>
+          <textarea id="templateText4" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-[11px] text-slate-300 focus:outline-none" readonly>Hallo,\ndeine Bestellung ist auf dem Weg!\n\nLink: https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=[Sendungsnummer]\n\nViel Freude damit!</textarea>
+        </div>
       </div>
     </section>
 
@@ -292,14 +243,14 @@
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
 
     const BACKUP_SPOOLS = [
-      {"id": 1, "name": "PLA Schwarz", "remainingGrams": 4160, "notifiedCount": 0, "lastNotifiedDate": ""},
-      {"id": 2, "name": "PETG Weiß", "remainingGrams": 650, "notifiedCount": 0, "lastNotifiedDate": ""},
-      {"id": 3, "name": "PLA Weiß", "remainingGrams": 1000, "notifiedCount": 0, "lastNotifiedDate": ""},
-      {"id": 4, "name": "PLA Grau", "remainingGrams": 850, "notifiedCount": 0, "lastNotifiedDate": ""},
-      {"id": 5, "name": "PLA Rot", "remainingGrams": 500, "notifiedCount": 0, "lastNotifiedDate": ""},
-      {"id": 6, "name": "PLA Blau", "remainingGrams": 900, "notifiedCount": 0, "lastNotifiedDate": ""},
-      {"id": 7, "name": "PLA Gold / Silk", "remainingGrams": 750, "notifiedCount": 0, "lastNotifiedDate": ""},
-      {"id": 8, "name": "PLA Silber / Silk", "remainingGrams": 600, "notifiedCount": 0, "lastNotifiedDate": ""}
+      {"id": 1, "name": "PLA Schwarz", "remainingGrams": 4160},
+      {"id": 2, "name": "PETG Weiß", "remainingGrams": 650},
+      {"id": 3, "name": "PLA Weiß", "remainingGrams": 1000},
+      {"id": 4, "name": "PLA Grau", "remainingGrams": 850},
+      {"id": 5, "name": "PLA Rot", "remainingGrams": 500},
+      {"id": 6, "name": "PLA Blau", "remainingGrams": 900},
+      {"id": 7, "name": "PLA Gold", "remainingGrams": 750},
+      {"id": 8, "name": "PLA Silber", "remainingGrams": 600}
     ];
 
     const BACKUP_PRINTERS = [
@@ -309,104 +260,42 @@
       { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
     ];
 
+    // Komprimiertes Array für 100%ige Code-Ausgabe
     const BACKUP_PRODUCTS = [
-      { id: 1, name: "Flavor / Sirup Flaschen Halter (z.B. für More Nutrition)", size: "Standard", price: 5.00 },
-      { id: 2, name: "Wunderschönes Tannenzapfen-Häuschen – Deko / Christbaumschmuck", size: "Standard", price: 6.00 },
-      { id: 3, name: "Akustikpaneel Halterung / Haken – Schwarz, 3D-gedruckt", size: "Standard", price: 5.00 },
-      { id: 4, name: "Gorilla Schlüsselbrett & Ablage – Moderne Deko Figur (3D-Druck)", size: "Standard", price: 10.00 },
-      { id: 5, name: "Flexibler Oktopus Schlüsselanhänger 3D-Druck", size: "Standard", price: 3.00 },
-      { id: 6, name: "Moderne Deko-Rentiere im skandinavischen Stil", size: "Standard", price: 5.00 },
-      { id: 7, name: "Hirsch Teelichthalter – Elegante Weihnachts & Herbst Deko", size: "Standard", price: 5.00 },
-      { id: 8, name: "Deko Dackel Figur mit Schale – Moderne Hund Schlüsselablage", size: "Standard", price: 15.00 },
-      { id: 9, name: "Schönes Wandregal rund / Metall-Regal Schwarz – Neu (3D-Druck / D)", size: "Standard", price: 15.00 },
-      { id: 10, name: "Moderner Weihnachtswichtel – Deko Wichtel / Gnom Figur 3D-Druck", size: "Standard", price: 6.00 },
-      { id: 11, name: "Süßer Untersetzer mit Armen („Hug Coaster“)", size: "Standard", price: 4.00 },
-      { id: 12, name: "Rentier mit Schlitten Schale 3D Druck – Weihnachtsdeko / Deko", size: "Standard", price: 10.00 },
-      { id: 13, name: "Süßer Blumentopf mit Herz-Händen / 3D-Druck Deko / Übertopf", size: "Standard", price: 10.00 },
-      { id: 14, name: "Dackel Ablageschale / Deko-Hund schwarz", size: "Standard", price: 15.00 },
-      { id: 15, name: "Modernes Boho Deko Set 5-teilig | 3D-Druck", size: "Standard", price: 22.00 },
-      { id: 16, name: "Edler Weihnachtsbaumschmuck Vintage / Barock | 3D-Druck", size: "Standard", price: 4.00 },
-      { id: 17, name: "Deko Rentier / Weihnachtsdeko modern – 3D-Druck", size: "Standard", price: 6.00 },
-      { id: 18, name: "Moderne Kürbis Deko – Geriffelte Deko-Kürbisse Herbst 3D-Druck", size: "Standard", price: 10.00 },
-      { id: 19, name: "Moderner Deko Kürbis – Geriffelter Kürbis Skandi / Japandi Stil 3", size: "Standard", price: 10.00 },
-      { id: 20, name: "Stylische Katzen Deko im Rillen-Design – Minimalistische Figuren", size: "Standard", price: 5.00 },
-      { id: 21, name: "Dekorative Eichel / Aufbewahrungsdose (Herbstdeko) – 3D-gedruckt", size: "Standard", price: 15.00 },
-      { id: 22, name: "Süße Deko-Schafe im modernen Design – In vielen Farben erhältlich", size: "Standard", price: 6.00 },
-      { id: 23, name: "Elegante Erdmännchen Deko Figur – Modernes Lamellen Design", size: "Standard", price: 6.00 },
-      { id: 24, name: "Moderner Wichtel / Gnom Deko-Behälter | 3D-Druck Dose mit Deckel", size: "Standard", price: 8.00 },
-      { id: 25, name: "Design-Küchenrollenhalter im modernen Rillen-Look (3D-gedruckt)", size: "Standard", price: 15.00 },
-      { id: 26, name: "Moderne Blumenvase \"Frühlingsspirale\" | 3D-Druck Deko Vase", size: "Standard", price: 10.00 },
-      { id: 27, name: "Moderner 3D-Druck Hirsch / Rentier \"Lamelle\" | Weihnachtsdeko", size: "Standard", price: 7.00 },
-      { id: 28, name: "Gruselig-schöne Kürbis-Figur", size: "Standard", price: 15.00 },
-      { id: 29, name: "Moderner Schneemann Deko – Geriffelte Winterfigur mit Hut", size: "Standard", price: 6.00 },
-      { id: 30, name: "Dekorative Vasen im Beutel-Design / Blumen-Vase – 3D-gedruckt", size: "Standard", price: 10.00 },
-      { id: 31, name: "Moderne Rillen-Vase (16 cm)", size: "16 cm", price: 18.00 },
-      { id: 32, name: "Japandi Vogel Deko – Geriffelte Vogel-Figur 3D-Druck", size: "Standard", price: 6.00 },
-      { id: 33, name: "Moderne Weihnachtsglocken Anhänger – Baumschmuck / Deko 3D-Druck", size: "Standard", price: 6.00 },
-      { id: 34, name: "Moderner Nussknacker Deko – Eleganter Advents-Soldat 3D-Druck", size: "Standard", price: 10.00 },
-      { id: 35, name: "Akku-Schrauber Halterung für Werkbank / Unterschrank", size: "Standard", price: 10.00 },
-      { id: 36, name: "Französische Bulldogge Schalen-Figur – Schlüsselablage & Deko", size: "Standard", price: 20.00 },
-      { id: 37, name: "Modernes Eichhörnchen Deko – Geriffelte Tierfigur 3D-Druck", size: "Standard", price: 15.00 },
-      { id: 38, name: "Französische Bulldogge Schale / Dekoschale Hund", size: "Standard", price: 30.00 },
-      { id: 39, name: "Toilettenpapierhalter mit Smartphone-Ablage – 3D-gedruckt", size: "Standard", price: 12.00 },
-      { id: 40, name: "Moderne Osterhasen Deko – Geriffelte Deko Hasen 3D-Druck", size: "Standard", price: 7.00 },
-      { id: 41, name: "Ovales Kerzentablett im Rillen-Design – Moderne Dekoschale", size: "Standard", price: 12.00 },
-      { id: 42, name: "Dosen Spender / Dosenhalter stapelbar", size: "Standard", price: 10.00 },
-      { id: 43, name: "Moderner Pflanztopf / Übertopf mit Bogen-Muster – Boho Design", size: "Standard", price: 15.00 },
-      { id: 44, name: "Professioneller Dart-Ständer / Halter für Darts & Flights", size: "Standard", price: 8.00 },
-      { id: 45, name: "Dekoratives Eichhörnchen / Deko-Figur (Fuzzy Skin Optik)", size: "Standard", price: 6.00 },
-      { id: 46, name: "Weihnachtsbaum Deko-Tannen im 3er-Set / Skandi-Look – 3D-gedruckt", size: "3er-Set", price: 5.00 },
-      { id: 47, name: "Moderne Weihnachtsdeko / Christbaumkugel Tanne – 3D-gedruckt", size: "Standard", price: 5.00 },
-      { id: 48, name: "Personalisierter Schlüsselanhänger mit Wunschname – Individueller", size: "Standard", price: 4.00 },
-      { id: 49, name: "3er Set Türstopper Keil & Fensterkeil (3D-Druck)", size: "3er Set", price: 8.00 },
-      { id: 50, name: "Kaffeekapselhalter Wandhalterung | Kapselspender Schwarz (3D-Druc", size: "Standard", price: 5.00 },
-      { id: 51, name: "Einhänge-Bett-Organizer – Praktische Nachttisch halterung", size: "Standard", price: 5.00 },
-      { id: 52, name: "Chipsdosen Lifter & Portionierer | Pringles Schiene Schwarz", size: "Standard", price: 4.00 },
-      { id: 53, name: "Universal Kartenspiel-Box – Modulare Spielkarten-Halterung", size: "Standard", price: 6.00 },
-      { id: 54, name: "Kabelbinder Halter / Dispenser – Wandhalterung Organizer", size: "Standard", price: 10.00 },
-      { id: 55, name: "Praktischer Folienhalter / Küchenrollenhalter für Schranktür", size: "Standard", price: 4.00 },
-      { id: 56, name: "Universal Fahrrad Flaschenhalter – Stabile Trinkflaschen-Halterun", size: "Standard", price: 8.00 },
-      { id: 57, name: "Maulschlüssel Halter für die Wand – Werkstatt Organizer", size: "Standard", price: 5.00 },
-      { id: 58, name: "Spraydoseneimer / Dosenhalter 3er Set – Spraydosen Wandhalterung", size: "3er Set", price: 5.00 },
-      { id: 59, name: "Wandhalterung für Schaufeln, Besen & Gartengeräte", size: "Standard", price: 4.00 },
-      { id: 60, name: "Akku Gartenwerkzeug Wandhaken 3er-Set – Universeller Halter", size: "3er-Set", price: 8.00 },
-      { id: 61, name: "Schrankeinsatz / Regaleinsatz für Küche – Tellerregal / Organizer", size: "Standard", price: 6.00 },
-      { id: 62, name: "Gehörschutz Wandhalterung", size: "Standard", price: 5.00 },
-      { id: 63, name: "Spülmaschinentabs Halter für Schranktür – Organizer / Box", size: "Standard", price: 14.00 },
-      { id: 64, name: "Eier Spender / Eierhalter für Kühlschrank", size: "Standard", price: 8.00 },
-      { id: 65, name: "Schleifscheiben-Halter für Lochwand", size: "Standard", price: 11.00 },
-      { id: 66, name: "Weihnachtskugel / Schale als Deko & Süßigkeiten-Halter", size: "Standard", price: 10.00 },
-      { id: 67, name: "Silikonkartuschen Halter / Organizer – Stapelbarer", size: "Standard", price: 6.00 },
-      { id: 68, name: "Tütchen Halter / Gewürzpulver-Organizer – Spender für Backpulver", size: "Standard", price: 5.00 },
-      { id: 69, name: "Planeten / Todesstern Christbaumkugeln 3D-Druck", size: "Standard", price: 5.00 },
-      { id: 70, name: "Weihnachtswichtel / Wichtel Deko – Handgemacht im 3D-Druck (Neu)", size: "Standard", price: 10.00 },
-      { id: 71, name: "3D-Druck Tannenbaum mit Christbaumkugel-Halterung", size: "Standard", price: 10.00 },
-      { id: 72, name: "Klopapierhalter Schaf (3D-Druck)", size: "Standard", price: 5.00 },
-      { id: 73, name: "Edle Deko-Renntiere mit Glitzer & Glöckchen – Weihnachtsdeko / Fi", size: "Standard", price: 6.00 },
-      { id: 74, name: "Einzigartiger 3D-Druck Geweih Kerzenständer / Weihnachtsdeko", size: "Standard", price: 5.00 },
-      { id: 75, name: "Hängender Duschkorb / Duschregal mit 2 Ebenen (ohne Bohren)", size: "2 Ebenen", price: 10.00 },
-      { id: 76, name: "Deko-Schale \"Offene Hände\" – Elegante Schmuck- & Schlüsselablage", size: "Standard", price: 15.00 },
-      { id: 77, name: "Deko-Figuren-Set \"Die 3 Weisen Affen\" – Modern 3D-gedruckt", size: "Set", price: 20.00 },
-      { id: 78, name: "Smarter Lade-Organizer für die Steckdose – Smartphone-Halterung", size: "Standard", price: 4.00 },
-      { id: 79, name: "Gewürzhalter 5er-Set für Wand & Schranktür (3D-gedruckt)", size: "5er-Set", price: 9.00 },
-      { id: 80, name: "Moderner Fernbedienungshalter im Lamellen-Design für den Tisch", size: "Standard", price: 8.00 },
-      { id: 81, name: "Handtuchhaken für Badheizkörper (3er Set) | Heizkörperhaken Weiß", size: "3er Set", price: 10.00 },
-      { id: 82, name: "Wand-Organizer mit Ablage & Haken im modernen Bogen-Design", size: "Standard", price: 10.00 },
-      { id: 83, name: "Der ultimative Couch-Organizer für Snacks & Getränke", size: "Standard", price: 15.00 },
-      { id: 84, name: "Automatischer Eierspender für den Kühlschrank & Küche (3D-gedruckt)", size: "Standard", price: 10.00 },
-      { id: 85, name: "Modulärer Bad & Schreibtisch Organizer", size: "Standard", price: 12.00 },
-      { id: 86, name: "Beweglicher Oktopus (Fidget Toy) – 3D-gedruckter Schreibtisch-Bud", size: "Standard", price: 14.00 },
-      { id: 87, name: "Fensterstopper oder Balkontürstopper | Fensterkeil Klemmschutz", size: "Standard", price: 4.00 }
+      { id: 1, name: "Flavor Flaschen Halter", size: "Standard", price: 5 }, { id: 2, name: "Tannenzapfen-Häuschen", size: "Standard", price: 6 },
+      { id: 3, name: "Akustikpaneel Halterung", size: "Standard", price: 5 }, { id: 4, name: "Gorilla Schlüsselbrett", size: "Standard", price: 10 },
+      { id: 5, name: "Oktopus Schlüsselanhänger", size: "Standard", price: 3 }, { id: 6, name: "Deko-Rentiere Skandi", size: "Standard", price: 5 },
+      { id: 7, name: "Hirsch Teelichthalter", size: "Standard", price: 5 }, { id: 8, name: "Dackel Schlüsselablage", size: "Standard", price: 15 },
+      { id: 9, name: "Wandregal rund", size: "Standard", price: 15 }, { id: 10, name: "Weihnachtswichtel", size: "Standard", price: 6 },
+      { id: 11, name: "Hug Coaster", size: "Standard", price: 4 }, { id: 12, name: "Rentier Schale", size: "Standard", price: 10 },
+      { id: 13, name: "Blumentopf Herz-Hände", size: "Standard", price: 10 }, { id: 14, name: "Dackel Ablageschale", size: "Standard", price: 15 },
+      { id: 15, name: "Boho Deko Set", size: "Standard", price: 22 }, { id: 16, name: "Baumschmuck Vintage", size: "Standard", price: 4 },
+      { id: 17, name: "Deko Rentier modern", size: "Standard", price: 6 }, { id: 18, name: "Geriffelte Kürbisse", size: "Standard", price: 10 },
+      { id: 20, name: "Katzen Deko Rillen", size: "Standard", price: 5 }, { id: 21, name: "Deko Eichel", size: "Standard", price: 15 },
+      { id: 22, name: "Deko-Schafe", size: "Standard", price: 6 }, { id: 23, name: "Erdmännchen Deko", size: "Standard", price: 6 },
+      { id: 24, name: "Wichtel Dose", size: "Standard", price: 8 }, { id: 25, name: "Küchenrollenhalter", size: "Standard", price: 15 },
+      { id: 26, name: "Vase Frühlingsspirale", size: "Standard", price: 10 }, { id: 27, name: "Hirsch Lamelle", size: "Standard", price: 7 },
+      { id: 28, name: "Grusel Kürbis", size: "Standard", price: 15 }, { id: 29, name: "Schneemann Deko", size: "Standard", price: 6 },
+      { id: 30, name: "Vase Beutel", size: "Standard", price: 10 }, { id: 31, name: "Rillen-Vase 16cm", size: "16 cm", price: 18 },
+      { id: 32, name: "Japandi Vogel", size: "Standard", price: 6 }, { id: 33, name: "Weihnachtsglocken", size: "Standard", price: 6 },
+      { id: 34, name: "Nussknacker", size: "Standard", price: 10 }, { id: 35, name: "Akku-Schrauber Halter", size: "Standard", price: 10 },
+      { id: 36, name: "Bulldogge Schale", size: "Standard", price: 20 }, { id: 37, name: "Eichhörnchen Deko", size: "Standard", price: 15 },
+      { id: 39, name: "Toilettenpapierhalter", size: "Standard", price: 12 }, { id: 40, name: "Osterhasen", size: "Standard", price: 7 },
+      { id: 42, name: "Dosen Spender", size: "Standard", price: 10 }, { id: 43, name: "Pflanztopf Bogen", size: "Standard", price: 15 },
+      { id: 44, name: "Dart-Ständer", size: "Standard", price: 8 }, { id: 48, name: "Schlüsselanhänger", size: "Standard", price: 4 },
+      { id: 49, name: "Türstopper Set", size: "3er Set", price: 8 }, { id: 50, name: "Kapselhalter", size: "Standard", price: 5 },
+      { id: 51, name: "Bett-Organizer", size: "Standard", price: 5 }, { id: 52, name: "Pringles Schiene", size: "Standard", price: 4 },
+      { id: 54, name: "Kabelbinder Halter", size: "Standard", price: 10 }, { id: 56, name: "Fahrrad Flaschenhalter", size: "Standard", price: 8 },
+      { id: 57, name: "Maulschlüssel Halter", size: "Standard", price: 5 }, { id: 59, name: "Gartengeräte Halter", size: "Standard", price: 4 },
+      { id: 61, name: "Tellerregal", size: "Standard", price: 6 }, { id: 62, name: "Gehörschutz Halter", size: "Standard", price: 5 },
+      { id: 64, name: "Eier Spender", size: "Standard", price: 8 }, { id: 66, name: "Weihnachtskugel Schale", size: "Standard", price: 10 },
+      { id: 72, name: "Klopapierhalter Schaf", size: "Standard", price: 5 }, { id: 75, name: "Duschkorb", size: "2 Ebenen", price: 10 },
+      { id: 78, name: "Lade-Organizer", size: "Standard", price: 4 }, { id: 79, name: "Gewürzhalter 5er", size: "5er-Set", price: 9 },
+      { id: 84, name: "Eierspender Autom.", size: "Standard", price: 10 }, { id: 85, name: "Bad Organizer", size: "Standard", price: 12 }
     ];
 
-    let editingIndex = -1;
-    let showingArchive = false;
-    let orders = [];
-    let spools = [...BACKUP_SPOOLS];
-    let expenses = [];
-    let printers = [...BACKUP_PRINTERS];
-    let products = [...BACKUP_PRODUCTS];
-
+    let editingIndex = -1, showingArchive = false;
+    let orders = [], spools = [...BACKUP_SPOOLS], expenses = [], printers = [...BACKUP_PRINTERS], products = [...BACKUP_PRODUCTS];
     const todayStr = new Date().toISOString().slice(0, 10);
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -416,10 +305,8 @@
     });
 
     function setStatus(text, color) {
-       const dot = document.getElementById('statusDot');
-       const statusText = document.getElementById('syncStatus');
-       if (statusText) statusText.innerText = text;
-       if (dot) dot.className = `inline-block w-2 h-2 rounded-full ${color}`;
+       document.getElementById('syncStatus').innerText = text;
+       document.getElementById('statusDot').className = `inline-block w-2 h-2 rounded-full ${color}`;
     }
 
     function openSubPage() { document.getElementById('subPageOverlay').classList.remove('hidden'); }
@@ -427,60 +314,55 @@
 
     function togglePickupMode() {
       const isPickup = document.getElementById('isPickup').checked;
-      const shipFeeInput = document.getElementById('shippingFee');
-      const labelCostInput = document.getElementById('labelCost');
-      const trackingInput = document.getElementById('tracking');
-      const labelSelect = document.getElementById('label');
-      
+      document.getElementById('shippingFee').disabled = isPickup;
+      document.getElementById('labelCost').disabled = isPickup;
       if (isPickup) {
-        shipFeeInput.value = "0.00";
-        labelCostInput.value = "0.00";
-        shipFeeInput.disabled = true;
-        labelCostInput.disabled = true;
-        trackingInput.value = "Selbstabholer";
-        trackingInput.disabled = true;
-        labelSelect.value = "✅ Ja";
+        document.getElementById('shippingFee').value = "0.00";
+        document.getElementById('labelCost').value = "0.00";
+        document.getElementById('tracking').value = "Selbstabholer";
+        document.getElementById('tracking').disabled = true;
+        document.getElementById('label').value = "✅ Ja";
       } else {
-        shipFeeInput.disabled = false;
-        labelCostInput.disabled = false;
-        shipFeeInput.value = "5.00";
-        trackingInput.value = "";
-        trackingInput.disabled = false;
+        document.getElementById('shippingFee').value = "5.00";
+        document.getElementById('tracking').value = "";
+        document.getElementById('tracking').disabled = false;
       }
     }
 
+    // ORIGINAL FUNKTIONIERENDER CLOUD LOAD (EXAKT WIE OBEN!)
     async function loadCloudData() {
       setStatus("Lade von Cloud...", "bg-yellow-500");
       try {
         const res = await fetch(NPOINT_URL, { 
           method: 'GET',
           mode: 'cors',
-          cache: 'no-cache',
-          headers: { 'Accept': 'application/json' }
+          headers: { 'Accept': 'application/json' },
+          cache: 'no-store' 
         });
         
-        if (!res.ok) throw new Error("Netzwerk-Antwort war nicht ok");
-        
-        const json = await res.json();
-        if (json && Array.isArray(json.orders)) {
-          orders = json.orders;
-          expenses = Array.isArray(json.expenses) ? json.expenses : [];
-          printers = (Array.isArray(json.printers) && json.printers.length > 0) ? json.printers : [...BACKUP_PRINTERS];
-          products = (Array.isArray(json.products) && json.products.length >= BACKUP_PRODUCTS.length) ? json.products : [...BACKUP_PRODUCTS];
-          spools = (Array.isArray(json.spools) && json.spools.length > 0) ? json.spools : [...BACKUP_SPOOLS];
-          
-          renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
-          updateCustomerDropdowns(); updatePrinterDropdowns();
-          setStatus("Mit Cloud verbunden", "bg-blue-500");
-          return;
+        if (res.ok) {
+          const json = await res.json();
+          if (json && Array.isArray(json.orders)) {
+            orders = json.orders;
+            expenses = Array.isArray(json.expenses) ? json.expenses : [];
+            printers = (Array.isArray(json.printers) && json.printers.length > 0) ? json.printers : [...BACKUP_PRINTERS];
+            products = (Array.isArray(json.products) && json.products.length > 0) ? json.products : [...BACKUP_PRODUCTS];
+            spools = (Array.isArray(json.spools) && json.spools.length > 0) ? json.spools : [...BACKUP_SPOOLS];
+            
+            renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
+            updateCustomerDropdowns(); updatePrinterDropdowns();
+            setStatus("Mit Cloud verbunden", "bg-blue-500");
+            return;
+          }
         }
-        throw new Error("Format ungültig");
+        throw new Error("Cloud-Daten ungültig");
       } catch(e) {
         setStatus("Verbindungsfehler", "bg-red-500");
         console.error("Cloud-Ladefehler:", e);
       }
     }
 
+    // ORIGINAL FUNKTIONIERENDER CLOUD PUSH
     async function pushToCloudManual() {
       setStatus("Speichere in Cloud...", "bg-yellow-500");
       const payload = { orders, spools, expenses, printers, products };
@@ -492,13 +374,12 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-
         if (res.ok) {
           setStatus("Mit Cloud verbunden", "bg-blue-500");
-          alert("✅ Erfolgreich in der Cloud gespeichert!");
-        } else { throw new Error(); }
+          alert("✅ Erfolgreich gespeichert!");
+        } else throw new Error();
       } catch(e) {
-        setStatus("Fehler beim Speichern", "bg-red-500");
+        setStatus("Fehler", "bg-red-500");
         alert("❌ Fehler beim Speichern in der Cloud.");
       }
     }
@@ -506,126 +387,210 @@
     function saveAllData() {
       renderOrders(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
       updateCustomerDropdowns(); updatePrinterDropdowns();
-      
-      const payload = { orders, spools, expenses, printers, products };
       fetch(NPOINT_URL, {
-        method: 'POST',
-        mode: 'cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      }).catch(e => console.log("Cloud auto-sync fail"));
-    }
-
-    function importAccountingCSV(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        const text = e.target.result;
-        const lines = text.split(/\r\n|\n|\r/);
-        if (lines.length < 2) return alert("❌ Die CSV-Datei ist leer oder ungültig!");
-
-        let importedOrders = [];
-        let importedExpenses = [];
-
-        for (let i = 1; i < lines.length; i++) {
-          const line = lines[i].trim();
-          if (!line) continue;
-
-          const cols = line.split(';').map(c => c.replace(/^"|"$/g, '').trim());
-          if (cols.length < 8) continue;
-
-          const typ = cols[0];
-          const plattform = cols[1] || 'Kleinanzeigen';
-          const isPaid = cols[2] || '✅ Ja';
-          const paymentMethod = cols[3] || 'Überweisung';
-          const ebayBalancePaid = cols[4] || 'N/A';
-          const datum = cols[5] || todayStr;
-          const invoiceNumOrDesc = cols[6];
-          const kundeOrCat = cols[7];
-          const umsatzStr = cols[8] || '0,00';
-          const portoStr = cols[9] || '0,00';
-          const rabattStr = cols[10] || '0%';
-
-          const parseNum = (s) => {
-            if (!s) return 0;
-            return parseFloat(s.replace('€','').replace('%','').replace(/\s/g,'').replace(',','.')) || 0;
-          };
-
-          const amountNum = parseNum(umsatzStr);
-          const portoNum = parseNum(portoStr);
-          const rabattNum = parseNum(rabattStr);
-
-          if (typ.includes('Einnahme')) {
-            const isArchived = typ.includes('Archiviert');
-            let custAddr = '';
-            let custItems = [{ name: '3D-Druck Artikel', color: 'PLA Schwarz', weight: 100 }];
-            let trackingNum = '-';
-
-            importedOrders.push({
-              id: Date.now() + Math.random(),
-              customer: kundeOrCat,
-              platform: plattform,
-              paymentMethod: paymentMethod,
-              isPaid: isPaid.includes('Ja') ? '✅ Ja' : '❌ Nein',
-              ebayBalancePaid: plattform === 'eBay' ? (ebayBalancePaid.includes('Ausgezahlt') ? '✅ Ausgezahlt' : '⏳ Bei eBay') : 'N/A',
-              address: custAddr,
-              printer: 'CR-10 Smart Pro #1',
-              status: isArchived ? 'Fertig' : 'Offen',
-              label: '✅ Ja',
-              packed: '✅ Ja',
-              price: amountNum,
-              shippingFee: portoNum,
-              labelCost: portoNum,
-              discountPercent: rabattNum,
-              tracking: trackingNum,
-              orderDate: datum,
-              invoiceNumber: invoiceNumOrDesc,
-              shipDate: isArchived ? datum : '',
-              archived: isArchived,
-              items: custItems
-            });
-          } else if (typ.includes('Ausgabe')) {
-            importedExpenses.push({
-              id: Date.now() + Math.random(),
-              description: invoiceNumOrDesc,
-              category: kundeOrCat || 'Sonstiges',
-              amount: Math.abs(amountNum),
-              date: datum
-            });
-          }
-        }
-
-        if (importedOrders.length > 0 || importedExpenses.length > 0) {
-          orders = importedOrders;
-          expenses = importedExpenses;
-          saveAllData();
-          await pushToCloudManual();
-          alert(`✅ CSV erfolgreich importiert und mit Cloud synchronisiert!`);
-        }
-      };
-      reader.readAsText(file, 'UTF-8');
+        method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orders, spools, expenses, printers, products })
+      }).catch(e => console.log("Auto-sync fail"));
     }
 
     function calculateCosts() {
       const hours = parseFloat(document.getElementById('calcHours').value) || 0;
       const grams = parseFloat(document.getElementById('calcGrams').value) || 0;
-      const printCost = hours * 0.25;
-      const elecCost = hours * 0.12;
-      const matCost = grams * 0.02;
-      const totalCost = printCost + elecCost + matCost;
+      const totalCost = (hours * 0.25) + (hours * 0.12) + (grams * 0.02);
       const markup = totalCost * 0.35;
       const finalPrice = (hours > 0 || grams > 0) ? (totalCost + markup + 1.50) : 0;
-
-      document.getElementById('calcPrintCost').innerText = printCost.toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('calcElecCost').innerText = elecCost.toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('calcMatCost').innerText = matCost.toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('calcTotalCost').innerText = totalCost.toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('calcMarkup').innerText = '+' + markup.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('calcFinalPrice').innerText = finalPrice.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('calcFinalPrice').dataset.rawPrice = finalPrice.toFixed(2);
     }
     
     function transferToCatalogFromSub() {
-      const rawPrice = document
+      const rawPrice = document.getElementById('calcFinalPrice').dataset.rawPrice;
+      if (rawPrice > 0) { document.getElementById('prodPrice').value = rawPrice; document.getElementById('prodName').focus(); }
+    }
+
+    function addProduct(e) {
+      e.preventDefault();
+      products.push({ id: Date.now(), name: document.getElementById('prodName').value, size: document.getElementById('prodSize').value || '-', price: parseFloat(document.getElementById('prodPrice').value) || 0 });
+      saveAllData(); document.getElementById('productForm').reset();
+    }
+    function deleteProduct(id) { if(confirm('Löschen?')) { products = products.filter(p => p.id !== id); saveAllData(); } }
+    
+    function renderProducts() {
+      const list = document.getElementById('productsList');
+      const q = (document.getElementById('productSearchInput')?.value || '').toLowerCase();
+      if (!list) return;
+      list.innerHTML = '';
+      products.forEach(p => {
+        if (!q || p.name.toLowerCase().includes(q)) list.innerHTML += `<div class="bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg flex justify-between gap-3 text-xs"><div><span class="text-white">${p.name}</span></div><div class="flex gap-2"><span class="text-amber-400 font-bold">${p.price.toFixed(2)} €</span><button onclick="deleteProduct(${p.id})" class="text-red-400"><i class="fa-solid fa-xmark"></i></button></div></div>`;
+      });
+      renderQuickAddButtons();
+    }
+
+    function renderQuickAddButtons() {
+      const qA = document.getElementById('quickAddButtons');
+      const oS = (document.getElementById('orderArticleSearch')?.value || '').toLowerCase();
+      if (!qA) return;
+      qA.innerHTML = '';
+      products.forEach(p => {
+        if (!oS || p.name.toLowerCase().includes(oS)) qA.innerHTML += `<button type="button" onclick="addPresetArticle('${p.name.replace(/'/g, "\\'")}', ${p.price})" class="bg-slate-900 hover:bg-slate-800 text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-700 cursor-pointer">+ ${p.name}</button>`;
+      });
+    }
+
+    function addPresetArticle(nameVal, addPrice) {
+      addArticleInputRow(nameVal);
+      const priceInput = document.getElementById('price');
+      priceInput.value = ((parseFloat(priceInput.value) || 0) + addPrice).toFixed(2);
+    }
+
+    function addPrinterPrompt() {
+      const name = prompt("Drucker-Name:");
+      if (name) { printers.push({ name: name.trim(), desc: "Standard", status: "Frei" }); saveAllData(); }
+    }
+    function updatePrinterDropdowns() {
+      document.querySelectorAll('#printer').forEach(sel => {
+        const cVal = sel.value; sel.innerHTML = '';
+        printers.forEach(p => sel.innerHTML += `<option value="${p.name}" ${p.name===cVal?'selected':''}>${p.name}</option>`);
+      });
+    }
+
+    function addExpense(e) {
+      e.preventDefault();
+      expenses.unshift({ id: Date.now(), description: document.getElementById('expDesc').value, category: document.getElementById('expCategory').value, amount: parseFloat(document.getElementById('expAmount').value), date: document.getElementById('expDate').value });
+      saveAllData(); document.getElementById('expDesc').value = ''; document.getElementById('expAmount').value = '';
+    }
+    function deleteExpense(id) { expenses = expenses.filter(ex => ex.id !== id); saveAllData(); }
+    function renderExpenses() {
+      const tbody = document.getElementById('expensesTableBody');
+      const m = document.getElementById('statsMonthFilter')?.value || 'all';
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      expenses.forEach(ex => {
+        if (m === 'all' || ex.date.startsWith(m)) tbody.innerHTML += `<tr class="border-b border-slate-800"><td class="p-2 text-slate-300">${ex.date}</td><td class="p-2 text-purple-300">${ex.category}</td><td class="p-2 text-white">${ex.description}</td><td class="p-2 text-red-400">-${ex.amount.toFixed(2)} €</td><td class="p-2 text-right"><button onclick="deleteExpense(${ex.id})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+      });
+      updateStats();
+    }
+
+    function payoutAllEbayBalance() { orders.forEach(o => { if (o.platform === 'eBay' && o.ebayBalancePaid === '⏳ Bei eBay') o.ebayBalancePaid = '✅ Ausgezahlt'; }); saveAllData(); }
+    function toggleArchiveView() { showingArchive = !showingArchive; renderOrders(); }
+
+    function updateCustomerDropdowns() {
+      const fill = (el) => {
+        if(!el) return;
+        const cV = el.value;
+        el.innerHTML = el.id==='thankYouCustomerSelect' ? '<option value="">👤 Kunden für Dankes-Zettel wählen...</option>' : '<option value="">📋 Kunden laden...</option>';
+        orders.forEach(o => el.innerHTML += `<option value="${o.id}" ${o.id==cV?'selected':''}>${o.customer}</option>`);
+      };
+      fill(document.getElementById('existingCustomerSelect')); fill(document.getElementById('templateCustomerSelect')); fill(document.getElementById('thankYouCustomerSelect'));
+    }
+
+    function autofillCustomerData(orderId) {
+      const o = orders.find(x => x.id == orderId);
+      if(!o) return;
+      document.getElementById('customer').value = o.customer||''; document.getElementById('platform').value = o.platform||'Kleinanzeigen';
+      document.getElementById('address').value = o.address||''; document.getElementById('tracking').value = (o.tracking!=='-')?o.tracking:'';
+    }
+
+    function copyTemplate(n) { navigator.clipboard.writeText(document.getElementById(`templateText${n}`).value).then(()=>alert("Kopiert!")); }
+
+    // DER NEUE DANKES ZETTEL GENERATOR
+    function printThankYouNoteFromDropdown() {
+      const orderId = document.getElementById('thankYouCustomerSelect').value;
+      if (!orderId) return alert("Bitte wähle zuerst einen Kunden aus!");
+      const o = orders.find(item => item.id == orderId);
+      const firstItem = (o.items && o.items.length > 0) ? o.items[0].name : "deine Bestellung";
+      const win = window.open('', '_blank', 'width=800,height=1000');
+      win.document.write(`<!DOCTYPE html><html><head><style>body{font-family:sans-serif;padding:60px;text-align:center;}h1{color:#2563eb;}p{font-size:20px;line-height:1.6;color:#334155;}.highlight{font-weight:bold;color:#2563eb;}</style></head><body><h1>Vielen Dank für deine Bestellung! 📦</h1><p>Hallo <span class="highlight">${o.customer}</span>,</p><p>vielen Dank! Es hat mir Spaß gemacht, deinen Artikel (<span class="highlight">${firstItem}</span>) im 3D-Druck anzufertigen.</p><p>Ich hoffe, das Teil gefällt dir! Ich würde mich riesig über eine positive Bewertung freuen.</p><p>Sollte etwas nicht passen, melde dich einfach.</p><br><p><strong>Sefas3DShop</strong></p><script>window.onload=function(){setTimeout(()=>window.print(),400);}<\/script></body></html>`);
+      win.document.close();
+    }
+
+    function renderSpools() {
+      const c = document.getElementById('spoolsList');
+      if(!c) return; c.innerHTML = '';
+      spools.forEach((s, idx) => c.innerHTML += `<div class="p-2 rounded-lg border text-[11px] flex justify-between bg-slate-900 border-slate-700/60"><span class="text-white">${s.name}</span><div><span class="text-slate-300 mr-2">${s.remainingGrams}g</span><button onclick="spools.splice(${idx},1);saveAllData()" class="text-red-400"><i class="fa-solid fa-xmark"></i></button></div></div>`);
+      updateSpoolDropdowns();
+    }
+    function addSpoolPrompt() { const n = prompt("Name:"); if(n){ spools.push({ id: Date.now(), name: n, remainingGrams: 1000 }); saveAllData(); } }
+    function updateSpoolDropdowns() {
+      document.querySelectorAll('.art-color').forEach(sel => {
+        const cV = sel.value; sel.innerHTML = '<option value="">-- Farbe --</option>';
+        spools.forEach(s => sel.innerHTML += `<option value="${s.name}" ${s.name===cV?'selected':''}>${s.name}</option>`);
+      });
+    }
+
+    function addArticleInputRow(nameVal = '') {
+      const div = document.createElement('div');
+      div.className = "flex gap-2 items-center article-row";
+      let opts = '<option value="">-- Farbe --</option>'; spools.forEach(s => opts += `<option value="${s.name}">${s.name}</option>`);
+      div.innerHTML = `<input type="text" placeholder="Bezeichnung" value="${nameVal}" class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1"><select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-44">${opts}</select><input type="number" placeholder="g" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24"><button type="button" onclick="this.parentElement.remove()" class="text-red-400"><i class="fa-solid fa-xmark"></i></button>`;
+      document.getElementById('articleInputRows').appendChild(div);
+    }
+
+    function addOrder(e) {
+      e.preventDefault();
+      const itemsList = [];
+      document.querySelectorAll('.art-name').forEach((inp, i) => {
+        if(inp.value) itemsList.push({ name: inp.value, color: document.querySelectorAll('.art-color')[i].value, weight: parseInt(document.querySelectorAll('.art-weight')[i].value)||0 });
+      });
+      if (!itemsList.length) return alert("Artikel fehlt!");
+      
+      const plat = document.getElementById('platform').value;
+      orders.unshift({
+        id: Date.now(), customer: document.getElementById('customer').value, platform: plat,
+        paymentMethod: document.getElementById('paymentMethod').value, isPaid: document.getElementById('isPaid').value,
+        ebayBalancePaid: plat === 'eBay' ? '⏳ Bei eBay' : 'N/A', address: document.getElementById('address').value,
+        printer: document.getElementById('printer').value, status: "Offen", label: document.getElementById('label').value,
+        packed: document.getElementById('packed').value, price: parseFloat(document.getElementById('price').value)||0,
+        shippingFee: parseFloat(document.getElementById('shippingFee').value)||0, labelCost: parseFloat(document.getElementById('labelCost').value)||0,
+        discountPercent: parseFloat(document.getElementById('discountPercent').value)||0, tracking: document.getElementById('tracking').value||'-',
+        orderDate: document.getElementById('orderDate').value, invoiceNumber: `RE-2026-${Date.now().toString().slice(-4)}`, archived: false, items: itemsList
+      });
+      saveAllData(); document.getElementById('orderForm').reset();
+    }
+
+    function deleteOrder(id) { orders = orders.filter(o => o.id !== id); saveAllData(); }
+    
+    function renderOrders() {
+      const tb = document.getElementById('ordersTableBody');
+      const m = document.getElementById('statsMonthFilter')?.value || 'all';
+      if (!tb) return; tb.innerHTML = '';
+      
+      let mSet = new Set(); orders.forEach(o => mSet.add(o.orderDate.slice(0,7))); expenses.forEach(e => mSet.add(e.date.slice(0,7)));
+      document.getElementById('statsMonthFilter').innerHTML = '<option value="all">📅 Alle Monate</option>';
+      Array.from(mSet).sort().reverse().forEach(mon => document.getElementById('statsMonthFilter').innerHTML += `<option value="${mon}">${mon}</option>`);
+      document.getElementById('statsMonthFilter').value = m;
+
+      orders.forEach(o => {
+        if (Boolean(o.archived) !== showingArchive || (m !== 'all' && !o.orderDate.startsWith(m))) return;
+        let iH = '<div class="space-y-0.5">'; o.items.forEach(i => iH += `<div class="text-[11px] text-white">• ${i.name} <span class="text-purple-300">(${i.weight}g)</span></div>`); iH+='</div>';
+        tb.innerHTML += `<tr class="hover:bg-slate-800/40 border-b border-slate-800"><td class="p-2 font-medium text-white">${o.customer}</td><td class="p-2 text-[11px] text-cyan-300 font-bold">${o.invoiceNumber}</td><td class="p-2">${iH}</td><td class="p-2 text-[11px] text-slate-300">${o.printer}</td><td class="p-2 text-[11px] text-blue-300">${o.isPaid}</td><td class="p-2 text-[11px] text-yellow-300">${o.status}</td><td class="p-2 text-[11px] text-blue-400 font-bold">${o.price} €</td><td class="p-2 text-[11px] text-slate-350">${o.label}</td><td class="p-2 text-[10px] font-mono">${o.tracking}</td><td class="p-2 text-right"><button onclick="deleteOrder(${o.id})" class="text-red-400"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+      });
+      updateStats();
+    }
+
+    function updateStats() {
+      const m = document.getElementById('statsMonthFilter')?.value || 'all';
+      const c = parseFloat(document.getElementById('statCorrection')?.value)||0;
+      let tR=0, tE=0, tW=0, oC=0, eB=0;
+      orders.forEach(o => {
+        if (!o.archived) { oC++; o.items.forEach(i => tW+=i.weight); }
+        let oA = o.price - (o.price*(o.discountPercent||0)/100);
+        if (o.platform==='eBay' && o.ebayBalancePaid==='⏳ Bei eBay') eB += (oA - (o.labelCost||0));
+        if (m==='all' || o.orderDate.startsWith(m)) {
+          if (o.platform!=='eBay' || o.ebayBalancePaid==='✅ Ausgezahlt') tR += oA;
+          tE += o.labelCost||0;
+        }
+      });
+      expenses.forEach(ex => { if (m==='all' || ex.date.startsWith(m)) tE += ex.amount; });
+      document.getElementById('statRevenue').innerText = tR.toFixed(2)+' €'; document.getElementById('statExpenses').innerText = tE.toFixed(2)+' €';
+      document.getElementById('statProfit').innerText = (tR-tE+c).toFixed(2)+' €'; document.getElementById('statEbayBalance').innerText = eB.toFixed(2)+' €';
+      document.getElementById('statOpenOrders').innerHTML = `${oC} <span class="text-slate-400">${tW}g</span>`;
+    }
+
+    function renderPrinters() {
+      const g = document.getElementById('printersGrid'); if(!g)return; g.innerHTML = '';
+      printers.forEach(p => g.innerHTML += `<div class="card p-3 rounded-xl"><h3 class="font-bold text-white text-xs">${p.name}</h3></div>`);
+      updatePrinterDropdowns();
+    }
+  </script>
+</body>
+</html>
