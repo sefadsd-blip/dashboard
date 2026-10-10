@@ -533,7 +533,7 @@
         </tr>`;
       }
 
-      const sepsPayloadStr = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
+      const sepsPayloadStr = ["BCD", "002", "1", "SCT", "REVOLUT", "Sefa Demir", "DE68REVO30000782352695", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
       const logoSvg = `<svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
 
       const qrId = index !== null ? `batchSepaQr_${index}` : 'sepaQrCodeTarget';
@@ -593,7 +593,7 @@
             <div class="payment-info">
               <h3>Zahlungsinformationen</h3>
               <p>Bitte senden Sie den Gesamtbetrag per Überweisung oder via PayPal:</p>
-              <p><strong>IBAN:</strong> DE20 1001 0178 0592 6798 08 (C24 Bank)</p>
+              <p><strong>IBAN:</strong> DE68 REVO 3000 0782 3526 95 (Revolut)</p>
               <p><strong>PayPal:</strong> sefad.sd@gmail.com</p>
             </div>
             <div class="qr-box" id="${qrId}" ${qrData}></div>
@@ -609,7 +609,7 @@
 
     function printInvoice(idx) {
       const o = orders[idx];
-      const sepsPayloadStr = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + (Math.max(0, o.price - (o.price * (parseFloat(o.discountPercent) || 0) / 100))).toFixed(2), "", "", "Rechnung " + generateInvoiceNumberForExisting(o)].join("\n");
+      const sepsPayloadStr = ["BCD", "002", "1", "SCT", "REVOLUT", "Sefa Demir", "DE68REVO30000782352695", "EUR" + (Math.max(0, o.price - (o.price * (parseFloat(o.discountPercent) || 0) / 100))).toFixed(2), "", "", "Rechnung " + generateInvoiceNumberForExisting(o)].join("\n");
       
       const printWin = window.open('', '_blank', 'width=850,height=1000');
       printWin.document.write(`
