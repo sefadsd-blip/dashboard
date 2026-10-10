@@ -430,48 +430,57 @@
 
     function getInvoiceCSS() {
       return `
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
         @page { size: A4; margin: 0; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fff; color: #000; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        .page { padding: 15mm 20mm; position: relative; max-width: 800px; margin: 0 auto; background: #fff; }
-        .header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 15px; border-bottom: 2px solid #000; margin-bottom: 25px; }
-        .brand { display: flex; align-items: center; gap: 15px; }
-        .brand h1 { font-size: 26px; font-weight: 800; color: #000; margin: 0 0 2px 0; letter-spacing: -0.5px; text-transform: uppercase; }
-        .brand p { font-size: 10px; color: #333; margin: 0; font-weight: 500; }
-        .invoice-title h2 { font-size: 28px; font-weight: 800; color: #000; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
-        .info-grid { display: flex; justify-content: space-between; margin-bottom: 30px; gap: 20px; }
-        .customer-box { padding: 10px 0; flex: 1; }
-        .customer-box h3 { font-size: 10px; text-transform: uppercase; color: #555; font-weight: 700; margin: 0 0 8px 0; letter-spacing: 0.5px; border-bottom: 1px solid #000; padding-bottom: 4px; display: inline-block;}
-        .customer-box p { font-size: 12px; color: #000; margin: 0; line-height: 1.5; font-weight: 600; }
+        body { font-family: 'Montserrat', sans-serif; background: #fff; color: #111; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .page { padding: 25mm 20mm; position: relative; max-width: 800px; margin: 0 auto; background: #fff; }
+        
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #111; padding-bottom: 20px; margin-bottom: 30px; }
+        .brand { display: flex; align-items: flex-start; gap: 15px; }
+        .brand-icon { width: 36px; height: 36px; margin-top: 4px; }
+        .brand-text h1 { font-size: 24px; font-weight: 800; color: #111; margin: 0 0 4px 0; letter-spacing: 0.5px; line-height: 1.1; text-transform: uppercase; }
+        .brand-text p { font-size: 9px; color: #444; margin: 0; font-weight: 400; line-height: 1.4; }
+        .invoice-title h2 { font-size: 28px; font-weight: 800; color: #111; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .info-grid { display: flex; justify-content: space-between; margin-bottom: 40px; }
+        .customer-box { width: 45%; }
+        .customer-box h3 { font-size: 10px; text-transform: uppercase; color: #111; font-weight: 700; margin: 0 0 10px 0; letter-spacing: 1px; border-bottom: 1px solid #111; padding-bottom: 4px; display: inline-block;}
+        .customer-box p { font-size: 13px; color: #111; margin: 0; line-height: 1.5; font-weight: 700; }
         .customer-box p span { font-weight: 400; color: #333; display: block; margin-top: 2px; white-space: pre-line; }
-        .meta-box { flex: 0.7; }
+        
+        .meta-box { width: 45%; }
         .meta-table { width: 100%; border-collapse: collapse; }
-        .meta-table td { padding: 6px 0; border-bottom: 1px dotted #999; font-size: 11px; color: #000; }
-        .meta-table td:first-child { font-weight: 600; color: #333; }
+        .meta-table td { padding: 6px 0; font-size: 11px; color: #111; border-bottom: 1px solid #eee; }
+        .meta-table td:first-child { font-weight: 600; color: #555; width: 40%; }
         .meta-table td:last-child { font-weight: 700; text-align: right; }
-        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        .items-table th { border-top: 2px solid #000; border-bottom: 2px solid #000; color: #000; padding: 10px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; text-align: left; }
-        .items-table th:last-child { text-align: right; }
-        .items-table td { padding: 10px 10px; border-bottom: 1px solid #ddd; font-size: 11px; color: #000; }
-        .items-table td.qty { text-align: center; font-weight: 600; }
-        .items-table td.price { text-align: right; color: #333; }
-        .items-table td.total { text-align: right; font-weight: 700; }
+        
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+        .items-table th { border-top: 2px solid #111; border-bottom: 1px solid #111; color: #111; padding: 12px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; text-align: left; }
+        .items-table th.center { text-align: center; }
+        .items-table th.right { text-align: right; }
+        .items-table td { padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 11px; color: #111; vertical-align: top; line-height: 1.4; }
+        .items-table td strong { font-weight: 700; display: block; margin-bottom: 2px; font-size: 12px; }
+        .items-table td.qty { text-align: center; font-weight: 700; white-space: nowrap; }
+        .items-table td.price { text-align: right; color: #111; white-space: nowrap; }
+        .items-table td.total { text-align: right; font-weight: 700; white-space: nowrap; }
+        
         .totals-wrapper { display: flex; justify-content: flex-end; margin-bottom: 40px; }
-        .totals-box { width: 280px; }
-        .total-row { display: flex; justify-content: space-between; padding: 6px 10px; font-size: 11px; font-weight: 600; }
-        .total-row.final { border-top: 2px solid #000; border-bottom: 2px solid #000; margin-top: 5px; align-items: center; padding: 10px; }
-        .total-row.final span:first-child { font-size: 13px; font-weight: 700; text-transform: uppercase; }
+        .totals-box { width: 300px; }
+        .total-row { display: flex; justify-content: space-between; padding: 8px 10px; font-size: 11px; font-weight: 600; }
+        .total-row.final { border-top: 2px solid #111; border-bottom: 2px solid #111; margin-top: 5px; align-items: center; padding: 12px 10px; }
+        .total-row.final span:first-child { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
         .total-row.final span:last-child { font-weight: 800; font-size: 16px; }
-        .payment-block { display: flex; justify-content: space-between; align-items: stretch; border: 1px solid #000; border-radius: 0; padding: 15px; margin-bottom: 30px; }
-        .payment-info { flex: 1; }
-        .payment-info h3 { margin: 0 0 10px 0; font-size: 12px; color: #000; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-        .payment-info p { margin: 0 0 4px 0; font-size: 11px; color: #000; }
-        .payment-info p strong { font-weight: 700; }
-        .payment-status { display: inline-block; padding: 4px 10px; border: 1px solid #000; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-top: 10px; background: #eee; color: #000; }
-        .status-unpaid { background: #fff; border: 1px dashed #000; }
-        .qr-box { padding: 5px; border: 1px solid #000; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 85px; height: 85px; background: #fff; }
-        .footer { text-align: center; border-top: 1px solid #000; padding-top: 15px; font-size: 10px; color: #555; }
-        .highlight-row td { font-style: italic; background: #f9f9f9; }
+        
+        .payment-block { display: flex; justify-content: space-between; align-items: flex-start; border: 1px solid #111; padding: 20px; margin-bottom: 30px; }
+        .payment-info { flex: 1; padding-right: 20px; }
+        .payment-info h3 { margin: 0 0 12px 0; font-size: 12px; color: #111; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .payment-info p { margin: 0 0 6px 0; font-size: 11px; color: #333; line-height: 1.4; }
+        .payment-info p strong { font-weight: 700; color: #111; display: inline-block; width: 50px; }
+        
+        .qr-box { padding: 5px; border: 1px solid #111; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 90px; height: 90px; background: #fff; flex-shrink: 0; }
+        
+        .footer { text-align: center; border-top: 1px solid #111; padding-top: 20px; font-size: 9px; color: #666; line-height: 1.5; }
+        .highlight-row td { font-style: italic; background: #fafafa; }
       `;
     }
 
@@ -491,9 +500,9 @@
       if (o.items && o.items.length > 0) {
         o.items.forEach(i => {
           let q = i.qty || 1;
-          let colorText = i.color ? `<span style="color: #666; font-weight: 400; margin-left: 4px;">(${i.color})</span>` : '';
+          let colorText = i.color ? `<span style="color: #777; font-weight: 400;">(${i.color})</span>` : '';
           itemsRows += `<tr>
-            <td><strong style="font-weight: 600;">${i.name}</strong>${colorText}</td>
+            <td><strong>${i.name}</strong>${colorText}</td>
             <td class="qty">${q} Stk.</td>
             <td class="price">—</td>
             <td class="total">—</td>
@@ -503,15 +512,15 @@
       
       if (isPickup) {
         itemsRows += `<tr class="highlight-row">
-          <td><strong style="font-weight: 600;">Selbstabholung vor Ort</strong><br><span style="font-size: 10px; font-weight: 400;">Neuer Weg 4, 32369 Rahden</span></td>
+          <td><strong>Selbstabholung vor Ort</strong><span style="font-size: 10px; font-weight: 400; color: #777;">Neuer Weg 4, 32369 Rahden</span></td>
           <td class="qty">1 Stk.</td>
           <td class="price">0,00 €</td>
           <td class="total">0,00 €</td>
         </tr>`;
       } else if (displayShippingCost > 0) {
         itemsRows += `<tr>
-          <td><strong style="font-weight: 600; color: #333;">Versandkosten & Verpackung</strong></td>
-          <td class="qty" style="color: #333;">1 Stk.</td>
+          <td><strong>Versandkosten & Verpackung</strong></td>
+          <td class="qty">1 Stk.</td>
           <td class="price">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
           <td class="total">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
         </tr>`;
@@ -519,7 +528,7 @@
 
       if (dPerc > 0) {
         itemsRows += `<tr class="highlight-row">
-          <td><strong style="font-weight: 600;">Sondernachlass / Rabatt (${dPerc}%)</strong></td>
+          <td><strong>Sondernachlass / Rabatt (${dPerc}%)</strong></td>
           <td class="qty">1 Stk.</td>
           <td class="price">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
           <td class="total">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
@@ -527,12 +536,9 @@
       }
 
       const sepsPayloadStr = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
-      const logoSvg = `<svg width="46" height="46" viewBox="0 0 100 100" fill="currentColor"><polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#000" stroke-width="8"/><polyline points="50,10 50,50 90,30" fill="none" stroke="#000" stroke-width="6"/><polyline points="50,50 10,30" fill="none" stroke="#000" stroke-width="6"/><polyline points="50,50 50,90" fill="none" stroke="#000" stroke-width="6"/></svg>`;
+      // Neues, minimalistisches Würfel-Icon
+      const logoSvg = `<svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
 
-      const isPaid = o.isPaid === '✅ Ja';
-      const statusClass = isPaid ? 'status-paid' : 'status-unpaid';
-      const statusText = isPaid ? 'BEZAHLT' : 'OFFENER BETRAG';
-      
       const qrId = index !== null ? `batchSepaQr_${index}` : 'sepaQrCodeTarget';
       const qrData = index !== null ? `data-payload="${encodeURIComponent(sepsPayloadStr)}"` : '';
 
@@ -541,9 +547,9 @@
           <div class="header">
             <div class="brand">
               ${logoSvg}
-              <div>
-                <h1>SEFAS 3D SHOP</h1>
-                <p>Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden | St.-Nr.: 52063271982</p>
+              <div class="brand-text">
+                <h1>SEFAS 3D<br>SHOP</h1>
+                <p>Inh. Sefa Demir | Neuer Weg 4 |<br>32369 Rahden | St.-Nr.:<br>52063271982</p>
               </div>
             </div>
             <div class="invoice-title">
@@ -558,9 +564,9 @@
             </div>
             <div class="meta-box">
               <table class="meta-table">
-                <tr><td>Rechnungs-Nr.</td><td>${invoiceNumber}</td></tr>
-                <tr><td>Rechnungsdatum</td><td>${invoiceDate}</td></tr>
-                <tr><td>Zahlungsart</td><td>${o.paymentMethod || 'Überweisung'}</td></tr>
+                <tr><td>Rechnungs-Nr.</td><td><strong>${invoiceNumber}</strong></td></tr>
+                <tr><td>Rechnungsdatum</td><td><strong>${invoiceDate}</strong></td></tr>
+                <tr><td>Zahlungsart</td><td><strong>${o.paymentMethod || 'Überweisung'}</strong></td></tr>
               </table>
             </div>
           </div>
@@ -569,9 +575,9 @@
             <thead>
               <tr>
                 <th style="width: 50%;">Position / Beschreibung</th>
-                <th style="width: 15%; text-align: center;">Menge</th>
-                <th style="width: 15%; text-align: right;">Einzelpreis</th>
-                <th style="width: 20%; text-align: right;">Gesamt</th>
+                <th style="width: 15%;" class="center">Menge</th>
+                <th style="width: 15%;" class="right">Einzelpreis</th>
+                <th style="width: 20%;" class="right">Gesamt</th>
               </tr>
             </thead>
             <tbody>
@@ -589,10 +595,9 @@
           <div class="payment-block">
             <div class="payment-info">
               <h3>Zahlungsinformationen</h3>
-              <p>Bitte sende den Gesamtbetrag per Überweisung oder via PayPal:</p>
+              <p>Bitte senden Sie den Gesamtbetrag per Überweisung oder via PayPal:</p>
               <p><strong>IBAN:</strong> DE20 1001 0178 0592 6798 08 (C24 Bank)</p>
               <p><strong>PayPal:</strong> sefad.sd@gmail.com</p>
-              <div class="payment-status ${statusClass}">${statusText} (${o.paymentMethod || 'Überweisung'})</div>
             </div>
             <div class="qr-box" id="${qrId}" ${qrData}></div>
           </div>
@@ -623,7 +628,7 @@
           <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
           <script>
             window.onload = function() {
-              new QRCode(document.getElementById('sepaQrCodeTarget'), { text: \`${sepsPayloadStr}\`, width: 65, height: 65, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+              new QRCode(document.getElementById('sepaQrCodeTarget'), { text: \`${sepsPayloadStr}\`, width: 75, height: 75, colorDark: "#111111", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
               setTimeout(() => { window.print(); }, 500);
             };
           <\/script>
@@ -653,7 +658,7 @@
             window.onload = function() {
               document.querySelectorAll('[id^="batchSepaQr_"]').forEach(el => {
                 let payload = decodeURIComponent(el.getAttribute('data-payload'));
-                new QRCode(el, { text: payload, width: 65, height: 65, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+                new QRCode(el, { text: payload, width: 75, height: 75, colorDark: "#111111", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
               });
               setTimeout(() => { window.print(); }, 800);
             };
