@@ -211,6 +211,7 @@
 
           <div id="articleInputRows" class="space-y-1.5">
             <div class="flex gap-2 items-center article-row">
+              <input type="number" placeholder="Menge" value="1" class="art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-20 focus:outline-none">
               <input type="text" placeholder="Artikelbezeichnung" class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
               <select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-44 focus:outline-none"><option value="">-- Farbe --</option></select>
               <input type="number" placeholder="Gramm (g)" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none">
@@ -390,23 +391,23 @@
     ];
 
     const REPAIR_ORDERS = [
-      {"customer":"Laura pasch","invoiceNumber":"RE-2026-0017","items":[{"name":"1xKürbis","color":"PLA Schwarz","weight":0},{"name":"1xKürbis","color":"Pla Weiß","weight":0},{"name":"1xKürbis","color":"PETG Orange","weight":0},{"name":"2X scharf","color":"PLA Hellbraun ","weight":0},{"name":"1x scharf","color":"Pla Weiß","weight":0}]},
-      {"customer":"Isabell Zubiller","invoiceNumber":"RE-2026-0016","items":[{"name":"1xKürbis Hoch","color":"PLA Schwarz","weight":0},{"name":"1xKürbis klein","color":"PLA Schwarz","weight":0},{"name":"1xKürbis klein","color":"Pla Weiß","weight":0}]},
-      {"customer":"ELVIRA FELK","invoiceNumber":"RE-2026-0015","items":[{"name":"Schönes Wandregal rund / Metall-Regal Schwarz – Neu 3D-Druck","color":"","weight":0}]},
-      {"customer":"Thomas Siepmann","invoiceNumber":"RE-2026-0014","items":[{"name":"Design Küchenrollenhalter | 3D-Druck","color":"PLA Schwarz","weight":0}]},
-      {"customer":"Jennifer Habenicht","invoiceNumber":"RE-2026-0013","items":[{"name":"More Halter 4x","color":"ASA Grau","weight":0}]},
-      {"customer":"Annett Hanitzsch","invoiceNumber":"RE-2026-00012","items":[{"name":"Süßer Blumentopf mit Herz-Händen 12x12","color":"Pla Weiß","weight":150}]},
-      {"customer":"Iris Diekmann","invoiceNumber":"RE-2026-00011","items":[{"name":"3x Kürbis","color":"","weight":0},{"name":"3x Katze","color":"","weight":0}]},
-      {"customer":"Silke Schwarzer","invoiceNumber":"RE-2026-0010","items":[{"name":"2x Tannenzapfen","color":"PLA Dunkelrot ","weight":180},{"name":"2x Tannenzapfen","color":"PLA Olivgrün","weight":180}]},
-      {"customer":"Familie Tchoffo","invoiceNumber":"RE-2026-0009","items":[{"name":"Küchenrollnhalter 2X","color":"PLA Schwarz","weight":460}]},
-      {"customer":"Renate Evelin - Veere","invoiceNumber":"RE-2026-0008","items":[{"name":"1x Japandi Vogel","color":"PLA grün","weight":0},{"name":"1x Kürbis","color":"PETG Orange","weight":0},{"name":"1x Modernes Eichhörnchen","color":"PLA Hellbraun","weight":0},{"name":"2x Zapfenhäuschen","color":"PLA Olivgrün","weight":0},{"name":"2x Zapfenhäuschen","color":"PLA Hellbraun","weight":0}]},
-      {"customer":"Ralf Hartmann","invoiceNumber":"RE-2026-0007","items":[{"name":"6x Rentier","color":"","weight":0}]},
-      {"customer":"Sabine Beewen","invoiceNumber":"RE-2026-0006","items":[{"name":"1x Fernbedienungshalter","color":"","weight":0}]},
-      {"customer":"Dunja marcinkowski","invoiceNumber":"RE-2026-0005","items":[{"name":"6x Weinhalter schwarz","color":"PLA Schwarz","weight":0},{"name":"9x Bäume","color":"","weight":0}]},
-      {"customer":"Tobias von der Famile Ulm","invoiceNumber":"RE-2026-0004","items":[{"name":"3x Suppenhalter 6cm","color":"PLA Schwarz","weight":0},{"name":"4x Backpulverhalter","color":"PLA Schwarz","weight":0},{"name":"4x Backpulverhalter 6cm","color":"PLA Schwarz","weight":0},{"name":"1x Abroller Alufolie","color":"PLA Schwarz","weight":0}]},
-      {"customer":"Antje Nanninga","invoiceNumber":"RE-2026-0003","items":[{"name":"1x Vase weiß","color":"","weight":0}]},
-      {"customer":"Gabi Thomas","invoiceNumber":"RE-2026-0002","items":[{"name":"1x Dogge lila","color":"PLA lila ","weight":490}]},
-      {"customer":"Paul Hartmann","invoiceNumber":"RE-2026-001","items":[{"name":"3x Makita Akkuhalter","color":"","weight":0}]}
+      {"customer":"Laura pasch","invoiceNumber":"RE-2026-0017","items":[{"qty":1,"name":"1xKürbis","color":"PLA Schwarz","weight":0},{"qty":1,"name":"1xKürbis","color":"Pla Weiß","weight":0},{"qty":1,"name":"1xKürbis","color":"PETG Orange","weight":0},{"qty":2,"name":"2X scharf","color":"PLA Hellbraun ","weight":0},{"qty":1,"name":"1x scharf","color":"Pla Weiß","weight":0}]},
+      {"customer":"Isabell Zubiller","invoiceNumber":"RE-2026-0016","items":[{"qty":1,"name":"1xKürbis Hoch","color":"PLA Schwarz","weight":0},{"qty":1,"name":"1xKürbis klein","color":"PLA Schwarz","weight":0},{"qty":1,"name":"1xKürbis klein","color":"Pla Weiß","weight":0}]},
+      {"customer":"ELVIRA FELK","invoiceNumber":"RE-2026-0015","items":[{"qty":1,"name":"Schönes Wandregal rund / Metall-Regal Schwarz – Neu 3D-Druck","color":"","weight":0}]},
+      {"customer":"Thomas Siepmann","invoiceNumber":"RE-2026-0014","items":[{"qty":1,"name":"Design Küchenrollenhalter | 3D-Druck","color":"PLA Schwarz","weight":0}]},
+      {"customer":"Jennifer Habenicht","invoiceNumber":"RE-2026-0013","items":[{"qty":4,"name":"More Halter 4x","color":"ASA Grau","weight":0}]},
+      {"customer":"Annett Hanitzsch","invoiceNumber":"RE-2026-00012","items":[{"qty":12,"name":"Süßer Blumentopf mit Herz-Händen 12x12","color":"Pla Weiß","weight":150}]},
+      {"customer":"Iris Diekmann","invoiceNumber":"RE-2026-00011","items":[{"qty":3,"name":"3x Kürbis","color":"","weight":0},{"qty":3,"name":"3x Katze","color":"","weight":0}]},
+      {"customer":"Silke Schwarzer","invoiceNumber":"RE-2026-0010","items":[{"qty":2,"name":"2x Tannenzapfen","color":"PLA Dunkelrot ","weight":180},{"qty":2,"name":"2x Tannenzapfen","color":"PLA Olivgrün","weight":180}]},
+      {"customer":"Familie Tchoffo","invoiceNumber":"RE-2026-0009","items":[{"qty":2,"name":"Küchenrollnhalter 2X","color":"PLA Schwarz","weight":460}]},
+      {"customer":"Renate Evelin - Veere","invoiceNumber":"RE-2026-0008","items":[{"qty":1,"name":"1x Japandi Vogel","color":"PLA grün","weight":0},{"qty":1,"name":"1x Kürbis","color":"PETG Orange","weight":0},{"qty":1,"name":"1x Modernes Eichhörnchen","color":"PLA Hellbraun","weight":0},{"qty":2,"name":"2x Zapfenhäuschen","color":"PLA Olivgrün","weight":0},{"qty":2,"name":"2x Zapfenhäuschen","color":"PLA Hellbraun","weight":0}]},
+      {"customer":"Ralf Hartmann","invoiceNumber":"RE-2026-0007","items":[{"qty":6,"name":"6x Rentier","color":"","weight":0}]},
+      {"customer":"Sabine Beewen","invoiceNumber":"RE-2026-0006","items":[{"qty":1,"name":"1x Fernbedienungshalter","color":"","weight":0}]},
+      {"customer":"Dunja marcinkowski","invoiceNumber":"RE-2026-0005","items":[{"qty":6,"name":"6x Weinhalter schwarz","color":"PLA Schwarz","weight":0},{"qty":9,"name":"9x Bäume","color":"","weight":0}]},
+      {"customer":"Tobias von der Famile Ulm","invoiceNumber":"RE-2026-0004","items":[{"qty":3,"name":"3x Suppenhalter 6cm","color":"PLA Schwarz","weight":0},{"qty":4,"name":"4x Backpulverhalter","color":"PLA Schwarz","weight":0},{"qty":4,"name":"4x Backpulverhalter 6cm","color":"PLA Schwarz","weight":0},{"qty":1,"name":"1x Abroller Alufolie","color":"PLA Schwarz","weight":0}]},
+      {"customer":"Antje Nanninga","invoiceNumber":"RE-2026-0003","items":[{"qty":1,"name":"1x Vase weiß","color":"","weight":0}]},
+      {"customer":"Gabi Thomas","invoiceNumber":"RE-2026-0002","items":[{"qty":1,"name":"1x Dogge lila","color":"PLA lila ","weight":490}]},
+      {"customer":"Paul Hartmann","invoiceNumber":"RE-2026-001","items":[{"qty":3,"name":"3x Makita Akkuhalter","color":"","weight":0}]}
     ];
 
     let editingIndex = -1;
@@ -478,22 +479,17 @@
             products = (Array.isArray(json.products) && json.products.length >= BACKUP_PRODUCTS.length) ? json.products : [...BACKUP_PRODUCTS];
             spools = (Array.isArray(json.spools) && json.spools.length > 0) ? json.spools : [...BACKUP_SPOOLS];
             
-            // --- AUTO REPARATUR ---
             let countRepaired = 0;
             orders.forEach(liveOrder => {
               const match = REPAIR_ORDERS.find(b => b.invoiceNumber === liveOrder.invoiceNumber && b.customer.toLowerCase().trim() === liveOrder.customer.toLowerCase().trim());
               if (match) {
                 if (liveOrder.items && liveOrder.items.length > 0) {
-                  const firstItemName = liveOrder.items[0].name;
-                  if (firstItemName.includes("3D-Druck Artikel") || firstItemName.includes("Importierter Artikel")) {
-                    liveOrder.items = match.items;
-                    countRepaired++;
-                  }
+                  liveOrder.items = match.items.map(mi => ({ qty: mi.qty || 1, name: mi.name, color: mi.color, weight: mi.weight }));
+                  countRepaired++;
                 }
               }
             });
             if (countRepaired > 0) {
-              console.log(countRepaired + " Einträge erfolgreich aus Backup repariert!");
               saveAllData(); 
             }
             
@@ -594,23 +590,23 @@
             const isArchived = typ.includes('Archiviert');
             
             let custAddr = '';
-            let custItems = [{ name: '3D-Druck Artikel', color: 'PLA Schwarz', weight: 100 }];
+            let custItems = [{ qty: 1, name: '3D-Druck Artikel', color: 'PLA Schwarz', weight: 100 }];
             let trackingNum = '-';
 
             if (kundeOrCat.toLowerCase().includes('renate')) {
               custAddr = 'Heinrich-Zille-Str. 11, 04668 Grimma';
               trackingNum = '358073187096';
               custItems = [
-                { name: '1x Japandi Vogel', color: 'PLA grün', weight: 0 },
-                { name: '1x Kürbis', color: 'PETG Orange', weight: 0 },
-                { name: '1x Modernes Eichhörnchen', color: 'PLA Hellbraun', weight: 0 },
-                { name: '2x Zapfenhäuschen', color: 'PLA Olivgrün', weight: 0 },
-                { name: '2x Zapfenhäuschen', color: 'PLA Hellbraun', weight: 0 }
+                { qty: 1, name: '1x Japandi Vogel', color: 'PLA grün', weight: 0 },
+                { qty: 1, name: '1x Kürbis', color: 'PETG Orange', weight: 0 },
+                { qty: 1, name: '1x Modernes Eichhörnchen', color: 'PLA Hellbraun', weight: 0 },
+                { qty: 2, name: '2x Zapfenhäuschen', color: 'PLA Olivgrün', weight: 0 },
+                { qty: 2, name: '2x Zapfenhäuschen', color: 'PLA Hellbraun', weight: 0 }
               ];
             } else if (kundeOrCat.toLowerCase().includes('tchoffo')) {
               custAddr = 'Prämienstraße 62, 52428 Jülich';
               trackingNum = '358072667188';
-              custItems = [{ name: 'Küchenrollenhalter 2X', color: 'PLA Schwarz', weight: 150 }];
+              custItems = [{ qty: 2, name: 'Küchenrollenhalter 2X', color: 'PLA Schwarz', weight: 150 }];
             }
 
             importedOrders.push({
@@ -753,7 +749,7 @@
     }
 
     function addPresetArticle(nameVal = '', addPrice = 0) {
-      addArticleInputRow(nameVal);
+      addArticleInputRow(1, nameVal);
       if (addPrice > 0) {
         const priceInput = document.getElementById('price');
         let currentPrice = parseFloat(priceInput.value) || 0;
@@ -781,7 +777,7 @@
     }
 
     function addPresetArticleToEdit(idx, nameVal, addPrice) {
-      addEditArticleRow(nameVal);
+      addEditArticleRow(1, nameVal);
       const priceInput = document.getElementById(`edit-price-${idx}`);
       if (priceInput) {
         let currentPrice = parseFloat(priceInput.value) || 0;
@@ -923,7 +919,7 @@
       if (o.items && o.items.length > 0) {
         itemsListHtml = "<ul style='list-style-type: disc; text-align: left; display: inline-block; margin: 5px 0; font-size: 13px; color: #334155; line-height: 1.3;'>";
         o.items.forEach(i => {
-          itemsListHtml += `<li><b>${i.name}</b> ${i.color ? '(' + i.color + ')' : ''}</li>`;
+          itemsListHtml += `<li><b>${i.qty || 1}stk ${i.name}</b> ${i.color ? '(' + i.color + ')' : ''}</li>`;
         });
         itemsListHtml += "</ul>";
       } else {
@@ -1090,13 +1086,14 @@
       });
     }
 
-    function addArticleInputRow(nameVal = '', colorVal = '', weightVal = '') {
+    function addArticleInputRow(qtyVal = 1, nameVal = '', colorVal = '', weightVal = '') {
       const container = document.getElementById('articleInputRows');
       const div = document.createElement('div');
       div.className = "flex gap-2 items-center article-row";
       let optionsHtml = '<option value="">-- Farbe --</option>';
       spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === colorVal ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
       div.innerHTML = `
+        <input type="number" placeholder="Menge" value="${qtyVal}" min="1" class="art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-20 focus:outline-none">
         <input type="text" placeholder="Artikelbezeichnung" value="${nameVal}" class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
         <select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-44 focus:outline-none">${optionsHtml}</select>
         <input type="number" placeholder="Gramm (g)" value="${weightVal}" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none">
@@ -1104,7 +1101,7 @@
       container.appendChild(div);
     }
 
-    function addEditArticleRow(name = '', color = '', weight = '') {
+    function addEditArticleRow(qty = 1, name = '', color = '', weight = '') {
       const container = document.getElementById('editArticleRows');
       if (!container) return;
       const div = document.createElement('div');
@@ -1112,6 +1109,7 @@
       let optionsHtml = '<option value="">-- Farbe --</option>';
       spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
       div.innerHTML = `
+        <input type="number" placeholder="Menge" value="${qty}" min="1" class="edit-art-qty bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-16 focus:outline-none">
         <input type="text" placeholder="Artikelbezeichnung" value="${name}" class="edit-art-name bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white flex-1 focus:outline-none">
         <select class="edit-art-color bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-32 focus:outline-none">${optionsHtml}</select>
         <input type="number" placeholder="Gramm" value="${weight}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-16 focus:outline-none">
@@ -1140,6 +1138,7 @@
 
     function addOrder(e) {
       e.preventDefault();
+      const qtyInputs = document.querySelectorAll('.art-qty');
       const nameInputs = document.querySelectorAll('.art-name');
       const colorInputs = document.querySelectorAll('.art-color');
       const weightInputs = document.querySelectorAll('.art-weight');
@@ -1148,12 +1147,13 @@
       nameInputs.forEach((inp, idx) => {
         const val = inp.value.trim();
         if (val) {
+          const q = parseInt(qtyInputs[idx].value) || 1;
           const w = parseInt(weightInputs[idx].value) || 0;
           const col = colorInputs[idx].value;
-          itemsList.push({ name: val, color: col, weight: w });
+          itemsList.push({ qty: q, name: val, color: col, weight: w });
           if (col && w > 0) {
             const spool = spools.find(s => s.name === col);
-            if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - w);
+            if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - (w * q));
           }
         }
       });
@@ -1214,6 +1214,7 @@
     }
 
     function saveEdit(idx) {
+      const qtyInputs = document.querySelectorAll('.edit-art-qty');
       const nameInputs = document.querySelectorAll('.edit-art-name');
       const colorInputs = document.querySelectorAll('.edit-art-color');
       const weightInputs = document.querySelectorAll('.edit-art-weight');
@@ -1223,9 +1224,10 @@
       nameInputs.forEach((inp, i) => {
         const val = inp.value.trim();
         if (val) {
+          const q = parseInt(qtyInputs[i].value) || 1;
           const w = parseInt(weightInputs[i].value) || 0;
           const col = colorInputs[i].value;
-          updatedItems.push({ name: val, color: col, weight: w });
+          updatedItems.push({ qty: q, name: val, color: col, weight: w });
         }
       });
 
@@ -1235,7 +1237,7 @@
         oldOrder.items.forEach(oldItem => {
           if (oldItem.color && oldItem.weight > 0) {
             const spool = spools.find(s => s.name === oldItem.color);
-            if (spool) spool.remainingGrams += oldItem.weight;
+            if (spool) spool.remainingGrams += (oldItem.weight * (oldItem.qty || 1));
           }
         });
       }
@@ -1243,7 +1245,7 @@
       updatedItems.forEach(newItem => {
         if (newItem.color && newItem.weight > 0) {
           const spool = spools.find(s => s.name === newItem.color);
-          if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - newItem.weight);
+          if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - (newItem.weight * newItem.qty));
         }
       });
 
@@ -1288,7 +1290,7 @@
         order.items.forEach(i => {
           if (i.color && i.weight > 0) {
             const spool = spools.find(s => s.name === i.color);
-            if (spool) spool.remainingGrams += i.weight;
+            if (spool) spool.remainingGrams += (i.weight * (i.qty || 1));
           }
         });
       }
@@ -1299,7 +1301,7 @@
     function printBoxLabel(idx) {
       const o = orders[idx];
       const isPickup = o.tracking === 'Selbstabholer';
-      let itemsSummary = o.items.map(i => `${i.name} (${i.color || 'Standard'}, ${i.weight || 0}g)`).join("<br>• ");
+      let itemsSummary = o.items.map(i => `${i.qty || 1}stk ${i.name} (${i.color || 'Standard'}, ${i.weight || 0}g)`).join("<br>• ");
       const trackingUrl = !isPickup && o.tracking && o.tracking !== '-' ? `https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${o.tracking}` : `Sefas3DShop - ${o.customer} (Selbstabholer)`;
 
       const printWin = window.open('', '_blank', 'width=500,height=600');
@@ -1343,50 +1345,57 @@
       const isPickup = o.tracking === 'Selbstabholer';
       
       let displayShippingCost = isPickup ? 0 : ((o.platform === 'eBay') ? (o.labelCost || 0) : (o.shippingFee || 0));
-      let itemsNetTotal = Math.max(0, o.price - displayShippingCost);
-      let itemsListHtml = o.items.map(i => `<div style="margin-bottom: 1px;">• <b>${i.name}</b> ${i.color ? '<span style="color: #64748b; font-size: 10px;">(' + i.color + ')</span>' : ''}</div>`).join('');
       
-      let itemsRows = `<tr>
-        <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #1e293b;">
-          <strong style="font-size: 11px; color: #0f172a;">3D-Druck Artikel</strong>
-          <div style="margin-top: 2px; color: #475569;">${itemsListHtml}</div>
-        </td>
-        <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1 Set</td>
-        <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">${itemsNetTotal.toFixed(2).replace('.', ',')} €</td>
-        <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">${itemsNetTotal.toFixed(2).replace('.', ',')} €</td>
-      </tr>`;
-      
-      if (isPickup) {
-        itemsRows += `<tr>
-          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #2563eb; font-weight: 500;">Selbstabholung vor Ort (Neuer Weg 4, 32369 Rahden)</td>
-          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1</td>
-          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">0,00 €</td>
-          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">0,00 €</td>
-        </tr>`;
-      } else if (displayShippingCost > 0) {
-        itemsRows += `<tr>
-          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #334155;">Versandkosten & Verpackung</td>
-          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1</td>
-          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
-          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
-        </tr>`;
-      }
-
       let discountAmount = 0;
       const dPerc = parseFloat(o.discountPercent) || 0;
       if (dPerc > 0) {
         discountAmount = (o.price * dPerc) / 100;
+      }
+      const totalAmountNum = Math.max(0, o.price - discountAmount);
+
+      let itemsRows = '';
+      if (o.items && o.items.length > 0) {
+        o.items.forEach(i => {
+          let q = i.qty || 1;
+          let colorText = i.color ? `<span style="color: #64748b; font-size: 9.5px;">(${i.color})</span>` : '';
+          itemsRows += `<tr>
+            <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; color: #1e293b;">
+              <b>${i.name}</b> ${colorText}
+            </td>
+            <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">${q}stk</td>
+            <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">-</td>
+            <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">-</td>
+          </tr>`;
+        });
+      }
+      
+      if (isPickup) {
         itemsRows += `<tr>
-          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #dc2626; font-weight: 500;">Sondernachlass / Rabatt (${dPerc}%)</td>
-          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #dc2626; vertical-align: top;">1</td>
-          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #dc2626; vertical-align: top;">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
-          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #dc2626; vertical-align: top;">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
+          <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; color: #2563eb; font-weight: 500;">Selbstabholung vor Ort (Neuer Weg 4, 32369 Rahden)</td>
+          <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1stk</td>
+          <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">0,00 €</td>
+          <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">0,00 €</td>
+        </tr>`;
+      } else if (displayShippingCost > 0) {
+        itemsRows += `<tr>
+          <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; color: #334155;">Versandkosten & Verpackung</td>
+          <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1stk</td>
+          <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
+          <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
         </tr>`;
       }
 
-      const totalAmountNum = Math.max(0, o.price - discountAmount);
+      if (dPerc > 0) {
+        itemsRows += `<tr>
+          <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; color: #dc2626; font-weight: 500;">Sondernachlass / Rabatt (${dPerc}%)</td>
+          <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #dc2626; vertical-align: top;">1stk</td>
+          <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #dc2626; vertical-align: top;">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
+          <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #dc2626; vertical-align: top;">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
+        </tr>`;
+      }
+
       const sepsPayloadStr = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
-      const logoSvg = `<svg width="38" height="38" viewBox="0 0 100 100" fill="currentColor"><polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/><polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/></svg>`;
+      const logoSvg = `<svg width="30" height="30" viewBox="0 0 100 100" fill="currentColor"><polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/><polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/></svg>`;
 
       const printWin = window.open('', '_blank', 'width=850,height=1000');
       printWin.document.write(`
@@ -1396,27 +1405,27 @@
           <meta charset="UTF-8">
           <title>Rechnung ${invoiceNumber}</title>
           <style>
-            @page { size: A4; margin: 12mm; }
-            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #ffffff; color: #1e293b; margin: 0; padding: 0; font-size: 11px; line-height: 1.35; }
-            .invoice-box { max-width: 650px; margin: auto; padding: 5px; background: #fff; }
-            .header-flex { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 15px; }
-            .brand-section { display: flex; gap: 10px; align-items: center; }
-            .brand-title { font-size: 18px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; margin: 0; }
-            .brand-subtitle { font-size: 10px; color: #64748b; margin-top: 1px; }
+            @page { size: A4; margin: 8mm; }
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #ffffff; color: #1e293b; margin: 0; padding: 0; font-size: 9.5px; line-height: 1.2; }
+            .invoice-box { max-width: 630px; margin: auto; padding: 2px; background: #fff; }
+            .header-flex { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 10px; }
+            .brand-section { display: flex; gap: 8px; align-items: center; }
+            .brand-title { font-size: 15px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; margin: 0; }
+            .brand-subtitle { font-size: 8.5px; color: #64748b; margin-top: 1px; }
             .invoice-meta { text-align: right; }
-            .invoice-title { font-size: 16px; font-weight: 700; color: #2563eb; margin: 0 0 4px 0; letter-spacing: 0.5px; }
-            .meta-text { font-size: 10px; color: #475569; margin: 1px 0; }
-            .address-box { margin-bottom: 16px; font-size: 11px; color: #334155; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #f1f5f9; display: inline-block; min-width: 240px; }
-            .address-name { font-weight: bold; color: #0f172a; font-size: 12px; margin-bottom: 2px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-            th { background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; padding: 6px 10px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; }
-            .totals-container { display: flex; justify-content: flex-end; margin-bottom: 16px; }
-            .totals-box { width: 240px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; }
-            .total-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; color: #475569; }
-            .total-row.final { border-top: 2px solid #cbd5e1; margin-top: 4px; padding-top: 6px; font-weight: bold; color: #0f172a; font-size: 13px; }
-            .payment-card { display: flex; justify-content: space-between; align-items: center; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; }
+            .invoice-title { font-size: 14px; font-weight: 700; color: #2563eb; margin: 0 0 2px 0; letter-spacing: 0.5px; }
+            .meta-text { font-size: 9px; color: #475569; margin: 1px 0; }
+            .address-box { margin-bottom: 10px; font-size: 9.5px; color: #334155; background: #f8fafc; padding: 6px 10px; border-radius: 6px; border: 1px solid #f1f5f9; display: inline-block; min-width: 200px; }
+            .address-name { font-weight: bold; color: #0f172a; font-size: 10.5px; margin-bottom: 2px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+            th { background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 8px; letter-spacing: 0.5px; padding: 4px 8px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; }
+            .totals-container { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+            .totals-box { width: 200px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 8px; }
+            .total-row { display: flex; justify-content: space-between; padding: 2px 0; font-size: 9.5px; color: #475569; }
+            .total-row.final { border-top: 2px solid #cbd5e1; margin-top: 2px; padding-top: 3px; font-weight: bold; color: #0f172a; font-size: 11px; }
+            .payment-card { display: flex; justify-content: space-between; align-items: center; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 6px 10px; border-radius: 6px; margin-bottom: 10px; }
             .payment-card.unpaid { background: #fffbeb; border-color: #fde68a; }
-            .footer-note { border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 9px; color: #94a3b8; text-align: center; }
+            .footer-note { border-top: 1px solid #e2e8f0; padding-top: 6px; font-size: 8px; color: #94a3b8; text-align: center; }
           </style>
         </head>
         <body>
@@ -1465,13 +1474,13 @@
             </div>
 
             <div class="payment-card ${o.isPaid === '✅ Ja' ? '' : 'unpaid'}">
-              <div style="font-size: 10px;">
-                <strong style="font-size: 11px; display: block; margin-bottom: 2px; color: ${o.isPaid === '✅ Ja' ? '#166534' : '#92400e'};">
+              <div style="font-size: 9px;">
+                <strong style="font-size: 10px; display: block; margin-bottom: 1px; color: ${o.isPaid === '✅ Ja' ? '#166534' : '#92400e'};">
                   ${o.isPaid === '✅ Ja' ? '✅ Bezahlt (' + (o.paymentMethod || 'Überweisung') + ')' : '⏳ Offener Betrag (' + (o.paymentMethod || 'Überweisung') + ')'}
                 </strong>
                 <span style="color: #475569;">IBAN: DE20 1001 0178 0592 6798 08 &bull; Revolut Bank</span>
               </div>
-              <div style="background: white; padding: 3px; border: 1px solid #cbd5e1; border-radius: 4px;" id="sepaQrCodeTarget"></div>
+              <div style="background: white; padding: 2px; border: 1px solid #cbd5e1; border-radius: 4px;" id="sepaQrCodeTarget"></div>
             </div>
 
             <div class="footer-note">
@@ -1484,7 +1493,7 @@
           <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
           <script>
             window.onload = function() {
-              new QRCode(document.getElementById('sepaQrCodeTarget'), { text: \`${sepsPayloadStr}\`, width: 60, height: 60, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+              new QRCode(document.getElementById('sepaQrCodeTarget'), { text: \`${sepsPayloadStr}\`, width: 45, height: 45, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
               setTimeout(() => { window.print(); }, 500);
             };
           <\/script>
@@ -1498,7 +1507,7 @@
       const activeOrders = orders.filter(o => Boolean(o.archived) === showingArchive);
       if (activeOrders.length === 0) return alert("Keine Aufträge vorhanden!");
       
-      const logoSvg = `<svg width="38" height="38" viewBox="0 0 100 100" fill="currentColor"><polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/><polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/></svg>`;
+      const logoSvg = `<svg width="30" height="30" viewBox="0 0 100 100" fill="currentColor"><polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/><polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/></svg>`;
 
       let allInvoicesHtml = '';
       activeOrders.forEach((o, index) => {
@@ -1507,79 +1516,86 @@
         const isPickup = o.tracking === 'Selbstabholer';
         
         let displayShippingCost = isPickup ? 0 : ((o.platform === 'eBay') ? (o.labelCost || 0) : (o.shippingFee || 0));
-        let itemsNetTotal = Math.max(0, o.price - displayShippingCost);
-        let itemsListHtml = o.items.map(i => `<div style="margin-bottom: 1px;">• <b>${i.name}</b> ${i.color ? '<span style="color: #64748b; font-size: 10px;">(' + i.color + ')</span>' : ''}</div>`).join('');
         
-        let itemsRows = `<tr>
-          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #1e293b;">
-            <strong style="font-size: 11px; color: #0f172a;">3D-Druck Artikel</strong>
-            <div style="margin-top: 2px; color: #475569;">${itemsListHtml}</div>
-          </td>
-          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1 Set</td>
-          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">${itemsNetTotal.toFixed(2).replace('.', ',')} €</td>
-          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">${itemsNetTotal.toFixed(2).replace('.', ',')} €</td>
-        </tr>`;
-        
-        if (isPickup) {
-          itemsRows += `<tr>
-            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #2563eb; font-weight: 500;">Selbstabholung vor Ort (Neuer Weg 4, 32369 Rahden)</td>
-            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1</td>
-            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">0,00 €</td>
-            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">0,00 €</td>
-          </tr>`;
-        } else if (displayShippingCost > 0) {
-          itemsRows += `<tr>
-            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #334155;">Versandkosten & Verpackung</td>
-            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1</td>
-            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
-            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
-          </tr>`;
-        }
-
         let discountAmount = 0;
         const dPerc = parseFloat(o.discountPercent) || 0;
         if (dPerc > 0) {
           discountAmount = (o.price * dPerc) / 100;
+        }
+        const totalAmountNum = Math.max(0, o.price - discountAmount);
+
+        let itemsRows = '';
+        if (o.items && o.items.length > 0) {
+          o.items.forEach(i => {
+            let q = i.qty || 1;
+            let colorText = i.color ? `<span style="color: #64748b; font-size: 9.5px;">(${i.color})</span>` : '';
+            itemsRows += `<tr>
+              <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; color: #1e293b;">
+                <b>${i.name}</b> ${colorText}
+              </td>
+              <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">${q}stk</td>
+              <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">-</td>
+              <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">-</td>
+            </tr>`;
+          });
+        }
+        
+        if (isPickup) {
           itemsRows += `<tr>
-            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #dc2626; font-weight: 500;">Sondernachlass / Rabatt (${dPerc}%)</td>
-            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #dc2626; vertical-align: top;">1</td>
-            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #dc2626; vertical-align: top;">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
-            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #dc2626; vertical-align: top;">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; color: #2563eb; font-weight: 500;">Selbstabholung vor Ort (Neuer Weg 4, 32369 Rahden)</td>
+            <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1stk</td>
+            <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">0,00 €</td>
+            <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">0,00 €</td>
+          </tr>`;
+        } else if (displayShippingCost > 0) {
+          itemsRows += `<tr>
+            <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; color: #334155;">Versandkosten & Verpackung</td>
+            <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1stk</td>
+            <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
           </tr>`;
         }
 
-        const totalAmountNum = Math.max(0, o.price - discountAmount);
+        if (dPerc > 0) {
+          itemsRows += `<tr>
+            <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; color: #dc2626; font-weight: 500;">Sondernachlass / Rabatt (${dPerc}%)</td>
+            <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #dc2626; vertical-align: top;">1stk</td>
+            <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #dc2626; vertical-align: top;">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 4px 8px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #dc2626; vertical-align: top;">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
+          </tr>`;
+        }
+
         const sepsPayloadStr = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
 
         allInvoicesHtml += `
-          <div style="max-width: 650px; margin: 0 auto 20px auto; background: #fff; padding: 10px; page-break-after: always; break-after: page; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; font-size: 11px; line-height: 1.35;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 15px;">
-              <div style="display: flex; gap: 10px; align-items: center;">
+          <div style="max-width: 630px; margin: 0 auto 15px auto; background: #fff; padding: 2px; page-break-after: always; break-after: page; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; font-size: 9.5px; line-height: 1.2;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 10px;">
+              <div style="display: flex; gap: 8px; align-items: center;">
                 ${logoSvg}
                 <div>
-                  <h1 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.5px;">Sefas3DShop</h1>
-                  <div style="font-size: 10px; color: #64748b; margin-top: 1px;">Inh. Sefa Demir &bull; Neuer Weg 4 &bull; 32369 Rahden</div>
+                  <h1 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.5px;">Sefas3DShop</h1>
+                  <div style="font-size: 8.5px; color: #64748b; margin-top: 1px;">Inh. Sefa Demir &bull; Neuer Weg 4 &bull; 32369 Rahden</div>
                 </div>
               </div>
               <div style="text-align: right;">
-                <div style="font-size: 16px; font-weight: 700; color: #2563eb; margin: 0 0 4px 0;">RECHNUNG</div>
-                <div style="font-size: 10px; color: #475569; margin: 1px 0;"><strong>Nr:</strong> ${invoiceNumber}</div>
-                <div style="font-size: 10px; color: #475569; margin: 1px 0;"><strong>Datum:</strong> ${invoiceDate}</div>
+                <div style="font-size: 14px; font-weight: 700; color: #2563eb; margin: 0 0 2px 0;">RECHNUNG</div>
+                <div style="font-size: 9px; color: #475569; margin: 1px 0;"><strong>Nr:</strong> ${invoiceNumber}</div>
+                <div style="font-size: 9px; color: #475569; margin: 1px 0;"><strong>Datum:</strong> ${invoiceDate}</div>
               </div>
             </div>
 
-            <div style="margin-bottom: 16px; font-size: 11px; color: #334155; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #f1f5f9; display: inline-block; min-width: 240px;">
-              <div style="font-weight: bold; color: #0f172a; font-size: 12px; margin-bottom: 2px;">${o.customer}</div>
+            <div style="margin-bottom: 10px; font-size: 9.5px; color: #334155; background: #f8fafc; padding: 6px 10px; border-radius: 6px; border: 1px solid #f1f5f9; display: inline-block; min-width: 200px;">
+              <div style="font-weight: bold; color: #0f172a; font-size: 10.5px; margin-bottom: 2px;">${o.customer}</div>
               <div style="white-space: pre-line; color: #475569;">${o.address || 'Keine Anschrift hinterlegt'}</div>
             </div>
 
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
               <thead>
                 <tr>
-                  <th style="background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; padding: 6px 10px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-align: left;">Beschreibung</th>
-                  <th style="background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; padding: 6px 10px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-align: center;">Menge</th>
-                  <th style="background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; padding: 6px 10px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-align: right;">Einzelpreis</th>
-                  <th style="background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; padding: 6px 10px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-align: right;">Gesamt</th>
+                  <th style="background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 8px; letter-spacing: 0.5px; padding: 4px 8px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-align: left;">Beschreibung</th>
+                  <th style="background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 8px; letter-spacing: 0.5px; padding: 4px 8px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-align: center;">Menge</th>
+                  <th style="background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 8px; letter-spacing: 0.5px; padding: 4px 8px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-align: right;">Einzelpreis</th>
+                  <th style="background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 8px; letter-spacing: 0.5px; padding: 4px 8px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-align: right;">Gesamt</th>
                 </tr>
               </thead>
               <tbody>
@@ -1587,23 +1603,23 @@
               </tbody>
             </table>
 
-            <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
-              <div style="width: 240px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px;">
-                <div style="display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; color: #475569;"><span>Gesamtbetrag:</span> <span style="font-weight: bold; color: #2563eb; font-size: 13px;">${totalAmountNum.toFixed(2).replace('.', ',')} €</span></div>
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+              <div style="width: 200px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 9.5px; color: #475569;"><span>Gesamtbetrag:</span> <span style="font-weight: bold; color: #2563eb; font-size: 11px;">${totalAmountNum.toFixed(2).replace('.', ',')} €</span></div>
               </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; background: ${o.isPaid === '✅ Ja' ? '#f0fdf4' : '#fffbeb'}; border: 1px solid ${o.isPaid === '✅ Ja' ? '#bbf7d0' : '#fde68a'}; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px;">
-              <div style="font-size: 10px;">
-                <strong style="font-size: 11px; display: block; margin-bottom: 2px; color: ${o.isPaid === '✅ Ja' ? '#166534' : '#92400e'};">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: ${o.isPaid === '✅ Ja' ? '#f0fdf4' : '#fffbeb'}; border: 1px solid ${o.isPaid === '✅ Ja' ? '#bbf7d0' : '#fde68a'}; padding: 6px 10px; border-radius: 6px; margin-bottom: 10px;">
+              <div style="font-size: 9px;">
+                <strong style="font-size: 10px; display: block; margin-bottom: 1px; color: ${o.isPaid === '✅ Ja' ? '#166534' : '#92400e'};">
                   ${o.isPaid === '✅ Ja' ? '✅ Bezahlt (' + (o.paymentMethod || 'Überweisung') + ')' : '⏳ Offener Betrag (' + (o.paymentMethod || 'Überweisung') + ')'}
                 </strong>
                 <span style="color: #475569;">IBAN: DE20 1001 0178 0592 6798 08 &bull; Revolut Bank</span>
               </div>
-              <div style="background: white; padding: 3px; border: 1px solid #cbd5e1; border-radius: 4px;" id="batchSepaQr_${index}" data-payload="${encodeURIComponent(sepsPayloadStr)}"></div>
+              <div style="background: white; padding: 2px; border: 1px solid #cbd5e1; border-radius: 4px;" id="batchSepaQr_${index}" data-payload="${encodeURIComponent(sepsPayloadStr)}"></div>
             </div>
 
-            <div style="border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 9px; color: #94a3b8; text-align: center;">
+            <div style="border-top: 1px solid #e2e8f0; padding-top: 6px; font-size: 8px; color: #94a3b8; text-align: center;">
               Kleinunternehmer gemäß § 19 UStG. Vielen Dank für deinen Einkauf!
             </div>
           </div>`;
@@ -1614,16 +1630,16 @@
         <!DOCTYPE html>
         <html>
         <head><title>Alle Rechnungen</title>
-        <style>@page { size: A4; margin: 12mm; }</style>
+        <style>@page { size: A4; margin: 8mm; }</style>
         </head>
-        <body style="background: #fff; color: #000; padding: 5px;">
+        <body style="background: #fff; color: #000; padding: 2px;">
           ${allInvoicesHtml}
           <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
           <script>
             window.onload = function() {
               document.querySelectorAll('[id^="batchSepaQr_"]').forEach(el => {
                 let payload = decodeURIComponent(el.getAttribute('data-payload'));
-                new QRCode(el, { text: payload, width: 60, height: 60, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+                new QRCode(el, { text: payload, width: 45, height: 45, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
               });
               setTimeout(() => { window.print(); }, 800);
             };
@@ -1684,7 +1700,6 @@
       tbody.innerHTML = '';
       const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
 
-      // Hilfsfunktion zur Prüfung, ob ein Auftrag älter als 2 Tage ist und noch bearbeitet wird
       const isDelayedOrder = (o) => {
         if (o.archived || o.status === 'Fertig') return false;
         if (!o.orderDate) return false;
@@ -1694,7 +1709,6 @@
         return diffDays > 2;
       };
 
-      // Sortierung: Überfällige Aufträge (> 2 Tage) kommen ganz nach oben, danach neueste zuerst
       let sortedOrders = [...orders].map((o, originalIndex) => ({ o, originalIndex })).sort((a, b) => {
         const aDelayed = isDelayedOrder(a.o);
         const bDelayed = isDelayedOrder(b.o);
@@ -1728,7 +1742,7 @@
           o.items.forEach(i => {
             let optionsHtml = '<option value="">-- Farbe --</option>';
             spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === i.color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
-            editItemsHtml += `<div class="flex gap-1.5 items-center edit-article-row bg-slate-950 p-1.5 rounded-lg border border-slate-800"><input type="text" value="${i.name}" class="edit-art-name bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white flex-1"><select class="edit-art-color bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-32">${optionsHtml}</select><input type="number" value="${i.weight || ''}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-16"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1"><i class="fa-solid fa-xmark"></i></button></div>`;
+            editItemsHtml += `<div class="flex gap-1.5 items-center edit-article-row bg-slate-950 p-1.5 rounded-lg border border-slate-800"><input type="number" value="${i.qty || 1}" min="1" class="edit-art-qty bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-16"><input type="text" value="${i.name}" class="edit-art-name bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white flex-1"><select class="edit-art-color bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-32">${optionsHtml}</select><input type="number" value="${i.weight || ''}" class="edit-art-weight bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-16"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1"><i class="fa-solid fa-xmark"></i></button></div>`;
           });
           editItemsHtml += `</div><button type="button" onclick="addEditArticleRow()" class="bg-slate-800 text-blue-400 text-[11px] px-2 py-0.5 rounded">+ Leeren Artikel</button>`;
 
@@ -1758,7 +1772,7 @@
             </tr>`;
         } else {
           let itemsHtml = '<div class="space-y-0.5">';
-          o.items.forEach(i => { itemsHtml += `<div class="text-[11px] text-white">• ${i.name} <span class="text-purple-300">(${i.color || 'Std'}, ${i.weight || 0}g)</span></div>`; });
+          o.items.forEach(i => { itemsHtml += `<div class="text-[11px] text-white">• ${i.qty || 1}stk ${i.name} <span class="text-purple-300">(${i.color || 'Std'}, ${i.weight || 0}g)</span></div>`; });
           itemsHtml += '</div>';
 
           let archiveBtnHtml = o.archived ? `<button onclick="toggleArchiveOrder(${o.id})" class="text-blue-300 bg-blue-500/10 px-2 py-1 rounded text-[10px]">📥 Aktiv</button>` : `<button onclick="toggleArchiveOrder(${o.id})" class="text-purple-300 bg-purple-500/10 px-2 py-1 rounded text-[10px]">📦 Archiv</button>`;
@@ -1801,7 +1815,7 @@
       orders.forEach(o => {
         if (!o.archived) {
           openC++;
-          if (o.items && Array.isArray(o.items)) { o.items.forEach(i => totalW += (parseInt(i.weight) || 0)); }
+          if (o.items && Array.isArray(o.items)) { o.items.forEach(i => totalW += ((parseInt(i.weight) || 0) * (i.qty || 1))); }
         }
         let isEbay = o.platform === 'eBay';
         let discPerc = parseFloat(o.discountPercent) || 0;
