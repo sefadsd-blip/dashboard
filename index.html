@@ -1344,31 +1344,31 @@
       
       let displayShippingCost = isPickup ? 0 : ((o.platform === 'eBay') ? (o.labelCost || 0) : (o.shippingFee || 0));
       let itemsNetTotal = Math.max(0, o.price - displayShippingCost);
-      let itemsListHtml = o.items.map(i => `<div style="margin-bottom: 2px;">• <b>${i.name}</b> ${i.color ? '<span style="color: #64748b; font-size: 11px;">(' + i.color + ')</span>' : ''}</div>`).join('');
+      let itemsListHtml = o.items.map(i => `<div style="margin-bottom: 1px;">• <b>${i.name}</b> ${i.color ? '<span style="color: #64748b; font-size: 10px;">(' + i.color + ')</span>' : ''}</div>`).join('');
       
       let itemsRows = `<tr>
-        <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #1e293b;">
-          <strong style="font-size: 12px; color: #0f172a;">3D-Druck Artikel</strong>
-          <div style="margin-top: 4px; color: #475569;">${itemsListHtml}</div>
+        <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #1e293b;">
+          <strong style="font-size: 11px; color: #0f172a;">3D-Druck Artikel</strong>
+          <div style="margin-top: 2px; color: #475569;">${itemsListHtml}</div>
         </td>
-        <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1 Set</td>
-        <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">${itemsNetTotal.toFixed(2).replace('.', ',')} €</td>
-        <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">${itemsNetTotal.toFixed(2).replace('.', ',')} €</td>
+        <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1 Set</td>
+        <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">${itemsNetTotal.toFixed(2).replace('.', ',')} €</td>
+        <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">${itemsNetTotal.toFixed(2).replace('.', ',')} €</td>
       </tr>`;
       
       if (isPickup) {
         itemsRows += `<tr>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #2563eb; font-weight: 500;">Selbstabholung vor Ort (Neuer Weg 4, 32369 Rahden)</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">0,00 €</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">0,00 €</td>
+          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #2563eb; font-weight: 500;">Selbstabholung vor Ort (Neuer Weg 4, 32369 Rahden)</td>
+          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1</td>
+          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">0,00 €</td>
+          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">0,00 €</td>
         </tr>`;
       } else if (displayShippingCost > 0) {
         itemsRows += `<tr>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #334155;">Versandkosten & Verpackung</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
+          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #334155;">Versandkosten & Verpackung</td>
+          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1</td>
+          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
+          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
         </tr>`;
       }
 
@@ -1377,16 +1377,16 @@
       if (dPerc > 0) {
         discountAmount = (o.price * dPerc) / 100;
         itemsRows += `<tr>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #dc2626; font-weight: 500;">Sondernachlass / Rabatt (${dPerc}%)</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #dc2626; vertical-align: top;">1</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #dc2626; vertical-align: top;">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #dc2626; vertical-align: top;">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
+          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #dc2626; font-weight: 500;">Sondernachlass / Rabatt (${dPerc}%)</td>
+          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #dc2626; vertical-align: top;">1</td>
+          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #dc2626; vertical-align: top;">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
+          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #dc2626; vertical-align: top;">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
         </tr>`;
       }
 
       const totalAmountNum = Math.max(0, o.price - discountAmount);
       const sepsPayloadStr = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
-      const logoSvg = `<svg width="48" height="48" viewBox="0 0 100 100" fill="currentColor"><polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/><polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/></svg>`;
+      const logoSvg = `<svg width="38" height="38" viewBox="0 0 100 100" fill="currentColor"><polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/><polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/></svg>`;
 
       const printWin = window.open('', '_blank', 'width=850,height=1000');
       printWin.document.write(`
@@ -1396,27 +1396,27 @@
           <meta charset="UTF-8">
           <title>Rechnung ${invoiceNumber}</title>
           <style>
-            @page { size: A4; margin: 20mm; }
-            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #ffffff; color: #1e293b; margin: 0; padding: 0; font-size: 12px; line-height: 1.5; }
-            .invoice-box { max-width: 680px; margin: auto; padding: 10px; background: #fff; }
-            .header-flex { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px; }
-            .brand-section { display: flex; gap: 14px; align-items: center; }
-            .brand-title { font-size: 22px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; margin: 0; }
-            .brand-subtitle { font-size: 11px; color: #64748b; margin-top: 2px; }
+            @page { size: A4; margin: 12mm; }
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #ffffff; color: #1e293b; margin: 0; padding: 0; font-size: 11px; line-height: 1.35; }
+            .invoice-box { max-width: 650px; margin: auto; padding: 5px; background: #fff; }
+            .header-flex { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 15px; }
+            .brand-section { display: flex; gap: 10px; align-items: center; }
+            .brand-title { font-size: 18px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; margin: 0; }
+            .brand-subtitle { font-size: 10px; color: #64748b; margin-top: 1px; }
             .invoice-meta { text-align: right; }
-            .invoice-title { font-size: 20px; font-weight: 700; color: #2563eb; margin: 0 0 6px 0; letter-spacing: 0.5px; }
-            .meta-text { font-size: 11px; color: #475569; margin: 2px 0; }
-            .address-box { margin-bottom: 30px; font-size: 12px; color: #334155; background: #f8fafc; padding: 14px 18px; border-radius: 8px; border: 1px solid #f1f5f9; display: inline-block; min-width: 260px; }
-            .address-name { font-weight: bold; color: #0f172a; font-size: 13px; margin-bottom: 3px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
-            th { background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; padding: 10px 12px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; }
-            .totals-container { display: flex; justify-content: flex-end; margin-bottom: 30px; }
-            .totals-box { width: 260px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; }
-            .total-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 12px; color: #475569; }
-            .total-row.final { border-top: 2px solid #cbd5e1; margin-top: 6px; padding-top: 8px; font-weight: bold; color: #0f172a; font-size: 14px; }
-            .payment-card { display: flex; justify-content: space-between; align-items: center; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 14px 18px; border-radius: 8px; margin-bottom: 30px; }
+            .invoice-title { font-size: 16px; font-weight: 700; color: #2563eb; margin: 0 0 4px 0; letter-spacing: 0.5px; }
+            .meta-text { font-size: 10px; color: #475569; margin: 1px 0; }
+            .address-box { margin-bottom: 16px; font-size: 11px; color: #334155; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #f1f5f9; display: inline-block; min-width: 240px; }
+            .address-name { font-weight: bold; color: #0f172a; font-size: 12px; margin-bottom: 2px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+            th { background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; padding: 6px 10px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; }
+            .totals-container { display: flex; justify-content: flex-end; margin-bottom: 16px; }
+            .totals-box { width: 240px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; }
+            .total-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; color: #475569; }
+            .total-row.final { border-top: 2px solid #cbd5e1; margin-top: 4px; padding-top: 6px; font-weight: bold; color: #0f172a; font-size: 13px; }
+            .payment-card { display: flex; justify-content: space-between; align-items: center; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; }
             .payment-card.unpaid { background: #fffbeb; border-color: #fde68a; }
-            .footer-note { border-top: 1px solid #e2e8f0; padding-top: 15px; font-size: 10px; color: #94a3b8; text-align: center; }
+            .footer-note { border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 9px; color: #94a3b8; text-align: center; }
           </style>
         </head>
         <body>
@@ -1465,13 +1465,13 @@
             </div>
 
             <div class="payment-card ${o.isPaid === '✅ Ja' ? '' : 'unpaid'}">
-              <div style="font-size: 11px;">
-                <strong style="font-size: 12px; display: block; margin-bottom: 3px; color: ${o.isPaid === '✅ Ja' ? '#166534' : '#92400e'};">
+              <div style="font-size: 10px;">
+                <strong style="font-size: 11px; display: block; margin-bottom: 2px; color: ${o.isPaid === '✅ Ja' ? '#166534' : '#92400e'};">
                   ${o.isPaid === '✅ Ja' ? '✅ Bezahlt (' + (o.paymentMethod || 'Überweisung') + ')' : '⏳ Offener Betrag (' + (o.paymentMethod || 'Überweisung') + ')'}
                 </strong>
                 <span style="color: #475569;">IBAN: DE20 1001 0178 0592 6798 08 &bull; Revolut Bank</span>
               </div>
-              <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 6px;" id="sepaQrCodeTarget"></div>
+              <div style="background: white; padding: 3px; border: 1px solid #cbd5e1; border-radius: 4px;" id="sepaQrCodeTarget"></div>
             </div>
 
             <div class="footer-note">
@@ -1484,7 +1484,7 @@
           <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
           <script>
             window.onload = function() {
-              new QRCode(document.getElementById('sepaQrCodeTarget'), { text: \`${sepsPayloadStr}\`, width: 70, height: 70, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+              new QRCode(document.getElementById('sepaQrCodeTarget'), { text: \`${sepsPayloadStr}\`, width: 60, height: 60, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
               setTimeout(() => { window.print(); }, 500);
             };
           <\/script>
@@ -1498,7 +1498,7 @@
       const activeOrders = orders.filter(o => Boolean(o.archived) === showingArchive);
       if (activeOrders.length === 0) return alert("Keine Aufträge vorhanden!");
       
-      const logoSvg = `<svg width="48" height="48" viewBox="0 0 100 100" fill="currentColor"><polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/><polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/></svg>`;
+      const logoSvg = `<svg width="38" height="38" viewBox="0 0 100 100" fill="currentColor"><polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#2563eb" stroke-width="8"/><polyline points="50,10 50,50 90,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 10,30" fill="none" stroke="#2563eb" stroke-width="6"/><polyline points="50,50 50,90" fill="none" stroke="#2563eb" stroke-width="6"/></svg>`;
 
       let allInvoicesHtml = '';
       activeOrders.forEach((o, index) => {
@@ -1508,31 +1508,31 @@
         
         let displayShippingCost = isPickup ? 0 : ((o.platform === 'eBay') ? (o.labelCost || 0) : (o.shippingFee || 0));
         let itemsNetTotal = Math.max(0, o.price - displayShippingCost);
-        let itemsListHtml = o.items.map(i => `<div style="margin-bottom: 2px;">• <b>${i.name}</b> ${i.color ? '<span style="color: #64748b; font-size: 11px;">(' + i.color + ')</span>' : ''}</div>`).join('');
+        let itemsListHtml = o.items.map(i => `<div style="margin-bottom: 1px;">• <b>${i.name}</b> ${i.color ? '<span style="color: #64748b; font-size: 10px;">(' + i.color + ')</span>' : ''}</div>`).join('');
         
         let itemsRows = `<tr>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #1e293b;">
-            <strong style="font-size: 12px; color: #0f172a;">3D-Druck Artikel</strong>
-            <div style="margin-top: 4px; color: #475569;">${itemsListHtml}</div>
+          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #1e293b;">
+            <strong style="font-size: 11px; color: #0f172a;">3D-Druck Artikel</strong>
+            <div style="margin-top: 2px; color: #475569;">${itemsListHtml}</div>
           </td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1 Set</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">${itemsNetTotal.toFixed(2).replace('.', ',')} €</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">${itemsNetTotal.toFixed(2).replace('.', ',')} €</td>
+          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1 Set</td>
+          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">${itemsNetTotal.toFixed(2).replace('.', ',')} €</td>
+          <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">${itemsNetTotal.toFixed(2).replace('.', ',')} €</td>
         </tr>`;
         
         if (isPickup) {
           itemsRows += `<tr>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #2563eb; font-weight: 500;">Selbstabholung vor Ort (Neuer Weg 4, 32369 Rahden)</td>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1</td>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">0,00 €</td>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">0,00 €</td>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #2563eb; font-weight: 500;">Selbstabholung vor Ort (Neuer Weg 4, 32369 Rahden)</td>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1</td>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">0,00 €</td>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">0,00 €</td>
           </tr>`;
         } else if (displayShippingCost > 0) {
           itemsRows += `<tr>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #334155;">Versandkosten & Verpackung</td>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1</td>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #334155;">Versandkosten & Verpackung</td>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; vertical-align: top;">1</td>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; vertical-align: top;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #0f172a; vertical-align: top;">${displayShippingCost.toFixed(2).replace('.', ',')} €</td>
           </tr>`;
         }
 
@@ -1541,10 +1541,10 @@
         if (dPerc > 0) {
           discountAmount = (o.price * dPerc) / 100;
           itemsRows += `<tr>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #dc2626; font-weight: 500;">Sondernachlass / Rabatt (${dPerc}%)</td>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #dc2626; vertical-align: top;">1</td>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #dc2626; vertical-align: top;">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #dc2626; vertical-align: top;">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #dc2626; font-weight: 500;">Sondernachlass / Rabatt (${dPerc}%)</td>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #dc2626; vertical-align: top;">1</td>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #dc2626; vertical-align: top;">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
+            <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; color: #dc2626; vertical-align: top;">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
           </tr>`;
         }
 
@@ -1552,34 +1552,34 @@
         const sepsPayloadStr = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
 
         allInvoicesHtml += `
-          <div style="max-width: 680px; margin: 0 auto 40px auto; background: #fff; padding: 20px; page-break-after: always; break-after: page; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; font-size: 12px; line-height: 1.5;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px;">
-              <div style="display: flex; gap: 14px; align-items: center;">
+          <div style="max-width: 650px; margin: 0 auto 20px auto; background: #fff; padding: 10px; page-break-after: always; break-after: page; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; font-size: 11px; line-height: 1.35;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 15px;">
+              <div style="display: flex; gap: 10px; align-items: center;">
                 ${logoSvg}
                 <div>
-                  <h1 style="font-size: 22px; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.5px;">Sefas3DShop</h1>
-                  <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Inh. Sefa Demir &bull; Neuer Weg 4 &bull; 32369 Rahden</div>
+                  <h1 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.5px;">Sefas3DShop</h1>
+                  <div style="font-size: 10px; color: #64748b; margin-top: 1px;">Inh. Sefa Demir &bull; Neuer Weg 4 &bull; 32369 Rahden</div>
                 </div>
               </div>
               <div style="text-align: right;">
-                <div style="font-size: 20px; font-weight: 700; color: #2563eb; margin: 0 0 6px 0;">RECHNUNG</div>
-                <div style="font-size: 11px; color: #475569; margin: 2px 0;"><strong>Nr:</strong> ${invoiceNumber}</div>
-                <div style="font-size: 11px; color: #475569; margin: 2px 0;"><strong>Datum:</strong> ${invoiceDate}</div>
+                <div style="font-size: 16px; font-weight: 700; color: #2563eb; margin: 0 0 4px 0;">RECHNUNG</div>
+                <div style="font-size: 10px; color: #475569; margin: 1px 0;"><strong>Nr:</strong> ${invoiceNumber}</div>
+                <div style="font-size: 10px; color: #475569; margin: 1px 0;"><strong>Datum:</strong> ${invoiceDate}</div>
               </div>
             </div>
 
-            <div style="margin-bottom: 30px; font-size: 12px; color: #334155; background: #f8fafc; padding: 14px 18px; border-radius: 8px; border: 1px solid #f1f5f9; display: inline-block; min-width: 260px;">
-              <div style="font-weight: bold; color: #0f172a; font-size: 13px; margin-bottom: 3px;">${o.customer}</div>
+            <div style="margin-bottom: 16px; font-size: 11px; color: #334155; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #f1f5f9; display: inline-block; min-width: 240px;">
+              <div style="font-weight: bold; color: #0f172a; font-size: 12px; margin-bottom: 2px;">${o.customer}</div>
               <div style="white-space: pre-line; color: #475569;">${o.address || 'Keine Anschrift hinterlegt'}</div>
             </div>
 
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
               <thead>
                 <tr>
-                  <th style="background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; padding: 10px 12px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-align: left;">Beschreibung</th>
-                  <th style="background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; padding: 10px 12px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-align: center;">Menge</th>
-                  <th style="background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; padding: 10px 12px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-align: right;">Einzelpreis</th>
-                  <th style="background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; padding: 10px 12px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-align: right;">Gesamt</th>
+                  <th style="background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; padding: 6px 10px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-align: left;">Beschreibung</th>
+                  <th style="background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; padding: 6px 10px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-align: center;">Menge</th>
+                  <th style="background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; padding: 6px 10px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-align: right;">Einzelpreis</th>
+                  <th style="background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; padding: 6px 10px; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0; text-align: right;">Gesamt</th>
                 </tr>
               </thead>
               <tbody>
@@ -1587,23 +1587,23 @@
               </tbody>
             </table>
 
-            <div style="display: flex; justify-content: flex-end; margin-bottom: 30px;">
-              <div style="width: 260px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px;">
-                <div style="display: flex; justify-content: space-between; padding: 5px 0; font-size: 12px; color: #475569;"><span>Gesamtbetrag:</span> <span style="font-weight: bold; color: #2563eb; font-size: 14px;">${totalAmountNum.toFixed(2).replace('.', ',')} €</span></div>
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+              <div style="width: 240px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px;">
+                <div style="display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; color: #475569;"><span>Gesamtbetrag:</span> <span style="font-weight: bold; color: #2563eb; font-size: 13px;">${totalAmountNum.toFixed(2).replace('.', ',')} €</span></div>
               </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; background: ${o.isPaid === '✅ Ja' ? '#f0fdf4' : '#fffbeb'}; border: 1px solid ${o.isPaid === '✅ Ja' ? '#bbf7d0' : '#fde68a'}; padding: 14px 18px; border-radius: 8px; margin-bottom: 30px;">
-              <div style="font-size: 11px;">
-                <strong style="font-size: 12px; display: block; margin-bottom: 3px; color: ${o.isPaid === '✅ Ja' ? '#166534' : '#92400e'};">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: ${o.isPaid === '✅ Ja' ? '#f0fdf4' : '#fffbeb'}; border: 1px solid ${o.isPaid === '✅ Ja' ? '#bbf7d0' : '#fde68a'}; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px;">
+              <div style="font-size: 10px;">
+                <strong style="font-size: 11px; display: block; margin-bottom: 2px; color: ${o.isPaid === '✅ Ja' ? '#166534' : '#92400e'};">
                   ${o.isPaid === '✅ Ja' ? '✅ Bezahlt (' + (o.paymentMethod || 'Überweisung') + ')' : '⏳ Offener Betrag (' + (o.paymentMethod || 'Überweisung') + ')'}
                 </strong>
                 <span style="color: #475569;">IBAN: DE20 1001 0178 0592 6798 08 &bull; Revolut Bank</span>
               </div>
-              <div style="background: white; padding: 4px; border: 1px solid #cbd5e1; border-radius: 6px;" id="batchSepaQr_${index}" data-payload="${encodeURIComponent(sepsPayloadStr)}"></div>
+              <div style="background: white; padding: 3px; border: 1px solid #cbd5e1; border-radius: 4px;" id="batchSepaQr_${index}" data-payload="${encodeURIComponent(sepsPayloadStr)}"></div>
             </div>
 
-            <div style="border-top: 1px solid #e2e8f0; padding-top: 15px; font-size: 10px; color: #94a3b8; text-align: center;">
+            <div style="border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 9px; color: #94a3b8; text-align: center;">
               Kleinunternehmer gemäß § 19 UStG. Vielen Dank für deinen Einkauf!
             </div>
           </div>`;
@@ -1614,16 +1614,16 @@
         <!DOCTYPE html>
         <html>
         <head><title>Alle Rechnungen</title>
-        <style>@page { size: A4; margin: 20mm; }</style>
+        <style>@page { size: A4; margin: 12mm; }</style>
         </head>
-        <body style="background: #fff; color: #000; padding: 10px;">
+        <body style="background: #fff; color: #000; padding: 5px;">
           ${allInvoicesHtml}
           <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
           <script>
             window.onload = function() {
               document.querySelectorAll('[id^="batchSepaQr_"]').forEach(el => {
                 let payload = decodeURIComponent(el.getAttribute('data-payload'));
-                new QRCode(el, { text: payload, width: 70, height: 70, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+                new QRCode(el, { text: payload, width: 60, height: 60, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
               });
               setTimeout(() => { window.print(); }, 800);
             };
