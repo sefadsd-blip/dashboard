@@ -494,16 +494,21 @@
       if (dPerc > 0) discountAmount = (o.price * dPerc) / 100;
       const totalAmountNum = Math.max(0, o.price - discountAmount);
 
+      // Korrektur: Wenn es nur einen Artikel gibt oder der Gesamtpreis übergeben wurde, weisen wir den Betrag dem Artikel zu (abzgl. Versand falls separat gelistet)
+      let netArticlePrice = Math.max(0, o.price - displayShippingCost);
+
       let itemsRows = '';
       if (o.items && o.items.length > 0) {
+        let singleItemPrice = netArticlePrice / o.items.reduce((sum, i) => sum + (i.qty || 1), 0);
         o.items.forEach(i => {
           let q = i.qty || 1;
+          let lineTotal = singleItemPrice * q;
           let colorText = i.color ? `<span style="color: #777; font-weight: 400;">(${i.color})</span>` : '';
           itemsRows += `<tr>
             <td><strong>${i.name}</strong>${colorText}</td>
             <td class="qty">${q} Stk.</td>
-            <td class="price">—</td>
-            <td class="total">—</td>
+            <td class="price">${singleItemPrice.toFixed(2).replace('.', ',')} €</td>
+            <td class="total">${lineTotal.toFixed(2).replace('.', ',')} €</td>
           </tr>`;
         });
       }
