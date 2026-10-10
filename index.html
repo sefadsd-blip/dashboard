@@ -11,10 +11,11 @@
     body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
     .card { background-color: #1e293b; border: 1px solid #334155; }
     @keyframes pulse-red {
-      0%, 100% { border-color: rgba(239, 68, 68, 0.4); }
-      50% { border-color: rgba(239, 68, 68, 0.9); }
+      0%, 100% { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 5px rgba(239, 68, 68, 0.2); }
+      50% { border-color: rgba(239, 68, 68, 0.9); box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); }
     }
     .pulse-low-spool { animation: pulse-red 2s infinite; }
+    .pulse-delayed-order { animation: pulse-red 1.5s infinite; background-color: rgba(153, 27, 27, 0.15) !important; }
   </style>
 </head>
 <body class="p-3 md:p-5 min-h-screen text-xs">
@@ -1562,7 +1563,26 @@
       tbody.innerHTML = '';
       const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
 
-      orders.forEach((o, idx) => {
+      // Hilfsfunktion zur Prüfung, ob ein Auftrag älter als 2 Tage ist und noch bearbeitet wird
+      const isDelayedOrder = (o) => {
+        if (o.archived || o.status === 'Fertig') return false;
+        if (!o.orderDate) return false;
+        const orderTime = new Date(o.orderDate).getTime();
+        const nowTime = new Date().getTime();
+        const diffDays = (nowTime - orderTime) / (1000 * 60 * 60 * 24);
+        return diffDays > 2;
+      };
+
+      // Sortierung: Überfällige Aufträge (> 2 Tage) kommen ganz nach oben, danach neueste zuerst
+      let sortedOrders = [...orders].map((o, originalIndex) => ({ o, originalIndex })).sort((a, b) => {
+        const aDelayed = isDelayedOrder(a.o);
+        const bDelayed = isDelayedOrder(b.o);
+        if (aDelayed && !bDelayed) return -1;
+        if (!aDelayed && bDelayed) return 1;
+        return (b.o.id || 0) - (a.o.id || 0);
+      });
+
+      sortedOrders.forEach(({ o, originalIndex: idx }) => {
         if (Boolean(o.archived) !== showingArchive) return;
         if (query && !o.customer.toLowerCase().includes(query) && !o.tracking.toLowerCase().includes(query)) return;
 
@@ -1575,6 +1595,7 @@
         let discountCalculated = (o.price * discPerc) / 100;
         const totalOrderRevenue = Math.max(0, o.price - discountCalculated);
         const isEbay = o.platform === 'eBay';
+        const delayed = isDelayedOrder(o);
 
         if (editingIndex === idx) {
           let editItemsHtml = `<div class="space-y-1 mb-2">
@@ -1630,9 +1651,11 @@
           let orderDiscountDisplay = discPerc > 0 ? `<div class="text-amber-400 text-[10px]">Rabatt: -${discPerc}%</div>` : '';
           let trackingDisplay = isPickupOrder ? `<span class="bg-blue-500/20 text-blue-300 border border-blue-500/40 px-1.5 py-0.5 rounded text-[10px] font-bold">🏠 Selbstabholer</span>` : `<span class="font-mono text-blue-400">${o.tracking}</span>`;
 
+          let rowClass = delayed ? 'pulse-delayed-order border-b border-red-500/40' : 'hover:bg-slate-800/40 border-b border-slate-800';
+
           tbody.innerHTML += `
-            <tr class="hover:bg-slate-800/40 border-b border-slate-800">
-              <td class="p-2 font-medium text-white">${o.customer}<div class="flex items-center gap-1 mt-0.5">${platBadge}</div><div class="text-[9px] text-slate-400">${o.address || ''}</div></td>
+            <tr class="${rowClass}">
+              <td class="p-2 font-medium text-white">${o.customer}<div class="flex items-center gap-1 mt-0.5">${platBadge}${delayed ? '<span class="bg-red-500/20 text-red-300 border border-red-500/50 px-1.5 py-0.5 rounded text-[9px] font-bold">⚠️ >2 Tage</span>' : ''}</div><div class="text-[9px] text-slate-400">${o.address || ''}</div></td>
               <td class="p-2 text-[11px] font-mono text-cyan-300 font-bold">${fixedInvNum}</td>
               <td class="p-2">${itemsHtml}</td>
               <td class="p-2"><select onchange="updateField(${o.id}, 'printer', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300">${printerOptionsTable}</select></td>
