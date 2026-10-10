@@ -431,53 +431,53 @@
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
         @page { size: A4; margin: 0; }
         body { font-family: 'Montserrat', sans-serif; background: #fff; color: #111; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        .page { padding: 20mm 15mm; position: relative; max-width: 800px; margin: 0 auto; background: #fff; }
+        .page { padding: 12mm 12mm; position: relative; max-width: 800px; margin: 0 auto; background: #fff; }
         
-        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #111; padding-bottom: 12px; margin-bottom: 20px; }
-        .brand { display: flex; align-items: flex-start; gap: 12px; }
-        .brand-icon { width: 30px; height: 30px; margin-top: 2px; }
-        .brand-text h1 { font-size: 20px; font-weight: 800; color: #111; margin: 0 0 2px 0; letter-spacing: 0.5px; line-height: 1.1; text-transform: uppercase; }
-        .brand-text p { font-size: 8px; color: #444; margin: 0; font-weight: 400; line-height: 1.3; }
-        .invoice-title h2 { font-size: 22px; font-weight: 800; color: #111; margin: 0; text-transform: uppercase; letter-spacing: 1.5px; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #111; padding-bottom: 8px; margin-bottom: 12px; }
+        .brand { display: flex; align-items: flex-start; gap: 8px; }
+        .brand-icon { width: 22px; height: 22px; margin-top: 2px; }
+        .brand-text h1 { font-size: 14px; font-weight: 800; color: #111; margin: 0 0 1px 0; letter-spacing: 0.3px; line-height: 1.0; text-transform: uppercase; }
+        .brand-text p { font-size: 7px; color: #444; margin: 0; font-weight: 400; line-height: 1.2; }
+        .invoice-title h2 { font-size: 16px; font-weight: 800; color: #111; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
         
-        .info-grid { display: flex; justify-content: space-between; margin-bottom: 25px; }
+        .info-grid { display: flex; justify-content: space-between; margin-bottom: 15px; }
         .customer-box { width: 45%; }
-        .customer-box h3 { font-size: 9px; text-transform: uppercase; color: #111; font-weight: 700; margin: 0 0 6px 0; letter-spacing: 0.5px; border-bottom: 1px solid #111; padding-bottom: 2px; display: inline-block;}
-        .customer-box p { font-size: 11px; color: #111; margin: 0; line-height: 1.4; font-weight: 700; }
-        .customer-box p span { font-weight: 400; color: #333; display: block; margin-top: 2px; white-space: pre-line; }
+        .customer-box h3 { font-size: 8px; text-transform: uppercase; color: #111; font-weight: 700; margin: 0 0 3px 0; letter-spacing: 0.3px; border-bottom: 1px solid #111; padding-bottom: 1px; display: inline-block;}
+        .customer-box p { font-size: 9px; color: #111; margin: 0; line-height: 1.3; font-weight: 700; }
+        .customer-box p span { font-weight: 400; color: #333; display: block; margin-top: 1px; white-space: pre-line; }
         
         .meta-box { width: 45%; }
         .meta-table { width: 100%; border-collapse: collapse; }
-        .meta-table td { padding: 4px 0; font-size: 10px; color: #111; border-bottom: 1px solid #eee; }
-        .meta-table td:first-child { font-weight: 600; color: #555; width: 40%; }
+        .meta-table td { padding: 2px 0; font-size: 8.5px; color: #111; border-bottom: 1px solid #eee; }
+        .meta-table td:first-child { font-weight: 600; color: #555; width: 45%; }
         .meta-table td:last-child { font-weight: 700; text-align: right; }
         
-        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
-        .items-table th { border-top: 1.5px solid #111; border-bottom: 1px solid #111; color: #111; padding: 8px 8px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; text-align: left; }
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        .items-table th { border-top: 1.2px solid #111; border-bottom: 1px solid #111; color: #111; padding: 5px 6px; font-size: 8px; text-transform: uppercase; letter-spacing: 0.3px; font-weight: 700; text-align: left; }
         .items-table th.center { text-align: center; }
         .items-table th.right { text-align: right; }
-        .items-table td { padding: 10px 8px; border-bottom: 1px solid #eee; font-size: 10px; color: #111; vertical-align: top; line-height: 1.3; }
-        .items-table td strong { font-weight: 700; display: block; margin-bottom: 1px; font-size: 10.5px; }
+        .items-table td { padding: 6px 6px; border-bottom: 1px solid #eee; font-size: 8.5px; color: #111; vertical-align: top; line-height: 1.2; }
+        .items-table td strong { font-weight: 700; display: block; margin-bottom: 1px; font-size: 9px; }
         .items-table td.qty { text-align: center; font-weight: 700; white-space: nowrap; }
         .items-table td.price { text-align: right; color: #111; white-space: nowrap; }
         .items-table td.total { text-align: right; font-weight: 700; white-space: nowrap; }
         
-        .totals-wrapper { display: flex; justify-content: flex-end; margin-bottom: 25px; }
-        .totals-box { width: 260px; }
-        .total-row { display: flex; justify-content: space-between; padding: 6px 8px; font-size: 10px; font-weight: 600; }
-        .total-row.final { border-top: 1.5px solid #111; border-bottom: 1.5px solid #111; margin-top: 4px; align-items: center; padding: 8px 8px; }
-        .total-row.final span:first-child { font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-        .total-row.final span:last-child { font-weight: 800; font-size: 13px; }
+        .totals-wrapper { display: flex; justify-content: flex-end; margin-bottom: 15px; }
+        .totals-box { width: 220px; }
+        .total-row { display: flex; justify-content: space-between; padding: 4px 6px; font-size: 8.5px; font-weight: 600; }
+        .total-row.final { border-top: 1.2px solid #111; border-bottom: 1.2px solid #111; margin-top: 3px; align-items: center; padding: 6px 6px; }
+        .total-row.final span:first-child { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; }
+        .total-row.final span:last-child { font-weight: 800; font-size: 11px; }
         
-        .payment-block { display: flex; justify-content: space-between; align-items: flex-start; border: 1px solid #111; padding: 15px; margin-bottom: 20px; }
-        .payment-info { flex: 1; padding-right: 15px; }
-        .payment-info h3 { margin: 0 0 8px 0; font-size: 10px; color: #111; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-        .payment-info p { margin: 0 0 4px 0; font-size: 9.5px; color: #333; line-height: 1.3; }
-        .payment-info p strong { font-weight: 700; color: #111; display: inline-block; width: 45px; }
+        .payment-block { display: flex; justify-content: space-between; align-items: flex-start; border: 1px solid #111; padding: 10px; margin-bottom: 12px; }
+        .payment-info { flex: 1; padding-right: 10px; }
+        .payment-info h3 { margin: 0 0 5px 0; font-size: 8.5px; color: #111; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; }
+        .payment-info p { margin: 0 0 3px 0; font-size: 8px; color: #333; line-height: 1.2; }
+        .payment-info p strong { font-weight: 700; color: #111; display: inline-block; width: 40px; }
         
-        .qr-box { padding: 4px; border: 1px solid #111; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 75px; height: 75px; background: #fff; flex-shrink: 0; }
+        .qr-box { padding: 3px; border: 1px solid #111; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 60px; height: 60px; background: #fff; flex-shrink: 0; }
         
-        .footer { text-align: center; border-top: 1px solid #111; padding-top: 12px; font-size: 8px; color: #666; line-height: 1.4; }
+        .footer { text-align: center; border-top: 1px solid #111; padding-top: 8px; font-size: 7px; color: #666; line-height: 1.3; }
         .highlight-row td { font-style: italic; background: #fafafa; }
       `;
     }
@@ -510,7 +510,7 @@
       
       if (isPickup) {
         itemsRows += `<tr class="highlight-row">
-          <td><strong>Selbstabholung vor Ort</strong><span style="font-size: 9px; font-weight: 400; color: #777;">Neuer Weg 4, 32369 Rahden</span></td>
+          <td><strong>Selbstabholung vor Ort</strong><span style="font-size: 7.5px; font-weight: 400; color: #777;">Neuer Weg 4, 32369 Rahden</span></td>
           <td class="qty">1 Stk.</td>
           <td class="price">0,00 €</td>
           <td class="total">0,00 €</td>
@@ -545,8 +545,8 @@
             <div class="brand">
               ${logoSvg}
               <div class="brand-text">
-                <h1>SEFAS 3D<br>SHOP</h1>
-                <p>Inh. Sefa Demir | Neuer Weg 4 |<br>32369 Rahden | St.-Nr.:<br>52063271982</p>
+                <h1>SEFAS 3D SHOP</h1>
+                <p>Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden<br>St.-Nr.: 52063271982</p>
               </div>
             </div>
             <div class="invoice-title">
@@ -625,7 +625,7 @@
           <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
           <script>
             window.onload = function() {
-              new QRCode(document.getElementById('sepaQrCodeTarget'), { text: \`${sepsPayloadStr}\`, width: 65, height: 65, colorDark: "#111111", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+              new QRCode(document.getElementById('sepaQrCodeTarget'), { text: \`${sepsPayloadStr}\`, width: 55, height: 55, colorDark: "#111111", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
               setTimeout(() => { window.print(); }, 500);
             };
           <\/script>
@@ -655,7 +655,7 @@
             window.onload = function() {
               document.querySelectorAll('[id^="batchSepaQr_"]').forEach(el => {
                 let payload = decodeURIComponent(el.getAttribute('data-payload'));
-                new QRCode(el, { text: payload, width: 65, height: 65, colorDark: "#111111", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+                new QRCode(el, { text: payload, width: 55, height: 55, colorDark: "#111111", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
               });
               setTimeout(() => { window.print(); }, 800);
             };
