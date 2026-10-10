@@ -306,8 +306,6 @@
       { id: 3, name: "Akustikpaneel Halterung / Haken – Schwarz, 3D-gedruckt", size: "Standard", price: 5.00 }
     ];
 
-    const REPAIR_ORDERS = [];
-
     let editingIndex = -1;
     let showingArchive = false;
     let orders = [];
@@ -430,56 +428,56 @@
 
     function getInvoiceCSS() {
       return `
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
         @page { size: A4; margin: 0; }
         body { font-family: 'Montserrat', sans-serif; background: #fff; color: #111; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        .page { padding: 25mm 20mm; position: relative; max-width: 800px; margin: 0 auto; background: #fff; }
+        .page { padding: 20mm 15mm; position: relative; max-width: 800px; margin: 0 auto; background: #fff; }
         
-        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #111; padding-bottom: 20px; margin-bottom: 30px; }
-        .brand { display: flex; align-items: flex-start; gap: 15px; }
-        .brand-icon { width: 36px; height: 36px; margin-top: 4px; }
-        .brand-text h1 { font-size: 24px; font-weight: 800; color: #111; margin: 0 0 4px 0; letter-spacing: 0.5px; line-height: 1.1; text-transform: uppercase; }
-        .brand-text p { font-size: 9px; color: #444; margin: 0; font-weight: 400; line-height: 1.4; }
-        .invoice-title h2 { font-size: 28px; font-weight: 800; color: #111; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #111; padding-bottom: 12px; margin-bottom: 20px; }
+        .brand { display: flex; align-items: flex-start; gap: 12px; }
+        .brand-icon { width: 30px; height: 30px; margin-top: 2px; }
+        .brand-text h1 { font-size: 20px; font-weight: 800; color: #111; margin: 0 0 2px 0; letter-spacing: 0.5px; line-height: 1.1; text-transform: uppercase; }
+        .brand-text p { font-size: 8px; color: #444; margin: 0; font-weight: 400; line-height: 1.3; }
+        .invoice-title h2 { font-size: 22px; font-weight: 800; color: #111; margin: 0; text-transform: uppercase; letter-spacing: 1.5px; }
         
-        .info-grid { display: flex; justify-content: space-between; margin-bottom: 40px; }
+        .info-grid { display: flex; justify-content: space-between; margin-bottom: 25px; }
         .customer-box { width: 45%; }
-        .customer-box h3 { font-size: 10px; text-transform: uppercase; color: #111; font-weight: 700; margin: 0 0 10px 0; letter-spacing: 1px; border-bottom: 1px solid #111; padding-bottom: 4px; display: inline-block;}
-        .customer-box p { font-size: 13px; color: #111; margin: 0; line-height: 1.5; font-weight: 700; }
+        .customer-box h3 { font-size: 9px; text-transform: uppercase; color: #111; font-weight: 700; margin: 0 0 6px 0; letter-spacing: 0.5px; border-bottom: 1px solid #111; padding-bottom: 2px; display: inline-block;}
+        .customer-box p { font-size: 11px; color: #111; margin: 0; line-height: 1.4; font-weight: 700; }
         .customer-box p span { font-weight: 400; color: #333; display: block; margin-top: 2px; white-space: pre-line; }
         
         .meta-box { width: 45%; }
         .meta-table { width: 100%; border-collapse: collapse; }
-        .meta-table td { padding: 6px 0; font-size: 11px; color: #111; border-bottom: 1px solid #eee; }
+        .meta-table td { padding: 4px 0; font-size: 10px; color: #111; border-bottom: 1px solid #eee; }
         .meta-table td:first-child { font-weight: 600; color: #555; width: 40%; }
         .meta-table td:last-child { font-weight: 700; text-align: right; }
         
-        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
-        .items-table th { border-top: 2px solid #111; border-bottom: 1px solid #111; color: #111; padding: 12px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; text-align: left; }
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+        .items-table th { border-top: 1.5px solid #111; border-bottom: 1px solid #111; color: #111; padding: 8px 8px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; text-align: left; }
         .items-table th.center { text-align: center; }
         .items-table th.right { text-align: right; }
-        .items-table td { padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 11px; color: #111; vertical-align: top; line-height: 1.4; }
-        .items-table td strong { font-weight: 700; display: block; margin-bottom: 2px; font-size: 12px; }
+        .items-table td { padding: 10px 8px; border-bottom: 1px solid #eee; font-size: 10px; color: #111; vertical-align: top; line-height: 1.3; }
+        .items-table td strong { font-weight: 700; display: block; margin-bottom: 1px; font-size: 10.5px; }
         .items-table td.qty { text-align: center; font-weight: 700; white-space: nowrap; }
         .items-table td.price { text-align: right; color: #111; white-space: nowrap; }
         .items-table td.total { text-align: right; font-weight: 700; white-space: nowrap; }
         
-        .totals-wrapper { display: flex; justify-content: flex-end; margin-bottom: 40px; }
-        .totals-box { width: 300px; }
-        .total-row { display: flex; justify-content: space-between; padding: 8px 10px; font-size: 11px; font-weight: 600; }
-        .total-row.final { border-top: 2px solid #111; border-bottom: 2px solid #111; margin-top: 5px; align-items: center; padding: 12px 10px; }
-        .total-row.final span:first-child { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-        .total-row.final span:last-child { font-weight: 800; font-size: 16px; }
+        .totals-wrapper { display: flex; justify-content: flex-end; margin-bottom: 25px; }
+        .totals-box { width: 260px; }
+        .total-row { display: flex; justify-content: space-between; padding: 6px 8px; font-size: 10px; font-weight: 600; }
+        .total-row.final { border-top: 1.5px solid #111; border-bottom: 1.5px solid #111; margin-top: 4px; align-items: center; padding: 8px 8px; }
+        .total-row.final span:first-child { font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .total-row.final span:last-child { font-weight: 800; font-size: 13px; }
         
-        .payment-block { display: flex; justify-content: space-between; align-items: flex-start; border: 1px solid #111; padding: 20px; margin-bottom: 30px; }
-        .payment-info { flex: 1; padding-right: 20px; }
-        .payment-info h3 { margin: 0 0 12px 0; font-size: 12px; color: #111; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-        .payment-info p { margin: 0 0 6px 0; font-size: 11px; color: #333; line-height: 1.4; }
-        .payment-info p strong { font-weight: 700; color: #111; display: inline-block; width: 50px; }
+        .payment-block { display: flex; justify-content: space-between; align-items: flex-start; border: 1px solid #111; padding: 15px; margin-bottom: 20px; }
+        .payment-info { flex: 1; padding-right: 15px; }
+        .payment-info h3 { margin: 0 0 8px 0; font-size: 10px; color: #111; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .payment-info p { margin: 0 0 4px 0; font-size: 9.5px; color: #333; line-height: 1.3; }
+        .payment-info p strong { font-weight: 700; color: #111; display: inline-block; width: 45px; }
         
-        .qr-box { padding: 5px; border: 1px solid #111; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 90px; height: 90px; background: #fff; flex-shrink: 0; }
+        .qr-box { padding: 4px; border: 1px solid #111; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 75px; height: 75px; background: #fff; flex-shrink: 0; }
         
-        .footer { text-align: center; border-top: 1px solid #111; padding-top: 20px; font-size: 9px; color: #666; line-height: 1.5; }
+        .footer { text-align: center; border-top: 1px solid #111; padding-top: 12px; font-size: 8px; color: #666; line-height: 1.4; }
         .highlight-row td { font-style: italic; background: #fafafa; }
       `;
     }
@@ -512,7 +510,7 @@
       
       if (isPickup) {
         itemsRows += `<tr class="highlight-row">
-          <td><strong>Selbstabholung vor Ort</strong><span style="font-size: 10px; font-weight: 400; color: #777;">Neuer Weg 4, 32369 Rahden</span></td>
+          <td><strong>Selbstabholung vor Ort</strong><span style="font-size: 9px; font-weight: 400; color: #777;">Neuer Weg 4, 32369 Rahden</span></td>
           <td class="qty">1 Stk.</td>
           <td class="price">0,00 €</td>
           <td class="total">0,00 €</td>
@@ -536,7 +534,6 @@
       }
 
       const sepsPayloadStr = ["BCD", "002", "1", "SCT", "REVODEB2", "Sefa Demir", "DE20100101780592679808", "EUR" + totalAmountNum.toFixed(2), "", "", "Rechnung " + invoiceNumber].join("\n");
-      // Neues, minimalistisches Würfel-Icon
       const logoSvg = `<svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
 
       const qrId = index !== null ? `batchSepaQr_${index}` : 'sepaQrCodeTarget';
@@ -628,7 +625,7 @@
           <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
           <script>
             window.onload = function() {
-              new QRCode(document.getElementById('sepaQrCodeTarget'), { text: \`${sepsPayloadStr}\`, width: 75, height: 75, colorDark: "#111111", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+              new QRCode(document.getElementById('sepaQrCodeTarget'), { text: \`${sepsPayloadStr}\`, width: 65, height: 65, colorDark: "#111111", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
               setTimeout(() => { window.print(); }, 500);
             };
           <\/script>
@@ -658,7 +655,7 @@
             window.onload = function() {
               document.querySelectorAll('[id^="batchSepaQr_"]').forEach(el => {
                 let payload = decodeURIComponent(el.getAttribute('data-payload'));
-                new QRCode(el, { text: payload, width: 75, height: 75, colorDark: "#111111", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+                new QRCode(el, { text: payload, width: 65, height: 65, colorDark: "#111111", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
               });
               setTimeout(() => { window.print(); }, 800);
             };
