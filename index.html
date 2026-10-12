@@ -145,7 +145,7 @@
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Ausgaben (Monat)</p><h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex items-center justify-between border border-emerald-500/30 bg-emerald-950/10"><div><p class="text-[11px] text-emerald-400 font-semibold">Reingewinn</p><h3 id="statProfit" class="text-xl font-bold text-emerald-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍 eBay (Offen)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt</button></div>
-        <div class="card p-3 rounded-xl flex items-center justify-between border border-orange-500/30 bg-orange-950/20"><div><p class="text-[11px] text-orange-300 font-semibold">⚡ Strom (Monat)</p><h3 id="statElectricity" class="text-xl font-bold text-orange-400">0,00 €</h3></div></div>
+        <div class="card p-3 rounded-xl flex items-center justify-between border border-orange-500/30 bg-orange-950/20"><div><p class="text-[11px] text-orange-300 font-semibold">⚡ Strom (Basis 60€ + Druck)</p><h3 id="statElectricity" class="text-xl font-bold text-orange-400">0,00 €</h3></div></div>
       </div>
     </section>
 
@@ -778,12 +778,15 @@
       });
 
       expenses.forEach(ex => { if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) totalExp += ex.amount; });
-      let electricityCost = totalPrintTime * 0.12;
+      
+      // HIER SIND DIE +60 € FEST EINGEBAUT!
+      let electricityCost = (totalPrintTime * 0.12) + 60;
 
       document.getElementById('statRevolutDisplay').innerText = currentRevolutBalance.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('statProfit').innerText = ((totalRev - totalExp) + correctionValue).toFixed(2).replace('.', ',') + ' €';
+      // Und hier werden die 60€ vom Reingewinn (Profit) abgezogen
+      document.getElementById('statProfit').innerText = ((totalRev - totalExp) + correctionValue - 60).toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statElectricity').innerText = electricityCost.toFixed(2).replace('.', ',') + ' €';
     }
