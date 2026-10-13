@@ -161,7 +161,7 @@
       </section>
     </div>
 
-    <!-- ANGEBOTE BEREICH MIT KUNDEN-SELEKTOR, PDF, KATALOG, RABATT & EDIT -->
+    <!-- ANGEBOTE BEREICH -->
     <section class="card p-4 rounded-xl space-y-3 border border-amber-500/30 bg-amber-950/10">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-700/60 pb-2.5">
         <h2 class="text-xs font-semibold text-amber-400"><i class="fa-solid fa-file-invoice-dollar mr-1.5"></i> Angebote & Preisanfragen</h2>
@@ -211,6 +211,7 @@
       </div>
     </section>
 
+    <!-- AUFTRÄGE BEREICH -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-700/60 pb-2.5">
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-plus-circle mr-1.5 text-blue-400"></i> Neuen Auftrag anlegen</h2>
@@ -281,6 +282,7 @@
       </form>
     </section>
 
+    <!-- AUSGABEN BEREICH -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-receipt mr-1.5 text-blue-400"></i> Betriebsausgaben & Einkäufe</h2>
@@ -297,6 +299,7 @@
       </div>
     </section>
 
+    <!-- BESTELLUNGEN TABELLE -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div class="flex items-center space-x-2"><h2 id="tableTitle" class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-list-check mr-1.5 text-blue-400"></i> Bestellungen (Aktiv)</h2></div>
@@ -314,6 +317,7 @@
       </div>
     </section>
 
+    <!-- VORLAGEN & DANKES-ZETTEL BEREICH -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-700/60 pb-2.5">
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-comments mr-1.5 text-blue-400"></i> Kleinanzeigen & Kunden-Vorlagen</h2>
@@ -822,7 +826,7 @@
           <div class="totals-wrapper">
             <div class="totals-box">
               <div class="total-row"><span>Zwischensumme:</span> <span>${subtotal.toFixed(2).replace('.', ',')} €</span></div>
-              ${discPerc > 0 ? `<div class="total-row"><span>Rabatt (${discPerc}\%):</span> <span>-${discountAmount.toFixed(2).replace('.', ',')} €</span></div>` : ''}
+              ${discPerc > 0 ? `<div class="total-row"><span>Rabatt (${discPerc}%):</span> <span>-${discountAmount.toFixed(2).replace('.', ',')} €</span></div>` : ''}
               <div class="total-row final"><span>Gesamtbetrag:</span> <span>${totalAmountNum.toFixed(2).replace('.', ',')} €</span></div>
             </div>
           </div>
@@ -1185,11 +1189,18 @@
       const isPickup = document.getElementById('isPickup').checked;
       const lCostVal = isPickup ? 0 : (parseFloat(document.getElementById('labelCost').value) || 0);
       const customDate = document.getElementById('orderDate').value || todayStr;
+      const custName = document.getElementById('customer').value.trim();
       const fixedInvoiceNum = generateNewInvoiceNumber(customDate);
-      if (lCostVal > 0) expenses.unshift({ id: Date.now(), description: `Porto für ${document.getElementById('customer').value}`, category: 'DHL / Versand', amount: lCostVal, date: customDate });
+      
+      const orderId = Date.now();
+      let expId = null;
+      if (lCostVal > 0) {
+        expId = Date.now() + 1;
+        expenses.unshift({ id: expId, description: `Porto für ${custName}`, category: 'DHL / Versand', amount: lCostVal, date: customDate });
+      }
       
       orders.unshift({
-        id: Date.now(), customer: document.getElementById('customer').value, platform: document.getElementById('platform').value, paymentMethod: document.getElementById('paymentMethod').value,
+        id: orderId, expenseId: expId, customer: custName, platform: document.getElementById('platform').value, paymentMethod: document.getElementById('paymentMethod').value,
         isPaid: document.getElementById('isPaid').value, ebayBalancePaid: document.getElementById('platform').value === 'eBay' ? '⏳ Bei eBay' : 'N/A', address: document.getElementById('address').value || '', printer: document.getElementById('printer').value,
         status: isPickup ? "Wartet auf Abholung" : "Offen", label: document.getElementById('label').value, packed: document.getElementById('packed').value, price: parseFloat(document.getElementById('price').value) || 0, shippingFee: isPickup ? 0 : (parseFloat(document.getElementById('shippingFee').value) || 0),
         labelCost: lCostVal, discountPercent: parseFloat(document.getElementById('discountPercent').value) || 0, tracking: isPickup ? "Selbstabholer" : (document.getElementById('tracking').value || '-'), orderDate: customDate, invoiceNumber: fixedInvoiceNum, archived: false, items: itemsList
@@ -1215,7 +1226,34 @@
       updatedItems.forEach(newI => { if (newI.color && newI.weight > 0) { const spool = spools.find(s => s.name === newI.color); if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - (newI.weight * newI.qty)); } });
 
       const isPickupEdit = document.getElementById(`edit-ispickup-${idx}`)?.checked || false;
-      orders[idx].customer = document.getElementById(`edit-cust-${idx}`).value; 
+      const newCustName = document.getElementById(`edit-cust-${idx}`).value;
+      const newOrderDate = document.getElementById(`edit-date-${idx}`)?.value || orders[idx].orderDate;
+      const newLabelCost = isPickupEdit ? 0 : (parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0);
+
+      // Verknüpfte Ausgabe synchronisieren
+      if (oldOrder.expenseId) {
+        let linkedExp = expenses.find(e => e.id === oldOrder.expenseId);
+        if (linkedExp) {
+          if (newLabelCost > 0) {
+            linkedExp.amount = newLabelCost;
+            linkedExp.description = `Porto für ${newCustName}`;
+            linkedExp.date = newOrderDate;
+          } else {
+            expenses = expenses.filter(e => e.id !== oldOrder.expenseId);
+            orders[idx].expenseId = null;
+          }
+        } else if (newLabelCost > 0) {
+          const newExpId = Date.now();
+          orders[idx].expenseId = newExpId;
+          expenses.unshift({ id: newExpId, description: `Porto für ${newCustName}`, category: 'DHL / Versand', amount: newLabelCost, date: newOrderDate });
+        }
+      } else if (newLabelCost > 0) {
+        const newExpId = Date.now();
+        orders[idx].expenseId = newExpId;
+        expenses.unshift({ id: newExpId, description: `Porto für ${newCustName}`, category: 'DHL / Versand', amount: newLabelCost, date: newOrderDate });
+      }
+
+      orders[idx].customer = newCustName; 
       orders[idx].platform = document.getElementById(`edit-plat-${idx}`).value; 
       orders[idx].paymentMethod = document.getElementById(`edit-paymeth-${idx}`).value;
       orders[idx].isPaid = document.getElementById(`edit-ispaid-${idx}`).value; 
@@ -1228,13 +1266,20 @@
       orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0; 
       orders[idx].shippingFee = isPickupEdit ? 0 : (parseFloat(document.getElementById(`edit-shipfee-${idx}`).value) || 0); 
       orders[idx].discountPercent = parseFloat(document.getElementById(`edit-discperc-${idx}`).value) || 0;
-      orders[idx].labelCost = isPickupEdit ? 0 : (parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0);
+      orders[idx].labelCost = newLabelCost;
       orders[idx].tracking = isPickupEdit ? "Selbstabholer" : (document.getElementById(`edit-track-${idx}`).value || '-'); 
-      orders[idx].orderDate = document.getElementById(`edit-date-${idx}`)?.value || orders[idx].orderDate;
+      orders[idx].orderDate = newOrderDate;
       orders[idx].items = updatedItems; editingIndex = -1; saveAllData();
     }
     
-    function deleteOrder(id) { const o = orders.find(x => x.id === id); if(o && o.items) o.items.forEach(i => { if (i.color && i.weight > 0) { const s = spools.find(x => x.name === i.color); if(s) s.remainingGrams += (i.weight * (i.qty || 1)); } }); orders = orders.filter(x => x.id !== id); saveAllData(); }
+    function deleteOrder(id) { 
+      const o = orders.find(x => x.id === id); 
+      if(o) {
+        if(o.items) o.items.forEach(i => { if (i.color && i.weight > 0) { const s = spools.find(x => x.name === i.color); if(s) s.remainingGrams += (i.weight * (i.qty || 1)); } });
+        if(o.expenseId) { expenses = expenses.filter(ex => ex.id !== o.expenseId); }
+      }
+      orders = orders.filter(x => x.id !== id); saveAllData(); 
+    }
 
     function updateMonthFilterDropdown() {
       const select = document.getElementById('statsMonthFilter'); if (!select) return; const currentSelection = select.value; let monthsSet = new Set();
@@ -1339,7 +1384,6 @@
 
         if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
           if (!isEbay || o.ebayBalancePaid === '✅ Ausgezahlt') totalRev += orderAmount;
-          totalExp += lCost;
           if (o.items) o.items.forEach(i => totalPrintTime += ((parseFloat(i.time) || 0) * (i.qty || 1)));
         }
       });
