@@ -161,7 +161,7 @@
       </section>
     </div>
 
-    <!-- ANGEBOTE BEREICH MIT KATALOG & GRÖßEN -->
+    <!-- ANGEBOTE BEREICH MIT KATALOG, GRÖßEN & EINTEILIGEN PREISEN -->
     <section class="card p-4 rounded-xl space-y-3 border border-amber-500/30 bg-amber-950/10">
       <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
         <h2 class="text-xs font-semibold text-amber-400"><i class="fa-solid fa-file-invoice-dollar mr-1.5"></i> Angebote & Preisanfragen</h2>
@@ -177,21 +177,22 @@
         <!-- Artikel-Schnellsuche für Angebote -->
         <div class="border-t border-slate-700/60 pt-2 space-y-2">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-            <label class="text-[11px] font-semibold text-slate-300">Artikel, Größe & Positionen:</label>
+            <label class="text-[11px] font-semibold text-slate-300">Artikel, Größe, Preis & Positionen:</label>
             <input type="text" id="offerArticleSearch" oninput="renderOfferQuickAddButtons()" placeholder="🔍 Katalog durchsuchen..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-full sm:w-72 focus:outline-none focus:border-amber-500 transition">
           </div>
           <div class="flex flex-wrap gap-1.5 py-0.5 max-h-[100px] overflow-y-auto pr-1" id="offerQuickAddButtons"></div>
           
           <div class="flex justify-end gap-1.5">
-            <button type="button" onclick="addOfferItemRow(1, 'Sonderanfertigung: ', 'Sondermaß')" class="bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 border border-purple-500/40 px-2.5 py-1 rounded text-[11px] cursor-pointer"><i class="fa-solid fa-ruler-combined mr-1"></i>+ Sondergröße</button>
+            <button type="button" onclick="addOfferItemRow(1, 'Sonderanfertigung: ', 'Sondermaß', '')" class="bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 border border-purple-500/40 px-2.5 py-1 rounded text-[11px] cursor-pointer"><i class="fa-solid fa-ruler-combined mr-1"></i>+ Sondergröße</button>
             <button type="button" onclick="addOfferItemRow()" class="bg-amber-600/30 hover:bg-amber-600/50 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded text-[11px] cursor-pointer">+ Leere Artikelzeile</button>
           </div>
 
           <div id="offerItemRows" class="space-y-1.5">
             <div class="flex gap-2 items-center offer-article-row">
-              <input type="number" placeholder="Menge" value="1" min="1" class="offer-art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none">
+              <input type="number" placeholder="Menge" value="1" min="1" class="offer-art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none" oninput="calculateOfferTotal()">
               <input type="text" placeholder="Artikelbezeichnung" class="offer-art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
               <input type="text" placeholder="Größe / Maße (z.B. 100x50)" class="offer-art-size bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-36 focus:outline-none">
+              <input type="number" step="0.01" placeholder="Preis (€)" class="offer-art-price bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none" oninput="calculateOfferTotal()">
             </div>
           </div>
         </div>
@@ -202,7 +203,7 @@
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
-            <tr><th class="p-2">Angebots-Nr. & Datum</th><th class="p-2">Kunde</th><th class="p-2">Artikel & Größe</th><th class="p-2">Summe</th><th class="p-2">Status</th><th class="p-2 text-right">Aktionen</th></tr>
+            <tr><th class="p-2">Angebots-Nr. & Datum</th><th class="p-2">Kunde</th><th class="p-2">Artikel, Größe & Preis</th><th class="p-2">Summe</th><th class="p-2">Status</th><th class="p-2 text-right">Aktionen</th></tr>
           </thead>
           <tbody id="offersTableBody" class="divide-y divide-slate-700/50 text-slate-200"></tbody>
         </table>
@@ -461,13 +462,27 @@
       return `ANG-${year}-${(Math.max(10, maxNum) + 1).toString().padStart(4, '0')}`;
     }
 
-    function addOfferItemRow(qty = 1, name = '', size = '') {
+    function calculateOfferTotal() {
+      let total = 0;
+      document.querySelectorAll('.offer-art-price').forEach((inp, idx) => {
+        const p = parseFloat(inp.value) || 0;
+        const q = parseInt(document.querySelectorAll('.offer-art-qty')[idx]?.value) || 1;
+        total += p * q;
+      });
+      if (total > 0) {
+        const offerPriceInput = document.getElementById('offerPrice');
+        if (offerPriceInput) offerPriceInput.value = total.toFixed(2);
+      }
+    }
+
+    function addOfferItemRow(qty = 1, name = '', size = '', price = '') {
       const container = document.getElementById('offerItemRows');
       if (!container) return;
       const div = document.createElement('div');
       div.className = "flex gap-2 items-center offer-article-row";
-      div.innerHTML = `<input type="number" placeholder="Menge" value="${qty}" min="1" class="offer-art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none"><input type="text" placeholder="Artikelbezeichnung" value="${name}" class="offer-art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none"><input type="text" placeholder="Größe / Maße" value="${size}" class="offer-art-size bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-36 focus:outline-none"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1.5"><i class="fa-solid fa-xmark"></i></button>`;
+      div.innerHTML = `<input type="number" placeholder="Menge" value="${qty}" min="1" class="offer-art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none" oninput="calculateOfferTotal()"><input type="text" placeholder="Artikelbezeichnung" value="${name}" class="offer-art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none"><input type="text" placeholder="Größe / Maße" value="${size}" class="offer-art-size bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-36 focus:outline-none"><input type="number" step="0.01" placeholder="Preis (€)" value="${price}" class="offer-art-price bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none" oninput="calculateOfferTotal()"><button type="button" onclick="this.parentElement.remove(); calculateOfferTotal();" class="text-red-400 px-1.5"><i class="fa-solid fa-xmark"></i></button>`;
       container.appendChild(div);
+      calculateOfferTotal();
     }
 
     function renderOfferQuickAddButtons() {
@@ -483,11 +498,7 @@
     }
 
     function addPresetOfferItem(name, size, price) {
-      addOfferItemRow(1, name, size);
-      const priceInput = document.getElementById('offerPrice');
-      if (priceInput) {
-        priceInput.value = ((parseFloat(priceInput.value) || 0) + price).toFixed(2);
-      }
+      addOfferItemRow(1, name, size, price);
       document.getElementById('offerArticleSearch').value = '';
       renderOfferQuickAddButtons();
     }
@@ -506,7 +517,8 @@
         if (val) {
           const q = parseInt(document.querySelectorAll('.offer-art-qty')[idx].value) || 1;
           const sz = document.querySelectorAll('.offer-art-size')[idx].value.trim();
-          itemsList.push({ qty: q, name: val, size: sz });
+          const pr = parseFloat(document.querySelectorAll('.offer-art-price')[idx].value) || 0;
+          itemsList.push({ qty: q, name: val, size: sz, price: pr });
         }
       });
       if (itemsList.length === 0) return alert("Bitte mindestens einen Artikel eintragen!");
@@ -517,9 +529,10 @@
       document.getElementById('offerDate').value = todayStr;
       document.getElementById('offerItemRows').innerHTML = `
         <div class="flex gap-2 items-center offer-article-row">
-          <input type="number" placeholder="Menge" value="1" min="1" class="offer-art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none">
+          <input type="number" placeholder="Menge" value="1" min="1" class="offer-art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none" oninput="calculateOfferTotal()">
           <input type="text" placeholder="Artikelbezeichnung" class="offer-art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
           <input type="text" placeholder="Größe / Maße (z.B. 100x50)" class="offer-art-size bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-36 focus:outline-none">
+          <input type="number" step="0.01" placeholder="Preis (€)" class="offer-art-price bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none" oninput="calculateOfferTotal()">
         </div>`;
     }
 
@@ -560,7 +573,10 @@
       offers.forEach(off => {
         let itemsHtml = '<div class="space-y-0.5">';
         if (off.items && off.items.length > 0) {
-          off.items.forEach(i => { itemsHtml += `<div class="text-[11px] text-white">• ${i.qty || 1}x ${i.name} <span class="text-amber-300">(${i.size || 'Standard'})</span></div>`; });
+          off.items.forEach(i => {
+            let itemPriceText = i.price ? ` - ${i.price.toFixed(2).replace('.', ',')}€` : '';
+            itemsHtml += `<div class="text-[11px] text-white">• ${i.qty || 1}x ${i.name} <span class="text-amber-300">(${i.size || 'Standard'}${itemPriceText})</span></div>`;
+          });
         } else {
           itemsHtml += `<div class="text-[11px] text-white">${off.description || '-'}</div>`;
         }
@@ -617,7 +633,7 @@
         .items-table td.price, .items-table td.total { text-align: right; font-weight: 700;}
         .totals-wrapper { display: flex; justify-content: flex-end; margin-bottom: 12px; }
         .totals-box { width: 190px; }
-        .total-row { display: flex; justify-content: space-between; padding: 3px 5px; font-size: 7.5px; font-weight: 600; }
+        .total-row { display: flex; justify-between; padding: 3px 5px; font-size: 7.5px; font-weight: 600; }
         .total-row.final { border-top: 1px solid #111; border-bottom: 1px solid #111; margin-top: 2px; align-items: center; padding: 5px 5px; }
         .total-row.final span:last-child { font-weight: 800; font-size: 10px; }
         .payment-block { display: flex; justify-content: space-between; align-items: flex-start; border: 1px solid #111; padding: 8px; margin-bottom: 10px; }
