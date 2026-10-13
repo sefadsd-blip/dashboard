@@ -145,7 +145,7 @@
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Ausgaben (Monat)</p><h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex items-center justify-between border border-emerald-500/30 bg-emerald-950/10"><div><p class="text-[11px] text-emerald-400 font-semibold">Reingewinn</p><h3 id="statProfit" class="text-xl font-bold text-emerald-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍 eBay (Offen)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt</button></div>
-        <div class="card p-3 rounded-xl flex items-center justify-between border border-orange-500/30 bg-orange-950/20"><div><p class="text-[11px] text-orange-300 font-semibold">⚡ Strom (Basis 60€ + Druck)</p><h3 id="statElectricity" class="text-xl font-bold text-orange-400">0,00 €</h3></div></div>
+        <div class="card p-3 rounded-xl flex items-center justify-between border border-orange-500/30 bg-orange-950/20"><div><p class="text-[11px] text-orange-300 font-semibold">⚡ Strom (Druck)</p><h3 id="statElectricity" class="text-xl font-bold text-orange-400">0,00 €</h3></div></div>
       </div>
     </section>
 
@@ -790,7 +790,7 @@
 
       off.status = "Angenommen";
       saveAllData();
-      alert(`✅ Daten des Angebots ${off.offerNumber} wurden ins Auftragsformular übernommen!\n\nReingewinn-Schutz aktiv:\nErst wenn du unten auf "Auftrag Speichern" klickst UND den Bezahlstatus auf "Bezahlt: ✅ Ja" setzt, fließt das Geld in den Reingewinn.`);
+      alert(`✅ Daten des Angebots ${off.offerNumber} wurden ins Auftragsformular übernommen!`);
       window.scrollTo({ top: document.getElementById('orderForm').offsetTop - 50, behavior: 'smooth' });
     }
 
@@ -1419,8 +1419,9 @@
       const correctionValue = parseFloat(document.getElementById('statCorrection')?.value) || 0;
       let totalRev = 0, totalExp = 0, totalW = 0, totalPrintTime = 0, openC = 0, ebayBalanceOpen = 0;
 
+      // 1. Echte Aufträge durchgehen
       orders.forEach(o => {
-        if (o.type === 'offer' || o.isOffer) return;
+        if (o.type === 'offer' || o.isOffer || o.offerNumber || o.status === 'Angebot') return;
 
         let isEbay = o.platform === 'eBay';
         let dAmount = (o.price * (parseFloat(o.discountPercent) || 0)) / 100;
@@ -1451,13 +1452,27 @@
         }
       });
 
+      // 2. Angebote verarbeiten: NUR Angebote mit Status "Angenommen" werden eingerechnet!
+      offers.forEach(off => {
+        if (off.status === 'Angenommen') {
+          let dAmount = (off.price * (parseFloat(off.discountPercent) || 0)) / 100;
+          let offerAmount = Math.max(0, off.price - dAmount);
+          let targetDate = off.date || '';
+
+          if (selectedMonth === 'all' || (targetDate && targetDate.startsWith(selectedMonth))) {
+            totalRev += offerAmount;
+          }
+        }
+      });
+
+      // 3. Ausgaben verarbeiten
       expenses.forEach(ex => {
         if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) {
           totalExp += ex.amount;
         }
       });
 
-      let electricityCost = (totalPrintTime * 0.12) + 60;
+      let electricityCost = totalPrintTime * 0.12;
 
       document.getElementById('statRevolutDisplay').innerText = currentRevolutBalance.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
