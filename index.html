@@ -161,27 +161,48 @@
       </section>
     </div>
 
-    <!-- NEUER BEREICH: ANGEBOTE -->
+    <!-- ANGEBOTE BEREICH MIT KATALOG & GRÖßEN -->
     <section class="card p-4 rounded-xl space-y-3 border border-amber-500/30 bg-amber-950/10">
       <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
         <h2 class="text-xs font-semibold text-amber-400"><i class="fa-solid fa-file-invoice-dollar mr-1.5"></i> Angebote & Preisanfragen</h2>
       </div>
-      <form id="offerForm" onsubmit="addOffer(event)" class="space-y-2 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+      <form id="offerForm" onsubmit="addOffer(event)" class="space-y-3 bg-slate-900/80 p-3 rounded-lg border border-slate-800">
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
           <input type="text" id="offerCustomer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           <input type="text" id="offerAddress" placeholder="Anschrift" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-          <input type="number" step="0.01" id="offerPrice" placeholder="Angebotspreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none border-amber-500/50">
+          <input type="number" step="0.01" id="offerPrice" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none border-amber-500/50">
           <input type="date" id="offerDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         </div>
-        <div class="flex gap-2">
-          <input type="text" id="offerArticle" placeholder="Beschreibung der Artikel (z.B. Kundenteil nach Maß)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white flex-1 focus:outline-none">
-          <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-1.5 px-4 text-xs transition cursor-pointer">+ Angebot erstellen</button>
+
+        <!-- Artikel-Schnellsuche für Angebote -->
+        <div class="border-t border-slate-700/60 pt-2 space-y-2">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <label class="text-[11px] font-semibold text-slate-300">Artikel, Größe & Positionen:</label>
+            <input type="text" id="offerArticleSearch" oninput="renderOfferQuickAddButtons()" placeholder="🔍 Katalog durchsuchen..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-full sm:w-72 focus:outline-none focus:border-amber-500 transition">
+          </div>
+          <div class="flex flex-wrap gap-1.5 py-0.5 max-h-[100px] overflow-y-auto pr-1" id="offerQuickAddButtons"></div>
+          
+          <div class="flex justify-end gap-1.5">
+            <button type="button" onclick="addOfferItemRow(1, 'Sonderanfertigung: ', 'Sondermaß')" class="bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 border border-purple-500/40 px-2.5 py-1 rounded text-[11px] cursor-pointer"><i class="fa-solid fa-ruler-combined mr-1"></i>+ Sondergröße</button>
+            <button type="button" onclick="addOfferItemRow()" class="bg-amber-600/30 hover:bg-amber-600/50 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded text-[11px] cursor-pointer">+ Leere Artikelzeile</button>
+          </div>
+
+          <div id="offerItemRows" class="space-y-1.5">
+            <div class="flex gap-2 items-center offer-article-row">
+              <input type="number" placeholder="Menge" value="1" min="1" class="offer-art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none">
+              <input type="text" placeholder="Artikelbezeichnung" class="offer-art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
+              <input type="text" placeholder="Größe / Maße (z.B. 100x50)" class="offer-art-size bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-36 focus:outline-none">
+            </div>
+          </div>
         </div>
+
+        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-2 text-xs transition cursor-pointer">+ Angebot Speichern</button>
       </form>
+
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
-            <tr><th class="p-2">Angebots-Nr. & Datum</th><th class="p-2">Kunde</th><th class="p-2">Beschreibung</th><th class="p-2">Summe</th><th class="p-2">Status</th><th class="p-2 text-right">Aktionen</th></tr>
+            <tr><th class="p-2">Angebots-Nr. & Datum</th><th class="p-2">Kunde</th><th class="p-2">Artikel & Größe</th><th class="p-2">Summe</th><th class="p-2">Status</th><th class="p-2 text-right">Aktionen</th></tr>
           </thead>
           <tbody id="offersTableBody" class="divide-y divide-slate-700/50 text-slate-200"></tbody>
         </table>
@@ -239,7 +260,8 @@
           
           <div class="flex flex-wrap gap-1.5 py-0.5 max-h-[120px] overflow-y-auto pr-1" id="quickAddButtons"></div>
 
-          <div class="flex justify-end">
+          <div class="flex justify-end gap-1.5">
+            <button type="button" onclick="addArticleInputRow(1, 'Sonderanfertigung: ', '', '', '')" class="bg-purple-600 hover:bg-purple-500 text-white px-2.5 py-1 rounded text-[11px] cursor-pointer"><i class="fa-solid fa-ruler-combined mr-1"></i>+ Sondergröße</button>
             <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-[11px] cursor-pointer">+ Leeren Artikel</button>
           </div>
 
@@ -329,7 +351,6 @@
 
     const BACKUP_PRINTERS = [
       { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
-      { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
       { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
       { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
     ];
@@ -440,17 +461,66 @@
       return `ANG-${year}-${(Math.max(10, maxNum) + 1).toString().padStart(4, '0')}`;
     }
 
+    function addOfferItemRow(qty = 1, name = '', size = '') {
+      const container = document.getElementById('offerItemRows');
+      if (!container) return;
+      const div = document.createElement('div');
+      div.className = "flex gap-2 items-center offer-article-row";
+      div.innerHTML = `<input type="number" placeholder="Menge" value="${qty}" min="1" class="offer-art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none"><input type="text" placeholder="Artikelbezeichnung" value="${name}" class="offer-art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none"><input type="text" placeholder="Größe / Maße" value="${size}" class="offer-art-size bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-36 focus:outline-none"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1.5"><i class="fa-solid fa-xmark"></i></button>`;
+      container.appendChild(div);
+    }
+
+    function renderOfferQuickAddButtons() {
+      const container = document.getElementById('offerQuickAddButtons');
+      const query = (document.getElementById('offerArticleSearch')?.value || '').toLowerCase();
+      if (!container) return;
+      container.innerHTML = '';
+      if (!query) { container.innerHTML = '<span class="text-[10px] text-slate-500 italic">Suchen, um Artikel hinzuzufügen...</span>'; return; }
+      products.forEach(p => {
+        if (!p.name.toLowerCase().includes(query)) return;
+        container.innerHTML += `<button type="button" onclick="addPresetOfferItem('${p.name.replace(/'/g, "\\'")}', '${p.size || ''}', ${p.price})" class="bg-slate-900 hover:bg-slate-800 text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-700 cursor-pointer transition">+ ${p.name} <span class="text-slate-400">(${p.size})</span> <span class="text-amber-400">(${p.price.toFixed(2)}€)</span></button>`;
+      });
+    }
+
+    function addPresetOfferItem(name, size, price) {
+      addOfferItemRow(1, name, size);
+      const priceInput = document.getElementById('offerPrice');
+      if (priceInput) {
+        priceInput.value = ((parseFloat(priceInput.value) || 0) + price).toFixed(2);
+      }
+      document.getElementById('offerArticleSearch').value = '';
+      renderOfferQuickAddButtons();
+    }
+
     function addOffer(e) {
       e.preventDefault();
       const cust = document.getElementById('offerCustomer').value.trim();
       const addr = document.getElementById('offerAddress').value.trim();
       const price = parseFloat(document.getElementById('offerPrice').value) || 0;
       const date = document.getElementById('offerDate').value || todayStr;
-      const desc = document.getElementById('offerArticle').value.trim();
       const offerNum = generateNewOfferNumber(date);
 
-      offers.unshift({ id: Date.now(), offerNumber: offerNum, customer: cust, address: addr, price: price, date: date, description: desc, status: "Offen" });
-      saveAllData(); document.getElementById('offerForm').reset(); document.getElementById('offerDate').value = todayStr;
+      const itemsList = [];
+      document.querySelectorAll('.offer-art-name').forEach((inp, idx) => {
+        const val = inp.value.trim();
+        if (val) {
+          const q = parseInt(document.querySelectorAll('.offer-art-qty')[idx].value) || 1;
+          const sz = document.querySelectorAll('.offer-art-size')[idx].value.trim();
+          itemsList.push({ qty: q, name: val, size: sz });
+        }
+      });
+      if (itemsList.length === 0) return alert("Bitte mindestens einen Artikel eintragen!");
+
+      offers.unshift({ id: Date.now(), offerNumber: offerNum, customer: cust, address: addr, price: price, date: date, items: itemsList, status: "Offen" });
+      saveAllData(); 
+      document.getElementById('offerForm').reset(); 
+      document.getElementById('offerDate').value = todayStr;
+      document.getElementById('offerItemRows').innerHTML = `
+        <div class="flex gap-2 items-center offer-article-row">
+          <input type="number" placeholder="Menge" value="1" min="1" class="offer-art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none">
+          <input type="text" placeholder="Artikelbezeichnung" class="offer-art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
+          <input type="text" placeholder="Größe / Maße (z.B. 100x50)" class="offer-art-size bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-36 focus:outline-none">
+        </div>`;
     }
 
     function updateOfferStatus(id, newStatus) {
@@ -465,14 +535,18 @@
     function convertOfferToOrder(id) {
       const off = offers.find(o => o.id === id);
       if (!off) return;
-      // Trage Daten in das Auftragsformular ein
       document.getElementById('customer').value = off.customer;
       document.getElementById('address').value = off.address || '';
       document.getElementById('price').value = off.price.toFixed(2);
       
-      // Füge den Artikel als Standardzeile hinzu
-      const firstArtInput = document.querySelector('.art-name');
-      if (firstArtInput) firstArtInput.value = off.description;
+      const rowsContainer = document.getElementById('articleInputRows');
+      if (rowsContainer && off.items) {
+        rowsContainer.innerHTML = '';
+        off.items.forEach(i => {
+          let sizeNote = i.size ? ` - Maß: ${i.size}` : '';
+          addArticleInputRow(i.qty || 1, i.name + sizeNote, '', 0, 0);
+        });
+      }
 
       off.status = "Angenommen";
       saveAllData();
@@ -484,10 +558,18 @@
       const tbody = document.getElementById('offersTableBody');
       if (!tbody) return; tbody.innerHTML = '';
       offers.forEach(off => {
+        let itemsHtml = '<div class="space-y-0.5">';
+        if (off.items && off.items.length > 0) {
+          off.items.forEach(i => { itemsHtml += `<div class="text-[11px] text-white">• ${i.qty || 1}x ${i.name} <span class="text-amber-300">(${i.size || 'Standard'})</span></div>`; });
+        } else {
+          itemsHtml += `<div class="text-[11px] text-white">${off.description || '-'}</div>`;
+        }
+        itemsHtml += '</div>';
+
         tbody.innerHTML += `<tr class="border-b border-slate-800">
           <td class="p-2 font-mono text-amber-400 font-bold">${off.offerNumber}<div class="text-[9px] text-slate-400 font-normal">${off.date}</div></td>
           <td class="p-2 font-medium text-white">${off.customer}<div class="text-[9px] text-slate-400">${off.address || ''}</div></td>
-          <td class="p-2 text-slate-300">${off.description}</td>
+          <td class="p-2">${itemsHtml}</td>
           <td class="p-2 text-amber-400 font-bold">${off.price.toFixed(2).replace('.', ',')} €</td>
           <td class="p-2">
             <select onchange="updateOfferStatus(${off.id}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-amber-300">
@@ -637,6 +719,7 @@
         });
       }
       renderQuickAddButtons();
+      renderOfferQuickAddButtons();
     }
 
     function renderQuickAddButtons() {
@@ -736,7 +819,7 @@
     function addArticleInputRow(qtyVal = 1, nameVal = '', colorVal = '', weightVal = '', timeVal = '') {
       const div = document.createElement('div'); div.className = "flex gap-2 items-center article-row";
       let optionsHtml = '<option value="">-- Farbe --</option>'; spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === colorVal ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
-      div.innerHTML = `<input type="number" placeholder="Menge" value="${qtyVal}" min="1" class="art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none"><input type="text" placeholder="Artikelbezeichnung" value="${nameVal}" class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none"><select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-36 focus:outline-none">${optionsHtml}</select><input type="number" placeholder="Gramm" value="${weightVal}" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-20 focus:outline-none"><input type="number" step="0.1" placeholder="Zeit (h)" value="${timeVal}" class="art-time bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-20 focus:outline-none"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1.5"><i class="fa-solid fa-xmark"></i></button>`;
+      div.innerHTML = `<input type="number" placeholder="Menge" value="${qtyVal}" min="1" class="art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none"><input type="text" placeholder="Artikelbezeichnung" value="${nameVal}" class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none"><select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-36 focus:outline-none">${optionsHtml}</select><input type="number" placeholder="Gramm" value="${weightVal}" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-20 focus:outline-none"><input type="number" step="0.1" placeholder="Zeit (h)" value="${timeVal}" class="art-time bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-20 focus:outline-none" title="Druckzeit in Stunden"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1.5"><i class="fa-solid fa-xmark"></i></button>`;
       document.getElementById('articleInputRows').appendChild(div);
     }
     
