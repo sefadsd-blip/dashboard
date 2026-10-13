@@ -145,7 +145,7 @@
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Ausgaben (Monat)</p><h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex items-center justify-between border border-emerald-500/30 bg-emerald-950/10"><div><p class="text-[11px] text-emerald-400 font-semibold">Reingewinn</p><h3 id="statProfit" class="text-xl font-bold text-emerald-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍 eBay (Offen)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt</button></div>
-        <div class="card p-3 rounded-xl flex items-center justify-between border border-orange-500/30 bg-orange-950/20"><div><p class="text-[11px] text-orange-300 font-semibold">⚡ Strom (Druck)</p><h3 id="statElectricity" class="text-xl font-bold text-orange-400">0,00 €</h3></div></div>
+        <div class="card p-3 rounded-xl flex items-center justify-between border border-orange-500/30 bg-orange-950/20"><div><p class="text-[11px] text-orange-300 font-semibold">⚡ Strom (Basis 60€ + Druck)</p><h3 id="statElectricity" class="text-xl font-bold text-orange-400">0,00 €</h3></div></div>
       </div>
     </section>
 
@@ -397,35 +397,6 @@
     function openSubPage() { document.getElementById('subPageOverlay').classList.remove('hidden'); }
     function closeSubPage() { document.getElementById('subPageOverlay').classList.add('hidden'); }
 
-    function exportAccountingCSV() {
-      let csvContent = "data:text/csv;charset=utf-8,Typ;Nummer;Datum;Kunde;Betrag;Status;Plattform\n";
-      orders.forEach(o => {
-        let dAmount = (o.price * (parseFloat(o.discountPercent) || 0)) / 100;
-        let net = (o.price - dAmount).toFixed(2);
-        csvContent += `Auftrag;${o.invoiceNumber || ''};${o.orderDate || ''};"${o.customer || ''}";${net};${o.isPaid || ''};${o.platform || ''}\n`;
-      });
-      offers.forEach(o => {
-        csvContent += `Angebot;${o.offerNumber || ''};${o.date || ''};"${o.customer || ''}";${o.price.toFixed(2)};${o.status || ''};-\n`;
-      });
-      expenses.forEach(e => {
-        csvContent += `Ausgabe;-;${e.date || ''};"${e.description || ''}";-${e.amount.toFixed(2)};-;${e.category || ''}\n`;
-      });
-      
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `Sefas3DShop_Buchhaltung_${todayStr}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    function importAccountingCSV(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      alert("CSV-Datei erfolgreich empfangen!");
-    }
-
     function togglePickupMode() {
       const isPickup = document.getElementById('isPickup').checked;
       const shipFeeInput = document.getElementById('shippingFee');
@@ -453,48 +424,30 @@
         if (res.ok) {
           const json = await res.json();
           if (json && Array.isArray(json.orders)) {
-            applyDataToDashboard(json);
-            localStorage.setItem('sefas_dashboard_backup', JSON.stringify(json));
+            orders = json.orders;
+            offers = Array.isArray(json.offers) ? json.offers : [];
+            expenses = Array.isArray(json.expenses) ? json.expenses : [];
+            printers = (Array.isArray(json.printers) && json.printers.length > 0) ? json.printers : [...BACKUP_PRINTERS];
+            products = (Array.isArray(json.products) && json.products.length >= BACKUP_PRODUCTS.length) ? json.products : [...BACKUP_PRODUCTS];
+            spools = (Array.isArray(json.spools) && json.spools.length > 0) ? json.spools : [...BACKUP_SPOOLS];
+            currentRevolutBalance = json.revolutBalance || 0;
+            
+            document.getElementById('revolutInput').value = currentRevolutBalance.toFixed(2);
+            renderOrders(); renderOffers(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
+            updateCustomerDropdowns(); updatePrinterDropdowns();
             setStatus("Mit Cloud verbunden", "bg-blue-500");
             return;
           }
         }
         throw new Error("Cloud-Daten ungültig");
       } catch(e) {
-        console.warn("Cloud-Laden fehlgeschlagen, versuche LocalStorage Backup...", e);
-        const localBackup = localStorage.getItem('sefas_dashboard_backup');
-        if (localBackup) {
-          try {
-            const json = JSON.parse(localBackup);
-            if (json && Array.isArray(json.orders)) {
-              applyDataToDashboard(json);
-              setStatus("Offline-Backup geladen", "bg-yellow-500");
-              return;
-            }
-          } catch(err) {}
-        }
         setStatus("Verbindungsfehler", "bg-red-500");
       }
-    }
-
-    function applyDataToDashboard(json) {
-      orders = json.orders || [];
-      offers = Array.isArray(json.offers) ? json.offers : [];
-      expenses = Array.isArray(json.expenses) ? json.expenses : [];
-      printers = (Array.isArray(json.printers) && json.printers.length > 0) ? json.printers : [...BACKUP_PRINTERS];
-      products = (Array.isArray(json.products) && json.products.length >= BACKUP_PRODUCTS.length) ? json.products : [...BACKUP_PRODUCTS];
-      spools = (Array.isArray(json.spools) && json.spools.length > 0) ? json.spools : [...BACKUP_SPOOLS];
-      currentRevolutBalance = json.revolutBalance || 0;
-      
-      document.getElementById('revolutInput').value = currentRevolutBalance.toFixed(2);
-      renderOrders(); renderOffers(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
-      updateCustomerDropdowns(); updatePrinterDropdowns();
     }
 
     async function pushToCloudManual() {
       setStatus("Speichere in Cloud...", "bg-yellow-500");
       const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance };
-      localStorage.setItem('sefas_dashboard_backup', JSON.stringify(payload));
       try {
         const res = await fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (res.ok) { setStatus("Mit Cloud verbunden", "bg-blue-500"); alert("✅ Erfolgreich gespeichert!"); }
@@ -505,10 +458,10 @@
       renderOrders(); renderOffers(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
       updateCustomerDropdowns(); updatePrinterDropdowns();
       const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance };
-      localStorage.setItem('sefas_dashboard_backup', JSON.stringify(payload));
       fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(e => console.log(e));
     }
 
+    // --- KUNDEN-AUTOFILL FUNKTIONEN ---
     function autofillCustomerData(custName) {
       if (!custName) return;
       const match = orders.find(o => o.customer === custName) || offers.find(o => o.customer === custName);
@@ -547,6 +500,7 @@
       });
     }
 
+    // --- DANKES-ZETTEL & KUNDEN-VORLAGEN FUNKTIONEN ---
     function printThankYouNoteFromDropdown() {
       const custName = document.getElementById('thankYouCustomerSelect').value;
       if (!custName) return alert("Bitte wähle zuerst einen Kunden aus!");
@@ -622,6 +576,7 @@
       }
     }
 
+    // --- ANGEBOTE FUNKTIONEN ---
     function generateNewOfferNumber(dateStr) {
       const year = dateStr ? dateStr.slice(0, 4) : new Date().getFullYear().toString(); let maxNum = 0;
       offers.forEach(o => { if (o.offerNumber && o.offerNumber.startsWith(`ANG-${year}-`)) { let num = parseInt(o.offerNumber.split('-')[2]) || 0; if (num > maxNum) maxNum = num; } });
@@ -777,7 +732,6 @@
       document.getElementById('address').value = off.address || '';
       document.getElementById('price').value = off.price.toFixed(2);
       document.getElementById('discountPercent').value = off.discountPercent || 0;
-      document.getElementById('isPaid').value = '❌ Nein';
       
       const rowsContainer = document.getElementById('articleInputRows');
       if (rowsContainer && off.items) {
@@ -790,7 +744,7 @@
 
       off.status = "Angenommen";
       saveAllData();
-      alert(`✅ Daten des Angebots ${off.offerNumber} wurden ins Auftragsformular übernommen!`);
+      alert(`✅ Angebot ${off.offerNumber} wurde übernommen! Bitte unten im Auftrags-Formular prüfen und speichern.`);
       window.scrollTo({ top: document.getElementById('orderForm').offsetTop - 50, behavior: 'smooth' });
     }
 
@@ -980,7 +934,7 @@
         @page { size: A4; margin: 0; }
         body { font-family: 'Montserrat', sans-serif; background: #fff; color: #111; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         .page { padding: 10mm 10mm; position: relative; max-width: 800px; margin: 0 auto; }
-        .header { display: flex; justify-between; align-items: flex-start; border-bottom: 1.2px solid #111; padding-bottom: 6px; margin-bottom: 10px; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.2px solid #111; padding-bottom: 6px; margin-bottom: 10px; }
         .brand { display: flex; align-items: flex-start; gap: 6px; }
         .brand-icon { width: 18px; height: 18px; margin-top: 2px; }
         .brand-text h1 { font-size: 12px; font-weight: 800; color: #111; margin: 0 0 1px 0; line-height: 1.0; text-transform: uppercase; }
@@ -1276,6 +1230,7 @@
       const newOrderDate = document.getElementById(`edit-date-${idx}`)?.value || orders[idx].orderDate;
       const newLabelCost = isPickupEdit ? 0 : (parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0);
 
+      // Verknüpfte Ausgabe synchronisieren
       if (oldOrder.expenseId) {
         let linkedExp = expenses.find(e => e.id === oldOrder.expenseId);
         if (linkedExp) {
@@ -1419,65 +1374,27 @@
       const correctionValue = parseFloat(document.getElementById('statCorrection')?.value) || 0;
       let totalRev = 0, totalExp = 0, totalW = 0, totalPrintTime = 0, openC = 0, ebayBalanceOpen = 0;
 
-      // 1. Echte Aufträge durchgehen
       orders.forEach(o => {
-        if (o.type === 'offer' || o.isOffer || o.offerNumber || o.status === 'Angebot') return;
-
-        let isEbay = o.platform === 'eBay';
-        let dAmount = (o.price * (parseFloat(o.discountPercent) || 0)) / 100;
-        let orderAmount = Math.max(0, o.price - dAmount);
-        let lCost = o.labelCost || 0;
-
-        if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') {
-          ebayBalanceOpen += Math.round((orderAmount - lCost) * 100) / 100;
-        }
-
-        if (!o.archived) {
-          openC++;
-          if (o.items) {
-            o.items.forEach(i => totalW += ((parseInt(i.weight) || 0) * (i.qty || 1)));
-          }
-        }
+        if (!o.archived) { openC++; if (o.items) { o.items.forEach(i => totalW += ((parseInt(i.weight) || 0) * (i.qty || 1))); } }
+        let isEbay = o.platform === 'eBay'; let dAmount = (o.price * (parseFloat(o.discountPercent) || 0)) / 100; let orderAmount = Math.max(0, o.price - dAmount); let lCost = o.labelCost || 0;
+        if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') ebayBalanceOpen += Math.round((orderAmount - lCost) * 100) / 100;
         
         let targetDate = o.orderDate || '';
-        let isPaidOrder = isEbay ? (o.ebayBalancePaid === '✅ Ausgezahlt') : (o.isPaid === '✅ Ja');
+        if (o.status === 'Wartet auf Abholung') return;
 
         if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
-          if (isPaidOrder) {
-            totalRev += orderAmount;
-          }
-          if (o.items) {
-            o.items.forEach(i => totalPrintTime += ((parseFloat(i.time) || 0) * (i.qty || 1)));
-          }
+          if (!isEbay || o.ebayBalancePaid === '✅ Ausgezahlt') totalRev += orderAmount;
+          if (o.items) o.items.forEach(i => totalPrintTime += ((parseFloat(i.time) || 0) * (i.qty || 1)));
         }
       });
 
-      // 2. Angebote verarbeiten: NUR Angebote mit Status "Angenommen" werden eingerechnet!
-      offers.forEach(off => {
-        if (off.status === 'Angenommen') {
-          let dAmount = (off.price * (parseFloat(off.discountPercent) || 0)) / 100;
-          let offerAmount = Math.max(0, off.price - dAmount);
-          let targetDate = off.date || '';
-
-          if (selectedMonth === 'all' || (targetDate && targetDate.startsWith(selectedMonth))) {
-            totalRev += offerAmount;
-          }
-        }
-      });
-
-      // 3. Ausgaben verarbeiten
-      expenses.forEach(ex => {
-        if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) {
-          totalExp += ex.amount;
-        }
-      });
-
-      let electricityCost = totalPrintTime * 0.12;
+      expenses.forEach(ex => { if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) totalExp += ex.amount; });
+      let electricityCost = (totalPrintTime * 0.12) + 60;
 
       document.getElementById('statRevolutDisplay').innerText = currentRevolutBalance.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('statProfit').innerText = ((totalRev - totalExp) + correctionValue).toFixed(2).replace('.', ',') + ' €';
+      document.getElementById('statProfit').innerText = ((totalRev - totalExp) + correctionValue - 60).toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statElectricity').innerText = electricityCost.toFixed(2).replace('.', ',') + ' €';
     }
