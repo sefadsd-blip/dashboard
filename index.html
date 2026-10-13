@@ -1439,8 +1439,6 @@
         }
         
         let targetDate = o.orderDate || '';
-        if (o.status === 'Wartet auf Abholung') return;
-
         let isPaidOrder = isEbay ? (o.ebayBalancePaid === '✅ Ausgezahlt') : (o.isPaid === '✅ Ja');
 
         if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
@@ -1464,7 +1462,7 @@
       document.getElementById('statRevolutDisplay').innerText = currentRevolutBalance.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('statProfit').innerText = ((totalRev - totalExp) + correctionValue - 60).toFixed(2).replace('.', ',') + ' €';
+      document.getElementById('statProfit').innerText = ((totalRev - totalExp) + correctionValue).toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statElectricity').innerText = electricityCost.toFixed(2).replace('.', ',') + ' €';
     }
