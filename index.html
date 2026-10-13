@@ -487,12 +487,89 @@
         const sel = document.getElementById(id);
         if (sel) {
           const curVal = sel.value;
-          sel.innerHTML = `<option value="">📋 Bestehenden Kunden laden...</option>`;
+          const defaultLabel = (id.includes('template') || id.includes('thankYou')) ? '👤 Kunden wählen...' : '📋 Bestehenden Kunden laden...';
+          sel.innerHTML = `<option value="">${defaultLabel}</option>`;
           customerMap.forEach((addr, custName) => {
             sel.innerHTML += `<option value="${custName}" ${custName === curVal ? 'selected' : ''}>${custName}</option>`;
           });
         }
       });
+    }
+
+    // --- DANKES-ZETTEL & KUNDEN-VORLAGEN FUNKTIONEN ---
+    function printThankYouNoteFromDropdown() {
+      const custName = document.getElementById('thankYouCustomerSelect').value;
+      if (!custName) return alert("Bitte wähle zuerst einen Kunden aus!");
+      
+      const order = orders.find(o => o.customer === custName);
+      const itemsText = (order && order.items && order.items.length > 0) 
+        ? order.items.map(i => `${i.qty || 1}x ${i.name}`).join(', ') 
+        : 'deiner Bestellung';
+
+      const printWin = window.open('', '_blank', 'width=850,height=1000');
+      printWin.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Dankes-Zettel - ${custName}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+    @page { size: A4; margin: 0; }
+    body { font-family: 'Montserrat', sans-serif; background: #fff; color: #111; margin: 0; padding: 15mm; }
+    .card-box { border: 2px solid #0f172a; padding: 30px; border-radius: 16px; text-align: center; max-width: 650px; margin: 40px auto; }
+    h1 { font-size: 22px; font-weight: 800; color: #0284c7; margin-bottom: 8px; text-transform: uppercase; }
+    h2 { font-size: 15px; font-weight: 700; margin-top: 25px; color: #1e293b; }
+    p { font-size: 12px; line-height: 1.6; color: #334155; margin: 10px 0; }
+    .highlight { background: #f0f9ff; border: 1.5px dashed #0284c7; padding: 14px; border-radius: 12px; margin: 20px 0; font-weight: 600; color: #0369a1; font-size: 12px; }
+    .footer-note { font-size: 10px; color: #64748b; margin-top: 35px; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+  </style>
+</head>
+<body>
+  <div class="card-box">
+    <h1>Vielen Dank für deine Bestellung!</h1>
+    <p>Hallo <strong>${custName}</strong>,</p>
+    <p>vielen Dank für deinen Einkauf bei <strong>Sefas3DShop</strong>! Deine Bestellung (<em>${itemsText}</em>) wurde mit größter Sorgfalt im 3D-Druckverfahren hergestellt und verpackt.</p>
+    
+    <div class="highlight">
+      ✨ Zufrieden mit deinem Produkt?<br>
+      Über eine kurze Bewertung auf Kleinanzeigen / Etsy würde ich mich riesig freuen!
+    </div>
+
+    <p>Sollte etwas nicht zu deiner Zufriedenheit sein oder hast du Fragen zu deinem gedruckten Teil, melde dich bitte jederzeit direkt bei mir – wir finden schnell eine Lösung!</p>
+    
+    <h2>Viel Freude mit deiner Bestellung!</h2>
+    
+    <div class="footer-note">
+      <strong>Sefas3DShop</strong> • Inh. Sefa Demir • Rahden<br>
+      E-Mail: sefad.sd@gmail.com
+    </div>
+  </div>
+  <script>
+    window.onload = function() { setTimeout(() => { window.print(); }, 400); };
+  <\/script>
+</body>
+</html>`);
+      printWin.document.close();
+    }
+
+    function updateTemplatePreview() {
+      const custName = document.getElementById('templateCustomerSelect').value;
+      const nameStr = custName ? custName : '[Kundenname]';
+      const order = orders.find(o => o.customer === custName);
+      const trackingStr = (order && order.tracking && order.tracking !== '-') ? order.tracking : '[Sendungsnummer]';
+
+      document.getElementById('templateText1').value = `Hallo ${nameStr},\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.`;
+      document.getElementById('templateText2').value = `Hallo ${nameStr},\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!`;
+      document.getElementById('templateText3').value = `Hallo ${nameStr},\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.`;
+      document.getElementById('templateText4').value = `Hallo ${nameStr},\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n${trackingStr}\n\nLink: https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${trackingStr}\n\nViel Freude damit!`;
+    }
+
+    function copyTemplate(num) {
+      const txt = document.getElementById(`templateText${num}`);
+      if (txt) {
+        navigator.clipboard.writeText(txt.value);
+        alert(`Vorlage ${num} in die Zwischenablage kopiert!`);
+      }
     }
 
     // --- ANGEBOTE FUNKTIONEN ---
@@ -859,7 +936,7 @@
         .brand-text h1 { font-size: 12px; font-weight: 800; color: #111; margin: 0 0 1px 0; line-height: 1.0; text-transform: uppercase; }
         .brand-text p { font-size: 6px; color: #444; margin: 0; }
         .invoice-title h2 { font-size: 13px; font-weight: 800; color: #111; margin: 0; text-transform: uppercase; }
-        .info-grid { display: flex; justify-content: space-between; margin-bottom: 12px; }
+        .info-grid { display: flex; justify-between; margin-bottom: 12px; }
         .customer-box { width: 45%; }
         .customer-box h3 { font-size: 7px; text-transform: uppercase; color: #111; font-weight: 700; margin: 0 0 2px 0; border-bottom: 1px solid #111; padding-bottom: 1px; display: inline-block;}
         .customer-box p { font-size: 8px; font-weight: 700; margin: 0; }
@@ -881,7 +958,7 @@
         .total-row { display: flex; justify-between; padding: 3px 5px; font-size: 7.5px; font-weight: 600; }
         .total-row.final { border-top: 1px solid #111; border-bottom: 1px solid #111; margin-top: 2px; align-items: center; padding: 5px 5px; }
         .total-row.final span:last-child { font-weight: 800; font-size: 10px; }
-        .payment-block { display: flex; justify-content: space-between; align-items: flex-start; border: 1px solid #111; padding: 8px; margin-bottom: 10px; }
+        .payment-block { display: flex; justify-between; align-items: flex-start; border: 1px solid #111; padding: 8px; margin-bottom: 10px; }
         .payment-info { flex: 1; padding-right: 8px; }
         .payment-info h3 { margin: 0 0 4px 0; font-size: 7.5px; font-weight: 800; text-transform: uppercase; }
         .payment-info p { margin: 0 0 2px 0; font-size: 7px; }
