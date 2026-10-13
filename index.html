@@ -161,7 +161,7 @@
       </section>
     </div>
 
-    <!-- ANGEBOTE BEREICH MIT KATALOG, GRÖßEN, RABATT & EDIT -->
+    <!-- ANGEBOTE BEREICH MIT PDF DOWNLOAD, KATALOG, RABATT & EDIT -->
     <section class="card p-4 rounded-xl space-y-3 border border-amber-500/30 bg-amber-950/10">
       <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
         <h2 class="text-xs font-semibold text-amber-400"><i class="fa-solid fa-file-invoice-dollar mr-1.5"></i> Angebote & Preisanfragen</h2>
@@ -175,7 +175,6 @@
           <input type="date" id="offerDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         </div>
 
-        <!-- Artikel-Schnellsuche für Angebote -->
         <div class="border-t border-slate-700/60 pt-2 space-y-2">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <label class="text-[11px] font-semibold text-slate-300">Artikel, Größe, Preis & Positionen:</label>
@@ -629,6 +628,114 @@
       window.scrollTo({ top: document.getElementById('orderForm').offsetTop - 50, behavior: 'smooth' });
     }
 
+    // --- ANGEBOT PDF ERSTELLUNG & PRINT/DOWNLOAD ---
+    function buildOfferHTML(off) {
+      const offerDate = off.date ? off.date.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
+      const offerNumber = off.offerNumber || 'ANG-2026-0001';
+      
+      let subtotal = 0;
+      let itemsRows = '';
+      if (off.items && off.items.length > 0) {
+        off.items.forEach(i => {
+          let q = i.qty || 1;
+          let price = i.price || 0;
+          let lineTotal = price * q;
+          subtotal += lineTotal;
+          let sizeStr = i.size ? ` <span style="color: #666; font-weight: 400;">(${i.size})</span>` : '';
+          itemsRows += `<tr>
+            <td><strong>${i.name}</strong>${sizeStr}</td>
+            <td class="qty">${q} Stk.</td>
+            <td class="price">${price.toFixed(2).replace('.', ',')} €</td>
+            <td class="total">${lineTotal.toFixed(2).replace('.', ',')} €</td>
+          </tr>`;
+        });
+      } else {
+        subtotal = off.price || 0;
+        itemsRows = `<tr>
+          <td><strong>${off.description || '3D-Druck Anfertigung nach Kundenwunsch'}</strong></td>
+          <td class="qty">1 Stk.</td>
+          <td class="price">${subtotal.toFixed(2).replace('.', ',')} €</td>
+          <td class="total">${subtotal.toFixed(2).replace('.', ',')} €</td>
+        </tr>`;
+      }
+
+      const discPerc = parseFloat(off.discountPercent) || 0;
+      const discountAmount = (subtotal * discPerc) / 100;
+      const totalAmountNum = Math.max(0, subtotal - discountAmount);
+
+      if (discPerc > 0) {
+        itemsRows += `<tr class="highlight-row">
+          <td><strong>Sondernachlass / Rabatt (${discPerc}%)</strong></td>
+          <td class="qty">1 Stk.</td>
+          <td class="price">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
+          <td class="total">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
+        </tr>`;
+      }
+
+      const logoSvg = `<svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
+
+      return `
+        <div class="page">
+          <div class="header">
+            <div class="brand">${logoSvg}<div class="brand-text"><h1>SEFAS 3D SHOP</h1><p>Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden<br>St.-Nr.: 52063271982</p></div></div>
+            <div class="invoice-title"><h2>Angebot</h2></div>
+          </div>
+          <div class="info-grid">
+            <div class="customer-box">
+              <h3>Angebot an</h3>
+              <p>${off.customer}<span>${off.address || 'Keine Anschrift hinterlegt'}</span></p>
+            </div>
+            <div class="meta-box">
+              <table class="meta-table">
+                <tr><td>Angebots-Nr.</td><td><strong>${offerNumber}</strong></td></tr>
+                <tr><td>Angebotsdatum</td><td><strong>${offerDate}</strong></td></tr>
+                <tr><td>Gültigkeit</td><td><strong>14 Tage</strong></td></tr>
+              </table>
+            </div>
+          </div>
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th style="width: 50%;">Position / Beschreibung</th>
+                <th style="width: 15%;" class="center">Menge</th>
+                <th style="width: 15%;" class="right">Einzelpreis</th>
+                <th style="width: 20%;" class="right">Gesamt</th>
+              </tr>
+            </thead>
+            <tbody>${itemsRows}</tbody>
+          </table>
+          <div class="totals-wrapper">
+            <div class="totals-box">
+              <div class="total-row"><span>Zwischensumme:</span> <span>${subtotal.toFixed(2).replace('.', ',')} €</span></div>
+              ${discPerc > 0 ? `<div class="total-row"><span>Rabatt (${discPerc}\%):</span> <span>-${discountAmount.toFixed(2).replace('.', ',')} €</span></div>` : ''}
+              <div class="total-row final"><span>Gesamtbetrag:</span> <span>${totalAmountNum.toFixed(2).replace('.', ',')} €</span></div>
+            </div>
+          </div>
+          <div style="border: 1px solid #111; padding: 8px 10px; margin-bottom: 12px; font-size: 7.5px; line-height: 1.4;">
+            <strong>Konditionen & Annahme:</strong><br>
+            • Wir freuen uns über deine Anfrage und bieten dir oben stehende Positionen unverbindlich an.<br>
+            • Die Bearbeitungs- & Lieferzeit beträgt i.d.R. 2–5 Werktage nach Auftragserteilung.<br>
+            • Antworte uns einfach kurz auf diese Nachricht oder bestätige das Angebot, um den Druck zu starten!
+          </div>
+          <div class="footer">
+            Kleinunternehmer gemäß § 19 UStG. Es wird keine Umsatzsteuer ausgewiesen.<br>
+            Vielen Dank für das Vertrauen in Sefas3DShop!
+          </div>
+        </div>
+      `;
+    }
+
+    function downloadOfferPDF(idx) {
+      const off = offers[idx];
+      if (!off) return;
+      const safeCustomer = off.customer ? off.customer.replace(/[^a-zA-Z0-9_\-]/g, '_') : 'Kunde';
+      const docTitle = `Angebot_${off.offerNumber}_${safeCustomer}`;
+      
+      const printWin = window.open('', '_blank', 'width=850,height=1000');
+      printWin.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${docTitle}</title><style>${getInvoiceCSS()}</style></head><body>${buildOfferHTML(off)}<script>window.onload = function() { setTimeout(() => { window.print(); }, 400); };<\/script></body></html>`);
+      printWin.document.close();
+    }
+
     function renderOffers() {
       const tbody = document.getElementById('offersTableBody');
       if (!tbody) return; tbody.innerHTML = '';
@@ -692,6 +799,7 @@
               </select>
             </td>
             <td class="p-2 text-right space-x-1">
+              <button onclick="downloadOfferPDF(${idx})" class="text-amber-300 bg-amber-500/10 border border-amber-500/30 px-1.5 py-1 rounded text-[10px] cursor-pointer" title="Angebot als PDF runterladen / drucken">📄 PDF</button>
               <button onclick="startEditOffer(${idx})" class="text-amber-400 bg-amber-500/10 px-1.5 py-1 rounded text-[10px] cursor-pointer" title="Angebot bearbeiten">✏</button>
               <button onclick="convertOfferToOrder(${off.id})" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/40 px-2 py-1 rounded text-[10px] cursor-pointer" title="In Auftrag umwandeln">🚀 Auftrag</button>
               <button onclick="deleteOffer(${off.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px] cursor-pointer">❌</button>
