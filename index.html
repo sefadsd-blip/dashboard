@@ -136,7 +136,7 @@
           </div>
           <div class="flex items-center space-x-2">
             <label class="text-[11px] text-slate-400">Monat wählen:</label>
-            <select id="statsMonthFilter" onchange="renderOrders(); renderExpenses();" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none"><option value="all">📅 Alle Monate (Gesamt)</option></select>
+            <select id="statsMonthFilter" onchange="renderOrders(); renderExpenses(); updateStats();" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none"><option value="all">📅 Alle Monate (Gesamt)</option></select>
           </div>
         </div>
       </div>
@@ -423,6 +423,29 @@
       saveAllData(); updateStats();
     }
 
+    function updateMonthFilter() {
+      const select = document.getElementById('statsMonthFilter');
+      if (!select) return;
+      const currentVal = select.value;
+      const months = new Set();
+      
+      orders.forEach(o => { if (o.orderDate && o.orderDate.length >= 7) months.add(o.orderDate.slice(0, 7)); });
+      expenses.forEach(e => { if (e.date && e.date.length >= 7) months.add(e.date.slice(0, 7)); });
+      offers.forEach(o => { if (o.date && o.date.length >= 7) months.add(o.date.slice(0, 7)); });
+      
+      const sortedMonths = Array.from(months).sort().reverse();
+      
+      let html = '<option value="all">📅 Alle Monate (Gesamt)</option>';
+      sortedMonths.forEach(m => {
+        const [y, mm] = m.split('-');
+        const dateObj = new Date(parseInt(y), parseInt(mm) - 1, 1);
+        const monthName = dateObj.toLocaleString('de-DE', { month: 'long', year: 'numeric' });
+        html += `<option value="${m}" ${m === currentVal ? 'selected' : ''}>📅 ${monthName}</option>`;
+      });
+      
+      select.innerHTML = html;
+    }
+
     async function loadCloudData() {
       setStatus("Lade von Cloud...", "bg-yellow-500");
       try {
@@ -439,6 +462,7 @@
             currentRevolutBalance = json.revolutBalance || 0;
             
             document.getElementById('revolutInput').value = currentRevolutBalance.toFixed(2);
+            updateMonthFilter();
             renderOrders(); renderOffers(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
             updateCustomerDropdowns(); updatePrinterDropdowns();
             setStatus("Mit Cloud verbunden", "bg-blue-500");
@@ -461,6 +485,7 @@
     }
 
     function saveAllData() {
+      updateMonthFilter();
       renderOrders(); renderOffers(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
       updateCustomerDropdowns(); updatePrinterDropdowns();
       const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance };
@@ -1194,13 +1219,13 @@
       container.appendChild(div);
     }
 
-    // --- STATISTIK-AUSWERTUNG KORRIGIERT (UMSATZ NUR AUS ORDERS) ---
+    // --- STATISTIK-AUSWERTUNG KORRIGIERT (NUR BEZAHLTE BESTELLUNGEN) ---
     function updateStats() {
       const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
       const correctionValue = parseFloat(document.getElementById('statCorrection')?.value) || 0;
       let totalRev = 0, totalExp = 0, totalW = 0, totalPrintTime = 0, openC = 0, ebayBalanceOpen = 0;
 
-      // 1. Echte Aufträge durchgehen (Einzige Quelle für Umsatz)
+      // 1. Echte Aufträge durchgehen
       orders.forEach(o => {
         if (!o.archived) { 
           openC++; 
@@ -1219,10 +1244,10 @@
         }
         
         let targetDate = o.orderDate || '';
-        if (o.status === 'Wartet auf Abholung') return;
 
         if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
-          if (!isEbay || o.ebayBalancePaid === '✅ Ausgezahlt') {
+          // Umsatz zählt NUR, wenn bezahlt (bei eBay: wenn ausgezahlt; sonst if isPaid === '✅ Ja')
+          if ((!isEbay && o.isPaid === '✅ Ja') || (isEbay && o.ebayBalancePaid === '✅ Ausgezahlt')) {
             totalRev += orderAmount;
           }
           totalExp += lCost;
@@ -1239,14 +1264,14 @@
         }
       });
 
-      // Strom-Kosten (Basis 60 € Pauschale + Druckzeit)
+      // Strom-Kosten (Pauschale 60 € + Druckzeit)
       let electricityCost = (totalPrintTime * 0.12) + 60;
 
       document.getElementById('statRevolutDisplay').innerText = currentRevolutBalance.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
       
-      // Reingewinn = (Umsatz - Ausgaben - 60 € Strom) + Korrektur
+      // Reingewinn
       document.getElementById('statProfit').innerText = ((totalRev - totalExp - 60) + correctionValue).toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statElectricity').innerText = electricityCost.toFixed(2).replace('.', ',') + ' €';
