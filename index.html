@@ -136,7 +136,7 @@
           </div>
           <div class="flex items-center space-x-2">
             <label class="text-[11px] text-slate-400">Monat wählen:</label>
-            <select id="statsMonthFilter" onchange="renderOrders(); renderExpenses(); updateStats();" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none"><option value="all" selected>📅 Alle Monate (Gesamt)</option></select>
+            <select id="statsMonthFilter" onchange="renderOrders(); renderExpenses(); updateStats();" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none"><option value="all">📅 Alle Monate (Gesamt)</option></select>
           </div>
         </div>
       </div>
@@ -145,11 +145,11 @@
         <div class="card p-3 rounded-xl flex items-center justify-between border border-indigo-500/30 bg-indigo-950/20 xl:col-span-2">
           <div><p class="text-[11px] text-indigo-300 font-semibold">💳 Revolut Kontostand (Manuell)</p><h3 id="statRevolutDisplay" class="text-xl font-bold text-indigo-400">0,00 €</h3></div>
         </div>
-        <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Umsatz</p><h3 id="statRevenue" class="text-xl font-bold text-blue-400">0,00 €</h3></div></div>
-        <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Ausgaben</p><h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3></div></div>
+        <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Umsatz (Monat)</p><h3 id="statRevenue" class="text-xl font-bold text-blue-400">0,00 €</h3></div></div>
+        <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Ausgaben (Monat)</p><h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex items-center justify-between border border-emerald-500/30 bg-emerald-950/10"><div><p class="text-[11px] text-emerald-400 font-semibold">Reingewinn</p><h3 id="statProfit" class="text-xl font-bold text-emerald-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍 eBay (Offen)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt</button></div>
-        <div class="card p-3 rounded-xl flex items-center justify-between border border-orange-500/30 bg-orange-950/20"><div><p class="text-[11px] text-orange-300 font-semibold">⚡ Strom (Offen)</p><h3 id="statElectricity" class="text-xl font-bold text-orange-400">66,12 €</h3></div></div>
+        <div class="card p-3 rounded-xl flex items-center justify-between border border-orange-500/30 bg-orange-950/20"><div><p class="text-[11px] text-orange-300 font-semibold">⚡ Strom (Basis 60€ + Druck)</p><h3 id="statElectricity" class="text-xl font-bold text-orange-400">0,00 €</h3></div></div>
       </div>
     </section>
 
@@ -435,7 +435,7 @@
       
       const sortedMonths = Array.from(months).sort().reverse();
       
-      let html = '<option value="all" selected>📅 Alle Monate (Gesamt)</option>';
+      let html = '<option value="all">📅 Alle Monate (Gesamt)</option>';
       sortedMonths.forEach(m => {
         const [y, mm] = m.split('-');
         const dateObj = new Date(parseInt(y), parseInt(mm) - 1, 1);
@@ -1239,14 +1239,11 @@
         let orderAmount = Math.max(0, o.price - dAmount); 
         let lCost = o.labelCost || 0;
 
-        let targetDate = o.orderDate || '';
-        if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
-          totalExp += lCost;
-        }
-
         if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') {
           ebayBalanceOpen += Math.round((orderAmount - lCost) * 100) / 100;
         }
+        
+        let targetDate = o.orderDate || '';
 
         // UMSATZ ZÄHLT NUR WENN BEZAHLT / AUSGEZAHLT
         if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
@@ -1259,7 +1256,7 @@
         }
       });
 
-      // 2. Angenommene Angebote als Einnahme zählen
+      // 2. Angenommene Angebote ebenfalls als Einnahme zählen (falls noch nicht als bezahlter Auftrag angelegt)
       offers.forEach(off => {
         let targetDate = off.date || '';
         if (off.status === 'Angenommen') {
@@ -1274,21 +1271,15 @@
         }
       });
 
-      // 3. Ausgaben verarbeiten (Ausschluss von -LABEL Duplikaten)
+      // 3. Ausgaben verarbeiten
       expenses.forEach(ex => { 
         if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) {
-          const idStr = String(ex.id || '');
-          const descStr = String(ex.description || '');
-          const isDuplicateLabel = idStr.includes('-LABEL') || descStr.startsWith('Porto / Versandlabel');
-          
-          if (!isDuplicateLabel) {
-            totalExp += ex.amount; 
-          }
+          totalExp += ex.amount; 
         }
       });
 
-      // Fester Stromkosten-Wert
-      let electricityCost = 66.12;
+      // Strom-Kosten (Pauschale 60 € + Druckstunden)
+      let electricityCost = (totalPrintTime * 0.12) + 60;
 
       document.getElementById('statRevolutDisplay').innerText = currentRevolutBalance.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
@@ -1496,7 +1487,7 @@
             </td>
             <td class="p-2 space-y-1">
               <select id="edit-lbl-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[10px] text-white"><option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>Label: ✅ Ja</option><option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>Label: ❌ Nein</option></select>
-              <select id="edit-pack-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white"><option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>Verpackt: ✅ Ja</option><option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>Verpackt: ❌ Nein</option></select>
+              <select id="edit-pack-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[10px] text-white"><option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>Verpackt: ✅ Ja</option><option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>Verpackt: ❌ Nein</option></select>
             </td>
             <td class="p-2 space-y-1">
               <input type="text" id="edit-track-${realIdx}" value="${o.tracking||''}" placeholder="Tracking" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white w-full">
@@ -1516,7 +1507,7 @@
               let weightVal = (parseInt(i.weight) || 0) * (i.qty || 1);
               let timeVal = (parseFloat(i.time) || 0) * (i.qty || 1);
               totalWeight += weightVal; totalTime += timeVal;
-              itemsText += `<div class="text-[11px] text-white">• ${i.qty || 1}x ${i.name} <span class="text-blue-300">(${i.color || 'Standard'}, ${weightVal}g, ${totalTime.toFixed(1)}h)</span></div>`;
+              itemsText += `<div class="text-[11px] text-white">• ${i.qty || 1}x ${i.name} <span class="text-blue-300">(${i.color || 'Standard'}, ${weightVal}g, ${timeVal}h)</span></div>`;
             });
           } else { itemsText += '<div class="text-[11px] text-slate-400">-</div>'; }
           itemsText += `</div><div class="text-[9px] text-slate-400 mt-0.5">Summe: ${totalWeight}g | ${totalTime.toFixed(1)}h</div>`;
