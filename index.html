@@ -161,61 +161,37 @@
       </section>
     </div>
 
-    <!-- ANGEBOTE BEREICH -->
+    <!-- NEUER BEREICH: ANGEBOTE -->
     <section class="card p-4 rounded-xl space-y-3 border border-amber-500/30 bg-amber-950/10">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-700/60 pb-2.5">
+      <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
         <h2 class="text-xs font-semibold text-amber-400"><i class="fa-solid fa-file-invoice-dollar mr-1.5"></i> Angebote & Preisanfragen</h2>
-        <select id="existingCustomerOfferSelect" onchange="autofillOfferCustomerData(this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-[11px] text-slate-300 focus:outline-none w-full sm:w-auto"><option value="">📋 Bestehenden Kunden laden...</option></select>
       </div>
-      <form id="offerForm" onsubmit="addOffer(event)" class="space-y-3 bg-slate-900/80 p-3 rounded-lg border border-slate-800">
-        <div class="grid grid-cols-1 sm:grid-cols-5 gap-2">
+      <form id="offerForm" onsubmit="addOffer(event)" class="space-y-2 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
           <input type="text" id="offerCustomer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           <input type="text" id="offerAddress" placeholder="Anschrift" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
-          <input type="number" step="0.01" id="offerDiscountPercent" placeholder="Rabatt (%)" value="0" oninput="calculateOfferTotal()" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 focus:outline-none">
-          <input type="number" step="0.01" id="offerPrice" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none border-amber-500/50 font-bold">
+          <input type="number" step="0.01" id="offerPrice" placeholder="Angebotspreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none border-amber-500/50">
           <input type="date" id="offerDate" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
         </div>
-
-        <div class="border-t border-slate-700/60 pt-2 space-y-2">
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-            <label class="text-[11px] font-semibold text-slate-300">Artikel, Größe, Preis & Positionen:</label>
-            <input type="text" id="offerArticleSearch" oninput="renderOfferQuickAddButtons()" placeholder="🔍 Katalog durchsuchen..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-full sm:w-72 focus:outline-none focus:border-amber-500 transition">
-          </div>
-          <div class="flex flex-wrap gap-1.5 py-0.5 max-h-[100px] overflow-y-auto pr-1" id="offerQuickAddButtons"></div>
-          
-          <div class="flex justify-end gap-1.5">
-            <button type="button" onclick="addOfferItemRow(1, 'Sonderanfertigung: ', 'Sondermaß', '')" class="bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 border border-purple-500/40 px-2.5 py-1 rounded text-[11px] cursor-pointer"><i class="fa-solid fa-ruler-combined mr-1"></i>+ Sondergröße</button>
-            <button type="button" onclick="addOfferItemRow()" class="bg-amber-600/30 hover:bg-amber-600/50 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded text-[11px] cursor-pointer">+ Leere Artikelzeile</button>
-          </div>
-
-          <div id="offerItemRows" class="space-y-1.5">
-            <div class="flex gap-2 items-center offer-article-row">
-              <input type="number" placeholder="Menge" value="1" min="1" class="offer-art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none" oninput="calculateOfferTotal()">
-              <input type="text" placeholder="Artikelbezeichnung" class="offer-art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
-              <input type="text" placeholder="Größe / Maße (z.B. 100x50)" class="offer-art-size bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-36 focus:outline-none">
-              <input type="number" step="0.01" placeholder="Preis (€)" class="offer-art-price bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none" oninput="calculateOfferTotal()">
-            </div>
-          </div>
+        <div class="flex gap-2">
+          <input type="text" id="offerArticle" placeholder="Beschreibung der Artikel (z.B. Kundenteil nach Maß)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white flex-1 focus:outline-none">
+          <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-1.5 px-4 text-xs transition cursor-pointer">+ Angebot erstellen</button>
         </div>
-
-        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-2 text-xs transition cursor-pointer">+ Angebot Speichern</button>
       </form>
-
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead class="bg-slate-900/60 text-slate-400 border-b border-slate-700">
-            <tr><th class="p-2">Angebots-Nr. & Datum</th><th class="p-2">Kunde</th><th class="p-2">Artikel, Größe & Preis</th><th class="p-2">Summe</th><th class="p-2">Status</th><th class="p-2 text-right">Aktionen</th></tr>
+            <tr><th class="p-2">Angebots-Nr. & Datum</th><th class="p-2">Kunde</th><th class="p-2">Beschreibung</th><th class="p-2">Summe</th><th class="p-2">Status</th><th class="p-2 text-right">Aktionen</th></tr>
           </thead>
           <tbody id="offersTableBody" class="divide-y divide-slate-700/50 text-slate-200"></tbody>
         </table>
       </div>
     </section>
 
-    <!-- AUFTRÄGE BEREICH -->
     <section class="card p-4 rounded-xl space-y-3">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-700/60 pb-2.5">
+      <div class="flex justify-between items-center">
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-plus-circle mr-1.5 text-blue-400"></i> Neuen Auftrag anlegen</h2>
-        <select id="existingCustomerSelect" onchange="autofillCustomerData(this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-[11px] text-slate-300 focus:outline-none w-full sm:w-auto"><option value="">📋 Bestehenden Kunden laden...</option></select>
+        <select id="existingCustomerSelect" onchange="autofillCustomerData(this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-[11px] text-slate-300 focus:outline-none"><option value="">📋 Bestehenden Kunden laden...</option></select>
       </div>
       <form id="orderForm" onsubmit="addOrder(event)" class="space-y-3">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
@@ -263,8 +239,7 @@
           
           <div class="flex flex-wrap gap-1.5 py-0.5 max-h-[120px] overflow-y-auto pr-1" id="quickAddButtons"></div>
 
-          <div class="flex justify-end gap-1.5">
-            <button type="button" onclick="addArticleInputRow(1, 'Sonderanfertigung: ', '', '', '')" class="bg-purple-600 hover:bg-purple-500 text-white px-2.5 py-1 rounded text-[11px] cursor-pointer"><i class="fa-solid fa-ruler-combined mr-1"></i>+ Sondergröße</button>
+          <div class="flex justify-end">
             <button type="button" onclick="addArticleInputRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-[11px] cursor-pointer">+ Leeren Artikel</button>
           </div>
 
@@ -282,7 +257,6 @@
       </form>
     </section>
 
-    <!-- AUSGABEN BEREICH -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-receipt mr-1.5 text-blue-400"></i> Betriebsausgaben & Einkäufe</h2>
@@ -299,7 +273,6 @@
       </div>
     </section>
 
-    <!-- BESTELLUNGEN TABELLE -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div class="flex items-center space-x-2"><h2 id="tableTitle" class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-list-check mr-1.5 text-blue-400"></i> Bestellungen (Aktiv)</h2></div>
@@ -317,7 +290,6 @@
       </div>
     </section>
 
-    <!-- VORLAGEN & DANKES-ZETTEL BEREICH -->
     <section class="card p-4 rounded-xl space-y-3">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-700/60 pb-2.5">
         <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-comments mr-1.5 text-blue-400"></i> Kleinanzeigen & Kunden-Vorlagen</h2>
@@ -357,6 +329,7 @@
 
     const BACKUP_PRINTERS = [
       { name: "CR-10 Smart Pro #1", desc: "Großraum", status: "Frei" },
+      { name: "Ender 3 V3", desc: "Klipper", status: "Frei" },
       { name: "Anycubic Kobra", desc: "Direct Drive", status: "Frei" },
       { name: "CR-10 Smart Pro #2", desc: "Großraum", status: "Frei" }
     ];
@@ -368,7 +341,6 @@
     ];
 
     let editingIndex = -1;
-    let editingOfferIndex = -1;
     let showingArchive = false;
     let orders = [];
     let offers = [];
@@ -461,121 +433,6 @@
       fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(e => console.log(e));
     }
 
-    // --- KUNDEN-AUTOFILL FUNKTIONEN ---
-    function autofillCustomerData(custName) {
-      if (!custName) return;
-      const match = orders.find(o => o.customer === custName) || offers.find(o => o.customer === custName);
-      if (match) {
-        document.getElementById('customer').value = match.customer || '';
-        document.getElementById('address').value = match.address || '';
-      }
-    }
-
-    function autofillOfferCustomerData(custName) {
-      if (!custName) return;
-      const match = orders.find(o => o.customer === custName) || offers.find(o => o.customer === custName);
-      if (match) {
-        document.getElementById('offerCustomer').value = match.customer || '';
-        document.getElementById('offerAddress').value = match.address || '';
-      }
-    }
-
-    function updateCustomerDropdowns() {
-      const dropdownIds = ['existingCustomerSelect', 'existingCustomerOfferSelect', 'templateCustomerSelect', 'thankYouCustomerSelect'];
-      
-      const customerMap = new Map();
-      orders.forEach(o => { if (o.customer) customerMap.set(o.customer, o.address || ''); });
-      offers.forEach(o => { if (o.customer && !customerMap.has(o.customer)) customerMap.set(o.customer, o.address || ''); });
-
-      dropdownIds.forEach(id => {
-        const sel = document.getElementById(id);
-        if (sel) {
-          const curVal = sel.value;
-          const defaultLabel = (id.includes('template') || id.includes('thankYou')) ? '👤 Kunden wählen...' : '📋 Bestehenden Kunden laden...';
-          sel.innerHTML = `<option value="">${defaultLabel}</option>`;
-          customerMap.forEach((addr, custName) => {
-            sel.innerHTML += `<option value="${custName}" ${custName === curVal ? 'selected' : ''}>${custName}</option>`;
-          });
-        }
-      });
-    }
-
-    // --- DANKES-ZETTEL & KUNDEN-VORLAGEN FUNKTIONEN ---
-    function printThankYouNoteFromDropdown() {
-      const custName = document.getElementById('thankYouCustomerSelect').value;
-      if (!custName) return alert("Bitte wähle zuerst einen Kunden aus!");
-      
-      const order = orders.find(o => o.customer === custName);
-      const itemsText = (order && order.items && order.items.length > 0) 
-        ? order.items.map(i => `${i.qty || 1}x ${i.name}`).join(', ') 
-        : 'deiner Bestellung';
-
-      const printWin = window.open('', '_blank', 'width=850,height=1000');
-      printWin.document.write(`<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Dankes-Zettel - ${custName}</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
-    @page { size: A4; margin: 0; }
-    body { font-family: 'Montserrat', sans-serif; background: #fff; color: #111; margin: 0; padding: 15mm; }
-    .card-box { border: 2px solid #0f172a; padding: 30px; border-radius: 16px; text-align: center; max-width: 650px; margin: 40px auto; }
-    h1 { font-size: 22px; font-weight: 800; color: #0284c7; margin-bottom: 8px; text-transform: uppercase; }
-    h2 { font-size: 15px; font-weight: 700; margin-top: 25px; color: #1e293b; }
-    p { font-size: 12px; line-height: 1.6; color: #334155; margin: 10px 0; }
-    .highlight { background: #f0f9ff; border: 1.5px dashed #0284c7; padding: 14px; border-radius: 12px; margin: 20px 0; font-weight: 600; color: #0369a1; font-size: 12px; }
-    .footer-note { font-size: 10px; color: #64748b; margin-top: 35px; border-top: 1px solid #e2e8f0; padding-top: 15px; }
-  </style>
-</head>
-<body>
-  <div class="card-box">
-    <h1>Vielen Dank für deine Bestellung!</h1>
-    <p>Hallo <strong>${custName}</strong>,</p>
-    <p>vielen Dank für deinen Einkauf bei <strong>Sefas3DShop</strong>! Deine Bestellung (<em>${itemsText}</em>) wurde mit größter Sorgfalt im 3D-Druckverfahren hergestellt und verpackt.</p>
-    
-    <div class="highlight">
-      ✨ Zufrieden mit deinem Produkt?<br>
-      Über eine kurze Bewertung auf Kleinanzeigen / Etsy würde ich mich riesig freuen!
-    </div>
-
-    <p>Sollte etwas nicht zu deiner Zufriedenheit sein oder hast du Fragen zu deinem gedruckten Teil, melde dich bitte jederzeit direkt bei mir – wir finden schnell eine Lösung!</p>
-    
-    <h2>Viel Freude mit deiner Bestellung!</h2>
-    
-    <div class="footer-note">
-      <strong>Sefas3DShop</strong> • Inh. Sefa Demir • Rahden<br>
-      E-Mail: sefad.sd@gmail.com
-    </div>
-  </div>
-  <script>
-    window.onload = function() { setTimeout(() => { window.print(); }, 400); };
-  <\/script>
-</body>
-</html>`);
-      printWin.document.close();
-    }
-
-    function updateTemplatePreview() {
-      const custName = document.getElementById('templateCustomerSelect').value;
-      const nameStr = custName ? custName : '[Kundenname]';
-      const order = orders.find(o => o.customer === custName);
-      const trackingStr = (order && order.tracking && order.tracking !== '-') ? order.tracking : '[Sendungsnummer]';
-
-      document.getElementById('templateText1').value = `Hallo ${nameStr},\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.`;
-      document.getElementById('templateText2').value = `Hallo ${nameStr},\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!`;
-      document.getElementById('templateText3').value = `Hallo ${nameStr},\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.`;
-      document.getElementById('templateText4').value = `Hallo ${nameStr},\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n${trackingStr}\n\nLink: https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=${trackingStr}\n\nViel Freude damit!`;
-    }
-
-    function copyTemplate(num) {
-      const txt = document.getElementById(`templateText${num}`);
-      if (txt) {
-        navigator.clipboard.writeText(txt.value);
-        alert(`Vorlage ${num} in die Zwischenablage kopiert!`);
-      }
-    }
-
     // --- ANGEBOTE FUNKTIONEN ---
     function generateNewOfferNumber(dateStr) {
       const year = dateStr ? dateStr.slice(0, 4) : new Date().getFullYear().toString(); let maxNum = 0;
@@ -583,84 +440,17 @@
       return `ANG-${year}-${(Math.max(10, maxNum) + 1).toString().padStart(4, '0')}`;
     }
 
-    function calculateOfferTotal() {
-      let subtotal = 0;
-      document.querySelectorAll('.offer-art-price').forEach((inp, idx) => {
-        const p = parseFloat(inp.value) || 0;
-        const q = parseInt(document.querySelectorAll('.offer-art-qty')[idx]?.value) || 1;
-        subtotal += p * q;
-      });
-      const discPerc = parseFloat(document.getElementById('offerDiscountPercent')?.value) || 0;
-      const discAmount = (subtotal * discPerc) / 100;
-      const finalTotal = Math.max(0, subtotal - discAmount);
-      
-      if (subtotal > 0 || discPerc > 0) {
-        const offerPriceInput = document.getElementById('offerPrice');
-        if (offerPriceInput) offerPriceInput.value = finalTotal.toFixed(2);
-      }
-    }
-
-    function addOfferItemRow(qty = 1, name = '', size = '', price = '') {
-      const container = document.getElementById('offerItemRows');
-      if (!container) return;
-      const div = document.createElement('div');
-      div.className = "flex gap-2 items-center offer-article-row";
-      div.innerHTML = `<input type="number" placeholder="Menge" value="${qty}" min="1" class="offer-art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none" oninput="calculateOfferTotal()"><input type="text" placeholder="Artikelbezeichnung" value="${name}" class="offer-art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none"><input type="text" placeholder="Größe / Maße" value="${size}" class="offer-art-size bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-36 focus:outline-none"><input type="number" step="0.01" placeholder="Preis (€)" value="${price}" class="offer-art-price bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none" oninput="calculateOfferTotal()"><button type="button" onclick="this.parentElement.remove(); calculateOfferTotal();" class="text-red-400 px-1.5"><i class="fa-solid fa-xmark"></i></button>`;
-      container.appendChild(div);
-      calculateOfferTotal();
-    }
-
-    function renderOfferQuickAddButtons() {
-      const container = document.getElementById('offerQuickAddButtons');
-      const query = (document.getElementById('offerArticleSearch')?.value || '').toLowerCase();
-      if (!container) return;
-      container.innerHTML = '';
-      if (!query) { container.innerHTML = '<span class="text-[10px] text-slate-500 italic">Suchen, um Artikel hinzuzufügen...</span>'; return; }
-      products.forEach(p => {
-        if (!p.name.toLowerCase().includes(query)) return;
-        container.innerHTML += `<button type="button" onclick="addPresetOfferItem('${p.name.replace(/'/g, "\\'")}', '${p.size || ''}', ${p.price})" class="bg-slate-900 hover:bg-slate-800 text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-700 cursor-pointer transition">+ ${p.name} <span class="text-slate-400">(${p.size})</span> <span class="text-amber-400">(${p.price.toFixed(2)}€)</span></button>`;
-      });
-    }
-
-    function addPresetOfferItem(name, size, price) {
-      addOfferItemRow(1, name, size, price);
-      document.getElementById('offerArticleSearch').value = '';
-      renderOfferQuickAddButtons();
-    }
-
     function addOffer(e) {
       e.preventDefault();
       const cust = document.getElementById('offerCustomer').value.trim();
       const addr = document.getElementById('offerAddress').value.trim();
       const price = parseFloat(document.getElementById('offerPrice').value) || 0;
-      const discPerc = parseFloat(document.getElementById('offerDiscountPercent').value) || 0;
       const date = document.getElementById('offerDate').value || todayStr;
+      const desc = document.getElementById('offerArticle').value.trim();
       const offerNum = generateNewOfferNumber(date);
 
-      const itemsList = [];
-      document.querySelectorAll('.offer-art-name').forEach((inp, idx) => {
-        const val = inp.value.trim();
-        if (val) {
-          const q = parseInt(document.querySelectorAll('.offer-art-qty')[idx].value) || 1;
-          const sz = document.querySelectorAll('.offer-art-size')[idx].value.trim();
-          const pr = parseFloat(document.querySelectorAll('.offer-art-price')[idx].value) || 0;
-          itemsList.push({ qty: q, name: val, size: sz, price: pr });
-        }
-      });
-      if (itemsList.length === 0) return alert("Bitte mindestens einen Artikel eintragen!");
-
-      offers.unshift({ id: Date.now(), offerNumber: offerNum, customer: cust, address: addr, price: price, discountPercent: discPerc, date: date, items: itemsList, status: "Offen" });
-      saveAllData(); 
-      document.getElementById('offerForm').reset(); 
-      document.getElementById('offerDate').value = todayStr;
-      document.getElementById('offerDiscountPercent').value = "0";
-      document.getElementById('offerItemRows').innerHTML = `
-        <div class="flex gap-2 items-center offer-article-row">
-          <input type="number" placeholder="Menge" value="1" min="1" class="offer-art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none" oninput="calculateOfferTotal()">
-          <input type="text" placeholder="Artikelbezeichnung" class="offer-art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none">
-          <input type="text" placeholder="Größe / Maße (z.B. 100x50)" class="offer-art-size bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-36 focus:outline-none">
-          <input type="number" step="0.01" placeholder="Preis (€)" class="offer-art-price bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-24 focus:outline-none" oninput="calculateOfferTotal()">
-        </div>`;
+      offers.unshift({ id: Date.now(), offerNumber: offerNum, customer: cust, address: addr, price: price, date: date, description: desc, status: "Offen" });
+      saveAllData(); document.getElementById('offerForm').reset(); document.getElementById('offerDate').value = todayStr;
     }
 
     function updateOfferStatus(id, newStatus) {
@@ -672,75 +462,17 @@
       if (confirm("Angebot löschen?")) { offers = offers.filter(o => o.id !== id); saveAllData(); }
     }
 
-    function startEditOffer(idx) { editingOfferIndex = idx; renderOffers(); }
-    function cancelEditOffer() { editingOfferIndex = -1; renderOffers(); }
-
-    function calculateEditOfferTotal(idx) {
-      let subtotal = 0;
-      document.querySelectorAll(`.edit-offer-art-price-${idx}`).forEach((inp, i) => {
-        const p = parseFloat(inp.value) || 0;
-        const q = parseInt(document.querySelectorAll(`.edit-offer-art-qty-${idx}`)[i]?.value) || 1;
-        subtotal += p * q;
-      });
-      const discPerc = parseFloat(document.getElementById(`edit-offer-discperc-${idx}`)?.value) || 0;
-      const discAmount = (subtotal * discPerc) / 100;
-      const finalTotal = Math.max(0, subtotal - discAmount);
-      
-      const priceInput = document.getElementById(`edit-offer-price-${idx}`);
-      if (priceInput) priceInput.value = finalTotal.toFixed(2);
-    }
-
-    function addEditOfferArticleRow(idx, qty = 1, name = '', size = '', price = '') {
-      const container = document.getElementById(`editOfferArticleRows-${idx}`);
-      if (!container) return;
-      const div = document.createElement('div');
-      div.className = "flex gap-1.5 items-center bg-slate-950 p-1.5 rounded-lg border border-slate-800";
-      div.innerHTML = `<input type="number" value="${qty}" min="1" class="edit-offer-art-qty-${idx} bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-14" oninput="calculateEditOfferTotal(${idx})"><input type="text" value="${name}" placeholder="Artikel" class="edit-offer-art-name-${idx} bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white flex-1"><input type="text" value="${size}" placeholder="Maße" class="edit-offer-art-size-${idx} bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-24"><input type="number" step="0.01" value="${price}" placeholder="€" class="edit-offer-art-price-${idx} bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-16" oninput="calculateEditOfferTotal(${idx})"><button type="button" onclick="this.parentElement.remove(); calculateEditOfferTotal(${idx});" class="text-red-400 px-1"><i class="fa-solid fa-xmark"></i></button>`;
-      container.appendChild(div);
-      calculateEditOfferTotal(idx);
-    }
-
-    function saveEditOffer(idx) {
-      const updatedItems = [];
-      document.querySelectorAll(`.edit-offer-art-name-${idx}`).forEach((inp, i) => {
-        const val = inp.value.trim();
-        if (val) {
-          const q = parseInt(document.querySelectorAll(`.edit-offer-art-qty-${idx}`)[i].value) || 1;
-          const sz = document.querySelectorAll(`.edit-offer-art-size-${idx}`)[i].value.trim();
-          const pr = parseFloat(document.querySelectorAll(`.edit-offer-art-price-${idx}`)[i].value) || 0;
-          updatedItems.push({ qty: q, name: val, size: sz, price: pr });
-        }
-      });
-      if (updatedItems.length === 0) return alert("Mindestens ein Artikel erforderlich!");
-
-      offers[idx].customer = document.getElementById(`edit-offer-cust-${idx}`).value;
-      offers[idx].address = document.getElementById(`edit-offer-addr-${idx}`).value;
-      offers[idx].date = document.getElementById(`edit-offer-date-${idx}`).value;
-      offers[idx].status = document.getElementById(`edit-offer-stat-${idx}`).value;
-      offers[idx].price = parseFloat(document.getElementById(`edit-offer-price-${idx}`).value) || 0;
-      offers[idx].discountPercent = parseFloat(document.getElementById(`edit-offer-discperc-${idx}`).value) || 0;
-      offers[idx].items = updatedItems;
-
-      editingOfferIndex = -1;
-      saveAllData();
-    }
-
     function convertOfferToOrder(id) {
       const off = offers.find(o => o.id === id);
       if (!off) return;
+      // Trage Daten in das Auftragsformular ein
       document.getElementById('customer').value = off.customer;
       document.getElementById('address').value = off.address || '';
       document.getElementById('price').value = off.price.toFixed(2);
-      document.getElementById('discountPercent').value = off.discountPercent || 0;
       
-      const rowsContainer = document.getElementById('articleInputRows');
-      if (rowsContainer && off.items) {
-        rowsContainer.innerHTML = '';
-        off.items.forEach(i => {
-          let sizeNote = i.size ? ` - Maß: ${i.size}` : '';
-          addArticleInputRow(i.qty || 1, i.name + sizeNote, '', 0, 0);
-        });
-      }
+      // Füge den Artikel als Standardzeile hinzu
+      const firstArtInput = document.querySelector('.art-name');
+      if (firstArtInput) firstArtInput.value = off.description;
 
       off.status = "Angenommen";
       saveAllData();
@@ -748,183 +480,27 @@
       window.scrollTo({ top: document.getElementById('orderForm').offsetTop - 50, behavior: 'smooth' });
     }
 
-    function buildOfferHTML(off) {
-      const offerDate = off.date ? off.date.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
-      const offerNumber = off.offerNumber || 'ANG-2026-0001';
-      
-      let subtotal = 0;
-      let itemsRows = '';
-      if (off.items && off.items.length > 0) {
-        off.items.forEach(i => {
-          let q = i.qty || 1;
-          let price = i.price || 0;
-          let lineTotal = price * q;
-          subtotal += lineTotal;
-          let sizeStr = i.size ? ` <span style="color: #666; font-weight: 400;">(${i.size})</span>` : '';
-          itemsRows += `<tr>
-            <td><strong>${i.name}</strong>${sizeStr}</td>
-            <td class="qty">${q} Stk.</td>
-            <td class="price">${price.toFixed(2).replace('.', ',')} €</td>
-            <td class="total">${lineTotal.toFixed(2).replace('.', ',')} €</td>
-          </tr>`;
-        });
-      } else {
-        subtotal = off.price || 0;
-        itemsRows = `<tr>
-          <td><strong>${off.description || '3D-Druck Anfertigung nach Kundenwunsch'}</strong></td>
-          <td class="qty">1 Stk.</td>
-          <td class="price">${subtotal.toFixed(2).replace('.', ',')} €</td>
-          <td class="total">${subtotal.toFixed(2).replace('.', ',')} €</td>
-        </tr>`;
-      }
-
-      const discPerc = parseFloat(off.discountPercent) || 0;
-      const discountAmount = (subtotal * discPerc) / 100;
-      const totalAmountNum = Math.max(0, subtotal - discountAmount);
-
-      if (discPerc > 0) {
-        itemsRows += `<tr class="highlight-row">
-          <td><strong>Sondernachlass / Rabatt (${discPerc}%)</strong></td>
-          <td class="qty">1 Stk.</td>
-          <td class="price">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
-          <td class="total">-${discountAmount.toFixed(2).replace('.', ',')} €</td>
-        </tr>`;
-      }
-
-      const logoSvg = `<svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
-
-      return `
-        <div class="page">
-          <div class="header">
-            <div class="brand">${logoSvg}<div class="brand-text"><h1>SEFAS 3D SHOP</h1><p>Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden<br>St.-Nr.: 52063271982</p></div></div>
-            <div class="invoice-title"><h2>Angebot</h2></div>
-          </div>
-          <div class="info-grid">
-            <div class="customer-box">
-              <h3>Angebot an</h3>
-              <p>${off.customer}<span>${off.address || 'Keine Anschrift hinterlegt'}</span></p>
-            </div>
-            <div class="meta-box">
-              <table class="meta-table">
-                <tr><td>Angebots-Nr.</td><td><strong>${offerNumber}</strong></td></tr>
-                <tr><td>Angebotsdatum</td><td><strong>${offerDate}</strong></td></tr>
-                <tr><td>Gültigkeit</td><td><strong>14 Tage</strong></td></tr>
-              </table>
-            </div>
-          </div>
-          <table class="items-table">
-            <thead>
-              <tr>
-                <th style="width: 50%;">Position / Beschreibung</th>
-                <th style="width: 15%;" class="center">Menge</th>
-                <th style="width: 15%;" class="right">Einzelpreis</th>
-                <th style="width: 20%;" class="right">Gesamt</th>
-              </tr>
-            </thead>
-            <tbody>${itemsRows}</tbody>
-          </table>
-          <div class="totals-wrapper">
-            <div class="totals-box">
-              <div class="total-row"><span>Zwischensumme:</span> <span>${subtotal.toFixed(2).replace('.', ',')} €</span></div>
-              ${discPerc > 0 ? `<div class="total-row"><span>Rabatt (${discPerc}%):</span> <span>-${discountAmount.toFixed(2).replace('.', ',')} €</span></div>` : ''}
-              <div class="total-row final"><span>Gesamtbetrag:</span> <span>${totalAmountNum.toFixed(2).replace('.', ',')} €</span></div>
-            </div>
-          </div>
-          <div style="border: 1px solid #111; padding: 8px 10px; margin-bottom: 12px; font-size: 7.5px; line-height: 1.4;">
-            <strong>Konditionen & Annahme:</strong><br>
-            • Wir freuen uns über deine Anfrage und bieten dir oben stehende Positionen unverbindlich an.<br>
-            • Die Bearbeitungs- & Lieferzeit beträgt i.d.R. 2–5 Werktage nach Auftragserteilung.<br>
-            • Antworte uns einfach kurz auf diese Nachricht oder bestätige das Angebot, um den Druck zu starten!
-          </div>
-          <div class="footer">
-            Kleinunternehmer gemäß § 19 UStG. Es wird keine Umsatzsteuer ausgewiesen.<br>
-            Vielen Dank für das Vertrauen in Sefas3DShop!
-          </div>
-        </div>
-      `;
-    }
-
-    function downloadOfferPDF(idx) {
-      const off = offers[idx];
-      if (!off) return;
-      const safeCustomer = off.customer ? off.customer.replace(/[^a-zA-Z0-9_\-]/g, '_') : 'Kunde';
-      const docTitle = `Angebot_${off.offerNumber}_${safeCustomer}`;
-      
-      const printWin = window.open('', '_blank', 'width=850,height=1000');
-      printWin.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${docTitle}</title><style>${getInvoiceCSS()}</style></head><body>${buildOfferHTML(off)}<script>window.onload = function() { setTimeout(() => { window.print(); }, 400); };<\/script></body></html>`);
-      printWin.document.close();
-    }
-
     function renderOffers() {
       const tbody = document.getElementById('offersTableBody');
       if (!tbody) return; tbody.innerHTML = '';
-      offers.forEach((off, idx) => {
-        if (editingOfferIndex === idx) {
-          let editItemsHtml = `<div id="editOfferArticleRows-${idx}" class="space-y-1.5 my-1.5">`;
-          if (off.items && off.items.length > 0) {
-            off.items.forEach(i => {
-              editItemsHtml += `<div class="flex gap-1.5 items-center bg-slate-950 p-1.5 rounded-lg border border-slate-800"><input type="number" value="${i.qty || 1}" min="1" class="edit-offer-art-qty-${idx} bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-14" oninput="calculateEditOfferTotal(${idx})"><input type="text" value="${i.name}" placeholder="Artikel" class="edit-offer-art-name-${idx} bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white flex-1"><input type="text" value="${i.size || ''}" placeholder="Maße" class="edit-offer-art-size-${idx} bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-24"><input type="number" step="0.01" value="${i.price || ''}" placeholder="€" class="edit-offer-art-price-${idx} bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-16" oninput="calculateEditOfferTotal(${idx})"><button type="button" onclick="this.parentElement.remove(); calculateEditOfferTotal(${idx});" class="text-red-400 px-1"><i class="fa-solid fa-xmark"></i></button></div>`;
-            });
-          }
-          editItemsHtml += `</div><button type="button" onclick="addEditOfferArticleRow(${idx})" class="bg-slate-800 text-amber-400 text-[11px] px-2 py-0.5 rounded">+ Zeile hinzufügen</button>`;
-
-          tbody.innerHTML += `<tr class="border-b border-slate-800 bg-slate-900/90">
-            <td class="p-2 font-mono text-amber-400 font-bold">${off.offerNumber}<input type="date" id="edit-offer-date-${idx}" value="${off.date || todayStr}" class="bg-slate-950 border border-amber-500 rounded px-1 py-0.5 text-[10px] text-white w-full mt-1"></td>
-            <td class="p-2 space-y-1">
-              <input type="text" id="edit-offer-cust-${idx}" value="${off.customer}" class="bg-slate-950 border border-amber-500 rounded px-2 py-0.5 text-[11px] text-white w-full">
-              <input type="text" id="edit-offer-addr-${idx}" value="${off.address || ''}" placeholder="Anschrift" class="bg-slate-950 border border-amber-500 rounded px-2 py-0.5 text-[10px] text-white w-full">
-            </td>
-            <td class="p-2">${editItemsHtml}</td>
-            <td class="p-2 space-y-1">
-              <div>Summe: <input type="number" step="0.01" id="edit-offer-price-${idx}" value="${off.price}" class="bg-slate-950 border border-amber-500 rounded px-1.5 py-0.5 text-[11px] text-amber-400 font-bold w-16"></div>
-              <div>Rabatt (%): <input type="number" step="0.01" id="edit-offer-discperc-${idx}" value="${off.discountPercent || 0}" oninput="calculateEditOfferTotal(${idx})" class="bg-slate-950 border border-amber-500 rounded px-1.5 py-0.5 text-[11px] text-amber-300 w-16"></div>
-            </td>
-            <td class="p-2">
-              <select id="edit-offer-stat-${idx}" class="bg-slate-950 border border-amber-500 rounded px-1.5 py-0.5 text-[11px] text-amber-300">
-                <option value="Offen" ${off.status==='Offen'?'selected':''}>⏳ Offen</option>
-                <option value="Angenommen" ${off.status==='Angenommen'?'selected':''}>✅ Angenommen</option>
-                <option value="Abgelehnt" ${off.status==='Abgelehnt'?'selected':''}>❌ Abgelehnt</option>
-              </select>
-            </td>
-            <td class="p-2 text-right space-x-1">
-              <button onclick="saveEditOffer(${idx})" class="bg-amber-600 text-white px-2 py-0.5 rounded text-[11px] cursor-pointer">✔</button>
-              <button onclick="cancelEditOffer()" class="bg-slate-700 text-white px-2 py-0.5 rounded text-[11px] cursor-pointer">✖</button>
-            </td>
-          </tr>`;
-        } else {
-          let itemsHtml = '<div class="space-y-0.5">';
-          if (off.items && off.items.length > 0) {
-            off.items.forEach(i => {
-              let itemPriceText = i.price ? ` - ${i.price.toFixed(2).replace('.', ',')}€` : '';
-              itemsHtml += `<div class="text-[11px] text-white">• ${i.qty || 1}x ${i.name} <span class="text-amber-300">(${i.size || 'Standard'}${itemPriceText})</span></div>`;
-            });
-          } else {
-            itemsHtml += `<div class="text-[11px] text-white">${off.description || '-'}</div>`;
-          }
-          itemsHtml += '</div>';
-
-          let discountText = (off.discountPercent && off.discountPercent > 0) ? `<div class="text-[10px] text-amber-300">(-${off.discountPercent}% Rabatt)</div>` : '';
-
-          tbody.innerHTML += `<tr class="border-b border-slate-800">
-            <td class="p-2 font-mono text-amber-400 font-bold">${off.offerNumber}<div class="text-[9px] text-slate-400 font-normal">${off.date}</div></td>
-            <td class="p-2 font-medium text-white">${off.customer}<div class="text-[9px] text-slate-400">${off.address || ''}</div></td>
-            <td class="p-2">${itemsHtml}</td>
-            <td class="p-2 font-bold text-amber-400">${off.price.toFixed(2).replace('.', ',')} €${discountText}</td>
-            <td class="p-2">
-              <select onchange="updateOfferStatus(${off.id}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-amber-300">
-                <option value="Offen" ${off.status==='Offen'?'selected':''}>⏳ Offen</option>
-                <option value="Angenommen" ${off.status==='Angenommen'?'selected':''}>✅ Angenommen</option>
-                <option value="Abgelehnt" ${off.status==='Abgelehnt'?'selected':''}>❌ Abgelehnt</option>
-              </select>
-            </td>
-            <td class="p-2 text-right space-x-1">
-              <button onclick="downloadOfferPDF(${idx})" class="text-amber-300 bg-amber-500/10 border border-amber-500/30 px-1.5 py-1 rounded text-[10px] cursor-pointer" title="Angebot als PDF runterladen / drucken">📄 PDF</button>
-              <button onclick="startEditOffer(${idx})" class="text-amber-400 bg-amber-500/10 px-1.5 py-1 rounded text-[10px] cursor-pointer" title="Angebot bearbeiten">✏</button>
-              <button onclick="convertOfferToOrder(${off.id})" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/40 px-2 py-1 rounded text-[10px] cursor-pointer" title="In Auftrag umwandeln">🚀 Auftrag</button>
-              <button onclick="deleteOffer(${off.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px] cursor-pointer">❌</button>
-            </td>
-          </tr>`;
-        }
+      offers.forEach(off => {
+        tbody.innerHTML += `<tr class="border-b border-slate-800">
+          <td class="p-2 font-mono text-amber-400 font-bold">${off.offerNumber}<div class="text-[9px] text-slate-400 font-normal">${off.date}</div></td>
+          <td class="p-2 font-medium text-white">${off.customer}<div class="text-[9px] text-slate-400">${off.address || ''}</div></td>
+          <td class="p-2 text-slate-300">${off.description}</td>
+          <td class="p-2 text-amber-400 font-bold">${off.price.toFixed(2).replace('.', ',')} €</td>
+          <td class="p-2">
+            <select onchange="updateOfferStatus(${off.id}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-amber-300">
+              <option value="Offen" ${off.status==='Offen'?'selected':''}>⏳ Offen</option>
+              <option value="Angenommen" ${off.status==='Angenommen'?'selected':''}>✅ Angenommen</option>
+              <option value="Abgelehnt" ${off.status==='Abgelehnt'?'selected':''}>❌ Abgelehnt</option>
+            </select>
+          </td>
+          <td class="p-2 text-right space-x-1">
+            <button onclick="convertOfferToOrder(${off.id})" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/40 px-2 py-1 rounded text-[10px] cursor-pointer" title="In Auftrag umwandeln">🚀 Auftrag</button>
+            <button onclick="deleteOffer(${off.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px] cursor-pointer">❌</button>
+          </td>
+        </tr>`;
       });
     }
 
@@ -940,7 +516,7 @@
         .brand-text h1 { font-size: 12px; font-weight: 800; color: #111; margin: 0 0 1px 0; line-height: 1.0; text-transform: uppercase; }
         .brand-text p { font-size: 6px; color: #444; margin: 0; }
         .invoice-title h2 { font-size: 13px; font-weight: 800; color: #111; margin: 0; text-transform: uppercase; }
-        .info-grid { display: flex; justify-between; margin-bottom: 12px; }
+        .info-grid { display: flex; justify-content: space-between; margin-bottom: 12px; }
         .customer-box { width: 45%; }
         .customer-box h3 { font-size: 7px; text-transform: uppercase; color: #111; font-weight: 700; margin: 0 0 2px 0; border-bottom: 1px solid #111; padding-bottom: 1px; display: inline-block;}
         .customer-box p { font-size: 8px; font-weight: 700; margin: 0; }
@@ -959,10 +535,10 @@
         .items-table td.price, .items-table td.total { text-align: right; font-weight: 700;}
         .totals-wrapper { display: flex; justify-content: flex-end; margin-bottom: 12px; }
         .totals-box { width: 190px; }
-        .total-row { display: flex; justify-between; padding: 3px 5px; font-size: 7.5px; font-weight: 600; }
+        .total-row { display: flex; justify-content: space-between; padding: 3px 5px; font-size: 7.5px; font-weight: 600; }
         .total-row.final { border-top: 1px solid #111; border-bottom: 1px solid #111; margin-top: 2px; align-items: center; padding: 5px 5px; }
         .total-row.final span:last-child { font-weight: 800; font-size: 10px; }
-        .payment-block { display: flex; justify-between; align-items: flex-start; border: 1px solid #111; padding: 8px; margin-bottom: 10px; }
+        .payment-block { display: flex; justify-content: space-between; align-items: flex-start; border: 1px solid #111; padding: 8px; margin-bottom: 10px; }
         .payment-info { flex: 1; padding-right: 8px; }
         .payment-info h3 { margin: 0 0 4px 0; font-size: 7.5px; font-weight: 800; text-transform: uppercase; }
         .payment-info p { margin: 0 0 2px 0; font-size: 7px; }
@@ -1061,7 +637,6 @@
         });
       }
       renderQuickAddButtons();
-      renderOfferQuickAddButtons();
     }
 
     function renderQuickAddButtons() {
@@ -1134,6 +709,15 @@
     function toggleArchiveOrder(id) { const order = orders.find(o => o.id === id); if (order) { order.archived = !order.archived; if (order.archived && !order.shipDate) order.shipDate = todayStr; saveAllData(); } }
     function updateField(id, field, value) { const order = orders.find(o => o.id === id); if (order) { order[field] = value; saveAllData(); } }
 
+    function updateCustomerDropdowns() {
+      ['existingCustomerSelect', 'templateCustomerSelect', 'thankYouCustomerSelect'].forEach(id => {
+        const sel = document.getElementById(id); if (sel) {
+          sel.innerHTML = `<option value="">👤 Kunde wählen...</option>`;
+          orders.forEach(o => sel.innerHTML += `<option value="${o.id}">${o.customer}</option>`);
+        }
+      });
+    }
+
     function renderSpools() {
       const container = document.getElementById('spoolsList'); if (!container) return; container.innerHTML = '';
       spools.forEach((s, idx) => {
@@ -1152,7 +736,7 @@
     function addArticleInputRow(qtyVal = 1, nameVal = '', colorVal = '', weightVal = '', timeVal = '') {
       const div = document.createElement('div'); div.className = "flex gap-2 items-center article-row";
       let optionsHtml = '<option value="">-- Farbe --</option>'; spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === colorVal ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
-      div.innerHTML = `<input type="number" placeholder="Menge" value="${qtyVal}" min="1" class="art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none"><input type="text" placeholder="Artikelbezeichnung" value="${nameVal}" class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none"><select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-36 focus:outline-none">${optionsHtml}</select><input type="number" placeholder="Gramm" value="${weightVal}" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-20 focus:outline-none"><input type="number" step="0.1" placeholder="Zeit (h)" value="${timeVal}" class="art-time bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-20 focus:outline-none" title="Druckzeit in Stunden"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1.5"><i class="fa-solid fa-xmark"></i></button>`;
+      div.innerHTML = `<input type="number" placeholder="Menge" value="${qtyVal}" min="1" class="art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none"><input type="text" placeholder="Artikelbezeichnung" value="${nameVal}" class="art-name bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white flex-1 focus:outline-none"><select class="art-color bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-36 focus:outline-none">${optionsHtml}</select><input type="number" placeholder="Gramm" value="${weightVal}" class="art-weight bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-20 focus:outline-none"><input type="number" step="0.1" placeholder="Zeit (h)" value="${timeVal}" class="art-time bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-20 focus:outline-none"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1.5"><i class="fa-solid fa-xmark"></i></button>`;
       document.getElementById('articleInputRows').appendChild(div);
     }
     
@@ -1189,18 +773,11 @@
       const isPickup = document.getElementById('isPickup').checked;
       const lCostVal = isPickup ? 0 : (parseFloat(document.getElementById('labelCost').value) || 0);
       const customDate = document.getElementById('orderDate').value || todayStr;
-      const custName = document.getElementById('customer').value.trim();
       const fixedInvoiceNum = generateNewInvoiceNumber(customDate);
-      
-      const orderId = Date.now();
-      let expId = null;
-      if (lCostVal > 0) {
-        expId = Date.now() + 1;
-        expenses.unshift({ id: expId, description: `Porto für ${custName}`, category: 'DHL / Versand', amount: lCostVal, date: customDate });
-      }
+      if (lCostVal > 0) expenses.unshift({ id: Date.now(), description: `Porto für ${document.getElementById('customer').value}`, category: 'DHL / Versand', amount: lCostVal, date: customDate });
       
       orders.unshift({
-        id: orderId, expenseId: expId, customer: custName, platform: document.getElementById('platform').value, paymentMethod: document.getElementById('paymentMethod').value,
+        id: Date.now(), customer: document.getElementById('customer').value, platform: document.getElementById('platform').value, paymentMethod: document.getElementById('paymentMethod').value,
         isPaid: document.getElementById('isPaid').value, ebayBalancePaid: document.getElementById('platform').value === 'eBay' ? '⏳ Bei eBay' : 'N/A', address: document.getElementById('address').value || '', printer: document.getElementById('printer').value,
         status: isPickup ? "Wartet auf Abholung" : "Offen", label: document.getElementById('label').value, packed: document.getElementById('packed').value, price: parseFloat(document.getElementById('price').value) || 0, shippingFee: isPickup ? 0 : (parseFloat(document.getElementById('shippingFee').value) || 0),
         labelCost: lCostVal, discountPercent: parseFloat(document.getElementById('discountPercent').value) || 0, tracking: isPickup ? "Selbstabholer" : (document.getElementById('tracking').value || '-'), orderDate: customDate, invoiceNumber: fixedInvoiceNum, archived: false, items: itemsList
@@ -1226,34 +803,7 @@
       updatedItems.forEach(newI => { if (newI.color && newI.weight > 0) { const spool = spools.find(s => s.name === newI.color); if (spool) spool.remainingGrams = Math.max(0, spool.remainingGrams - (newI.weight * newI.qty)); } });
 
       const isPickupEdit = document.getElementById(`edit-ispickup-${idx}`)?.checked || false;
-      const newCustName = document.getElementById(`edit-cust-${idx}`).value;
-      const newOrderDate = document.getElementById(`edit-date-${idx}`)?.value || orders[idx].orderDate;
-      const newLabelCost = isPickupEdit ? 0 : (parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0);
-
-      // Verknüpfte Ausgabe synchronisieren
-      if (oldOrder.expenseId) {
-        let linkedExp = expenses.find(e => e.id === oldOrder.expenseId);
-        if (linkedExp) {
-          if (newLabelCost > 0) {
-            linkedExp.amount = newLabelCost;
-            linkedExp.description = `Porto für ${newCustName}`;
-            linkedExp.date = newOrderDate;
-          } else {
-            expenses = expenses.filter(e => e.id !== oldOrder.expenseId);
-            orders[idx].expenseId = null;
-          }
-        } else if (newLabelCost > 0) {
-          const newExpId = Date.now();
-          orders[idx].expenseId = newExpId;
-          expenses.unshift({ id: newExpId, description: `Porto für ${newCustName}`, category: 'DHL / Versand', amount: newLabelCost, date: newOrderDate });
-        }
-      } else if (newLabelCost > 0) {
-        const newExpId = Date.now();
-        orders[idx].expenseId = newExpId;
-        expenses.unshift({ id: newExpId, description: `Porto für ${newCustName}`, category: 'DHL / Versand', amount: newLabelCost, date: newOrderDate });
-      }
-
-      orders[idx].customer = newCustName; 
+      orders[idx].customer = document.getElementById(`edit-cust-${idx}`).value; 
       orders[idx].platform = document.getElementById(`edit-plat-${idx}`).value; 
       orders[idx].paymentMethod = document.getElementById(`edit-paymeth-${idx}`).value;
       orders[idx].isPaid = document.getElementById(`edit-ispaid-${idx}`).value; 
@@ -1266,20 +816,13 @@
       orders[idx].price = parseFloat(document.getElementById(`edit-price-${idx}`).value) || 0; 
       orders[idx].shippingFee = isPickupEdit ? 0 : (parseFloat(document.getElementById(`edit-shipfee-${idx}`).value) || 0); 
       orders[idx].discountPercent = parseFloat(document.getElementById(`edit-discperc-${idx}`).value) || 0;
-      orders[idx].labelCost = newLabelCost;
+      orders[idx].labelCost = isPickupEdit ? 0 : (parseFloat(document.getElementById(`edit-labelcost-${idx}`).value) || 0);
       orders[idx].tracking = isPickupEdit ? "Selbstabholer" : (document.getElementById(`edit-track-${idx}`).value || '-'); 
-      orders[idx].orderDate = newOrderDate;
+      orders[idx].orderDate = document.getElementById(`edit-date-${idx}`)?.value || orders[idx].orderDate;
       orders[idx].items = updatedItems; editingIndex = -1; saveAllData();
     }
     
-    function deleteOrder(id) { 
-      const o = orders.find(x => x.id === id); 
-      if(o) {
-        if(o.items) o.items.forEach(i => { if (i.color && i.weight > 0) { const s = spools.find(x => x.name === i.color); if(s) s.remainingGrams += (i.weight * (i.qty || 1)); } });
-        if(o.expenseId) { expenses = expenses.filter(ex => ex.id !== o.expenseId); }
-      }
-      orders = orders.filter(x => x.id !== id); saveAllData(); 
-    }
+    function deleteOrder(id) { const o = orders.find(x => x.id === id); if(o && o.items) o.items.forEach(i => { if (i.color && i.weight > 0) { const s = spools.find(x => x.name === i.color); if(s) s.remainingGrams += (i.weight * (i.qty || 1)); } }); orders = orders.filter(x => x.id !== id); saveAllData(); }
 
     function updateMonthFilterDropdown() {
       const select = document.getElementById('statsMonthFilter'); if (!select) return; const currentSelection = select.value; let monthsSet = new Set();
@@ -1384,6 +927,7 @@
 
         if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
           if (!isEbay || o.ebayBalancePaid === '✅ Ausgezahlt') totalRev += orderAmount;
+          totalExp += lCost;
           if (o.items) o.items.forEach(i => totalPrintTime += ((parseFloat(i.time) || 0) * (i.qty || 1)));
         }
       });
