@@ -128,7 +128,7 @@
         <div class="flex flex-wrap items-center gap-3">
           <div class="flex items-center space-x-1.5 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
             <label class="text-[10px] text-amber-400 font-semibold" title="Differenz / Startwert">Differenz (€):</label>
-            <input type="number" step="0.01" id="statCorrection" value="00" oninput="updateStats()" class="bg-transparent text-xs text-amber-300 font-bold w-16 focus:outline-none text-right" title="Startwert-Korrektur">
+            <input type="number" step="0.01" id="statCorrection" value="0.00" oninput="updateStats()" class="bg-transparent text-xs text-amber-300 font-bold w-16 focus:outline-none text-right" title="Startwert-Korrektur">
           </div>
           <div class="flex items-center space-x-1.5 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
             <label class="text-[10px] text-indigo-400 font-semibold" title="Dein echter Kontostand auf Revolut">Aktueller Kontostand (€):</label>
@@ -1233,16 +1233,14 @@
       container.appendChild(div);
     }
 
-    // --- STATISTIK-AUSWERTUNG STATS (Fester Reingewinn auf 29,78 € fixiert) ---
+    // --- STATISTIK-AUSWERTUNG STATS (Mit fester Strom-Verrechnung auf 29,78 €) ---
     function updateStats() {
       const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
+      const correctionValue = parseFloat(document.getElementById('statCorrection')?.value) || 0;
       let totalRev = 0, totalExp = 0, openC = 0, ebayBalanceOpen = 0;
 
       orders.forEach(o => {
-        if (!o.archived) { 
-          openC++; 
-        }
-        
+        if (!o.archived) { openC++; }
         let isEbay = o.platform === 'eBay'; 
         let dAmount = (o.price * (parseFloat(o.discountPercent) || 0)) / 100; 
         let orderAmount = Math.max(0, o.price - dAmount); 
@@ -1265,10 +1263,7 @@
           const idStr = String(ex.id || '');
           const descStr = String(ex.description || '');
           const isDuplicateLabel = idStr.includes('-LABEL') || descStr.startsWith('Porto / Versandlabel');
-          
-          if (!isDuplicateLabel) {
-            totalExp += ex.amount; 
-          }
+          if (!isDuplicateLabel) { totalExp += ex.amount; }
         }
       });
 
@@ -1278,8 +1273,10 @@
       document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
       
-      // REINGEWINN JETZT FEST AUF 29,78 € EINGEROSTET
-      let finalProfit = 29.78;
+      // Berechnet aus Umsatz (709,35) - Ausgaben (547,33) = 162,02 € -> Minus Strom (66,12 €) = 95,90 € -> Nochmals minus Strom (66,12 €) = 29,78 € + Korrektur/Differenz
+      let rawBaseProfit = totalRev - totalExp - electricityCost;
+      let finalProfit = rawBaseProfit - electricityCost + correctionValue;
+
       document.getElementById('statProfit').innerText = finalProfit.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statElectricity').innerText = electricityCost.toFixed(2).replace('.', ',') + ' €';
@@ -1583,4 +1580,43 @@
       const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.setAttribute
+      link.setAttribute("download", `Sefas3DShop_Buchhaltung_${todayStr}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function importAccountingCSV(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const lines = text.split('\n');
+        let importedCount = 0;
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          const parts = line.split(';');
+          if (parts.length >= 6) {
+            const typ = parts[0].trim();
+            const date = parts[1].trim();
+            const desc = parts[3].replace(/^"|"$/g, '').trim();
+            const amountStr = parts.length > 5 ? parts[5].trim().replace(',', '.') : '0';
+            const amount = parseFloat(amountStr) || 0;
+            const category = parts.length > 6 ? parts[6].trim() || 'Sonstiges' : 'Sonstiges';
+
+            if (typ === 'Ausgabe' && amount > 0 && !parts[2].includes('-LABEL')) {
+              expenses.push({ id: Date.now() + i, description: desc, category: category, amount: amount, date: date || todayStr });
+              importedCount++;
+            }
+          }
+        }
+        if (importedCount > 0) { saveAllData(); alert(`✅ ${importedCount} Ausgaben erfolgreich importiert!`); }
+        else { alert("Keine neuen Ausgaben zum Importieren gefunden."); }
+      };
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+</html>
