@@ -1194,13 +1194,13 @@
       container.appendChild(div);
     }
 
-    // --- PUNKT 1: STATISTIK-AUSWERTUNG AKTUALISIERT ---
+    // --- STATISTIK-AUSWERTUNG KORRIGIERT (UMSATZ NUR AUS ORDERS) ---
     function updateStats() {
       const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
       const correctionValue = parseFloat(document.getElementById('statCorrection')?.value) || 0;
       let totalRev = 0, totalExp = 0, totalW = 0, totalPrintTime = 0, openC = 0, ebayBalanceOpen = 0;
 
-      // 1. Echte Aufträge durchgehen
+      // 1. Echte Aufträge durchgehen (Einzige Quelle für Umsatz)
       orders.forEach(o => {
         if (!o.archived) { 
           openC++; 
@@ -1232,20 +1232,7 @@
         }
       });
 
-      // 2. Angebote verarbeiten: NUR mit Status "Angenommen" einrechnen
-      offers.forEach(off => {
-        if (off.status === 'Angenommen') {
-          let dAmount = (off.price * (parseFloat(off.discountPercent) || 0)) / 100;
-          let offerAmount = Math.max(0, off.price - dAmount);
-          let targetDate = off.date || '';
-
-          if (selectedMonth === 'all' || (targetDate && targetDate.startsWith(selectedMonth))) {
-            totalRev += offerAmount;
-          }
-        }
-      });
-
-      // 3. Ausgaben verarbeiten
+      // 2. Ausgaben verarbeiten
       expenses.forEach(ex => { 
         if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) {
           totalExp += ex.amount; 
@@ -1467,7 +1454,7 @@
               <input type="text" id="edit-track-${realIdx}" value="${o.tracking||''}" placeholder="Tracking" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white w-full">
               <input type="text" id="edit-notes-${realIdx}" value="${o.notes||''}" placeholder="Notizen" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white w-full">
             </td>
-            <td class="p-2 text-right space-x-1">
+            <td class="p-2 text-right space-x-1 whitespace-nowrap">
               <button onclick="saveEditOrder(${realIdx})" class="bg-blue-600 text-white px-2 py-0.5 rounded text-[10px] cursor-pointer">✔</button>
               <button onclick="cancelEditOrder()" class="bg-slate-700 text-white px-2 py-0.5 rounded text-[10px] cursor-pointer">✖</button>
             </td>
