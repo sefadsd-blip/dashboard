@@ -1239,11 +1239,14 @@
         let orderAmount = Math.max(0, o.price - dAmount); 
         let lCost = o.labelCost || 0;
 
+        let targetDate = o.orderDate || '';
+        if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
+          totalExp += lCost;
+        }
+
         if (isEbay && o.ebayBalancePaid === '⏳ Bei eBay') {
           ebayBalanceOpen += Math.round((orderAmount - lCost) * 100) / 100;
         }
-        
-        let targetDate = o.orderDate || '';
 
         // UMSATZ ZÄHLT NUR WENN BEZAHLT / AUSGEZAHLT
         if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
@@ -1256,7 +1259,7 @@
         }
       });
 
-      // 2. Angenommene Angebote ebenfalls als Einnahme zählen (falls nicht schon in Aufträge enthalten)
+      // 2. Angenommene Angebote als Einnahme zählen
       offers.forEach(off => {
         let targetDate = off.date || '';
         if (off.status === 'Angenommen') {
@@ -1271,16 +1274,20 @@
         }
       });
 
-      // 3. Ausgaben verarbeiten (Echte Ausgaben aus der Tabelle ohne -LABEL Duplikate)
+      // 3. Ausgaben verarbeiten (Ausschluss von -LABEL Duplikaten)
       expenses.forEach(ex => { 
         if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) {
-          if (!ex.id || !String(ex.id).includes('-LABEL')) {
+          const idStr = String(ex.id || '');
+          const descStr = String(ex.description || '');
+          const isDuplicateLabel = idStr.includes('-LABEL') || descStr.startsWith('Porto / Versandlabel');
+          
+          if (!isDuplicateLabel) {
             totalExp += ex.amount; 
           }
         }
       });
 
-      // Stromkosten genau berechnen / Fester Betrag 66,12 €
+      // Fester Stromkosten-Wert
       let electricityCost = 66.12;
 
       document.getElementById('statRevolutDisplay').innerText = currentRevolutBalance.toFixed(2).replace('.', ',') + ' €';
@@ -1489,7 +1496,7 @@
             </td>
             <td class="p-2 space-y-1">
               <select id="edit-lbl-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[10px] text-white"><option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>Label: ✅ Ja</option><option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>Label: ❌ Nein</option></select>
-              <select id="edit-pack-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[10px] text-white"><option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>Verpackt: ✅ Ja</option><option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>Verpackt: ❌ Nein</option></select>
+              <select id="edit-pack-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white"><option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>Verpackt: ✅ Ja</option><option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>Verpackt: ❌ Nein</option></select>
             </td>
             <td class="p-2 space-y-1">
               <input type="text" id="edit-track-${realIdx}" value="${o.tracking||''}" placeholder="Tracking" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white w-full">
@@ -1509,7 +1516,7 @@
               let weightVal = (parseInt(i.weight) || 0) * (i.qty || 1);
               let timeVal = (parseFloat(i.time) || 0) * (i.qty || 1);
               totalWeight += weightVal; totalTime += timeVal;
-              itemsText += `<div class="text-[11px] text-white">• ${i.qty || 1}x ${i.name} <span class="text-blue-300">(${i.color || 'Standard'}, ${weightVal}g, ${timeVal}h)</span></div>`;
+              itemsText += `<div class="text-[11px] text-white">• ${i.qty || 1}x ${i.name} <span class="text-blue-300">(${i.color || 'Standard'}, ${weightVal}g, ${totalTime.toFixed(1)}h)</span></div>`;
             });
           } else { itemsText += '<div class="text-[11px] text-slate-400">-</div>'; }
           itemsText += `</div><div class="text-[9px] text-slate-400 mt-0.5">Summe: ${totalWeight}g | ${totalTime.toFixed(1)}h</div>`;
@@ -1639,4 +1646,3 @@
   </script>
 </body>
 </html>
-
