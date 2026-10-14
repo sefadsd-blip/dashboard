@@ -1219,7 +1219,7 @@
       container.appendChild(div);
     }
 
-    // --- STATISTIK-AUSWERTUNG STATS ---
+    // --- STATISTIK-AUSWERTUNG STATS (KORRIGIERT & VOLLSTÄNDIG) ---
     function updateStats() {
       const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
       const correctionValue = parseFloat(document.getElementById('statCorrection')?.value) || 0;
@@ -1243,7 +1243,7 @@
           ebayBalanceOpen += Math.round((orderAmount - lCost) * 100) / 100;
         }
 
-        // UMSATZ ZÄHLT NUR WENN BEZAHLT / AUSGEZAHLT
+        // Umsatz zählt nur wenn bezahlt oder ausgezahlt
         let targetDate = o.orderDate || '';
         if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
           if ((!isEbay && o.isPaid === '✅ Ja') || (isEbay && o.ebayBalancePaid === '✅ Ausgezahlt')) {
@@ -1255,7 +1255,7 @@
         }
       });
 
-      // 2. Angenommene Angebote als Einnahme zählen (Korrigiert)
+      // 2. Angenommene Angebote als Einnahme zum Umsatz/Gewinn zählen
       offers.forEach(off => {
         let targetDate = off.date || '';
         if (off.status === 'Angenommen') {
@@ -1263,13 +1263,13 @@
             let dAmount = (off.price * (parseFloat(off.discountPercent) || 0)) / 100;
             let offerAmount = Math.max(0, off.price - dAmount);
             
-            // Prüfen, ob für diesen Kunden bereits ein passender Auftrag existiert (z.B. nach Umwandlung)
+            // Prüfen, ob daraus bereits ein Auftrag erstellt wurde
             let convertedToOrder = orders.some(o => 
               o.customer.toLowerCase() === off.customer.toLowerCase() && 
               Math.abs(o.price - off.price) < 0.50
             );
 
-            // Wenn es noch nicht als bezahlter Auftrag gelistet ist, als Umsatz zählen
+            // Wenn es noch nicht als bezahlter Auftrag vorliegt, als Umsatz hinzurechnen
             if (!convertedToOrder) {
               totalRev += offerAmount;
             }
@@ -1277,7 +1277,7 @@
         }
       });
 
-      // 3. Ausgaben verarbeiten (Echte Ausgaben ohne -LABEL Duplikate)
+      // 3. Echte Betriebsausgaben verarbeiten
       expenses.forEach(ex => { 
         if (selectedMonth === 'all' || (ex.date && ex.date.startsWith(selectedMonth))) {
           const idStr = String(ex.id || '');
@@ -1290,20 +1290,15 @@
         }
       });
 
-      // Fester Stromkosten-Wert
       let electricityCost = 66.12;
-
-      // Festes Ziel auf exakt 29,58 € Reingewinn für den Gesamtzustand
-      if (selectedMonth === 'all') {
-        totalExp = totalRev - electricityCost - 29.58;
-      }
 
       document.getElementById('statRevolutDisplay').innerText = currentRevolutBalance.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
       
-      // REINGEWINN: Umsatz - Ausgaben - Strom + Korrekturwert
-      document.getElementById('statProfit').innerText = (totalRev - totalExp - electricityCost + correctionValue).toFixed(2).replace('.', ',') + ' €';
+      // REINGEWINN: Umsatz - Ausgaben - Strom + manuelle Korrektur
+      let finalProfit = totalRev - totalExp - electricityCost + correctionValue;
+      document.getElementById('statProfit').innerText = finalProfit.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statElectricity').innerText = electricityCost.toFixed(2).replace('.', ',') + ' €';
     }
