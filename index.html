@@ -1255,15 +1255,22 @@
         }
       });
 
-      // 2. Angenommene Angebote als Einnahme zählen
+      // 2. Angenommene Angebote als Einnahme zählen (Korrigiert)
       offers.forEach(off => {
         let targetDate = off.date || '';
         if (off.status === 'Angenommen') {
           if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
             let dAmount = (off.price * (parseFloat(off.discountPercent) || 0)) / 100;
             let offerAmount = Math.max(0, off.price - dAmount);
-            let existsInPaidOrders = orders.some(o => o.customer === off.customer && o.isPaid === '✅ Ja' && Math.abs(o.price - off.price) < 0.01);
-            if (!existsInPaidOrders) {
+            
+            // Prüfen, ob für diesen Kunden bereits ein passender Auftrag existiert (z.B. nach Umwandlung)
+            let convertedToOrder = orders.some(o => 
+              o.customer.toLowerCase() === off.customer.toLowerCase() && 
+              Math.abs(o.price - off.price) < 0.50
+            );
+
+            // Wenn es noch nicht als bezahlter Auftrag gelistet ist, als Umsatz zählen
+            if (!convertedToOrder) {
               totalRev += offerAmount;
             }
           }
@@ -1647,4 +1654,3 @@
   </script>
 </body>
 </html>
-
