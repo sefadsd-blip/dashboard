@@ -147,9 +147,19 @@
         </div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Umsatz</p><h3 id="statRevenue" class="text-xl font-bold text-blue-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Ausgaben</p><h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3></div></div>
-        <div class="card p-3 rounded-xl flex items-center justify-between border border-emerald-500/30 bg-emerald-950/10"><div><p class="text-[11px] text-emerald-400 font-semibold">Reingewinn</p><h3 id="statProfit" class="text-xl font-bold text-emerald-400">29,78 €</h3></div></div>
+        <div class="card p-3 rounded-xl flex items-center justify-between border border-emerald-500/30 bg-emerald-950/10"><div><p class="text-[11px] text-emerald-400 font-semibold">Reingewinn</p><h3 id="statProfit" class="text-xl font-bold text-emerald-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍 eBay (Offen)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt</button></div>
-        <div class="card p-3 rounded-xl flex items-center justify-between border border-orange-500/30 bg-orange-950/20"><div><p class="text-[11px] text-orange-300 font-semibold">⚡ Strom (Offen)</p><h3 id="statElectricity" class="text-xl font-bold text-orange-400">66,12 €</h3></div></div>
+        
+        <!-- STROM KARTE MIT MANUELLEM EINGABEFELD -->
+        <div class="card p-3 rounded-xl flex items-center justify-between border border-orange-500/30 bg-orange-950/20">
+          <div>
+            <p class="text-[11px] text-orange-300 font-semibold">⚡ Strom (Offen / Manuell)</p>
+            <div class="flex items-center gap-1 mt-0.5">
+              <input type="number" step="0.01" id="electricityInput" value="66.12" onchange="updateElectricityCost(this.value)" oninput="updateStats()" class="bg-transparent text-xl font-bold text-orange-400 w-24 focus:outline-none border-b border-dashed border-orange-500/40 focus:border-orange-400 text-left" title="Strombetrag manuell anpassen">
+              <span class="text-xl font-bold text-orange-400">€</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -383,6 +393,7 @@
     let printers = [...BACKUP_PRINTERS];
     let products = [...BACKUP_PRODUCTS];
     let currentRevolutBalance = 0;
+    let electricityCost = 66.12;
 
     const todayStr = new Date().toISOString().slice(0, 10);
 
@@ -423,6 +434,11 @@
       saveAllData(); updateStats();
     }
 
+    function updateElectricityCost(val) {
+      electricityCost = parseFloat(val) || 0;
+      saveAllData(); updateStats();
+    }
+
     function updateMonthFilter() {
       const select = document.getElementById('statsMonthFilter');
       if (!select) return;
@@ -446,7 +462,6 @@
       select.innerHTML = html;
     }
 
-    // --- AUTOMATISCHE PORTO-ÜBERNAHME IN DIE AUSGABEN ---
     function syncLabelExpense(order) {
       if (!order) return;
       const expId = `LABEL-${order.id}`;
@@ -477,8 +492,12 @@
             products = (Array.isArray(json.products) && json.products.length >= BACKUP_PRODUCTS.length) ? json.products : [...BACKUP_PRODUCTS];
             spools = (Array.isArray(json.spools) && json.spools.length > 0) ? json.spools : [...BACKUP_SPOOLS];
             currentRevolutBalance = json.revolutBalance || 0;
+            electricityCost = (json.electricityCost !== undefined && json.electricityCost !== null) ? json.electricityCost : 66.12;
             
             document.getElementById('revolutInput').value = currentRevolutBalance.toFixed(2);
+            const elecInp = document.getElementById('electricityInput');
+            if (elecInp) elecInp.value = electricityCost.toFixed(2);
+
             updateMonthFilter();
             renderOrders(); renderOffers(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
             updateCustomerDropdowns(); updatePrinterDropdowns();
@@ -494,7 +513,7 @@
 
     async function pushToCloudManual() {
       setStatus("Speichere in Cloud...", "bg-yellow-500");
-      const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance };
+      const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance, electricityCost: electricityCost };
       try {
         const res = await fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (res.ok) { setStatus("Mit Cloud verbunden", "bg-blue-500"); alert("✅ Erfolgreich gespeichert!"); }
@@ -505,11 +524,10 @@
       updateMonthFilter();
       renderOrders(); renderOffers(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
       updateCustomerDropdowns(); updatePrinterDropdowns();
-      const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance };
+      const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance, electricityCost: electricityCost };
       fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(e => console.log(e));
     }
 
-    // --- KUNDEN-AUTOFILL FUNKTIONEN ---
     function autofillCustomerData(custName) {
       if (!custName) return;
       const match = orders.find(o => o.customer === custName) || offers.find(o => o.customer === custName);
@@ -548,7 +566,6 @@
       });
     }
 
-    // --- DANKES-ZETTEL & KUNDEN-VORLAGEN FUNKTIONEN ---
     function printThankYouNoteFromDropdown() {
       const custName = document.getElementById('thankYouCustomerSelect').value;
       if (!custName) return alert("Bitte wähle zuerst einen Kunden aus!");
@@ -624,7 +641,6 @@
       }
     }
 
-    // --- ANGEBOTE FUNKTIONEN ---
     function generateNewOfferNumber(dateStr) {
       const year = dateStr ? dateStr.slice(0, 4) : new Date().getFullYear().toString(); let maxNum = 0;
       offers.forEach(o => { if (o.offerNumber && o.offerNumber.startsWith(`ANG-${year}-`)) { let num = parseInt(o.offerNumber.split('-')[2]) || 0; if (num > maxNum) maxNum = num; } });
@@ -1299,6 +1315,11 @@
     function updateStats() {
       const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
       const correctionValue = parseFloat(document.getElementById('statCorrection')?.value) || 0;
+      
+      let elecVal = parseFloat(document.getElementById('electricityInput')?.value);
+      if (isNaN(elecVal)) elecVal = electricityCost;
+      else electricityCost = elecVal;
+
       let totalRev = 0, totalExp = 0, openC = 0, ebayBalanceOpen = 0;
 
       orders.forEach(o => {
@@ -1326,18 +1347,14 @@
         }
       });
 
-      let electricityCost = 66.12;
+      let rawBaseProfit = totalRev - totalExp - elecVal;
+      let finalProfit = rawBaseProfit + correctionValue;
 
       document.getElementById('statRevolutDisplay').innerText = currentRevolutBalance.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
-      
-      let rawBaseProfit = totalRev - totalExp - electricityCost;
-      let finalProfit = rawBaseProfit - electricityCost + correctionValue;
-
       document.getElementById('statProfit').innerText = finalProfit.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('statElectricity').innerText = electricityCost.toFixed(2).replace('.', ',') + ' €';
     }
 
     // --- AUFTRÄGE LOGIK & TABELLE ---
