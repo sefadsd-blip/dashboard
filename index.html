@@ -226,7 +226,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Kunde:</label><input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Plattform:</label><select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍 eBay</option></select></div>
-          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Zahlungsart:</label><select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿 PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">💶 Bar</option></select></div>
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Zahlungsart:</label><select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿 PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">Bar</option></select></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Bezahlstatus:</label><select id="isPaid" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Bezahlt: ✅ Ja</option><option value="❌ Nein" selected>Bezahlt: ❌ Nein</option></select></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Drucker:</label><select id="printer" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></select></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Gesamtpreis (€):</label><input type="number" step="0.01" id="price" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none border-blue-500/50 bg-blue-950/20"></div>
@@ -450,10 +450,8 @@
     function syncLabelExpense(order) {
       if (!order) return;
       const expId = `LABEL-${order.id}`;
-      // Vorherigen automatischen Label-Eintrag für diesen Auftrag entfernen
       expenses = expenses.filter(ex => String(ex.id) !== String(expId));
 
-      // Falls Label auf "✅ Ja" steht und Porto > 0 ist, bei Ausgaben hinzufügen
       if (order.label === '✅ Ja' && parseFloat(order.labelCost) > 0) {
         expenses.unshift({
           id: expId,
@@ -1041,13 +1039,48 @@
       const qrId = index !== null ? `batchSepaQr_${index}` : 'sepaQrCodeTarget';
       const qrData = index !== null ? `data-payload="${encodeURIComponent(sepsPayloadStr)}"` : '';
 
+      const payMethodStr = o.paymentMethod || 'Überweisung';
+      const isPaidBool = o.isPaid === '✅ Ja';
+      const paymentStatusText = isPaidBool ? `Bezahlt (${payMethodStr})` : `Offen (${payMethodStr})`;
+
+      let paymentInfoBlock = '';
+      if (isPaidBool) {
+        paymentInfoBlock = `
+          <h3>Zahlungsinformationen</h3>
+          <p><strong>Zahlungsart:</strong> ${payMethodStr}</p>
+          <p><strong>Status:</strong> ✅ Betrag vollständig erhalten per ${payMethodStr}.</p>
+          <p style="font-size: 6.5px; color: #555; margin-top: 3px;">Vielen Dank! Diese Rechnung dient als Zahlungsbeleg.</p>
+        `;
+      } else {
+        paymentInfoBlock = `
+          <h3>Zahlungsinformationen</h3>
+          <p><strong>Gewählte Zahlungsart:</strong> ${payMethodStr}</p>
+          <p>Bitte begleichen Sie den offenen Betrag per <strong>${payMethodStr}</strong>:</p>
+          <p><strong>IBAN:</strong> DE20 1001 0178 0592 6798 08 (Revolut)</p>
+          <p><strong>PayPal:</strong> sefad.sd@gmail.com</p>
+        `;
+      }
+
       return `
         <div class="page" style="${index !== null ? 'page-break-after: always; break-after: page;' : ''}">
           <div class="header"><div class="brand">${logoSvg}<div class="brand-text"><h1>SEFAS 3D SHOP</h1><p>Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden<br>St.-Nr.: 52063271982</p></div></div><div class="invoice-title"><h2>Rechnung</h2></div></div>
-          <div class="info-grid"><div class="customer-box"><h3>Rechnung an</h3><p>${o.customer}<span>${o.address || 'Keine Anschrift hinterlegt'}</span></p></div><div class="meta-box"><table class="meta-table"><tr><td>Rechnungs-Nr.</td><td><strong>${invoiceNumber}</strong></td></tr><tr><td>Rechnungsdatum</td><td><strong>${invoiceDate}</strong></td></tr><tr><td>Zahlungsart</td><td><strong>${o.paymentMethod || 'Überweisung'}</strong></td></tr></table></div></div>
+          <div class="info-grid">
+            <div class="customer-box"><h3>Rechnung an</h3><p>${o.customer}<span>${o.address || 'Keine Anschrift hinterlegt'}</span></p></div>
+            <div class="meta-box">
+              <table class="meta-table">
+                <tr><td>Rechnungs-Nr.</td><td><strong>${invoiceNumber}</strong></td></tr>
+                <tr><td>Rechnungsdatum</td><td><strong>${invoiceDate}</strong></td></tr>
+                <tr><td>Zahlungsart</td><td><strong>${payMethodStr}</strong></td></tr>
+                <tr><td>Zahlungsstatus</td><td><strong>${paymentStatusText}</strong></td></tr>
+              </table>
+            </div>
+          </div>
           <table class="items-table"><thead><tr><th style="width: 50%;">Position / Beschreibung</th><th style="width: 15%;" class="center">Menge</th><th style="width: 15%;" class="right">Einzelpreis</th><th style="width: 20%;" class="right">Gesamt</th></tr></thead><tbody>${itemsRows}</tbody></table>
           <div class="totals-wrapper"><div class="totals-box"><div class="total-row"><span>Zwischensumme:</span> <span>${totalAmountNum.toFixed(2).replace('.', ',')} €</span></div><div class="total-row final"><span>Gesamtbetrag:</span> <span>${totalAmountNum.toFixed(2).replace('.', ',')} €</span></div></div></div>
-          <div class="payment-block"><div class="payment-info"><h3>Zahlungsinformationen</h3><p>Bitte senden Sie den Gesamtbetrag per Überweisung oder PayPal:</p><p><strong>IBAN:</strong> DE20 1001 0178 0592 6798 08 (Revolut)</p><p><strong>PayPal:</strong> sefad.sd@gmail.com</p></div><div class="qr-box" id="${qrId}" ${qrData}></div></div>
+          <div class="payment-block">
+            <div class="payment-info">${paymentInfoBlock}</div>
+            <div class="qr-box" id="${qrId}" ${qrData}></div>
+          </div>
           <div class="footer">Kleinunternehmer gemäß § 19 UStG. Es wird keine Umsatzsteuer ausgewiesen.<br>Vielen Dank für das Vertrauen in Sefas3DShop!</div>
         </div>
       `;
@@ -1372,7 +1405,6 @@
       newOrder.invoiceNumber = generateInvoiceNumberForExisting(newOrder);
       orders.unshift(newOrder);
 
-      // Porto-Ausgabe automatisch synchronisieren
       syncLabelExpense(newOrder);
 
       saveAllData();
@@ -1442,7 +1474,6 @@
       o.orderDate = document.getElementById(`edit-date-${idx}`).value;
       o.items = updatedItems;
 
-      // Porto-Ausgabe automatisch synchronisieren
       syncLabelExpense(o);
 
       editingIndex = -1;
