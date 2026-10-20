@@ -20,6 +20,24 @@
 </head>
 <body class="p-3 md:p-5 min-h-screen text-xs">
 
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- CUSTOM MODAL CONFIRMATION -->
+  <div id="customModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl">
+      <div class="flex items-center gap-3 text-amber-400">
+        <i class="fa-solid fa-circle-question text-xl"></i>
+        <h3 id="modalTitle" class="font-bold text-white text-sm">Bestätigung erforderlich</h3>
+      </div>
+      <p id="modalMessage" class="text-slate-300 text-xs leading-relaxed"></p>
+      <div class="flex justify-end gap-2 pt-2">
+        <button id="modalCancelBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition">Abbrechen</button>
+        <button id="modalConfirmBtn" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition">Bestätigen</button>
+      </div>
+    </div>
+  </div>
+
   <input type="file" id="csvFileInput" accept=".csv" onchange="importAccountingCSV(event)" class="hidden">
 
   <!-- SUBPAGE OVERLAY (TOOLS & KATALOG) -->
@@ -395,7 +413,59 @@
     let currentRevolutBalance = 0;
     let electricityCost = 66.12;
 
+    // Track state when an offer is copied to order form
+    let pendingConvertedOfferId = null;
+
     const todayStr = new Date().toISOString().slice(0, 10);
+
+    // Toast UI helper
+    function showToast(msg, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      const bgClass = type === 'error' ? 'bg-red-600/90 border-red-500' : 'bg-emerald-600/90 border-emerald-500';
+      const icon = type === 'error' ? 'fa-circle-xmark' : 'fa-circle-check';
+      toast.className = `flex items-center gap-2.5 ${bgClass} text-white px-4 py-2.5 rounded-xl border shadow-xl text-xs font-semibold backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto`;
+      toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${msg}</span>`;
+      container.appendChild(toast);
+      
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Modal UI helper
+    function showModal(title, msg, onConfirm) {
+      const modal = document.getElementById('customModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalMsg = document.getElementById('modalMessage');
+      const confirmBtn = document.getElementById('modalConfirmBtn');
+      const cancelBtn = document.getElementById('modalCancelBtn');
+
+      if (!modal) return;
+      modalTitle.innerText = title;
+      modalMsg.innerText = msg;
+
+      modal.classList.remove('hidden');
+
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        confirmBtn.onclick = null;
+        cancelBtn.onclick = null;
+      };
+
+      confirmBtn.onclick = () => {
+        cleanup();
+        if (onConfirm) onConfirm();
+      };
+
+      cancelBtn.onclick = () => cleanup();
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('orderDate').value = todayStr;
@@ -516,8 +586,8 @@
       const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance, electricityCost: electricityCost };
       try {
         const res = await fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (res.ok) { setStatus("Mit Cloud verbunden", "bg-blue-500"); alert("✅ Erfolgreich gespeichert!"); }
-      } catch(e) { setStatus("Fehler", "bg-red-500"); }
+        if (res.ok) { setStatus("Mit Cloud verbunden", "bg-blue-500"); showToast("Erfolgreich in Cloud gespeichert!"); }
+      } catch(e) { setStatus("Fehler", "bg-red-500"); showToast("Fehler beim Speichern!", "error"); }
     }
 
     function saveAllData() {
@@ -568,7 +638,7 @@
 
     function printThankYouNoteFromDropdown() {
       const custName = document.getElementById('thankYouCustomerSelect').value;
-      if (!custName) return alert("Bitte wähle zuerst einen Kunden aus!");
+      if (!custName) return showToast("Bitte wähle zuerst einen Kunden aus!", "error");
       
       const order = orders.find(o => o.customer === custName);
       const itemsText = (order && order.items && order.items.length > 0) 
@@ -637,7 +707,7 @@
       const txt = document.getElementById(`templateText${num}`);
       if (txt) {
         navigator.clipboard.writeText(txt.value);
-        alert(`Vorlage ${num} in die Zwischenablage kopiert!`);
+        showToast(`Vorlage ${num} in Zwischenablage kopiert!`);
       }
     }
 
@@ -711,10 +781,11 @@
           itemsList.push({ qty: q, name: val, size: sz, price: pr });
         }
       });
-      if (itemsList.length === 0) return alert("Bitte mindestens einen Artikel eintragen!");
+      if (itemsList.length === 0) return showToast("Bitte mindestens einen Artikel eintragen!", "error");
 
       offers.unshift({ id: Date.now(), offerNumber: offerNum, customer: cust, address: addr, price: price, discountPercent: discPerc, date: date, items: itemsList, status: "Offen" });
       saveAllData(); 
+      showToast("Angebot erfolgreich gespeichert!");
       document.getElementById('offerForm').reset(); 
       document.getElementById('offerDate').value = todayStr;
       document.getElementById('offerDiscountPercent').value = "0";
@@ -733,7 +804,11 @@
     }
 
     function deleteOffer(id) {
-      if (confirm("Angebot löschen?")) { offers = offers.filter(o => o.id !== id); saveAllData(); }
+      showModal("Angebot löschen", "Möchtest du dieses Angebot wirklich unwiderruflich löschen?", () => {
+        offers = offers.filter(o => o.id !== id);
+        saveAllData();
+        showToast("Angebot gelöscht!");
+      });
     }
 
     function startEditOffer(idx) { editingOfferIndex = idx; renderOffers(); }
@@ -775,7 +850,7 @@
           updatedItems.push({ qty: q, name: val, size: sz, price: pr });
         }
       });
-      if (updatedItems.length === 0) return alert("Mindestens ein Artikel erforderlich!");
+      if (updatedItems.length === 0) return showToast("Mindestens ein Artikel erforderlich!", "error");
 
       offers[idx].customer = document.getElementById(`edit-offer-cust-${idx}`).value;
       offers[idx].address = document.getElementById(`edit-offer-addr-${idx}`).value;
@@ -787,8 +862,11 @@
 
       editingOfferIndex = -1;
       saveAllData();
+      showToast("Angebot aktualisiert!");
     }
 
+    // --- FIX: CONVERT OFFER TO ORDER ---
+    // Copy data into form without prematurely changing status to 'Angenommen'
     function convertOfferToOrder(id) {
       const off = offers.find(o => o.id === id);
       if (!off) return;
@@ -806,9 +884,10 @@
         });
       }
 
-      off.status = "Angenommen";
-      saveAllData();
-      alert(`✅ Angebot ${off.offerNumber} wurde übernommen! Bitte unten im Auftrags-Formular prüfen und speichern.`);
+      // Store pending converted offer ID
+      pendingConvertedOfferId = id;
+
+      showToast(`Angebot ${off.offerNumber} ins Auftrags-Formular kopiert. Bitte unten prüfen & speichern!`);
       window.scrollTo({ top: document.getElementById('orderForm').offsetTop - 50, behavior: 'smooth' });
     }
 
@@ -1110,7 +1189,7 @@
 
     function printAllInvoices() {
       const activeOrders = orders.filter(o => Boolean(o.archived) === showingArchive);
-      if (activeOrders.length === 0) return alert("Keine Aufträge vorhanden!");
+      if (activeOrders.length === 0) return showToast("Keine Aufträge vorhanden!", "error");
       let allInvoicesHtml = activeOrders.map((o, index) => buildInvoiceHTML(o, index)).join('');
       const printWin = window.open('', '_blank', 'width=850,height=1000');
       printWin.document.write(`<!DOCTYPE html><html><head><title>Alle Rechnungen</title><style>${getInvoiceCSS()}</style></head><body>${allInvoicesHtml}
@@ -1130,7 +1209,7 @@
     
     function transferToCatalogFromSub() {
       const rawPrice = document.getElementById('calcFinalPrice').dataset.rawPrice; const hours = document.getElementById('calcHours').value;
-      if (rawPrice && parseFloat(rawPrice) > 0) { document.getElementById('prodPrice').value = rawPrice; if (hours) document.getElementById('prodTime').value = hours; document.getElementById('prodName').focus(); } else { alert('Bitte gib zuerst Daten im Rechner ein!'); }
+      if (rawPrice && parseFloat(rawPrice) > 0) { document.getElementById('prodPrice').value = rawPrice; if (hours) document.getElementById('prodTime').value = hours; document.getElementById('prodName').focus(); } else { showToast('Bitte gib zuerst Daten im Rechner ein!', 'error'); }
     }
 
     function addProduct(e) {
@@ -1138,9 +1217,17 @@
       const name = document.getElementById('prodName').value.trim(); const size = document.getElementById('prodSize').value.trim() || '-';
       const time = parseFloat(document.getElementById('prodTime').value) || 0; const price = parseFloat(document.getElementById('prodPrice').value) || 0;
       if (!name) return; products.push({ id: Date.now(), name, size, time, price }); saveAllData(); document.getElementById('productForm').reset();
+      showToast("Artikel in Katalog gespeichert!");
     }
 
-    function deleteProduct(id) { if(confirm('Artikel löschen?')) { products = products.filter(p => p.id !== id); saveAllData(); } }
+    function deleteProduct(id) { 
+      showModal("Artikel löschen", "Möchtest du diesen Artikel wirklich aus dem Katalog entfernen?", () => {
+        products = products.filter(p => p.id !== id); 
+        saveAllData(); 
+        showToast("Artikel gelöscht!");
+      });
+    }
+
     function renderProducts() {
       const list = document.getElementById('productsList'); const searchQuery = (document.getElementById('productSearchInput')?.value || '').toLowerCase();
       if (list) {
@@ -1192,6 +1279,7 @@
     function addPrinterPrompt() {
       const name = prompt("Drucker-Name (z.B. Bambu Lab X1C):"); if (!name) return;
       printers.push({ name: name.trim(), desc: prompt("Beschreibung:", "Standard") || "Standard", status: "Frei" }); saveAllData();
+      showToast("Drucker hinzugefügt!");
     }
     
     function editPrinter(idx) {
@@ -1203,9 +1291,17 @@
       p.name = newName.trim();
       p.desc = newDesc.trim();
       saveAllData();
+      showToast("Drucker aktualisiert!");
     }
 
-    function deletePrinter(idx) { if (printers.length > 1 && confirm("Drucker löschen?")) { printers.splice(idx, 1); saveAllData(); } }
+    function deletePrinter(idx) { 
+      if (printers.length <= 1) return showToast("Mindestens ein Drucker erforderlich!", "error");
+      showModal("Drucker löschen", "Möchtest du diesen Drucker aus der Übersicht entfernen?", () => {
+        printers.splice(idx, 1); 
+        saveAllData(); 
+        showToast("Drucker gelöscht!");
+      });
+    }
     
     function updatePrinterDropdowns() {
       const selects = document.querySelectorAll('#printer, [id^="edit-print-"]');
@@ -1239,9 +1335,19 @@
     function addExpense(e) {
       e.preventDefault();
       expenses.unshift({ id: Date.now(), description: document.getElementById('expDesc').value.trim(), category: document.getElementById('expCategory').value, amount: parseFloat(document.getElementById('expAmount').value) || 0, date: document.getElementById('expDate').value || todayStr });
-      saveAllData(); document.getElementById('expDesc').value = ''; document.getElementById('expAmount').value = ''; document.getElementById('expDate').value = todayStr;
+      saveAllData(); 
+      showToast("Ausgabe hinzugefügt!");
+      document.getElementById('expDesc').value = ''; document.getElementById('expAmount').value = ''; document.getElementById('expDate').value = todayStr;
     }
-    function deleteExpense(id) { if (confirm("Ausgabe löschen?")) { expenses = expenses.filter(ex => ex.id !== id); saveAllData(); } }
+
+    function deleteExpense(id) { 
+      showModal("Ausgabe löschen", "Möchtest du diese Ausgabe entfernen?", () => {
+        expenses = expenses.filter(ex => ex.id !== id); 
+        saveAllData(); 
+        showToast("Ausgabe gelöscht!");
+      });
+    }
+
     function renderExpenses() {
       const tbody = document.getElementById('expensesTableBody'); const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
       if (!tbody) return; tbody.innerHTML = '';
@@ -1254,7 +1360,8 @@
     
     function payoutAllEbayBalance() {
       let count = 0; orders.forEach(o => { if (o.platform === 'eBay' && o.ebayBalancePaid === '⏳ Bei eBay') { o.ebayBalancePaid = '✅ Ausgezahlt'; count++; } });
-      if (count > 0) { saveAllData(); alert(`✅ ${count} Aufträge markiert!`); }
+      if (count > 0) { saveAllData(); showToast(`${count} eBay-Aufträge als ausgezahlt markiert!`); }
+      else { showToast("Keine offenen eBay-Guthaben vorhanden.", "error"); }
     }
 
     function toggleArchiveView() { showingArchive = !showingArchive; renderOrders(); }
@@ -1289,9 +1396,16 @@
         spools.forEach(s => sel.innerHTML += `<option value="${s.name}" ${s.name === cur ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`);
       });
     }
-    function addSpoolPrompt() { const n = prompt("Farbe:"); if(n) { spools.push({ id: Date.now(), name: n, remainingGrams: parseInt(prompt("Gramm:", "1000")) || 1000 }); saveAllData(); } }
-    function editSpoolGrams(idx) { const n = prompt("Gramm:", spools[idx].remainingGrams); if (n) { spools[idx].remainingGrams = parseInt(n); saveAllData(); } }
-    function deleteSpool(idx) { if (confirm("Spule löschen?")) { spools.splice(idx, 1); saveAllData(); } }
+
+    function addSpoolPrompt() { const n = prompt("Farbe:"); if(n) { spools.push({ id: Date.now(), name: n, remainingGrams: parseInt(prompt("Gramm:", "1000")) || 1000 }); saveAllData(); showToast("Spule hinzugefügt!"); } }
+    function editSpoolGrams(idx) { const n = prompt("Gramm:", spools[idx].remainingGrams); if (n) { spools[idx].remainingGrams = parseInt(n); saveAllData(); showToast("Bestand aktualisiert!"); } }
+    function deleteSpool(idx) { 
+      showModal("Spule löschen", "Möchtest du diese Filament-Spule wirklich aus dem Lager löschen?", () => {
+        spools.splice(idx, 1); 
+        saveAllData(); 
+        showToast("Spule gelöscht!");
+      });
+    }
 
     function addArticleInputRow(qtyVal = 1, nameVal = '', colorVal = '', weightVal = '', timeVal = '') {
       const container = document.getElementById('articleInputRows');
@@ -1312,6 +1426,7 @@
     }
 
     // --- STATISTIK-AUSWERTUNG STATS ---
+    // Offene Angebote fließen NIEMALS in die Statistik ein!
     function updateStats() {
       const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
       const correctionValue = parseFloat(document.getElementById('statCorrection')?.value) || 0;
@@ -1407,7 +1522,7 @@
         }
       });
 
-      if (items.length === 0) return alert("Bitte mindestens einen Artikel eintragen!");
+      if (items.length === 0) return showToast("Bitte mindestens einen Artikel eintragen!", "error");
 
       const isEbay = platform === 'eBay';
       const newOrder = {
@@ -1422,9 +1537,19 @@
       newOrder.invoiceNumber = generateInvoiceNumberForExisting(newOrder);
       orders.unshift(newOrder);
 
-      syncLabelExpense(newOrder);
+      // Now set the converted offer to 'Angenommen' if applicable
+      if (pendingConvertedOfferId) {
+        const off = offers.find(o => o.id === pendingConvertedOfferId);
+        if (off) {
+          off.status = "Angenommen";
+        }
+        pendingConvertedOfferId = null;
+      }
 
+      syncLabelExpense(newOrder);
       saveAllData();
+
+      showToast("Auftrag erfolgreich gespeichert!");
 
       document.getElementById('orderForm').reset();
       document.getElementById('orderDate').value = todayStr;
@@ -1446,11 +1571,12 @@
     }
 
     function deleteOrder(id) {
-      if (confirm("Auftrag unwiderruflich löschen?")) {
+      showModal("Auftrag löschen", "Möchtest du diesen Auftrag unwiderruflich löschen?", () => {
         expenses = expenses.filter(ex => String(ex.id) !== `LABEL-${id}`);
         orders = orders.filter(o => o.id !== id);
         saveAllData();
-      }
+        showToast("Auftrag gelöscht!");
+      });
     }
 
     function startEditOrder(idx) { editingIndex = idx; renderOrders(); }
@@ -1470,7 +1596,7 @@
         }
       });
 
-      if (updatedItems.length === 0) return alert("Mindestens ein Artikel erforderlich!");
+      if (updatedItems.length === 0) return showToast("Mindestens ein Artikel erforderlich!", "error");
 
       o.customer = document.getElementById(`edit-cust-${idx}`).value;
       o.platform = document.getElementById(`edit-plat-${idx}`).value;
@@ -1495,6 +1621,7 @@
 
       editingIndex = -1;
       saveAllData();
+      showToast("Auftrag aktualisiert!");
     }
 
     function renderOrders() {
@@ -1641,7 +1768,7 @@
 
     // --- CSV EXPORT & IMPORT ---
     function exportAccountingCSV() {
-      if (orders.length === 0 && expenses.length === 0) return alert("Keine Daten zum Exportieren vorhanden!");
+      if (orders.length === 0 && expenses.length === 0) return showToast("Keine Daten zum Exportieren vorhanden!", "error");
       let csv = "Typ;Datum;Nummer / ID;Name / Beschreibung;Einnahme (EUR);Ausgabe (EUR);Zahlungsart / Kategorie;Status\n";
 
       orders.forEach(o => {
@@ -1662,6 +1789,7 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      showToast("CSV-Export heruntergeladen!");
     }
 
     function importAccountingCSV(event) {
@@ -1690,8 +1818,8 @@
             }
           }
         }
-        if (importedCount > 0) { saveAllData(); alert(`✅ ${importedCount} Ausgaben erfolgreich importiert!`); }
-        else { alert("Keine neuen Ausgaben zum Importieren gefunden."); }
+        if (importedCount > 0) { saveAllData(); showToast(`${importedCount} Ausgaben erfolgreich importiert!`); }
+        else { showToast("Keine neuen Ausgaben zum Importieren gefunden.", "error"); }
       };
       reader.readAsText(file);
     }
