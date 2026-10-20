@@ -147,9 +147,19 @@
         </div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Umsatz</p><h3 id="statRevenue" class="text-xl font-bold text-blue-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Ausgaben</p><h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3></div></div>
-        <div class="card p-3 rounded-xl flex items-center justify-between border border-emerald-500/30 bg-emerald-950/10"><div><p class="text-[11px] text-emerald-400 font-semibold">Reingewinn</p><h3 id="statProfit" class="text-xl font-bold text-emerald-400">29,78 €</h3></div></div>
+        <div class="card p-3 rounded-xl flex items-center justify-between border border-emerald-500/30 bg-emerald-950/10"><div><p class="text-[11px] text-emerald-400 font-semibold">Reingewinn</p><h3 id="statProfit" class="text-xl font-bold text-emerald-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍 eBay (Offen)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt</button></div>
-        <div class="card p-3 rounded-xl flex items-center justify-between border border-orange-500/30 bg-orange-950/20"><div><p class="text-[11px] text-orange-300 font-semibold">⚡ Strom (Offen)</p><h3 id="statElectricity" class="text-xl font-bold text-orange-400">66,12 €</h3></div></div>
+        
+        <!-- STROM KARTE MIT MANUELLEM EINGABEFELD -->
+        <div class="card p-3 rounded-xl flex items-center justify-between border border-orange-500/30 bg-orange-950/20">
+          <div>
+            <p class="text-[11px] text-orange-300 font-semibold">⚡ Strom (Offen / Manuell)</p>
+            <div class="flex items-center gap-1 mt-0.5">
+              <input type="number" step="0.01" id="electricityInput" value="66.12" onchange="updateElectricityCost(this.value)" oninput="updateStats()" class="bg-transparent text-xl font-bold text-orange-400 w-24 focus:outline-none border-b border-dashed border-orange-500/40 focus:border-orange-400 text-left" title="Strombetrag manuell anpassen">
+              <span class="text-xl font-bold text-orange-400">€</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -174,7 +184,15 @@
       </div>
       <form id="offerForm" onsubmit="addOffer(event)" class="space-y-3 bg-slate-900/80 p-3 rounded-lg border border-slate-800">
         <div class="grid grid-cols-1 sm:grid-cols-5 gap-2">
-          <input type="text" id="offerCustomer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+          <div class="flex gap-1">
+            <select id="offerSalutation" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none" onchange="toggleOfferCompanyField()">
+              <option value="Herr">Herr</option>
+              <option value="Frau">Frau</option>
+              <option value="Firma">Firma</option>
+            </select>
+            <input type="text" id="offerCustomer" placeholder="Kundenname / Firmenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white flex-1 focus:outline-none">
+          </div>
+          <input type="text" id="offerContactPerson" placeholder="Ansprechpartner (optional)" class="hidden bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           <input type="text" id="offerAddress" placeholder="Anschrift" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           <input type="number" step="0.01" id="offerDiscountPercent" placeholder="Rabatt (%)" value="0" oninput="calculateOfferTotal()" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 focus:outline-none">
           <input type="number" step="0.01" id="offerPrice" placeholder="Gesamtpreis (€)" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none border-amber-500/50 font-bold">
@@ -224,7 +242,21 @@
       </div>
       <form id="orderForm" onsubmit="addOrder(event)" class="space-y-3">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
-          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Kunde:</label><input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
+          <div class="flex flex-col">
+            <label class="text-[9px] text-slate-400 mb-0.5">Kunde / Firma:</label>
+            <div class="flex gap-1">
+              <select id="salutation" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none" onchange="toggleCompanyField()">
+                <option value="Herr">Herr</option>
+                <option value="Frau">Frau</option>
+                <option value="Firma">Firma</option>
+              </select>
+              <input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white flex-1 focus:outline-none">
+            </div>
+          </div>
+          <div class="flex flex-col" id="contactPersonContainer" style="display: none;">
+            <label class="text-[9px] text-slate-400 mb-0.5">Ansprechpartner:</label>
+            <input type="text" id="contactPerson" placeholder="Name des Ansprechpartners" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+          </div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Plattform:</label><select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍 eBay</option></select></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Zahlungsart:</label><select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿 PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">Bar</option></select></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Bezahlstatus:</label><select id="isPaid" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="✅ Ja">Bezahlt: ✅ Ja</option><option value="❌ Nein" selected>Bezahlt: ❌ Nein</option></select></div>
@@ -383,6 +415,7 @@
     let printers = [...BACKUP_PRINTERS];
     let products = [...BACKUP_PRODUCTS];
     let currentRevolutBalance = 0;
+    let electricityCost = 66.12;
 
     const todayStr = new Date().toISOString().slice(0, 10);
 
@@ -394,14 +427,45 @@
     });
 
     function setStatus(text, color) {
-       const dot = document.getElementById('statusDot');
-       const statusText = document.getElementById('syncStatus');
-       if (statusText) statusText.innerText = text;
-       if (dot) dot.className = `inline-block w-2 h-2 rounded-full ${color}`;
+      const dot = document.getElementById('statusDot');
+      const statusText = document.getElementById('syncStatus');
+      if (statusText) statusText.innerText = text;
+      if (dot) dot.className = `inline-block w-2 h-2 rounded-full ${color}`;
     }
 
     function openSubPage() { document.getElementById('subPageOverlay').classList.remove('hidden'); }
     function closeSubPage() { document.getElementById('subPageOverlay').classList.add('hidden'); }
+
+    function toggleCompanyField() {
+      const sal = document.getElementById('salutation').value;
+      const container = document.getElementById('contactPersonContainer');
+      if (sal === 'Firma') {
+        container.style.display = 'flex';
+      } else {
+        container.style.display = 'none';
+        document.getElementById('contactPerson').value = '';
+      }
+    }
+
+    function toggleOfferCompanyField() {
+      const sal = document.getElementById('offerSalutation').value;
+      const container = document.getElementById('offerContactPerson');
+      if (sal === 'Firma') {
+        container.classList.remove('hidden');
+      } else {
+        container.classList.add('hidden');
+        container.value = '';
+      }
+    }
+
+    function formatCustomerName(cust, sal, contact) {
+      if (!sal) sal = 'Herr';
+      if (sal === 'Firma') {
+        return contact ? `${cust} (Ansprechpartner: ${contact})` : cust;
+      } else {
+        return `${sal} ${cust}`;
+      }
+    }
 
     function togglePickupMode() {
       const isPickup = document.getElementById('isPickup').checked;
@@ -420,6 +484,11 @@
 
     function updateRevolutBalance(val) {
       currentRevolutBalance = parseFloat(val) || 0;
+      saveAllData(); updateStats();
+    }
+
+    function updateElectricityCost(val) {
+      electricityCost = parseFloat(val) || 0;
       saveAllData(); updateStats();
     }
 
@@ -446,7 +515,6 @@
       select.innerHTML = html;
     }
 
-    // --- AUTOMATISCHE PORTO-ÜBERNAHME IN DIE AUSGABEN ---
     function syncLabelExpense(order) {
       if (!order) return;
       const expId = `LABEL-${order.id}`;
@@ -477,8 +545,12 @@
             products = (Array.isArray(json.products) && json.products.length >= BACKUP_PRODUCTS.length) ? json.products : [...BACKUP_PRODUCTS];
             spools = (Array.isArray(json.spools) && json.spools.length > 0) ? json.spools : [...BACKUP_SPOOLS];
             currentRevolutBalance = json.revolutBalance || 0;
+            electricityCost = (json.electricityCost !== undefined && json.electricityCost !== null) ? json.electricityCost : 66.12;
             
             document.getElementById('revolutInput').value = currentRevolutBalance.toFixed(2);
+            const elecInp = document.getElementById('electricityInput');
+            if (elecInp) elecInp.value = electricityCost.toFixed(2);
+
             updateMonthFilter();
             renderOrders(); renderOffers(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
             updateCustomerDropdowns(); updatePrinterDropdowns();
@@ -494,7 +566,7 @@
 
     async function pushToCloudManual() {
       setStatus("Speichere in Cloud...", "bg-yellow-500");
-      const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance };
+      const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance, electricityCost: electricityCost };
       try {
         const res = await fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (res.ok) { setStatus("Mit Cloud verbunden", "bg-blue-500"); alert("✅ Erfolgreich gespeichert!"); }
@@ -505,16 +577,18 @@
       updateMonthFilter();
       renderOrders(); renderOffers(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
       updateCustomerDropdowns(); updatePrinterDropdowns();
-      const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance };
+      const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance, electricityCost: electricityCost };
       fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(e => console.log(e));
     }
 
-    // --- KUNDEN-AUTOFILL FUNKTIONEN ---
     function autofillCustomerData(custName) {
       if (!custName) return;
       const match = orders.find(o => o.customer === custName) || offers.find(o => o.customer === custName);
       if (match) {
         document.getElementById('customer').value = match.customer || '';
+        document.getElementById('salutation').value = match.salutation || 'Herr';
+        document.getElementById('contactPerson').value = match.contactPerson || '';
+        toggleCompanyField();
         document.getElementById('address').value = match.address || '';
       }
     }
@@ -524,6 +598,9 @@
       const match = orders.find(o => o.customer === custName) || offers.find(o => o.customer === custName);
       if (match) {
         document.getElementById('offerCustomer').value = match.customer || '';
+        document.getElementById('offerSalutation').value = match.salutation || 'Herr';
+        document.getElementById('offerContactPerson').value = match.contactPerson || '';
+        toggleOfferCompanyField();
         document.getElementById('offerAddress').value = match.address || '';
       }
     }
@@ -548,12 +625,12 @@
       });
     }
 
-    // --- DANKES-ZETTEL & KUNDEN-VORLAGEN FUNKTIONEN ---
     function printThankYouNoteFromDropdown() {
       const custName = document.getElementById('thankYouCustomerSelect').value;
       if (!custName) return alert("Bitte wähle zuerst einen Kunden aus!");
       
       const order = orders.find(o => o.customer === custName);
+      const formattedCustName = order ? formatCustomerName(order.customer, order.salutation, order.contactPerson) : custName;
       const itemsText = (order && order.items && order.items.length > 0) 
         ? order.items.map(i => `${i.qty || 1}x ${i.name}`).join(', ') 
         : 'deiner Bestellung';
@@ -579,7 +656,7 @@
 <body>
   <div class="card-box">
     <h1>Vielen Dank für deine Bestellung!</h1>
-    <p>Hallo <strong>${custName}</strong>,</p>
+    <p>Hallo <strong>${formattedCustName}</strong>,</p>
     <p>vielen Dank für deinen Einkauf bei <strong>Sefas3DShop</strong>! Deine Bestellung (<em>${itemsText}</em>) wurde mit größter Sorgfalt im 3D-Druckverfahren hergestellt und verpackt.</p>
     
     <div class="highlight">
@@ -606,8 +683,8 @@
 
     function updateTemplatePreview() {
       const custName = document.getElementById('templateCustomerSelect').value;
-      const nameStr = custName ? custName : '[Kundenname]';
       const order = orders.find(o => o.customer === custName);
+      const nameStr = order ? formatCustomerName(order.customer, order.salutation, order.contactPerson) : (custName ? custName : '[Kundenname]');
       const trackingStr = (order && order.tracking && order.tracking !== '-') ? order.tracking : '[Sendungsnummer]';
 
       document.getElementById('templateText1').value = `Hallo ${nameStr},\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.`;
@@ -624,7 +701,6 @@
       }
     }
 
-    // --- ANGEBOTE FUNKTIONEN ---
     function generateNewOfferNumber(dateStr) {
       const year = dateStr ? dateStr.slice(0, 4) : new Date().getFullYear().toString(); let maxNum = 0;
       offers.forEach(o => { if (o.offerNumber && o.offerNumber.startsWith(`ANG-${year}-`)) { let num = parseInt(o.offerNumber.split('-')[2]) || 0; if (num > maxNum) maxNum = num; } });
@@ -679,6 +755,8 @@
     function addOffer(e) {
       e.preventDefault();
       const cust = document.getElementById('offerCustomer').value.trim();
+      const sal = document.getElementById('offerSalutation').value;
+      const contact = document.getElementById('offerContactPerson').value.trim();
       const addr = document.getElementById('offerAddress').value.trim();
       const price = parseFloat(document.getElementById('offerPrice').value) || 0;
       const discPerc = parseFloat(document.getElementById('offerDiscountPercent').value) || 0;
@@ -697,11 +775,12 @@
       });
       if (itemsList.length === 0) return alert("Bitte mindestens einen Artikel eintragen!");
 
-      offers.unshift({ id: Date.now(), offerNumber: offerNum, customer: cust, address: addr, price: price, discountPercent: discPerc, date: date, items: itemsList, status: "Offen" });
+      offers.unshift({ id: Date.now(), offerNumber: offerNum, customer: cust, salutation: sal, contactPerson: contact, address: addr, price: price, discountPercent: discPerc, date: date, items: itemsList, status: "Offen" });
       saveAllData(); 
       document.getElementById('offerForm').reset(); 
       document.getElementById('offerDate').value = todayStr;
       document.getElementById('offerDiscountPercent').value = "0";
+      toggleOfferCompanyField();
       document.getElementById('offerItemRows').innerHTML = `
         <div class="flex gap-2 items-center offer-article-row">
           <input type="number" placeholder="Menge" value="1" min="1" class="offer-art-qty bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white w-16 focus:outline-none" oninput="calculateOfferTotal()">
@@ -762,6 +841,8 @@
       if (updatedItems.length === 0) return alert("Mindestens ein Artikel erforderlich!");
 
       offers[idx].customer = document.getElementById(`edit-offer-cust-${idx}`).value;
+      offers[idx].salutation = document.getElementById(`edit-offer-sal-${idx}`).value;
+      offers[idx].contactPerson = document.getElementById(`edit-offer-contact-${idx}`).value;
       offers[idx].address = document.getElementById(`edit-offer-addr-${idx}`).value;
       offers[idx].date = document.getElementById(`edit-offer-date-${idx}`).value;
       offers[idx].status = document.getElementById(`edit-offer-stat-${idx}`).value;
@@ -777,6 +858,9 @@
       const off = offers.find(o => o.id === id);
       if (!off) return;
       document.getElementById('customer').value = off.customer;
+      document.getElementById('salutation').value = off.salutation || 'Herr';
+      document.getElementById('contactPerson').value = off.contactPerson || '';
+      toggleCompanyField();
       document.getElementById('address').value = off.address || '';
       document.getElementById('price').value = off.price.toFixed(2);
       document.getElementById('discountPercent').value = off.discountPercent || 0;
@@ -799,6 +883,7 @@
     function buildOfferHTML(off) {
       const offerDate = off.date ? off.date.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
       const offerNumber = off.offerNumber || 'ANG-2026-0001';
+      const formattedCust = formatCustomerName(off.customer, off.salutation, off.contactPerson);
       
       let subtotal = 0;
       let itemsRows = '';
@@ -841,7 +926,7 @@
           <div class="info-grid">
             <div class="customer-box">
               <h3>Angebot an</h3>
-              <p>${off.customer}<span>${off.address || 'Keine Anschrift hinterlegt'}</span></p>
+              <p>${formattedCust}<span>${off.address || 'Keine Anschrift hinterlegt'}</span></p>
             </div>
             <div class="meta-box">
               <table class="meta-table">
@@ -910,7 +995,15 @@
           tbody.innerHTML += `<tr class="border-b border-slate-800 bg-slate-900/90">
             <td class="p-2 font-mono text-amber-400 font-bold">${off.offerNumber}<input type="date" id="edit-offer-date-${idx}" value="${off.date || todayStr}" class="bg-slate-950 border border-amber-500 rounded px-1 py-0.5 text-[10px] text-white w-full mt-1"></td>
             <td class="p-2 space-y-1">
-              <input type="text" id="edit-offer-cust-${idx}" value="${off.customer}" class="bg-slate-950 border border-amber-500 rounded px-2 py-0.5 text-[11px] text-white w-full">
+              <div class="flex gap-1">
+                <select id="edit-offer-sal-${idx}" class="bg-slate-950 border border-amber-500 rounded px-1 py-0.5 text-[10px] text-white">
+                  <option value="Herr" ${off.salutation==='Herr'?'selected':''}>Herr</option>
+                  <option value="Frau" ${off.salutation==='Frau'?'selected':''}>Frau</option>
+                  <option value="Firma" ${off.salutation==='Firma'?'selected':''}>Firma</option>
+                </select>
+                <input type="text" id="edit-offer-cust-${idx}" value="${off.customer}" class="bg-slate-950 border border-amber-500 rounded px-2 py-0.5 text-[11px] text-white flex-1">
+              </div>
+              <input type="text" id="edit-offer-contact-${idx}" value="${off.contactPerson || ''}" placeholder="Ansprechpartner" class="bg-slate-950 border border-amber-500 rounded px-2 py-0.5 text-[10px] text-white w-full">
               <input type="text" id="edit-offer-addr-${idx}" value="${off.address || ''}" placeholder="Anschrift" class="bg-slate-950 border border-amber-500 rounded px-2 py-0.5 text-[10px] text-white w-full">
             </td>
             <td class="p-2">${editItemsHtml}</td>
@@ -943,10 +1036,11 @@
           itemsHtml += '</div>';
 
           let discountText = (off.discountPercent && off.discountPercent > 0) ? `<div class="text-[10px] text-amber-300">(-${off.discountPercent}% Rabatt)</div>` : '';
+          const formattedCust = formatCustomerName(off.customer, off.salutation, off.contactPerson);
 
           tbody.innerHTML += `<tr class="border-b border-slate-800">
             <td class="p-2 font-mono text-amber-400 font-bold">${off.offerNumber}<div class="text-[9px] text-slate-400 font-normal">${off.date}</div></td>
-            <td class="p-2 font-medium text-white">${off.customer}<div class="text-[9px] text-slate-400">${off.address || ''}</div></td>
+            <td class="p-2 font-medium text-white">${formattedCust}<div class="text-[9px] text-slate-400">${off.address || ''}</div></td>
             <td class="p-2">${itemsHtml}</td>
             <td class="p-2 font-bold text-amber-400">${off.price.toFixed(2).replace('.', ',')} €${discountText}</td>
             <td class="p-2">
@@ -1014,6 +1108,7 @@
     function buildInvoiceHTML(o, index = null) {
       const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
       const invoiceNumber = generateInvoiceNumberForExisting(o);
+      const formattedCust = formatCustomerName(o.customer, o.salutation, o.contactPerson);
       const isPickup = o.tracking === 'Selbstabholer';
       let displayShippingCost = isPickup ? 0 : ((o.platform === 'eBay') ? (o.labelCost || 0) : (o.shippingFee || 0));
       let discountAmount = 0; const dPerc = parseFloat(o.discountPercent) || 0;
@@ -1065,7 +1160,7 @@
         <div class="page" style="${index !== null ? 'page-break-after: always; break-after: page;' : ''}">
           <div class="header"><div class="brand">${logoSvg}<div class="brand-text"><h1>SEFAS 3D SHOP</h1><p>Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden<br>St.-Nr.: 52063271982</p></div></div><div class="invoice-title"><h2>Rechnung</h2></div></div>
           <div class="info-grid">
-            <div class="customer-box"><h3>Rechnung an</h3><p>${o.customer}<span>${o.address || 'Keine Anschrift hinterlegt'}</span></p></div>
+            <div class="customer-box"><h3>Rechnung an</h3><p>${formattedCust}<span>${o.address || 'Keine Anschrift hinterlegt'}</span></p></div>
             <div class="meta-box">
               <table class="meta-table">
                 <tr><td>Rechnungs-Nr.</td><td><strong>${invoiceNumber}</strong></td></tr>
@@ -1299,6 +1394,11 @@
     function updateStats() {
       const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
       const correctionValue = parseFloat(document.getElementById('statCorrection')?.value) || 0;
+      
+      let elecVal = parseFloat(document.getElementById('electricityInput')?.value);
+      if (isNaN(elecVal)) elecVal = electricityCost;
+      else electricityCost = elecVal;
+
       let totalRev = 0, totalExp = 0, openC = 0, ebayBalanceOpen = 0;
 
       orders.forEach(o => {
@@ -1326,18 +1426,14 @@
         }
       });
 
-      let electricityCost = 66.12;
+      let rawBaseProfit = totalRev - totalExp - elecVal;
+      let finalProfit = rawBaseProfit + correctionValue;
 
       document.getElementById('statRevolutDisplay').innerText = currentRevolutBalance.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
-      
-      let rawBaseProfit = totalRev - totalExp - electricityCost;
-      let finalProfit = rawBaseProfit - electricityCost + correctionValue;
-
       document.getElementById('statProfit').innerText = finalProfit.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statEbayBalance').innerText = ebayBalanceOpen.toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('statElectricity').innerText = electricityCost.toFixed(2).replace('.', ',') + ' €';
     }
 
     // --- AUFTRÄGE LOGIK & TABELLE ---
@@ -1358,6 +1454,8 @@
     function addOrder(e) {
       e.preventDefault();
       const customer = document.getElementById('customer').value.trim();
+      const salutation = document.getElementById('salutation').value;
+      const contactPerson = document.getElementById('contactPerson').value.trim();
       const platform = document.getElementById('platform').value;
       const paymentMethod = document.getElementById('paymentMethod').value;
       const isPaid = document.getElementById('isPaid').value;
@@ -1395,7 +1493,7 @@
       const isEbay = platform === 'eBay';
       const newOrder = {
         id: Date.now(),
-        customer, platform, paymentMethod, isPaid, printer, price, shippingFee, labelCost, discountPercent, orderDate,
+        customer, salutation, contactPerson, platform, paymentMethod, isPaid, printer, price, shippingFee, labelCost, discountPercent, orderDate,
         label, packed, tracking, address, notes, items,
         status: "Wartet auf Druck",
         ebayBalancePaid: isEbay ? "⏳ Bei eBay" : "✅ Ausgezahlt",
@@ -1415,6 +1513,7 @@
       document.getElementById('labelCost').value = "0.00";
       document.getElementById('discountPercent').value = "0";
       document.getElementById('isPickup').checked = false;
+      toggleCompanyField();
       togglePickupMode();
 
       document.getElementById('articleInputRows').innerHTML = `
@@ -1456,6 +1555,8 @@
       if (updatedItems.length === 0) return alert("Mindestens ein Artikel erforderlich!");
 
       o.customer = document.getElementById(`edit-cust-${idx}`).value;
+      o.salutation = document.getElementById(`edit-sal-${idx}`).value;
+      o.contactPerson = document.getElementById(`edit-contact-${idx}`).value;
       o.platform = document.getElementById(`edit-plat-${idx}`).value;
       o.printer = document.getElementById(`edit-print-${idx}`).value;
       o.paymentMethod = document.getElementById(`edit-paymeth-${idx}`).value;
@@ -1507,6 +1608,7 @@
       filtered.forEach((o, filteredIdx) => {
         const realIdx = orders.indexOf(o);
         const invNum = generateInvoiceNumberForExisting(o);
+        const formattedCust = formatCustomerName(o.customer, o.salutation, o.contactPerson);
 
         if (editingIndex === realIdx) {
           let editItemsHtml = `<div id="editArticleRows-${realIdx}" class="space-y-1.5 my-1.5">`;
@@ -1521,7 +1623,15 @@
 
           tbody.innerHTML += `<tr class="border-b border-slate-800 bg-slate-900/90">
             <td class="p-2 space-y-1">
-              <input type="text" id="edit-cust-${realIdx}" value="${o.customer}" class="bg-slate-950 border border-blue-500 rounded px-2 py-0.5 text-[11px] text-white w-full">
+              <div class="flex gap-1">
+                <select id="edit-sal-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[10px] text-white">
+                  <option value="Herr" ${o.salutation==='Herr'?'selected':''}>Herr</option>
+                  <option value="Frau" ${o.salutation==='Frau'?'selected':''}>Frau</option>
+                  <option value="Firma" ${o.salutation==='Firma'?'selected':''}>Firma</option>
+                </select>
+                <input type="text" id="edit-cust-${realIdx}" value="${o.customer}" class="bg-slate-950 border border-blue-500 rounded px-2 py-0.5 text-[11px] text-white flex-1">
+              </div>
+              <input type="text" id="edit-contact-${realIdx}" value="${o.contactPerson || ''}" placeholder="Ansprechpartner" class="bg-slate-950 border border-blue-500 rounded px-2 py-0.5 text-[10px] text-white w-full">
               <input type="text" id="edit-addr-${realIdx}" value="${o.address || ''}" placeholder="Adresse" class="bg-slate-950 border border-blue-500 rounded px-2 py-0.5 text-[10px] text-white w-full">
               <select id="edit-plat-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white w-full"><option value="Kleinanzeigen" ${o.platform==='Kleinanzeigen'?'selected':''}>🛒 Kleinanzeigen</option><option value="eBay" ${o.platform==='eBay'?'selected':''}>🛍 eBay</option></select>
             </td>
@@ -1577,7 +1687,7 @@
 
           tbody.innerHTML += `<tr class="border-b border-slate-800 ${isDelayed ? 'pulse-delayed-order' : ''}">
             <td class="p-2 font-medium text-white">
-              <div class="font-bold flex items-center gap-1">${o.customer} ${isDelayed ? '<span class="text-red-400 text-[10px]" title="Älter als 3 Tage!"><i class="fa-solid fa-clock"></i></span>' : ''}</div>
+              <div class="font-bold flex items-center gap-1">${formattedCust} ${isDelayed ? '<span class="text-red-400 text-[10px]" title="Älter als 3 Tage!"><i class="fa-solid fa-clock"></i></span>' : ''}</div>
               <div class="text-[9px] text-slate-400">${o.address || ''}</div>
               <span class="text-[9px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-300">${o.platform}</span>
             </td>
@@ -1631,7 +1741,8 @@
         let invNum = generateInvoiceNumberForExisting(o);
         let disc = (o.price * (parseFloat(o.discountPercent) || 0)) / 100;
         let finalRev = Math.max(0, o.price - disc);
-        csv += `Einnahme;${o.orderDate || ''};${invNum};"${(o.customer || '').replace(/"/g, '""')}";${finalRev.toFixed(2).replace('.', ',')};0,00;${o.paymentMethod || ''};${o.isPaid || ''}\n`;
+        let formattedCust = formatCustomerName(o.customer, o.salutation, o.contactPerson);
+        csv += `Einnahme;${o.orderDate || ''};${invNum};"${formattedCust.replace(/"/g, '""')}";${finalRev.toFixed(2).replace('.', ',')};0,00;${o.paymentMethod || ''};${o.isPaid || ''}\n`;
       });
 
       expenses.forEach(ex => {
