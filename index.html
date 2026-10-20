@@ -173,7 +173,13 @@
         <select id="existingCustomerOfferSelect" onchange="autofillOfferCustomerData(this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-[11px] text-slate-300 focus:outline-none w-full sm:w-auto"><option value="">📋 Bestehenden Kunden laden...</option></select>
       </div>
       <form id="offerForm" onsubmit="addOffer(event)" class="space-y-3 bg-slate-900/80 p-3 rounded-lg border border-slate-800">
-        <div class="grid grid-cols-1 sm:grid-cols-5 gap-2">
+        <div class="grid grid-cols-1 sm:grid-cols-6 gap-2">
+          <select id="offerSalutation" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+            <option value="">-- Anrede --</option>
+            <option value="Herr">Herr</option>
+            <option value="Frau">Frau</option>
+            <option value="Firma">Firma</option>
+          </select>
           <input type="text" id="offerCustomer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           <input type="text" id="offerAddress" placeholder="Anschrift" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
           <input type="number" step="0.01" id="offerDiscountPercent" placeholder="Rabatt (%)" value="0" oninput="calculateOfferTotal()" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 focus:outline-none">
@@ -223,7 +229,15 @@
         <select id="existingCustomerSelect" onchange="autofillCustomerData(this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-[11px] text-slate-300 focus:outline-none w-full sm:w-auto"><option value="">📋 Bestehenden Kunden laden...</option></select>
       </div>
       <form id="orderForm" onsubmit="addOrder(event)" class="space-y-3">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-2">
+          <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Anrede:</label>
+            <select id="salutation" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+              <option value="">-- Anrede --</option>
+              <option value="Herr">Herr</option>
+              <option value="Frau">Frau</option>
+              <option value="Firma">Firma</option>
+            </select>
+          </div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Kunde:</label><input type="text" id="customer" placeholder="Kundenname" required class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Plattform:</label><select id="platform" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍 eBay</option></select></div>
           <div class="flex flex-col"><label class="text-[9px] text-slate-400 mb-0.5">Zahlungsart:</label><select id="paymentMethod" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"><option value="eBay">💳 eBay</option><option value="PayPal">🅿 PayPal</option><option value="Überweisung">🏦 Überweisung</option><option value="Bar">Bar</option></select></div>
@@ -516,6 +530,9 @@
       if (match) {
         document.getElementById('customer').value = match.customer || '';
         document.getElementById('address').value = match.address || '';
+        if (document.getElementById('salutation')) {
+          document.getElementById('salutation').value = match.salutation || '';
+        }
       }
     }
 
@@ -525,6 +542,9 @@
       if (match) {
         document.getElementById('offerCustomer').value = match.customer || '';
         document.getElementById('offerAddress').value = match.address || '';
+        if (document.getElementById('offerSalutation')) {
+          document.getElementById('offerSalutation').value = match.salutation || '';
+        }
       }
     }
 
@@ -532,8 +552,8 @@
       const dropdownIds = ['existingCustomerSelect', 'existingCustomerOfferSelect', 'templateCustomerSelect', 'thankYouCustomerSelect'];
       
       const customerMap = new Map();
-      orders.forEach(o => { if (o.customer) customerMap.set(o.customer, o.address || ''); });
-      offers.forEach(o => { if (o.customer && !customerMap.has(o.customer)) customerMap.set(o.customer, o.address || ''); });
+      orders.forEach(o => { if (o.customer) customerMap.set(o.customer, { address: o.address || '', salutation: o.salutation || '' }); });
+      offers.forEach(o => { if (o.customer && !customerMap.has(o.customer)) customerMap.set(o.customer, { address: o.address || '', salutation: o.salutation || '' }); });
 
       dropdownIds.forEach(id => {
         const sel = document.getElementById(id);
@@ -541,8 +561,9 @@
           const curVal = sel.value;
           const defaultLabel = (id.includes('template') || id.includes('thankYou')) ? '👤 Kunden wählen...' : '📋 Bestehenden Kunden laden...';
           sel.innerHTML = `<option value="">${defaultLabel}</option>`;
-          customerMap.forEach((addr, custName) => {
-            sel.innerHTML += `<option value="${custName}" ${custName === curVal ? 'selected' : ''}>${custName}</option>`;
+          customerMap.forEach((data, custName) => {
+            let label = data.salutation ? `${data.salutation} ${custName}` : custName;
+            sel.innerHTML += `<option value="${custName}" ${custName === curVal ? 'selected' : ''}>${label}</option>`;
           });
         }
       });
@@ -557,6 +578,13 @@
       const itemsText = (order && order.items && order.items.length > 0) 
         ? order.items.map(i => `${i.qty || 1}x ${i.name}`).join(', ') 
         : 'deiner Bestellung';
+
+      let greetingStr = custName;
+      if (order && order.salutation) {
+        if (order.salutation === 'Herr') greetingStr = `Herr ${custName}`;
+        else if (order.salutation === 'Frau') greetingStr = `Frau ${custName}`;
+        else if (order.salutation === 'Firma') greetingStr = `Team von ${custName}`;
+      }
 
       const printWin = window.open('', '_blank', 'width=850,height=1000');
       printWin.document.write(`<!DOCTYPE html>
@@ -579,7 +607,7 @@
 <body>
   <div class="card-box">
     <h1>Vielen Dank für deine Bestellung!</h1>
-    <p>Hallo <strong>${custName}</strong>,</p>
+    <p>Hallo <strong>${greetingStr}</strong>,</p>
     <p>vielen Dank für deinen Einkauf bei <strong>Sefas3DShop</strong>! Deine Bestellung (<em>${itemsText}</em>) wurde mit größter Sorgfalt im 3D-Druckverfahren hergestellt und verpackt.</p>
     
     <div class="highlight">
@@ -606,8 +634,15 @@
 
     function updateTemplatePreview() {
       const custName = document.getElementById('templateCustomerSelect').value;
-      const nameStr = custName ? custName : '[Kundenname]';
+      let nameStr = custName ? custName : '[Kundenname]';
       const order = orders.find(o => o.customer === custName);
+      
+      if (order && order.salutation) {
+        if (order.salutation === 'Herr') nameStr = `Herr ${custName}`;
+        else if (order.salutation === 'Frau') nameStr = `Frau ${custName}`;
+        else if (order.salutation === 'Firma') nameStr = `Team von ${custName}`;
+      }
+
       const trackingStr = (order && order.tracking && order.tracking !== '-') ? order.tracking : '[Sendungsnummer]';
 
       document.getElementById('templateText1').value = `Hallo ${nameStr},\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.`;
@@ -678,6 +713,7 @@
 
     function addOffer(e) {
       e.preventDefault();
+      const salut = document.getElementById('offerSalutation').value;
       const cust = document.getElementById('offerCustomer').value.trim();
       const addr = document.getElementById('offerAddress').value.trim();
       const price = parseFloat(document.getElementById('offerPrice').value) || 0;
@@ -697,9 +733,10 @@
       });
       if (itemsList.length === 0) return alert("Bitte mindestens einen Artikel eintragen!");
 
-      offers.unshift({ id: Date.now(), offerNumber: offerNum, customer: cust, address: addr, price: price, discountPercent: discPerc, date: date, items: itemsList, status: "Offen" });
+      offers.unshift({ id: Date.now(), offerNumber: offerNum, salutation: salut, customer: cust, address: addr, price: price, discountPercent: discPerc, date: date, items: itemsList, status: "Offen" });
       saveAllData(); 
       document.getElementById('offerForm').reset(); 
+      document.getElementById('offerSalutation').value = "";
       document.getElementById('offerDate').value = todayStr;
       document.getElementById('offerDiscountPercent').value = "0";
       document.getElementById('offerItemRows').innerHTML = `
@@ -761,6 +798,7 @@
       });
       if (updatedItems.length === 0) return alert("Mindestens ein Artikel erforderlich!");
 
+      offers[idx].salutation = document.getElementById(`edit-offer-salut-${idx}`).value;
       offers[idx].customer = document.getElementById(`edit-offer-cust-${idx}`).value;
       offers[idx].address = document.getElementById(`edit-offer-addr-${idx}`).value;
       offers[idx].date = document.getElementById(`edit-offer-date-${idx}`).value;
@@ -776,6 +814,9 @@
     function convertOfferToOrder(id) {
       const off = offers.find(o => o.id === id);
       if (!off) return;
+      if (document.getElementById('salutation')) {
+        document.getElementById('salutation').value = off.salutation || '';
+      }
       document.getElementById('customer').value = off.customer;
       document.getElementById('address').value = off.address || '';
       document.getElementById('price').value = off.price.toFixed(2);
@@ -796,10 +837,19 @@
       window.scrollTo({ top: document.getElementById('orderForm').offsetTop - 50, behavior: 'smooth' });
     }
 
+    function formatCustomerDisplay(salutation, name) {
+      if (!salutation) return name;
+      if (salutation === 'Firma') return `Firma ${name}`;
+      if (salutation === 'Herr') return `Herr ${name}`;
+      if (salutation === 'Frau') return `Frau ${name}`;
+      return `${salutation} ${name}`;
+    }
+
     function buildOfferHTML(off) {
       const offerDate = off.date ? off.date.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
       const offerNumber = off.offerNumber || 'ANG-2026-0001';
-      
+      const customerFormatted = formatCustomerDisplay(off.salutation, off.customer);
+
       let subtotal = 0;
       let itemsRows = '';
       if (off.items && off.items.length > 0) {
@@ -841,7 +891,7 @@
           <div class="info-grid">
             <div class="customer-box">
               <h3>Angebot an</h3>
-              <p>${off.customer}<span>${off.address || 'Keine Anschrift hinterlegt'}</span></p>
+              <p>${customerFormatted}<span>${off.address || 'Keine Anschrift hinterlegt'}</span></p>
             </div>
             <div class="meta-box">
               <table class="meta-table">
@@ -910,6 +960,12 @@
           tbody.innerHTML += `<tr class="border-b border-slate-800 bg-slate-900/90">
             <td class="p-2 font-mono text-amber-400 font-bold">${off.offerNumber}<input type="date" id="edit-offer-date-${idx}" value="${off.date || todayStr}" class="bg-slate-950 border border-amber-500 rounded px-1 py-0.5 text-[10px] text-white w-full mt-1"></td>
             <td class="p-2 space-y-1">
+              <select id="edit-offer-salut-${idx}" class="bg-slate-950 border border-amber-500 rounded px-1.5 py-0.5 text-[10px] text-white w-full">
+                <option value="" ${!off.salutation ? 'selected' : ''}>-- Anrede --</option>
+                <option value="Herr" ${off.salutation==='Herr' ? 'selected' : ''}>Herr</option>
+                <option value="Frau" ${off.salutation==='Frau' ? 'selected' : ''}>Frau</option>
+                <option value="Firma" ${off.salutation==='Firma' ? 'selected' : ''}>Firma</option>
+              </select>
               <input type="text" id="edit-offer-cust-${idx}" value="${off.customer}" class="bg-slate-950 border border-amber-500 rounded px-2 py-0.5 text-[11px] text-white w-full">
               <input type="text" id="edit-offer-addr-${idx}" value="${off.address || ''}" placeholder="Anschrift" class="bg-slate-950 border border-amber-500 rounded px-2 py-0.5 text-[10px] text-white w-full">
             </td>
@@ -946,7 +1002,11 @@
 
           tbody.innerHTML += `<tr class="border-b border-slate-800">
             <td class="p-2 font-mono text-amber-400 font-bold">${off.offerNumber}<div class="text-[9px] text-slate-400 font-normal">${off.date}</div></td>
-            <td class="p-2 font-medium text-white">${off.customer}<div class="text-[9px] text-slate-400">${off.address || ''}</div></td>
+            <td class="p-2 font-medium text-white">
+              ${off.salutation ? `<span class="text-[9px] bg-amber-950 text-amber-300 px-1 py-0.2 rounded border border-amber-800 mr-1">${off.salutation}</span>` : ''}
+              ${off.customer}
+              <div class="text-[9px] text-slate-400">${off.address || ''}</div>
+            </td>
             <td class="p-2">${itemsHtml}</td>
             <td class="p-2 font-bold text-amber-400">${off.price.toFixed(2).replace('.', ',')} €${discountText}</td>
             <td class="p-2">
@@ -1020,6 +1080,7 @@
       if (dPerc > 0) discountAmount = (o.price * dPerc) / 100;
       const totalAmountNum = Math.max(0, o.price - discountAmount);
       let netArticlePrice = Math.max(0, o.price - displayShippingCost);
+      const customerFormatted = formatCustomerDisplay(o.salutation, o.customer);
 
       let itemsRows = '';
       if (o.items && o.items.length > 0) {
@@ -1065,7 +1126,7 @@
         <div class="page" style="${index !== null ? 'page-break-after: always; break-after: page;' : ''}">
           <div class="header"><div class="brand">${logoSvg}<div class="brand-text"><h1>SEFAS 3D SHOP</h1><p>Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden<br>St.-Nr.: 52063271982</p></div></div><div class="invoice-title"><h2>Rechnung</h2></div></div>
           <div class="info-grid">
-            <div class="customer-box"><h3>Rechnung an</h3><p>${o.customer}<span>${o.address || 'Keine Anschrift hinterlegt'}</span></p></div>
+            <div class="customer-box"><h3>Rechnung an</h3><p>${customerFormatted}<span>${o.address || 'Keine Anschrift hinterlegt'}</span></p></div>
             <div class="meta-box">
               <table class="meta-table">
                 <tr><td>Rechnungs-Nr.</td><td><strong>${invoiceNumber}</strong></td></tr>
@@ -1332,7 +1393,6 @@
       document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statExpenses').innerText = totalExp.toFixed(2).replace('.', ',') + ' €';
       
-      // Reingewinn = Umsatz - Ausgaben + Startwert/Differenz (ohne doppelten Stromabzug)
       let finalProfit = totalRev - totalExp + correctionValue;
 
       document.getElementById('statProfit').innerText = finalProfit.toFixed(2).replace('.', ',') + ' €';
@@ -1357,6 +1417,7 @@
 
     function addOrder(e) {
       e.preventDefault();
+      const salutation = document.getElementById('salutation').value;
       const customer = document.getElementById('customer').value.trim();
       const platform = document.getElementById('platform').value;
       const paymentMethod = document.getElementById('paymentMethod').value;
@@ -1395,7 +1456,7 @@
       const isEbay = platform === 'eBay';
       const newOrder = {
         id: Date.now(),
-        customer, platform, paymentMethod, isPaid, printer, price, shippingFee, labelCost, discountPercent, orderDate,
+        salutation, customer, platform, paymentMethod, isPaid, printer, price, shippingFee, labelCost, discountPercent, orderDate,
         label, packed, tracking, address, notes, items,
         status: "Wartet auf Druck",
         ebayBalancePaid: isEbay ? "⏳ Bei eBay" : "✅ Ausgezahlt",
@@ -1410,6 +1471,7 @@
       saveAllData();
 
       document.getElementById('orderForm').reset();
+      document.getElementById('salutation').value = "";
       document.getElementById('orderDate').value = todayStr;
       document.getElementById('shippingFee').value = "5.00";
       document.getElementById('labelCost').value = "0.00";
@@ -1455,6 +1517,7 @@
 
       if (updatedItems.length === 0) return alert("Mindestens ein Artikel erforderlich!");
 
+      o.salutation = document.getElementById(`edit-salut-${idx}`).value;
       o.customer = document.getElementById(`edit-cust-${idx}`).value;
       o.platform = document.getElementById(`edit-plat-${idx}`).value;
       o.printer = document.getElementById(`edit-print-${idx}`).value;
@@ -1521,6 +1584,12 @@
 
           tbody.innerHTML += `<tr class="border-b border-slate-800 bg-slate-900/90">
             <td class="p-2 space-y-1">
+              <select id="edit-salut-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white w-full">
+                <option value="" ${!o.salutation ? 'selected' : ''}>-- Anrede --</option>
+                <option value="Herr" ${o.salutation==='Herr' ? 'selected' : ''}>Herr</option>
+                <option value="Frau" ${o.salutation==='Frau' ? 'selected' : ''}>Frau</option>
+                <option value="Firma" ${o.salutation==='Firma' ? 'selected' : ''}>Firma</option>
+              </select>
               <input type="text" id="edit-cust-${realIdx}" value="${o.customer}" class="bg-slate-950 border border-blue-500 rounded px-2 py-0.5 text-[11px] text-white w-full">
               <input type="text" id="edit-addr-${realIdx}" value="${o.address || ''}" placeholder="Adresse" class="bg-slate-950 border border-blue-500 rounded px-2 py-0.5 text-[10px] text-white w-full">
               <select id="edit-plat-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white w-full"><option value="Kleinanzeigen" ${o.platform==='Kleinanzeigen'?'selected':''}>🛒 Kleinanzeigen</option><option value="eBay" ${o.platform==='eBay'?'selected':''}>🛍 eBay</option></select>
@@ -1577,7 +1646,11 @@
 
           tbody.innerHTML += `<tr class="border-b border-slate-800 ${isDelayed ? 'pulse-delayed-order' : ''}">
             <td class="p-2 font-medium text-white">
-              <div class="font-bold flex items-center gap-1">${o.customer} ${isDelayed ? '<span class="text-red-400 text-[10px]" title="Älter als 3 Tage!"><i class="fa-solid fa-clock"></i></span>' : ''}</div>
+              <div class="font-bold flex items-center gap-1">
+                ${o.salutation ? `<span class="text-[9px] bg-slate-800 text-slate-300 px-1 py-0.2 rounded border border-slate-700">${o.salutation}</span>` : ''}
+                ${o.customer} 
+                ${isDelayed ? '<span class="text-red-400 text-[10px]" title="Älter als 3 Tage!"><i class="fa-solid fa-clock"></i></span>' : ''}
+              </div>
               <div class="text-[9px] text-slate-400">${o.address || ''}</div>
               <span class="text-[9px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-300">${o.platform}</span>
             </td>
@@ -1631,7 +1704,8 @@
         let invNum = generateInvoiceNumberForExisting(o);
         let disc = (o.price * (parseFloat(o.discountPercent) || 0)) / 100;
         let finalRev = Math.max(0, o.price - disc);
-        csv += `Einnahme;${o.orderDate || ''};${invNum};"${(o.customer || '').replace(/"/g, '""')}";${finalRev.toFixed(2).replace('.', ',')};0,00;${o.paymentMethod || ''};${o.isPaid || ''}\n`;
+        let nameStr = formatCustomerDisplay(o.salutation, o.customer);
+        csv += `Einnahme;${o.orderDate || ''};${invNum};"${nameStr.replace(/"/g, '""')}";${finalRev.toFixed(2).replace('.', ',')};0,00;${o.paymentMethod || ''};${o.isPaid || ''}\n`;
       });
 
       expenses.forEach(ex => {
