@@ -486,8 +486,23 @@
         if (res.ok) {
           const json = await res.json();
           if (json && Array.isArray(json.orders)) {
-            orders = json.orders;
-            offers = Array.isArray(json.offers) ? json.offers : [];
+            let rawOrders = json.orders;
+            let rawOffers = Array.isArray(json.offers) ? json.offers : [];
+            
+            // STRIKTE SCHUTZ-LOGIK: Trenne eventuell in orders gelandete Angebote sauber ab!
+            orders = [];
+            offers = [...rawOffers];
+            
+            rawOrders.forEach(o => {
+              if (o.offerNumber || (['Offen', 'Angenommen', 'Abgelehnt'].includes(o.status) && !o.paymentMethod)) {
+                if (!offers.some(existing => existing.id === o.id || (o.offerNumber && existing.offerNumber === o.offerNumber))) {
+                  offers.push(o);
+                }
+              } else {
+                orders.push(o);
+              }
+            });
+
             expenses = Array.isArray(json.expenses) ? json.expenses : [];
             printers = (Array.isArray(json.printers) && json.printers.length > 0) ? json.printers : [...BACKUP_PRINTERS];
             products = (Array.isArray(json.products) && json.products.length >= BACKUP_PRODUCTS.length) ? json.products : [...BACKUP_PRODUCTS];
@@ -1387,7 +1402,10 @@
       const correctionValue = parseFloat(document.getElementById('statCorrection')?.value) || 0;
       let totalRev = 0, totalExp = 0, openC = 0, ebayBalanceOpen = 0;
 
+      // EXPLIZIT: Nur Aufträge berücksichtigen, Angebote werden strikt ignoriert
       orders.forEach(o => {
+        if (o.offerNumber) return; // Schutz: Angebote in 'orders' überspringen
+
         if (!o.archived) { openC++; }
         let isEbay = o.platform === 'eBay'; 
         let dAmount = (o.price * (parseFloat(o.discountPercent) || 0)) / 100; 
@@ -1400,6 +1418,7 @@
 
         let targetDate = o.orderDate || '';
         if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
+          // STRIKTER CHECK: Nur hinzufügen, WENN ES WIRKLICH BEZAHLT IST!
           if ((!isEbay && o.isPaid === '✅ Ja') || (isEbay && o.ebayBalancePaid === '✅ Ausgezahlt')) {
             totalRev += orderAmount;
           }
