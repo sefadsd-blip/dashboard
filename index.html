@@ -551,6 +551,9 @@
             const elecInp = document.getElementById('electricityInput');
             if (elecInp) elecInp.value = electricityCost.toFixed(2);
 
+            const statCorr = document.getElementById('statCorrection');
+            if (statCorr) statCorr.value = "0.00";
+
             updateMonthFilter();
             renderOrders(); renderOffers(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
             updateCustomerDropdowns(); updatePrinterDropdowns();
@@ -1393,7 +1396,10 @@
     // --- STATISTIK-AUSWERTUNG STATS ---
     function updateStats() {
       const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
-      const correctionValue = parseFloat(document.getElementById('statCorrection')?.value) || 0;
+      
+      const statCorrInp = document.getElementById('statCorrection');
+      if (statCorrInp && statCorrInp.value === "") statCorrInp.value = "0.00";
+      const correctionValue = parseFloat(statCorrInp?.value) || 0;
       
       let elecVal = parseFloat(document.getElementById('electricityInput')?.value);
       if (isNaN(elecVal)) elecVal = electricityCost;
@@ -1426,9 +1432,8 @@
         }
       });
 
-      // STROM WURDE HIER WIEDER VOLLSTÄNDIG ENTFERNT (WIRKT SICH NICHT MEHR AUF DEN GEWINN AUS)
-      let rawBaseProfit = totalRev - totalExp;
-      let finalProfit = rawBaseProfit + correctionValue;
+      // Exakte Berechnung ohne Nebeneffekte durch Strom
+      let finalProfit = (totalRev - totalExp) + correctionValue;
 
       document.getElementById('statRevolutDisplay').innerText = currentRevolutBalance.toFixed(2).replace('.', ',') + ' €';
       document.getElementById('statRevenue').innerText = totalRev.toFixed(2).replace('.', ',') + ' €';
