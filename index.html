@@ -1426,7 +1426,8 @@
         }
       });
 
-      let rawBaseProfit = totalRev - totalExp - elecVal;
+      // STROM WURDE HIER WIEDER VOLLSTÄNDIG ENTFERNT (WIRKT SICH NICHT MEHR AUF DEN GEWINN AUS)
+      let rawBaseProfit = totalRev - totalExp;
       let finalProfit = rawBaseProfit + correctionValue;
 
       document.getElementById('statRevolutDisplay').innerText = currentRevolutBalance.toFixed(2).replace('.', ',') + ' €';
