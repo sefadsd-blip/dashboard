@@ -443,7 +443,6 @@
       }
     }
 
-    // Liefert einen sauberen Text für Tabellen und UI (z.B. "Firma XYZ (Max Mustermann)")
     function formatCustomerName(cust, sal, contact) {
       if (!sal) sal = 'Herr';
       if (sal === 'Firma') {
@@ -861,7 +860,6 @@
       const offerDate = off.date ? off.date.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
       const offerNumber = off.offerNumber || 'ANG-2026-0001';
       
-      // HTML-Formatierung der Adresse für das PDF
       let offerCustomerHTML = '';
       if (off.salutation === 'Firma') {
         offerCustomerHTML = `${off.customer}<span>${off.contactPerson ? off.contactPerson + '<br>' : ''}${off.address || 'Keine Anschrift hinterlegt'}</span>`;
@@ -1093,7 +1091,6 @@
       const invoiceDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
       const invoiceNumber = generateInvoiceNumberForExisting(o);
       
-      // HTML-Formatierung der Adresse für das PDF
       let invoiceCustomerHTML = '';
       if (o.salutation === 'Firma') {
         invoiceCustomerHTML = `${o.customer}<span>${o.contactPerson ? o.contactPerson + '<br>' : ''}${o.address || 'Keine Anschrift hinterlegt'}</span>`;
@@ -1171,6 +1168,73 @@
           <div class="footer">Kleinunternehmer gemäß § 19 UStG. Es wird keine Umsatzsteuer ausgewiesen.<br>Vielen Dank für das Vertrauen in Sefas3DShop!</div>
         </div>
       `;
+    }
+
+    function buildPackzettelHTML(o) {
+      const orderDate = o.orderDate ? o.orderDate.split('-').reverse().join('.') : new Date().toLocaleDateString('de-DE');
+      const invoiceNumber = o.invoiceNumber || generateInvoiceNumberForExisting(o);
+      
+      let customerHTML = '';
+      if (o.salutation === 'Firma') {
+        customerHTML = `${o.customer}<span>${o.contactPerson ? o.contactPerson + '<br>' : ''}${o.address || 'Keine Anschrift hinterlegt'}</span>`;
+      } else {
+        customerHTML = `${o.salutation || 'Herr'} ${o.customer}<span>${o.address || 'Keine Anschrift hinterlegt'}</span>`;
+      }
+
+      let itemsRows = '';
+      if (o.items && o.items.length > 0) {
+        o.items.forEach(i => {
+          let q = i.qty || 1;
+          itemsRows += `<tr>
+            <td style="width: 12%; text-align: center; vertical-align: middle;"><div style="width: 12px; height: 12px; border: 1px solid #111; margin: 0 auto;"></div></td>
+            <td class="qty" style="width: 15%; font-size: 10px;">${q} Stk.</td>
+            <td><strong style="font-size: 9px;">${i.name}</strong><br><span style="color: #666; font-size: 7.5px;">Farbe: ${i.color || 'Standard'} | Gewicht: ${i.weight || 0}g</span></td>
+          </tr>`;
+        });
+      }
+
+      const logoSvg = `<svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
+
+      return `
+        <div class="page">
+          <div class="header">
+            <div class="brand">${logoSvg}<div class="brand-text"><h1>SEFAS 3D SHOP</h1><p>Inh. Sefa Demir | Neuer Weg 4 | 32369 Rahden</p></div></div>
+            <div class="invoice-title"><h2>Packzettel / Lieferschein</h2></div>
+          </div>
+          <div class="info-grid">
+            <div class="customer-box"><h3>Lieferadresse</h3><p>${customerHTML}</p></div>
+            <div class="meta-box">
+              <table class="meta-table">
+                <tr><td>Auftrags-Nr.</td><td><strong>${invoiceNumber}</strong></td></tr>
+                <tr><td>Bestelldatum</td><td><strong>${orderDate}</strong></td></tr>
+                <tr><td>Versandart</td><td><strong>${o.tracking === 'Selbstabholer' ? 'Selbstabholung' : 'DHL Versand'}</strong></td></tr>
+              </table>
+            </div>
+          </div>
+          <table class="items-table" style="margin-top: 15px;">
+            <thead>
+              <tr>
+                <th style="width: 12%; text-align: center;">Gepackt</th>
+                <th style="width: 15%;" class="center">Menge</th>
+                <th style="width: 73%;">Artikelbezeichnung & Details</th>
+              </tr>
+            </thead>
+            <tbody>${itemsRows}</tbody>
+          </table>
+          
+          <div style="margin-top: 30px; padding: 10px; border: 1.5px dashed #ccc; border-radius: 6px; text-align: center;">
+            <strong style="font-size: 10px;">Vielen Dank für deine Bestellung!</strong><br>
+            <span style="font-size: 7.5px; color: #444; margin-top: 4px; display: inline-block;">Wir hoffen, du bist mit deinem 3D-Druck zufrieden.<br>Über eine positive Bewertung auf Kleinanzeigen oder eBay freuen wir uns riesig!</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function printPackzettel(idx) {
+      const o = orders[idx]; 
+      const printWin = window.open('', '_blank', 'width=850,height=1000');
+      printWin.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Packzettel ${generateInvoiceNumberForExisting(o)}</title><style>${getInvoiceCSS()}</style></head><body>${buildPackzettelHTML(o)}<script>window.onload = function() { setTimeout(() => { window.print(); }, 400); };<\/script></body></html>`);
+      printWin.document.close();
     }
 
     function printInvoice(idx) {
@@ -1711,6 +1775,7 @@
             <td class="p-2 font-mono text-[10px] text-slate-300">${o.tracking || '-'}<div class="text-[9px] text-slate-400 font-sans italic">${o.notes || ''}</div></td>
             <td class="p-2 text-right space-x-1 whitespace-nowrap">
               <button onclick="printInvoice(${realIdx})" class="text-blue-300 bg-blue-500/10 border border-blue-500/30 px-1.5 py-1 rounded text-[10px] cursor-pointer" title="Rechnung drucken">🖨</button>
+              <button onclick="printPackzettel(${realIdx})" class="text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-1 rounded text-[10px] cursor-pointer" title="Packzettel / Lieferschein drucken">📦 Packzettel</button>
               <button onclick="startEditOrder(${realIdx})" class="text-amber-400 bg-amber-500/10 px-1.5 py-1 rounded text-[10px] cursor-pointer" title="Bearbeiten">✏</button>
               <button onclick="toggleArchiveOrder(${o.id})" class="text-purple-300 bg-purple-500/10 px-1.5 py-1 rounded text-[10px] cursor-pointer" title="${o.archived ? 'Wieder aktivieren' : 'Archivieren'}">${o.archived ? '📂' : '📥'}</button>
               <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px] cursor-pointer">❌</button>
