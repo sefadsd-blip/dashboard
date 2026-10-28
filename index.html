@@ -3,465 +3,570 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sefas3DShop - Dashboard</title>
+  <title>Sefas3DShop - Dashboard Pro</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
     
+    :root {
+      --bg-color: #050505;
+      --card-bg: rgba(15, 15, 18, 0.7);
+      --card-border: rgba(255, 255, 255, 0.06);
+      --primary-neon: #00f0ff;
+      --hotend-orange: #ff3300;
+      --success-green: #00ff66;
+    }
+
     body { 
-      background-color: #020617; /* Very dark slate */
-      background-image: 
-        radial-gradient(circle at 15% 50%, rgba(14, 165, 233, 0.08), transparent 25%),
-        radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08), transparent 25%),
-        linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
-      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
-      color: #f8fafc; 
-      font-family: 'Inter', system-ui, sans-serif; 
+      background-color: var(--bg-color);
+      color: #e2e8f0; 
+      font-family: 'Outfit', sans-serif; 
+      position: relative;
+      overflow-x: hidden;
     }
 
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(56, 189, 248, 0.5); }
+    /* Animated Background Mesh */
+    body::before {
+      content: "";
+      position: fixed;
+      top: -50%; left: -50%; width: 200%; height: 200%;
+      background: 
+        radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.03) 0%, transparent 40%),
+        radial-gradient(circle at 80% 20%, rgba(255, 51, 0, 0.03) 0%, transparent 30%),
+        radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.03) 0%, transparent 40%);
+      animation: ambientBg 25s ease-in-out infinite alternate;
+      z-index: -1;
+      pointer-events: none;
+    }
 
-    /* Glassmorphism Cards */
+    @keyframes ambientBg {
+      0% { transform: rotate(0deg) scale(1); }
+      100% { transform: rotate(15deg) scale(1.1); }
+    }
+
+    /* Custom Scrollbar Premium */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #000; }
+    ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--primary-neon); }
+
+    /* Ultra-Premium Cards */
     .card, .bg-slate-900\/60, .bg-slate-900\/80 { 
-      background: rgba(15, 23, 42, 0.6) !important; 
-      backdrop-filter: blur(12px); 
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.07) !important; 
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); 
+      background: linear-gradient(180deg, rgba(20,20,25,0.8) 0%, rgba(10,10,12,0.9) 100%) !important;
+      backdrop-filter: blur(16px); 
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border) !important; 
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.05); 
+      border-radius: 16px;
     }
 
-    /* Enhanced Inputs */
-    input[type="text"], input[type="number"], input[type="date"], select {
-      background: rgba(2, 6, 23, 0.5) !important;
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
-      border-radius: 0.5rem;
-      transition: all 0.2s ease;
-      color: #e2e8f0 !important;
+    /* Holographic Inputs */
+    input[type="text"], input[type="number"], input[type="date"], select, textarea {
+      background: rgba(0, 0, 0, 0.4) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      border-radius: 8px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      color: #fff !important;
+      font-weight: 500;
     }
-    input:focus, select:focus {
-      border-color: #38bdf8 !important;
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15) !important;
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary-neon) !important;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.2), inset 0 0 10px rgba(0, 240, 255, 0.05) !important;
       outline: none;
-      background: rgba(15, 23, 42, 0.9) !important;
+      background: rgba(0, 20, 30, 0.4) !important;
     }
 
-    /* Primary Buttons Glow */
+    /* Cyber Buttons */
     button[type="submit"] {
-      background: linear-gradient(135deg, #2563eb, #06b6d4) !important;
+      background: linear-gradient(90deg, #0055ff, #00f0ff) !important;
+      color: #000 !important;
+      font-weight: 800 !important;
+      text-transform: uppercase;
+      letter-spacing: 1px;
       border: none !important;
-      box-shadow: 0 4px 15px rgba(6, 182, 212, 0.25);
-      transition: all 0.2s ease;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+      transition: all 0.3s ease;
+      border-radius: 10px;
     }
     button[type="submit"]:hover {
-      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
-      transform: translateY(-1px);
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.6);
+      transform: translateY(-2px) scale(1.02);
     }
-    button[type="submit"]:active { transform: translateY(1px); }
+    button[type="submit"]:active { transform: translateY(1px) scale(0.98); }
 
-    /* Table Enhancements */
-    table th { background: rgba(15, 23, 42, 0.8) !important; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; }
-    tbody tr { transition: background 0.2s ease; }
-    tbody tr:hover { background: rgba(255, 255, 255, 0.03) !important; }
+    /* Tables - Clean & Sharp */
+    table th { 
+      background: rgba(5, 5, 5, 0.8) !important; 
+      color: #64748b;
+      text-transform: uppercase; 
+      font-size: 9px; 
+      letter-spacing: 1px; 
+      font-weight: 800;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    tbody tr { transition: all 0.2s ease; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    tbody tr:hover { background: rgba(0, 240, 255, 0.03) !important; }
 
-    /* Special Glow Borders for sections */
-    .border-blue-500\/30 { border-color: rgba(56, 189, 248, 0.3) !important; box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.03); }
-    .border-amber-500\/30 { border-color: rgba(245, 158, 11, 0.3) !important; box-shadow: inset 0 0 20px rgba(245, 158, 11, 0.03); }
-    .border-indigo-500\/30 { border-color: rgba(99, 102, 241, 0.3) !important; box-shadow: inset 0 0 20px rgba(99, 102, 241, 0.03); }
-    
-    /* Animations */
+    /* Highlight Glows */
+    .glow-neon { text-shadow: 0 0 15px var(--primary-neon); }
+    .glow-green { text-shadow: 0 0 15px var(--success-green); }
+    .glow-orange { text-shadow: 0 0 15px var(--hotend-orange); }
+
+    /* Special Printer Animation (Hotend Heating) */
+    @keyframes printer-active {
+      0%, 100% { box-shadow: inset 0 0 10px rgba(255, 51, 0, 0.05), 0 0 10px rgba(255, 51, 0, 0.1); border-color: rgba(255, 51, 0, 0.3); }
+      50% { box-shadow: inset 0 0 20px rgba(255, 51, 0, 0.1), 0 0 20px rgba(255, 51, 0, 0.3); border-color: rgba(255, 51, 0, 0.7); }
+    }
+    .printer-printing { 
+      animation: printer-active 2.5s infinite; 
+      background: linear-gradient(180deg, rgba(30,10,0,0.8) 0%, rgba(15,5,0,0.9) 100%) !important;
+    }
+
     @keyframes pulse-red {
-      0%, 100% { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 10px rgba(239, 68, 68, 0.1); }
-      50% { border-color: rgba(239, 68, 68, 0.9); box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+      0%, 100% { border-color: rgba(255, 0, 0, 0.4); box-shadow: 0 0 15px rgba(255, 0, 0, 0.1); }
+      50% { border-color: rgba(255, 0, 0, 0.9); box-shadow: 0 0 25px rgba(255, 0, 0, 0.3); }
     }
-    .pulse-low-spool { animation: pulse-red 2s infinite; }
-    .pulse-delayed-order { animation: pulse-red 1.5s infinite; background-color: rgba(220, 38, 38, 0.05) !important; }
-    
-    /* Glow text */
-    .glow-text { text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
+    .pulse-low-spool { animation: pulse-red 1.5s infinite; background-color: rgba(20, 0, 0, 0.5) !important; }
+    .pulse-delayed-order { border-left: 2px solid var(--hotend-orange) !important; background-color: rgba(255, 51, 0, 0.03) !important; }
+
+    /* Fancy Select Dropdowns */
+    select option { background-color: #0f172a; color: #fff; }
   </style>
 </head>
-<body class="p-3 md:p-5 min-h-screen text-xs">
+<body class="p-3 md:p-5 min-h-screen text-[13px]">
 
   <input type="file" id="csvFileInput" accept=".csv" onchange="importAccountingCSV(event)" class="hidden">
 
   <!-- SUBPAGE OVERLAY (TOOLS & KATALOG) -->
-  <div id="subPageOverlay" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-50 overflow-y-auto p-3 md:p-6 transition-all">
-    <div class="max-w-4xl mx-auto space-y-4">
-      <div class="flex justify-between items-center bg-slate-900/80 p-4 rounded-2xl border border-slate-700/50 shadow-xl">
-        <div class="flex items-center space-x-3">
-          <div class="bg-slate-950 p-2.5 rounded-xl border border-cyan-500/40 flex items-center justify-center shadow-[0_0_15px_rgba(34,211,238,0.2)]">
-            <i class="fa-solid fa-toolbox text-cyan-400 text-lg"></i>
+  <div id="subPageOverlay" class="hidden fixed inset-0 bg-black/95 backdrop-blur-3xl z-50 overflow-y-auto p-3 md:p-6 transition-all">
+    <div class="max-w-4xl mx-auto space-y-5">
+      <div class="flex justify-between items-center bg-zinc-900/50 p-5 rounded-2xl border border-zinc-800 shadow-2xl">
+        <div class="flex items-center space-x-4">
+          <div class="bg-black p-3 rounded-xl border border-cyan-500/50 flex items-center justify-center shadow-[0_0_20px_rgba(0,240,255,0.2)]">
+            <i class="fa-solid fa-layer-group text-[#00f0ff] text-xl"></i>
           </div>
           <div>
-            <h2 class="text-base font-bold text-white tracking-wide">Sefas3DShop - Tools & Katalog</h2>
-            <p class="text-slate-400 text-[11px]">Kostenrechner & Cloud-Verwaltung</p>
+            <h2 class="text-lg font-extrabold text-white tracking-wider uppercase">Tools & Katalog</h2>
+            <p class="text-zinc-400 text-xs font-medium">Kalkulation & Inventar</p>
           </div>
         </div>
-        <button onclick="closeSubPage()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer hover:scale-105">
-          <i class="fa-solid fa-xmark text-sm"></i> Schließen
+        <button onclick="closeSubPage()" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer hover:scale-105">
+          <i class="fa-solid fa-power-off text-sm"></i> CLOSE
         </button>
       </div>
 
-      <section class="card p-4 space-y-2 border-blue-500/30 bg-blue-950/10">
-        <div class="flex justify-between items-center border-b border-slate-700/50 pb-2">
-          <h2 class="text-xs font-bold text-blue-400 tracking-wide"><i class="fa-solid fa-calculator mr-1.5"></i> KOSTENRECHNER (+ 35% & 1,50€)</h2>
+      <section class="card p-5 space-y-3">
+        <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+          <h2 class="text-xs font-extrabold text-[#00f0ff] tracking-widest uppercase"><i class="fa-solid fa-microchip mr-2"></i> Profit-Rechner (+ 35% & 1,50€)</h2>
         </div>
-        <div class="space-y-3 pt-1">
-          <div class="flex items-center gap-2">
-            <input type="number" id="calcHours" oninput="calculateCosts()" placeholder="Zeit (h, z.B. 1.5)" min="0" step="0.1" class="w-full px-3 py-2 text-xs">
-            <input type="number" id="calcGrams" oninput="calculateCosts()" placeholder="Gewicht (g)" min="0" step="1" class="w-full px-3 py-2 text-xs">
+        <div class="space-y-4 pt-2">
+          <div class="flex items-center gap-3">
+            <div class="relative w-full">
+              <i class="fa-solid fa-clock absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-500"></i>
+              <input type="number" id="calcHours" oninput="calculateCosts()" placeholder="Druckzeit (h)" min="0" step="0.1" class="w-full pl-9 pr-3 py-2.5 text-sm">
+            </div>
+            <div class="relative w-full">
+              <i class="fa-solid fa-weight-hanging absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-500"></i>
+              <input type="number" id="calcGrams" oninput="calculateCosts()" placeholder="Gewicht (g)" min="0" step="1" class="w-full pl-9 pr-3 py-2.5 text-sm">
+            </div>
           </div>
-          <div class="bg-slate-950/50 p-3 rounded-xl border border-slate-800/80">
-            <div class="flex justify-between text-[11px] text-slate-400"><span>Druckzeit (0,25 €/h):</span> <span id="calcPrintCost">0,00 €</span></div>
-            <div class="flex justify-between text-[11px] text-slate-400 mt-1"><span>Strom (0,12 €/h):</span> <span id="calcElecCost">0,00 €</span></div>
-            <div class="flex justify-between text-[11px] text-slate-400 border-b border-slate-700/50 pb-2 mb-2 mt-1"><span>Material (0,02 €/g):</span> <span id="calcMatCost">0,00 €</span></div>
-            <div class="flex justify-between text-[11px] text-slate-300"><span>Herstellung (Netto):</span> <span id="calcTotalCost">0,00 €</span></div>
-            <div class="flex justify-between text-[11px] text-amber-400 mt-1"><span>+ 35% Gewinn-Aufschlag:</span> <span id="calcMarkup">0,00 €</span></div>
-            <div class="flex justify-between text-[11px] text-purple-400 border-b border-slate-700/50 pb-2 mb-2 mt-1"><span>+ Bearbeitung (fix):</span> <span>1,50 €</span></div>
-            <div class="flex justify-between font-bold text-white text-[14px] mt-1 items-center"><span>Empf. Verkaufspreis:</span> <span id="calcFinalPrice" class="text-cyan-400 glow-text" data-raw-price="0">0,00 €</span></div>
+          <div class="bg-black/60 p-4 rounded-xl border border-zinc-800">
+            <div class="flex justify-between text-xs text-zinc-400 font-medium"><span>Druckzeit (0,25 €/h):</span> <span id="calcPrintCost">0,00 €</span></div>
+            <div class="flex justify-between text-xs text-zinc-400 font-medium mt-1.5"><span>Strom (0,12 €/h):</span> <span id="calcElecCost">0,00 €</span></div>
+            <div class="flex justify-between text-xs text-zinc-400 font-medium border-b border-zinc-800 pb-2 mb-2 mt-1.5"><span>Material (0,02 €/g):</span> <span id="calcMatCost">0,00 €</span></div>
+            <div class="flex justify-between text-xs text-zinc-200 font-bold"><span>Herstellung (Netto):</span> <span id="calcTotalCost">0,00 €</span></div>
+            <div class="flex justify-between text-xs text-amber-500 font-bold mt-2"><span>+ 35% Gewinn-Aufschlag:</span> <span id="calcMarkup">0,00 €</span></div>
+            <div class="flex justify-between text-xs text-purple-400 font-bold border-b border-zinc-800 pb-3 mb-3 mt-1.5"><span>+ Bearbeitung (fix):</span> <span>1,50 €</span></div>
+            <div class="flex justify-between font-extrabold text-white text-lg mt-1 items-center uppercase tracking-wide"><span>VK-Preis:</span> <span id="calcFinalPrice" class="text-[#00f0ff] glow-neon" data-raw-price="0">0,00 €</span></div>
           </div>
-          <button onclick="transferToCatalogFromSub()" class="w-full bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-xl py-2.5 text-xs font-bold transition cursor-pointer hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]"><i class="fa-solid fa-arrow-down mr-1"></i> Preis in Katalog übernehmen</button>
+          <button onclick="transferToCatalogFromSub()" class="w-full bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 text-[#00f0ff] border border-[#00f0ff]/30 rounded-xl py-3 text-xs font-extrabold transition cursor-pointer hover:shadow-[0_0_20px_rgba(0,240,255,0.2)] tracking-widest uppercase"><i class="fa-solid fa-download mr-2"></i> In Katalog übernehmen</button>
         </div>
       </section>
 
-      <section class="card p-4 space-y-3">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-700/50 pb-3">
-          <h2 class="text-xs font-bold text-slate-200 tracking-wide"><i class="fa-solid fa-tags mr-1.5 text-amber-400"></i> ARTIKEL-KATALOG</h2>
-          <input type="text" id="productSearchInput" oninput="renderProducts()" placeholder="🔍 Katalog durchsuchen..." class="w-full sm:w-64 px-3 py-1.5">
+      <section class="card p-5 space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-zinc-800 pb-3">
+          <h2 class="text-xs font-extrabold text-white tracking-widest uppercase"><i class="fa-solid fa-cube mr-2 text-purple-500"></i> Master-Katalog</h2>
+          <div class="relative w-full sm:w-64">
+            <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-500 text-xs"></i>
+            <input type="text" id="productSearchInput" oninput="renderProducts()" placeholder="Katalog durchsuchen..." class="w-full pl-8 pr-3 py-2 text-xs">
+          </div>
         </div>
         
-        <form id="productForm" onsubmit="addProduct(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-2 bg-slate-950/40 p-3 rounded-xl border border-slate-800/80">
-          <input type="text" id="prodName" placeholder="Artikelname" required class="px-2.5 py-1.5">
-          <input type="text" id="prodSize" placeholder="Maße (z.B. 100x50 mm)" class="px-2.5 py-1.5">
-          <input type="number" step="0.1" id="prodTime" placeholder="Druckzeit (h)" required class="px-2.5 py-1.5">
+        <form id="productForm" onsubmit="addProduct(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-black/40 p-4 rounded-xl border border-zinc-800">
+          <input type="text" id="prodName" placeholder="Artikelname" required class="px-3 py-2 text-xs">
+          <input type="text" id="prodSize" placeholder="Maße (z.B. 100x50)" class="px-3 py-2 text-xs">
+          <input type="number" step="0.1" id="prodTime" placeholder="Zeit (h)" required class="px-3 py-2 text-xs">
           <div class="flex gap-2">
-            <input type="number" step="0.01" id="prodPrice" placeholder="Preis (€)" required class="flex-1 px-2.5 py-1.5">
-            <button type="submit" class="font-bold rounded-lg py-1.5 px-3 text-xs transition cursor-pointer hover:scale-105 whitespace-nowrap shadow-lg">+ Add</button>
+            <input type="number" step="0.01" id="prodPrice" placeholder="Preis (€)" required class="flex-1 px-3 py-2 text-xs font-bold text-[#00f0ff]">
+            <button type="submit" class="font-extrabold rounded-lg py-2 px-4 text-xs transition cursor-pointer hover:scale-105 whitespace-nowrap shadow-lg">ADD</button>
           </div>
         </form>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar" id="productsList"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar" id="productsList"></div>
       </section>
     </div>
   </div>
 
   <!-- MAIN APP -->
-  <div id="mainApp" class="max-w-[1700px] mx-auto space-y-5">
+  <div id="mainApp" class="max-w-[1700px] mx-auto space-y-6">
     
     <!-- HEADER -->
-    <header class="card flex flex-col xl:flex-row justify-between items-start xl:items-center p-4 border-slate-700/50 gap-4">
-      <div class="flex items-center space-x-4">
-        <button onclick="openSubPage()" class="bg-slate-800/50 hover:bg-slate-700 text-cyan-400 p-3 rounded-xl border border-slate-600/50 transition flex items-center justify-center cursor-pointer shadow-lg hover:shadow-cyan-500/20 hover:scale-105" title="Tools & Katalog öffnen">
-          <i class="fa-solid fa-bars text-sm"></i>
+    <header class="card flex flex-col xl:flex-row justify-between items-start xl:items-center p-5 border-zinc-800 gap-5 relative overflow-hidden">
+      <!-- Glow effect behind header -->
+      <div class="absolute -left-20 -top-20 w-64 h-64 bg-[#00f0ff]/5 rounded-full blur-3xl pointer-events-none"></div>
+      
+      <div class="flex items-center space-x-5 z-10">
+        <button onclick="openSubPage()" class="bg-black/50 hover:bg-black text-[#00f0ff] p-3.5 rounded-xl border border-zinc-700 transition flex items-center justify-center cursor-pointer shadow-lg hover:shadow-[#00f0ff]/20 hover:scale-105 hover:border-[#00f0ff]/50" title="Tools & Katalog öffnen">
+          <i class="fa-solid fa-bars"></i>
         </button>
 
-        <div class="bg-slate-950 p-2.5 rounded-xl border border-blue-500/40 flex items-center justify-center shadow-[0_0_20px_rgba(56,189,248,0.2)]">
-          <svg class="w-8 h-8 text-cyan-400" viewBox="0 0 100 100" fill="currentColor">
-            <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="url(#blueGrad)" stroke-width="8"/>
-            <polyline points="50,10 50,50 90,30" fill="none" stroke="url(#blueGrad)" stroke-width="6"/>
-            <polyline points="50,50 10,30" fill="none" stroke="url(#blueGrad)" stroke-width="6"/>
-            <polyline points="50,50 50,90" fill="none" stroke="url(#blueGrad)" stroke-width="6"/>
-            <defs>
-              <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#38bdf8"/>
-                <stop offset="100%" stop-color="#3b82f6"/>
-              </linearGradient>
-            </defs>
+        <div class="bg-black p-3 rounded-xl border border-[#00f0ff]/30 flex items-center justify-center shadow-[0_0_25px_rgba(0,240,255,0.15)] relative">
+          <div class="absolute inset-0 bg-[#00f0ff]/10 blur-md rounded-xl"></div>
+          <svg class="w-8 h-8 text-[#00f0ff] relative z-10" viewBox="0 0 100 100" fill="currentColor">
+            <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="currentColor" stroke-width="8"/>
+            <polyline points="50,10 50,50 90,30" fill="none" stroke="currentColor" stroke-width="6"/>
+            <polyline points="50,50 10,30" fill="none" stroke="currentColor" stroke-width="6"/>
+            <polyline points="50,50 50,90" fill="none" stroke="currentColor" stroke-width="6"/>
           </svg>
         </div>
         <div>
-          <h1 class="text-xl font-bold text-white tracking-wide flex items-center gap-2">SEFAS<span class="text-cyan-400 glow-text">3D</span>SHOP</h1>
-          <p class="text-slate-400 text-[11px] flex items-center gap-1.5 font-medium"><span class="inline-block w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" id="statusDot"></span><span id="syncStatus">Cloud bereit</span></p>
+          <h1 class="text-2xl font-black text-white tracking-widest flex items-center gap-2 uppercase">SEFAS<span class="text-[#00f0ff] glow-neon">3D</span>SHOP</h1>
+          <p class="text-zinc-400 text-xs flex items-center gap-2 font-bold uppercase tracking-wider mt-1">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6]" id="statusDot"></span>
+            <span id="syncStatus">SYSTEM ONLINE</span>
+          </p>
         </div>
       </div>
       
-      <div class="flex flex-wrap items-center gap-2">
-        <button onclick="document.getElementById('csvFileInput').click()" class="bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-600/50 px-3 py-2 rounded-xl text-xs font-medium transition flex items-center cursor-pointer hover:scale-105"><i class="fa-solid fa-file-import mr-1.5"></i> Import</button>
-        <button onclick="exportAccountingCSV()" class="bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-600/50 px-3 py-2 rounded-xl text-xs font-medium transition flex items-center cursor-pointer hover:scale-105"><i class="fa-solid fa-file-excel mr-1.5"></i> Export</button>
-        <button onclick="printAllInvoices()" class="bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-600/50 px-3 py-2 rounded-xl text-xs font-medium transition flex items-center cursor-pointer hover:scale-105"><i class="fa-solid fa-print mr-1.5"></i> Rechnungen</button>
-        <div class="w-px h-6 bg-slate-700/50 mx-1 hidden sm:block"></div>
-        <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer hover:scale-105"><i class="fa-solid fa-box-archive mr-1.5"></i> Archiv</button>
-        <button onclick="loadCloudData()" class="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer hover:scale-105"><i class="fa-solid fa-rotate mr-1.5"></i> Laden</button>
-        <button onclick="pushToCloudManual()" class="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center cursor-pointer hover:scale-105 hover:shadow-[0_0_15px_rgba(34,211,238,0.15)]"><i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Speichern</button>
+      <div class="flex flex-wrap items-center gap-2.5 z-10">
+        <button onclick="document.getElementById('csvFileInput').click()" class="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center cursor-pointer hover:scale-105"><i class="fa-solid fa-file-import mr-2"></i> CSV IN</button>
+        <button onclick="exportAccountingCSV()" class="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center cursor-pointer hover:scale-105"><i class="fa-solid fa-file-export mr-2"></i> CSV OUT</button>
+        <button onclick="printAllInvoices()" class="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center cursor-pointer hover:scale-105"><i class="fa-solid fa-print mr-2"></i> RECHNUNGEN</button>
+        <div class="w-px h-8 bg-zinc-800 mx-2 hidden sm:block"></div>
+        <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/30 px-4 py-2.5 rounded-xl text-xs font-extrabold transition flex items-center cursor-pointer hover:scale-105 uppercase tracking-wide"><i class="fa-solid fa-box-archive mr-2"></i> Archiv</button>
+        <button onclick="loadCloudData()" class="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 px-4 py-2.5 rounded-xl text-xs font-extrabold transition flex items-center cursor-pointer hover:scale-105 uppercase tracking-wide"><i class="fa-solid fa-rotate mr-2"></i> Load</button>
+        <button onclick="pushToCloudManual()" class="bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 text-[#00f0ff] border border-[#00f0ff]/30 px-4 py-2.5 rounded-xl text-xs font-extrabold transition flex items-center cursor-pointer hover:scale-105 hover:shadow-[0_0_20px_rgba(0,240,255,0.2)] uppercase tracking-wide"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Sync</button>
       </div>
     </header>
 
     <!-- STATISTIK-AUSWERTUNG -->
-    <section class="space-y-3">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center px-1 gap-2">
-        <h2 class="text-xs font-bold text-slate-300 tracking-wider uppercase"><i class="fa-solid fa-chart-pie mr-1.5 text-blue-400"></i> Statistik & Finanzen</h2>
+    <section class="space-y-4">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center px-2 gap-3">
+        <h2 class="text-xs font-extrabold text-zinc-400 tracking-widest uppercase"><i class="fa-solid fa-chart-line mr-2 text-[#00f0ff]"></i> Telemetrie & Finanzen</h2>
         <div class="flex flex-wrap items-center gap-3">
-          <div class="flex items-center space-x-2 bg-slate-900/50 border border-slate-700/50 rounded-xl px-3 py-1.5 backdrop-blur-sm">
-            <label class="text-[10px] text-indigo-400 font-semibold uppercase tracking-wide">💳 Revolut Kontostand:</label>
-            <input type="number" step="0.01" id="revolutInput" onchange="updateRevolutBalance(this.value)" class="!bg-transparent !border-none !p-0 text-sm text-indigo-300 font-bold w-20 focus:ring-0 text-right">
+          <div class="flex items-center space-x-3 bg-black/50 border border-zinc-800 rounded-xl px-4 py-2 backdrop-blur-sm shadow-inner">
+            <label class="text-[10px] text-zinc-500 font-extrabold uppercase tracking-widest">💳 Revolut:</label>
+            <input type="number" step="0.01" id="revolutInput" onchange="updateRevolutBalance(this.value)" class="!bg-transparent !border-none !p-0 text-base text-white font-black w-24 focus:ring-0 text-right glow-neon">
           </div>
           <div class="flex items-center space-x-2">
-            <select id="statsMonthFilter" onchange="renderOrders(); renderExpenses(); updateStats();" class="px-3 py-1.5 text-xs font-medium"><option value="all" selected>📅 Alle Monate (Gesamt)</option></select>
+            <select id="statsMonthFilter" onchange="renderOrders(); renderExpenses(); updateStats();" class="px-4 py-2 text-xs font-bold uppercase tracking-wide"><option value="all" selected>📅 LIFETIME</option></select>
           </div>
         </div>
       </div>
       
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
-        <div class="card p-4 flex flex-col justify-center border-indigo-500/30 bg-indigo-950/10 xl:col-span-2 relative overflow-hidden">
-          <div class="absolute -right-6 -top-6 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl"></div>
-          <p class="text-[10px] text-indigo-300 font-bold uppercase tracking-wider mb-1">Echter Kontostand</p>
-          <h3 id="statRevolutDisplay" class="text-2xl font-bold text-indigo-400 glow-text">0,00 €</h3>
+        <!-- REAL BALANCE -->
+        <div class="card p-5 flex flex-col justify-center border-zinc-700 xl:col-span-2 relative overflow-hidden group hover:border-[#00f0ff]/50 transition-colors">
+          <div class="absolute -right-10 -top-10 w-32 h-32 bg-[#00f0ff]/10 rounded-full blur-2xl group-hover:bg-[#00f0ff]/20 transition-all"></div>
+          <p class="text-[10px] text-zinc-400 font-extrabold uppercase tracking-widest mb-1">Echter Kontostand</p>
+          <h3 id="statRevolutDisplay" class="text-3xl font-black text-white glow-neon">0,00 €</h3>
         </div>
-        <div class="card p-4 flex flex-col justify-center">
-          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Umsatz</p>
-          <h3 id="statRevenue" class="text-xl font-bold text-blue-400">0,00 €</h3>
+        <!-- REVENUE -->
+        <div class="card p-5 flex flex-col justify-center border-zinc-800 hover:border-zinc-600 transition-colors">
+          <p class="text-[10px] text-zinc-500 font-extrabold uppercase tracking-widest mb-1">Brutto Umsatz</p>
+          <h3 id="statRevenue" class="text-xl font-bold text-zinc-200">0,00 €</h3>
         </div>
-        <div class="card p-4 flex flex-col justify-center">
-          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Ausgaben</p>
-          <h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3>
+        <!-- EXPENSES -->
+        <div class="card p-5 flex flex-col justify-center border-zinc-800 hover:border-zinc-600 transition-colors">
+          <p class="text-[10px] text-zinc-500 font-extrabold uppercase tracking-widest mb-1">Ausgaben</p>
+          <h3 id="statExpenses" class="text-xl font-bold text-red-500 glow-orange">0,00 €</h3>
         </div>
-        <div class="card p-4 flex flex-col justify-center border-emerald-500/30 bg-emerald-950/10 relative overflow-hidden">
-          <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl"></div>
-          <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider mb-1">Reingewinn</p>
-          <h3 id="statProfit" class="text-2xl font-bold text-emerald-400 glow-text">99,59 €</h3>
+        <!-- PROFIT -->
+        <div class="card p-5 flex flex-col justify-center border-emerald-500/20 bg-emerald-950/10 relative overflow-hidden group hover:border-emerald-500/50 transition-colors">
+          <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all"></div>
+          <p class="text-[10px] text-emerald-500 font-extrabold uppercase tracking-widest mb-1">Reingewinn</p>
+          <h3 id="statProfit" class="text-3xl font-black text-emerald-400 glow-green">0,00 €</h3>
         </div>
-        <div class="card p-4 flex flex-col justify-between border-cyan-500/30 bg-cyan-950/10">
-          <div><p class="text-[10px] text-cyan-300 font-bold uppercase tracking-wider mb-1">🛍 eBay (Offen)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400">0,00 €</h3></div>
-          <button onclick="payoutAllEbayBalance()" class="mt-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold py-1.5 px-2 rounded-lg transition cursor-pointer hover:scale-105"><i class="fa-solid fa-check-double mr-1"></i> Alles ausgezahlt</button>
+        <!-- EBAY -->
+        <div class="card p-5 flex flex-col justify-between border-zinc-800 hover:border-purple-500/30 transition-colors">
+          <div><p class="text-[10px] text-purple-400 font-extrabold uppercase tracking-widest mb-1">🛍 eBay Puffer</p><h3 id="statEbayBalance" class="text-lg font-bold text-purple-300">0,00 €</h3></div>
+          <button onclick="payoutAllEbayBalance()" class="mt-3 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/30 text-[10px] font-extrabold py-2 px-3 rounded-lg transition cursor-pointer hover:scale-105 uppercase tracking-wide"><i class="fa-solid fa-check-double mr-1"></i> Payout</button>
         </div>
-        <div class="card p-4 flex flex-col justify-center border-orange-500/30 bg-orange-950/10">
-          <p class="text-[10px] text-orange-300 font-bold uppercase tracking-wider mb-1">⚡ Strom (Fix)</p>
+        <!-- ELECTRICITY -->
+        <div class="card p-5 flex flex-col justify-center border-zinc-800 hover:border-orange-500/30 transition-colors">
+          <p class="text-[10px] text-orange-500 font-extrabold uppercase tracking-widest mb-1">⚡ Strom Fix</p>
           <h3 id="statElectricity" class="text-xl font-bold text-orange-400">66,12 €</h3>
         </div>
       </div>
     </section>
 
     <!-- DRUCKER & FILAMENT -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-      <section class="lg:col-span-2 space-y-3">
-        <div class="flex justify-between items-center px-1"><h2 class="text-xs font-bold text-slate-300 tracking-wider uppercase"><i class="fa-solid fa-print mr-1.5 text-blue-400"></i> Drucker-Farm</h2><button onclick="addPrinterPrompt()" class="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-blue-500/30 cursor-pointer hover:scale-105 transition">+ Neuer Drucker</button></div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <section class="lg:col-span-2 space-y-4">
+        <div class="flex justify-between items-center px-2">
+          <h2 class="text-xs font-extrabold text-zinc-400 tracking-widest uppercase"><i class="fa-solid fa-server mr-2 text-blue-500"></i> Printer-Farm Array</h2>
+          <button onclick="addPrinterPrompt()" class="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-lg border border-blue-500/30 cursor-pointer hover:scale-105 transition">+ Add Node</button>
+        </div>
         <div id="printersGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
       </section>
-      <section class="card p-4 space-y-3 flex flex-col">
-        <div class="flex justify-between items-center"><h2 class="text-xs font-bold text-slate-300 tracking-wider uppercase"><i class="fa-solid fa-layer-group mr-1.5 text-purple-400"></i> Filament-Lager</h2><button onclick="addSpoolPrompt()" class="bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-purple-500/30 cursor-pointer hover:scale-105 transition">+ Neue Spule</button></div>
-        <div id="spoolWarningBanner" class="hidden bg-red-500/10 border border-red-500/40 p-2.5 rounded-xl text-[11px] flex items-start gap-2 text-red-300 shadow-[0_0_10px_rgba(239,68,68,0.1)]"></div>
-        <div id="spoolsList" class="space-y-2 flex-1 overflow-y-auto pr-2 custom-scrollbar max-h-[220px]"></div>
+      <section class="card p-5 space-y-4 flex flex-col border-zinc-800">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xs font-extrabold text-zinc-400 tracking-widest uppercase"><i class="fa-solid fa-cubes mr-2 text-pink-500"></i> Spool Inventory</h2>
+          <button onclick="addSpoolPrompt()" class="bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-lg border border-pink-500/30 cursor-pointer hover:scale-105 transition">+ Add Spool</button>
+        </div>
+        <div id="spoolWarningBanner" class="hidden bg-red-950/50 border border-red-500/50 p-3 rounded-xl text-xs flex items-start gap-3 text-red-400 shadow-[0_0_15px_rgba(255,0,0,0.15)] font-medium"></div>
+        <div id="spoolsList" class="space-y-2.5 flex-1 overflow-y-auto pr-2 custom-scrollbar max-h-[250px]"></div>
       </section>
     </div>
 
     <!-- ANGEBOTE BEREICH -->
-    <section class="card p-5 space-y-4 border-amber-500/30 bg-amber-950/5 relative overflow-hidden">
-      <div class="absolute -left-10 -top-10 w-40 h-40 bg-amber-500/5 rounded-full blur-2xl pointer-events-none"></div>
+    <section class="card p-6 space-y-5 border-amber-500/20 relative overflow-hidden">
+      <!-- Background Ambient -->
+      <div class="absolute right-0 top-0 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[100px] pointer-events-none"></div>
       
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-700/50 pb-3 relative">
-        <h2 class="text-xs font-bold text-amber-400 tracking-wider uppercase"><i class="fa-solid fa-file-invoice-dollar mr-1.5"></i> Angebote & Preisanfragen</h2>
-        <select id="existingCustomerOfferSelect" onchange="autofillOfferCustomerData(this.value)" class="w-full sm:w-auto px-3 py-1.5 text-xs"><option value="">📋 Bestehenden Kunden laden...</option></select>
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-800 pb-4 relative z-10">
+        <h2 class="text-xs font-black text-amber-500 tracking-widest uppercase glow-orange"><i class="fa-solid fa-file-contract mr-2"></i> Quotations / Angebote</h2>
+        <select id="existingCustomerOfferSelect" onchange="autofillOfferCustomerData(this.value)" class="w-full sm:w-auto px-4 py-2 text-xs font-bold"><option value="">📋 Auto-Fill Customer...</option></select>
       </div>
       
-      <form id="offerForm" onsubmit="addOffer(event)" class="space-y-4 bg-slate-950/40 p-4 rounded-xl border border-slate-800/80 relative">
-        <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
+      <form id="offerForm" onsubmit="addOffer(event)" class="space-y-5 bg-black/40 p-5 rounded-2xl border border-zinc-800 relative z-10 shadow-inner">
+        <div class="grid grid-cols-1 sm:grid-cols-5 gap-4">
           <div class="flex gap-2">
-            <select id="offerSalutation" class="px-3 py-2 text-xs w-24" onchange="toggleOfferCompanyField()">
+            <select id="offerSalutation" class="px-3 py-2.5 text-xs w-24 font-bold" onchange="toggleOfferCompanyField()">
               <option value="Herr">Herr</option><option value="Frau">Frau</option><option value="Firma">Firma</option>
             </select>
-            <input type="text" id="offerCustomer" placeholder="Name / Firma" required class="flex-1 px-3 py-2 text-xs">
+            <input type="text" id="offerCustomer" placeholder="Name / Firma" required class="flex-1 px-3 py-2.5 text-xs">
           </div>
-          <input type="text" id="offerContactPerson" placeholder="Ansprechpartner" class="hidden px-3 py-2 text-xs">
-          <input type="text" id="offerAddress" placeholder="Anschrift" class="px-3 py-2 text-xs">
-          <input type="number" step="0.01" id="offerDiscountPercent" placeholder="Rabatt (%)" value="0" oninput="calculateOfferTotal()" class="px-3 py-2 text-xs text-amber-300">
-          <input type="number" step="0.01" id="offerPrice" placeholder="Gesamt (€)" required class="px-3 py-2 text-xs font-bold !border-amber-500/50 !bg-amber-950/20 text-amber-400">
-          <input type="date" id="offerDate" required class="px-3 py-2 text-xs">
+          <input type="text" id="offerContactPerson" placeholder="Ansprechpartner" class="hidden px-3 py-2.5 text-xs">
+          <input type="text" id="offerAddress" placeholder="Anschrift" class="px-3 py-2.5 text-xs">
+          <div class="relative">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs font-bold">%</span>
+            <input type="number" step="0.01" id="offerDiscountPercent" placeholder="Rabatt" value="0" oninput="calculateOfferTotal()" class="w-full pl-3 pr-8 py-2.5 text-xs text-amber-400 font-bold">
+          </div>
+          <div class="relative">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-amber-500 text-xs font-bold">€</span>
+            <input type="number" step="0.01" id="offerPrice" placeholder="Gesamt" required class="w-full pl-3 pr-8 py-2.5 text-sm font-black !border-amber-500/50 !bg-amber-950/20 text-amber-500 glow-orange">
+          </div>
+          <input type="date" id="offerDate" required class="px-3 py-2.5 text-xs font-bold text-zinc-300">
         </div>
 
-        <div class="border-t border-slate-700/50 pt-3 space-y-3">
+        <div class="border-t border-zinc-800 pt-4 space-y-4">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wide">Positionen:</label>
-            <input type="text" id="offerArticleSearch" oninput="renderOfferQuickAddButtons()" placeholder="🔍 Katalog durchsuchen..." class="w-full sm:w-72 px-3 py-1.5 text-xs">
+            <label class="text-[10px] font-extrabold text-zinc-500 uppercase tracking-widest">Line Items:</label>
+            <div class="relative w-full sm:w-72">
+              <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-500 text-xs"></i>
+              <input type="text" id="offerArticleSearch" oninput="renderOfferQuickAddButtons()" placeholder="Katalog durchsuchen..." class="w-full pl-8 pr-3 py-2 text-xs">
+            </div>
           </div>
           <div class="flex flex-wrap gap-2 py-1 max-h-[100px] overflow-y-auto pr-2 custom-scrollbar" id="offerQuickAddButtons"></div>
           
-          <div class="flex justify-end gap-2">
-            <button type="button" onclick="addOfferItemRow(1, 'Sonderanfertigung: ', 'Sondermaß', '')" class="bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-lg text-xs transition cursor-pointer hover:scale-105"><i class="fa-solid fa-ruler-combined mr-1"></i>+ Sondergröße</button>
-            <button type="button" onclick="addOfferItemRow()" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-lg text-xs transition cursor-pointer hover:scale-105">+ Leere Zeile</button>
+          <div class="flex justify-end gap-3">
+            <button type="button" onclick="addOfferItemRow(1, 'Sonderanfertigung: ', 'Sondermaß', '')" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-600 px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer hover:scale-105 tracking-wide"><i class="fa-solid fa-ruler-combined mr-2"></i>Custom</button>
+            <button type="button" onclick="addOfferItemRow()" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/30 px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer hover:scale-105 tracking-wide">+ Line</button>
           </div>
 
-          <div id="offerItemRows" class="space-y-2">
-            <div class="flex gap-2 items-center offer-article-row">
-              <input type="number" placeholder="Stk." value="1" min="1" class="offer-art-qty px-3 py-2 text-xs w-20" oninput="calculateOfferTotal()">
-              <input type="text" placeholder="Artikelbezeichnung" class="offer-art-name px-3 py-2 text-xs flex-1">
-              <input type="text" placeholder="Größe / Maße" class="offer-art-size px-3 py-2 text-xs w-40">
-              <input type="number" step="0.01" placeholder="Preis (€)" class="offer-art-price px-3 py-2 text-xs w-28" oninput="calculateOfferTotal()">
+          <div id="offerItemRows" class="space-y-3">
+            <div class="flex gap-3 items-center offer-article-row">
+              <input type="number" placeholder="QTY" value="1" min="1" class="offer-art-qty px-3 py-2.5 text-xs w-24 text-center font-bold" oninput="calculateOfferTotal()">
+              <input type="text" placeholder="Item Description" class="offer-art-name px-3 py-2.5 text-xs flex-1">
+              <input type="text" placeholder="Specs / Size" class="offer-art-size px-3 py-2.5 text-xs w-48">
+              <div class="relative w-32">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs font-bold">€</span>
+                <input type="number" step="0.01" placeholder="Price" class="offer-art-price w-full pl-3 pr-7 py-2.5 text-xs font-bold" oninput="calculateOfferTotal()">
+              </div>
             </div>
           </div>
         </div>
 
-        <button type="submit" class="w-full font-bold rounded-xl py-2.5 text-xs transition cursor-pointer shadow-lg mt-2">+ Angebot Speichern</button>
+        <button type="submit" class="w-full font-black rounded-xl py-3.5 text-sm transition cursor-pointer shadow-lg mt-2 tracking-widest">GENERATE QUOTATION</button>
       </form>
 
-      <div class="overflow-x-auto custom-scrollbar relative">
+      <div class="overflow-x-auto custom-scrollbar relative z-10 mt-4">
         <table class="w-full text-left text-xs">
-          <thead><tr><th class="p-3 rounded-tl-lg">Nr. & Datum</th><th class="p-3">Kunde</th><th class="p-3">Positionen</th><th class="p-3">Summe</th><th class="p-3">Status</th><th class="p-3 text-right rounded-tr-lg">Aktionen</th></tr></thead>
-          <tbody id="offersTableBody" class="divide-y divide-slate-800 text-slate-200"></tbody>
+          <thead><tr><th class="p-4 rounded-tl-xl">ID & Date</th><th class="p-4">Client</th><th class="p-4">Items</th><th class="p-4">Total</th><th class="p-4">Status</th><th class="p-4 text-right rounded-tr-xl">Actions</th></tr></thead>
+          <tbody id="offersTableBody" class="text-zinc-300"></tbody>
         </table>
       </div>
     </section>
 
     <!-- NEUEN AUFTRAG ANLEGEN -->
-    <section class="card p-5 space-y-4">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-700/50 pb-3">
-        <h2 class="text-xs font-bold text-slate-200 tracking-wider uppercase"><i class="fa-solid fa-plus-circle mr-1.5 text-blue-400"></i> Neuen Auftrag anlegen</h2>
-        <select id="existingCustomerSelect" onchange="autofillCustomerData(this.value)" class="w-full sm:w-auto px-3 py-1.5 text-xs"><option value="">📋 Bestehenden Kunden laden...</option></select>
+    <section class="card p-6 space-y-5 border-[#00f0ff]/20 relative overflow-hidden">
+      <!-- Background Ambient -->
+      <div class="absolute left-0 bottom-0 w-[600px] h-[600px] bg-[#00f0ff]/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-800 pb-4 relative z-10">
+        <h2 class="text-xs font-black text-[#00f0ff] tracking-widest uppercase glow-neon"><i class="fa-solid fa-satellite-dish mr-2"></i> New Order Entry</h2>
+        <select id="existingCustomerSelect" onchange="autofillCustomerData(this.value)" class="w-full sm:w-auto px-4 py-2 text-xs font-bold"><option value="">📋 Auto-Fill Customer...</option></select>
       </div>
       
-      <form id="orderForm" onsubmit="addOrder(event)" class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+      <form id="orderForm" onsubmit="addOrder(event)" class="space-y-5 relative z-10">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 bg-black/40 p-5 rounded-2xl border border-zinc-800 shadow-inner">
           <div class="flex flex-col">
-            <label class="text-[10px] text-slate-400 mb-1 font-semibold uppercase">Kunde / Firma</label>
+            <label class="text-[9px] text-zinc-500 mb-1.5 font-extrabold uppercase tracking-widest">Client Name</label>
             <div class="flex gap-1.5">
-              <select id="salutation" class="px-2 py-2 text-xs w-20" onchange="toggleCompanyField()"><option value="Herr">Herr</option><option value="Frau">Frau</option><option value="Firma">Firma</option></select>
-              <input type="text" id="customer" placeholder="Name" required class="flex-1 px-3 py-2 text-xs">
+              <select id="salutation" class="px-2 py-2.5 text-xs w-20 font-bold" onchange="toggleCompanyField()"><option value="Herr">Mr.</option><option value="Frau">Ms.</option><option value="Firma">Corp.</option></select>
+              <input type="text" id="customer" placeholder="Name" required class="flex-1 px-3 py-2.5 text-xs">
             </div>
           </div>
           <div class="flex flex-col" id="contactPersonContainer" style="display: none;">
-            <label class="text-[10px] text-slate-400 mb-1 font-semibold uppercase">Ansprechpartner</label>
-            <input type="text" id="contactPerson" placeholder="Name" class="px-3 py-2 text-xs">
+            <label class="text-[9px] text-zinc-500 mb-1.5 font-extrabold uppercase tracking-widest">Contact</label>
+            <input type="text" id="contactPerson" placeholder="Name" class="px-3 py-2.5 text-xs">
           </div>
-          <div class="flex flex-col"><label class="text-[10px] text-slate-400 mb-1 font-semibold uppercase">Plattform</label><select id="platform" class="px-3 py-2 text-xs"><option value="Kleinanzeigen">🛒 Kleinanzeigen</option><option value="eBay">🛍 eBay</option></select></div>
-          <div class="flex flex-col"><label class="text-[10px] text-slate-400 mb-1 font-semibold uppercase">Zahlung</label><select id="paymentMethod" class="px-3 py-2 text-xs"><option value="eBay">💳 eBay</option><option value="PayPal">🅿 PayPal</option><option value="Überweisung">🏦 Bank</option><option value="Bar">Bar</option></select></div>
-          <div class="flex flex-col"><label class="text-[10px] text-slate-400 mb-1 font-semibold uppercase">Bezahlt?</label><select id="isPaid" class="px-3 py-2 text-xs"><option value="✅ Ja">✅ Ja</option><option value="❌ Nein" selected>❌ Nein</option></select></div>
-          <div class="flex flex-col"><label class="text-[10px] text-slate-400 mb-1 font-semibold uppercase">Drucker</label><select id="printer" class="px-3 py-2 text-xs"></select></div>
+          <div class="flex flex-col"><label class="text-[9px] text-zinc-500 mb-1.5 font-extrabold uppercase tracking-widest">Source</label><select id="platform" class="px-3 py-2.5 text-xs font-bold"><option value="Kleinanzeigen">🛒 Kleinanz.</option><option value="eBay">🛍 eBay</option></select></div>
+          <div class="flex flex-col"><label class="text-[9px] text-zinc-500 mb-1.5 font-extrabold uppercase tracking-widest">Gateway</label><select id="paymentMethod" class="px-3 py-2.5 text-xs font-bold"><option value="eBay">💳 eBay</option><option value="PayPal">🅿 PayPal</option><option value="Überweisung">🏦 SEPA</option><option value="Bar">💵 Cash</option></select></div>
+          <div class="flex flex-col"><label class="text-[9px] text-zinc-500 mb-1.5 font-extrabold uppercase tracking-widest">Cleared?</label><select id="isPaid" class="px-3 py-2.5 text-xs font-bold text-white"><option value="✅ Ja">✅ YES</option><option value="❌ Nein" selected>❌ NO</option></select></div>
+          <div class="flex flex-col"><label class="text-[9px] text-zinc-500 mb-1.5 font-extrabold uppercase tracking-widest">Assign Node</label><select id="printer" class="px-3 py-2.5 text-xs font-bold"></select></div>
           
-          <div class="flex flex-col"><label class="text-[10px] text-slate-400 mb-1 font-semibold uppercase">Gesamtpreis</label><input type="number" step="0.01" id="price" placeholder="€" required class="px-3 py-2 text-xs font-bold !border-blue-500/50 !bg-blue-950/20 text-blue-400"></div>
+          <div class="flex flex-col relative">
+            <label class="text-[9px] text-[#00f0ff] mb-1.5 font-extrabold uppercase tracking-widest">Revenue</label>
+            <span class="absolute right-3 top-[34px] text-[#00f0ff] text-xs font-bold">€</span>
+            <input type="number" step="0.01" id="price" placeholder="0.00" required class="w-full pl-3 pr-8 py-2.5 text-sm font-black !border-[#00f0ff]/50 !bg-[#00f0ff]/10 text-[#00f0ff] glow-neon">
+          </div>
           
           <div class="flex flex-col justify-end">
-            <div class="flex items-center gap-2 bg-slate-900/50 border border-slate-700/50 rounded-xl px-3 py-2 backdrop-blur-sm h-[36px]">
-              <input type="checkbox" id="isPickup" onchange="togglePickupMode()" class="rounded border-slate-600 bg-slate-800 text-blue-500 focus:ring-0 cursor-pointer w-4 h-4">
-              <label for="isPickup" class="text-xs text-blue-400 font-bold cursor-pointer">🏠 Selbstabholer</label>
+            <div class="flex items-center gap-2 bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2.5 h-[42px] hover:border-zinc-500 transition-colors">
+              <input type="checkbox" id="isPickup" onchange="togglePickupMode()" class="rounded border-zinc-600 bg-black text-[#00f0ff] focus:ring-0 cursor-pointer w-4 h-4">
+              <label for="isPickup" class="text-xs text-zinc-300 font-bold cursor-pointer uppercase tracking-wider mt-0.5">🏠 Pickup</label>
             </div>
           </div>
           
-          <div class="flex flex-col"><label class="text-[10px] text-slate-400 mb-1 font-semibold uppercase">Versand (Kunde)</label><input type="number" step="0.01" id="shippingFee" value="5.00" class="px-3 py-2 text-xs"></div>
-          <div class="flex flex-col"><label class="text-[10px] text-slate-400 mb-1 font-semibold uppercase">Porto (Kosten)</label><input type="number" step="0.01" id="labelCost" value="0.00" class="px-3 py-2 text-xs"></div>
-          <div class="flex flex-col"><label class="text-[10px] text-slate-400 mb-1 font-semibold uppercase">Rabatt (%)</label><input type="number" step="0.01" id="discountPercent" value="0" class="px-3 py-2 text-xs text-amber-300"></div>
-          <div class="flex flex-col"><label class="text-[10px] text-slate-400 mb-1 font-semibold uppercase">Datum</label><input type="date" id="orderDate" required class="px-3 py-2 text-xs"></div>
+          <div class="flex flex-col relative"><label class="text-[9px] text-zinc-500 mb-1.5 font-extrabold uppercase tracking-widest">Ship Fee (IN)</label><input type="number" step="0.01" id="shippingFee" value="5.00" class="pl-3 pr-8 py-2.5 text-xs"><span class="absolute right-3 top-[34px] text-zinc-500 text-xs font-bold">€</span></div>
+          <div class="flex flex-col relative"><label class="text-[9px] text-zinc-500 mb-1.5 font-extrabold uppercase tracking-widest">Label (OUT)</label><input type="number" step="0.01" id="labelCost" value="0.00" class="pl-3 pr-8 py-2.5 text-xs"><span class="absolute right-3 top-[34px] text-zinc-500 text-xs font-bold">€</span></div>
+          <div class="flex flex-col relative"><label class="text-[9px] text-zinc-500 mb-1.5 font-extrabold uppercase tracking-widest">Discount</label><input type="number" step="0.01" id="discountPercent" value="0" class="pl-3 pr-8 py-2.5 text-xs text-amber-400 font-bold"><span class="absolute right-3 top-[34px] text-zinc-500 text-xs font-bold">%</span></div>
+          <div class="flex flex-col"><label class="text-[9px] text-zinc-500 mb-1.5 font-extrabold uppercase tracking-widest">Date</label><input type="date" id="orderDate" required class="px-3 py-2.5 text-xs font-bold"></div>
           
-          <div class="flex flex-col"><label class="text-[10px] text-slate-400 mb-1 font-semibold uppercase">Label gedruckt</label><select id="label" class="px-3 py-2 text-xs"><option value="✅ Ja">✅ Ja</option><option value="❌ Nein" selected>❌ Nein</option></select></div>
-          <div class="flex flex-col"><label class="text-[10px] text-slate-400 mb-1 font-semibold uppercase">Verpackt</label><select id="packed" class="px-3 py-2 text-xs"><option value="❌ Nein">❌ Nein</option><option value="✅ Ja">✅ Ja</option></select></div>
-          <div class="flex flex-col lg:col-span-2"><label class="text-[10px] text-slate-400 mb-1 font-semibold uppercase">Tracking-Nr.</label><input type="text" id="tracking" placeholder="Tracking" class="px-3 py-2 text-xs"></div>
+          <div class="flex flex-col"><label class="text-[9px] text-zinc-500 mb-1.5 font-extrabold uppercase tracking-widest">Label Done</label><select id="label" class="px-3 py-2.5 text-xs font-bold"><option value="✅ Ja">✅ YES</option><option value="❌ Nein" selected>❌ NO</option></select></div>
+          <div class="flex flex-col"><label class="text-[9px] text-zinc-500 mb-1.5 font-extrabold uppercase tracking-widest">Packed</label><select id="packed" class="px-3 py-2.5 text-xs font-bold"><option value="❌ Nein">❌ NO</option><option value="✅ Ja">✅ YES</option></select></div>
+          <div class="flex flex-col lg:col-span-2"><label class="text-[9px] text-zinc-500 mb-1.5 font-extrabold uppercase tracking-widest">Tracking ID</label><input type="text" id="tracking" placeholder="Tracking Number" class="px-3 py-2.5 text-xs font-mono"></div>
         </div>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <input type="text" id="address" placeholder="Lieferadresse" class="px-3 py-2 text-xs">
-          <input type="text" id="notes" placeholder="Interne Notizen" class="px-3 py-2 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <input type="text" id="address" placeholder="Lieferadresse / Shipping Address" class="px-4 py-3 text-xs">
+          <input type="text" id="notes" placeholder="Interne Notizen / System Notes" class="px-4 py-3 text-xs">
         </div>
 
-        <div class="border-t border-slate-700/50 pt-4 space-y-3">
+        <div class="border-t border-zinc-800 pt-5 space-y-4">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wide">Artikel Details (Farbe, Gewicht, Zeit):</label>
-            <input type="text" id="orderArticleSearch" oninput="renderQuickAddButtons()" placeholder="🔍 Katalog durchsuchen..." class="w-full sm:w-72 px-3 py-1.5 text-xs">
+            <label class="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest">Item Configuration:</label>
+            <div class="relative w-full sm:w-72">
+              <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-500 text-xs"></i>
+              <input type="text" id="orderArticleSearch" oninput="renderQuickAddButtons()" placeholder="Search Database..." class="w-full pl-8 pr-3 py-2 text-xs">
+            </div>
           </div>
           
           <div class="flex flex-wrap gap-2 py-1 max-h-[120px] overflow-y-auto pr-2 custom-scrollbar" id="quickAddButtons"></div>
 
-          <div class="flex justify-end gap-2">
-            <button type="button" onclick="addArticleInputRow(1, 'Sonderanfertigung: ', '', '', '')" class="bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/30 px-3 py-1.5 rounded-lg text-xs transition cursor-pointer hover:scale-105"><i class="fa-solid fa-ruler-combined mr-1"></i>+ Sondergröße</button>
-            <button type="button" onclick="addArticleInputRow()" class="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-lg text-xs transition cursor-pointer hover:scale-105">+ Leerer Artikel</button>
+          <div class="flex justify-end gap-3">
+            <button type="button" onclick="addArticleInputRow(1, 'Sonderanfertigung: ', '', '', '')" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-600 px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer hover:scale-105 tracking-wide"><i class="fa-solid fa-ruler-combined mr-2"></i>Custom</button>
+            <button type="button" onclick="addArticleInputRow()" class="bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 text-[#00f0ff] border border-[#00f0ff]/30 px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer hover:scale-105 tracking-wide">+ Item</button>
           </div>
 
-          <div id="articleInputRows" class="space-y-2">
-            <div class="flex gap-2 items-center article-row">
-              <input type="number" placeholder="Stk." value="1" min="1" class="art-qty px-3 py-2 text-xs w-20">
-              <input type="text" placeholder="Bezeichnung" class="art-name px-3 py-2 text-xs flex-1">
-              <select class="art-color px-3 py-2 text-xs w-40"><option value="">-- Farbe --</option></select>
-              <input type="number" placeholder="Gramm" class="art-weight px-3 py-2 text-xs w-24">
-              <input type="number" step="0.1" placeholder="Zeit (h)" class="art-time px-3 py-2 text-xs w-24" title="Druckzeit in Stunden">
+          <div id="articleInputRows" class="space-y-3">
+            <div class="flex gap-3 items-center article-row">
+              <input type="number" placeholder="QTY" value="1" min="1" class="art-qty px-3 py-2.5 text-xs w-20 text-center font-bold">
+              <input type="text" placeholder="Designation" class="art-name px-3 py-2.5 text-xs flex-1">
+              <select class="art-color px-3 py-2.5 text-xs w-48 font-bold"><option value="">-- Material --</option></select>
+              <div class="relative w-28">
+                <input type="number" placeholder="0" class="art-weight w-full pl-3 pr-7 py-2.5 text-xs">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-[10px] font-bold">g</span>
+              </div>
+              <div class="relative w-28">
+                <input type="number" step="0.1" placeholder="0.0" class="art-time w-full pl-3 pr-7 py-2.5 text-xs" title="Druckzeit in Stunden">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-[10px] font-bold">h</span>
+              </div>
             </div>
           </div>
         </div>
-        <button type="submit" class="w-full font-bold rounded-xl py-3 text-xs transition cursor-pointer shadow-lg tracking-wide mt-2">🚀 Auftrag Speichern</button>
+        <button type="submit" class="w-full font-black rounded-xl py-4 text-sm transition cursor-pointer shadow-lg tracking-widest mt-4">EXECUTE ORDER <i class="fa-solid fa-paper-plane ml-2"></i></button>
       </form>
     </section>
 
     <!-- AUSGABEN -->
-    <section class="card p-5 space-y-4">
-      <div class="flex justify-between items-center border-b border-slate-700/50 pb-3">
-        <h2 class="text-xs font-bold text-slate-200 tracking-wider uppercase"><i class="fa-solid fa-receipt mr-1.5 text-red-400"></i> Betriebsausgaben</h2>
+    <section class="card p-6 space-y-4 border-red-500/20">
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-4">
+        <h2 class="text-xs font-black text-red-500 tracking-widest uppercase glow-orange"><i class="fa-solid fa-receipt mr-2"></i> Expenses / OPEX</h2>
       </div>
-      <form id="expenseForm" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 bg-slate-950/40 p-4 rounded-xl border border-slate-800/80">
-        <input type="text" id="expDesc" placeholder="Beschreibung" required class="px-3 py-2 text-xs">
-        <select id="expCategory" class="px-3 py-2 text-xs"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 DHL / Versand</option><option value="Zubehör / Ersatzteile">⚙️ Ersatzteile</option><option value="Verpackung">📦 Verpackung</option><option value="Sonstiges">🏷 Sonstiges</option></select>
-        <input type="number" step="0.01" id="expAmount" placeholder="Betrag (€)" required class="px-3 py-2 text-xs">
-        <input type="date" id="expDate" required class="px-3 py-2 text-xs">
-        <button type="submit" class="font-bold rounded-xl py-2 text-xs transition cursor-pointer shadow-lg">+ Buchen</button>
+      <form id="expenseForm" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 bg-black/40 p-5 rounded-2xl border border-zinc-800 shadow-inner">
+        <input type="text" id="expDesc" placeholder="Description" required class="px-3 py-2.5 text-xs">
+        <select id="expCategory" class="px-3 py-2.5 text-xs font-bold"><option value="Filament">🧵 Filament</option><option value="DHL / Versand">📦 Logistics</option><option value="Zubehör / Ersatzteile">⚙️ Hardware</option><option value="Verpackung">📦 Packaging</option><option value="Sonstiges">🏷 Misc</option></select>
+        <div class="relative">
+          <input type="number" step="0.01" id="expAmount" placeholder="Amount" required class="w-full pl-3 pr-8 py-2.5 text-xs font-bold text-red-400">
+          <span class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs font-bold">€</span>
+        </div>
+        <input type="date" id="expDate" required class="px-3 py-2.5 text-xs font-bold">
+        <button type="submit" class="!bg-gradient-to-r !from-red-600 !to-orange-500 font-black rounded-xl py-2.5 text-xs transition cursor-pointer shadow-lg tracking-widest">LOG EXPENSE</button>
       </form>
-      <div class="overflow-x-auto custom-scrollbar">
+      <div class="overflow-x-auto custom-scrollbar mt-2">
         <table class="w-full text-left text-xs">
-          <thead><tr><th class="p-3 rounded-tl-lg">Datum</th><th class="p-3">Kategorie</th><th class="p-3">Beschreibung</th><th class="p-3">Betrag</th><th class="p-3 text-right rounded-tr-lg">Aktion</th></tr></thead>
-          <tbody id="expensesTableBody" class="divide-y divide-slate-800 text-slate-300"></tbody>
+          <thead><tr><th class="p-4 rounded-tl-xl">Date</th><th class="p-4">Category</th><th class="p-4">Description</th><th class="p-4">Amount</th><th class="p-4 text-right rounded-tr-xl">Action</th></tr></thead>
+          <tbody id="expensesTableBody" class="text-zinc-300"></tbody>
         </table>
       </div>
     </section>
 
     <!-- AUFTRÄGE TABELLE -->
-    <section class="card p-0 overflow-hidden border-blue-500/20">
-      <div class="p-4 border-b border-slate-700/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-900/30">
-        <h2 id="tableTitle" class="text-xs font-bold text-slate-200 tracking-wider uppercase"><i class="fa-solid fa-list-check mr-1.5 text-blue-400"></i> Bestellungen (Aktiv)</h2>
+    <section class="card p-0 overflow-hidden border-[#00f0ff]/30 shadow-[0_0_30px_rgba(0,240,255,0.05)]">
+      <div class="p-5 border-b border-zinc-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-black/60">
+        <h2 id="tableTitle" class="text-sm font-black text-white tracking-widest uppercase"><i class="fa-solid fa-list-check mr-2 text-[#00f0ff] glow-neon"></i> Active Operations</h2>
         <div class="relative">
-          <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-[10px]"></i>
-          <input type="text" id="searchInput" oninput="renderOrders()" placeholder="Suchen..." class="pl-8 pr-3 py-2 text-xs w-64">
+          <i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-zinc-500 text-xs"></i>
+          <input type="text" id="searchInput" oninput="renderOrders()" placeholder="Search Database..." class="pl-10 pr-4 py-2.5 text-xs w-72 bg-zinc-900 border-zinc-700 focus:border-[#00f0ff] rounded-xl font-medium text-white transition-all">
         </div>
       </div>
-      <div class="overflow-x-auto custom-scrollbar p-1">
+      <div class="overflow-x-auto custom-scrollbar p-2">
         <table class="w-full text-left text-[11px]">
           <thead>
             <tr>
-              <th class="p-3">Kunde & Plattform</th><th class="p-3">Rechnung</th><th class="p-3">Artikel, Details</th><th class="p-3">Drucker</th><th class="p-3">Zahlung</th><th class="p-3">eBay Guthaben</th><th class="p-3">Status</th><th class="p-3">Umsatz / Versand</th><th class="p-3">Label / Verp.</th><th class="p-3">Tracking</th><th class="p-3 text-right">Aktionen</th>
+              <th class="p-4">Entity & Source</th><th class="p-4">INV ID</th><th class="p-4">Payload</th><th class="p-4">Node</th><th class="p-4">Gateway</th><th class="p-4">eBay Hold</th><th class="p-4">Status</th><th class="p-4">Rev / Fees</th><th class="p-4">Logistics</th><th class="p-4">Tracking</th><th class="p-4 text-right">Execute</th>
             </tr>
           </thead>
-          <tbody id="ordersTableBody" class="divide-y divide-slate-800/80 text-slate-300"></tbody>
+          <tbody id="ordersTableBody" class="text-zinc-300"></tbody>
         </table>
       </div>
     </section>
 
     <!-- VORLAGEN -->
-    <section class="card p-5 space-y-4">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-700/50 pb-3">
-        <h2 class="text-xs font-bold text-slate-200 tracking-wider uppercase"><i class="fa-solid fa-comments mr-1.5 text-cyan-400"></i> Text-Vorlagen & Dankes-Zettel</h2>
-        <select id="templateCustomerSelect" onchange="updateTemplatePreview()" class="w-full sm:w-64 px-3 py-1.5 text-xs"><option value="">👤 Kunden auswählen...</option></select>
+    <section class="card p-6 space-y-5 border-purple-500/20">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-800 pb-4">
+        <h2 class="text-xs font-black text-purple-400 tracking-widest uppercase glow-neon"><i class="fa-solid fa-terminal mr-2"></i> Comms & Printables</h2>
+        <select id="templateCustomerSelect" onchange="updateTemplatePreview()" class="w-full sm:w-72 px-4 py-2 text-xs font-bold"><option value="">👤 Select Target Entity...</option></select>
       </div>
       
-      <div class="bg-gradient-to-r from-pink-900/20 to-purple-900/20 p-4 rounded-xl border border-pink-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-3"><div class="bg-pink-500/20 p-2 rounded-lg border border-pink-500/30"><i class="fa-solid fa-gift text-pink-400 text-lg"></i></div><div><h3 class="text-xs font-bold text-white tracking-wide">Vielen Dank für deine Bestellung! (A4)</h3><p class="text-[10px] text-pink-200/70 mt-0.5">Druckfertiger Beileger für das Paket</p></div></div>
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <select id="thankYouCustomerSelect" class="w-full sm:w-64 px-3 py-2 text-xs !border-pink-500/50 focus:!border-pink-400"><option value="">👤 Kunden wählen...</option></select>
-          <button onclick="printThankYouNoteFromDropdown()" class="bg-pink-600 hover:bg-pink-500 text-white font-bold px-4 py-2 rounded-lg text-xs cursor-pointer shadow-[0_0_15px_rgba(219,39,119,0.3)] transition hover:scale-105"><i class="fa-solid fa-print mr-1.5"></i> Drucken</button>
+      <div class="bg-gradient-to-r from-purple-900/40 to-pink-900/20 p-5 rounded-2xl border border-purple-500/30 flex flex-col sm:flex-row items-center justify-between gap-5 shadow-inner">
+        <div class="flex items-center gap-4">
+          <div class="bg-black p-3 rounded-xl border border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.3)]"><i class="fa-solid fa-gift text-purple-400 text-xl"></i></div>
+          <div><h3 class="text-sm font-black text-white tracking-widest uppercase">Thank You Note (A4)</h3><p class="text-[10px] text-purple-300/70 mt-1 font-bold tracking-wide">Generate printable package insert</p></div>
+        </div>
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <select id="thankYouCustomerSelect" class="w-full sm:w-64 px-4 py-3 text-xs font-bold !border-purple-500/50 focus:!border-purple-400"><option value="">👤 Select Entity...</option></select>
+          <button onclick="printThankYouNoteFromDropdown()" class="!bg-gradient-to-r !from-purple-600 !to-pink-600 text-white font-black px-5 py-3 rounded-xl text-xs cursor-pointer shadow-[0_0_20px_rgba(168,85,247,0.4)] transition hover:scale-105 tracking-widest uppercase"><i class="fa-solid fa-print mr-2"></i> PRINT</button>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 flex flex-col space-y-3">
-          <div class="flex justify-between items-center"><span class="text-[11px] font-bold text-emerald-400 tracking-wide">1. Zahlung erhalten</span><button onclick="copyTemplate(1)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg text-[10px] cursor-pointer transition border border-slate-600/50 hover:scale-105"><i class="fa-solid fa-copy mr-1"></i> Copy</button></div>
-          <textarea id="templateText1" rows="5" class="w-full !bg-slate-950/60 !border-slate-800 rounded-lg p-2.5 text-[11px] text-slate-300 resize-none custom-scrollbar" readonly>Hallo,\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.</textarea>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="bg-black/50 p-5 rounded-2xl border border-zinc-800 flex flex-col space-y-4 hover:border-emerald-500/30 transition-colors">
+          <div class="flex justify-between items-center"><span class="text-[10px] font-black text-emerald-400 tracking-widest uppercase">1. Pymt Received</span><button onclick="copyTemplate(1)" class="bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-1.5 rounded-lg text-[9px] cursor-pointer transition font-bold uppercase tracking-wide"><i class="fa-solid fa-copy mr-1"></i> Copy</button></div>
+          <textarea id="templateText1" rows="5" class="w-full !bg-zinc-900/50 !border-zinc-800 rounded-xl p-3 text-[11px] text-zinc-300 resize-none custom-scrollbar font-medium" readonly>Hallo,\n\neine Zahlung ist soeben angekommen! Vielen Dank. Ich starte jetzt direkt mit dem Druck deiner Bestellung.</textarea>
         </div>
-        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 flex flex-col space-y-3">
-          <div class="flex justify-between items-center"><span class="text-[11px] font-bold text-amber-400 tracking-wide">2. Zahlungserinnerung</span><button onclick="copyTemplate(2)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg text-[10px] cursor-pointer transition border border-slate-600/50 hover:scale-105"><i class="fa-solid fa-copy mr-1"></i> Copy</button></div>
-          <textarea id="templateText2" rows="5" class="w-full !bg-slate-950/60 !border-slate-800 rounded-lg p-2.5 text-[11px] text-slate-300 resize-none custom-scrollbar" readonly>Hallo,\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!</textarea>
+        <div class="bg-black/50 p-5 rounded-2xl border border-zinc-800 flex flex-col space-y-4 hover:border-amber-500/30 transition-colors">
+          <div class="flex justify-between items-center"><span class="text-[10px] font-black text-amber-500 tracking-widest uppercase">2. Pymt Reminder</span><button onclick="copyTemplate(2)" class="bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-1.5 rounded-lg text-[9px] cursor-pointer transition font-bold uppercase tracking-wide"><i class="fa-solid fa-copy mr-1"></i> Copy</button></div>
+          <textarea id="templateText2" rows="5" class="w-full !bg-zinc-900/50 !border-zinc-800 rounded-xl p-3 text-[11px] text-zinc-300 resize-none custom-scrollbar font-medium" readonly>Hallo,\n\neine kurze Erinnerung wegen der Zahlung für deine Bestellung bei Sefas3DShop.\n\nSobald das Geld da ist, starte ich den Druck!</textarea>
         </div>
-        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 flex flex-col space-y-3">
-          <div class="flex justify-between items-center"><span class="text-[11px] font-bold text-blue-400 tracking-wide">3. Druck gestartet</span><button onclick="copyTemplate(3)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg text-[10px] cursor-pointer transition border border-slate-600/50 hover:scale-105"><i class="fa-solid fa-copy mr-1"></i> Copy</button></div>
-          <textarea id="templateText3" rows="5" class="w-full !bg-slate-950/60 !border-slate-800 rounded-lg p-2.5 text-[11px] text-slate-300 resize-none custom-scrollbar" readonly>Hallo,\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.</textarea>
+        <div class="bg-black/50 p-5 rounded-2xl border border-zinc-800 flex flex-col space-y-4 hover:border-blue-500/30 transition-colors">
+          <div class="flex justify-between items-center"><span class="text-[10px] font-black text-blue-400 tracking-widest uppercase">3. Print Started</span><button onclick="copyTemplate(3)" class="bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-1.5 rounded-lg text-[9px] cursor-pointer transition font-bold uppercase tracking-wide"><i class="fa-solid fa-copy mr-1"></i> Copy</button></div>
+          <textarea id="templateText3" rows="5" class="w-full !bg-zinc-900/50 !border-zinc-800 rounded-xl p-3 text-[11px] text-zinc-300 resize-none custom-scrollbar font-medium" readonly>Hallo,\n\ndeine Bestellung wird gerade gedruckt! Ich gebe Gas, damit alles perfekt wird.</textarea>
         </div>
-        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 flex flex-col space-y-3">
-          <div class="flex justify-between items-center"><span class="text-[11px] font-bold text-purple-400 tracking-wide">4. Paket unterwegs</span><button onclick="copyTemplate(4)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg text-[10px] cursor-pointer transition border border-slate-600/50 hover:scale-105"><i class="fa-solid fa-copy mr-1"></i> Copy</button></div>
-          <textarea id="templateText4" rows="5" class="w-full !bg-slate-950/60 !border-slate-800 rounded-lg p-2.5 text-[11px] text-slate-300 resize-none custom-scrollbar" readonly>Hallo,\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n[Sendungsnummer]\n\nLink: https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=[Sendungsnummer]\n\nViel Freude damit!</textarea>
+        <div class="bg-black/50 p-5 rounded-2xl border border-zinc-800 flex flex-col space-y-4 hover:border-purple-500/30 transition-colors">
+          <div class="flex justify-between items-center"><span class="text-[10px] font-black text-purple-400 tracking-widest uppercase">4. Shipped</span><button onclick="copyTemplate(4)" class="bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-1.5 rounded-lg text-[9px] cursor-pointer transition font-bold uppercase tracking-wide"><i class="fa-solid fa-copy mr-1"></i> Copy</button></div>
+          <textarea id="templateText4" rows="5" class="w-full !bg-zinc-900/50 !border-zinc-800 rounded-xl p-3 text-[11px] text-zinc-300 resize-none custom-scrollbar font-medium" readonly>Hallo,\n\ndeine Bestellung ist fertig und sicher verpackt! Das Paket ist auf dem Weg zu dir.\n\nHier ist deine Sendungsnummer:\n[Sendungsnummer]\n\nLink: https://www.dhl.de/de/pakete/privatkunden/pakete-empfangen/verfolgen.html?piececode=[Sendungsnummer]\n\nViel Freude damit!</textarea>
         </div>
       </div>
     </section>
 
   </div>
 
-  <!-- JAVASCRIPT BLEIBT IDENTISCH ZUR VORHERIGEN VERSION -->
+  <!-- JAVASCRIPT BLEIBT EXAKT IDENTISCH -->
   <script>
     const NPOINT_URL = 'https://api.npoint.io/6c03644a2096b02db81f';
 
@@ -511,7 +616,7 @@
        const dot = document.getElementById('statusDot');
        const statusText = document.getElementById('syncStatus');
        if (statusText) statusText.innerText = text;
-       if (dot) dot.className = `inline-block w-2 h-2 rounded-full ${color} shadow-[0_0_8px_currentColor]`;
+       if (dot) dot.className = `inline-block w-2.5 h-2.5 rounded-full ${color} shadow-[0_0_10px_currentColor]`;
     }
 
     function openSubPage() { document.getElementById('subPageOverlay').classList.remove('hidden'); }
@@ -580,11 +685,11 @@
       
       const sortedMonths = Array.from(months).sort().reverse();
       
-      let html = '<option value="all" selected>📅 Alle Monate (Gesamt)</option>';
+      let html = '<option value="all" selected>📅 LIFETIME</option>';
       sortedMonths.forEach(m => {
         const [y, mm] = m.split('-');
         const dateObj = new Date(parseInt(y), parseInt(mm) - 1, 1);
-        const monthName = dateObj.toLocaleString('de-DE', { month: 'long', year: 'numeric' });
+        const monthName = dateObj.toLocaleString('de-DE', { month: 'short', year: 'numeric' }).toUpperCase();
         html += `<option value="${m}" ${m === currentVal ? 'selected' : ''}>📅 ${monthName}</option>`;
       });
       
@@ -608,7 +713,7 @@
     }
 
     async function loadCloudData() {
-      setStatus("Lade...", "bg-yellow-500");
+      setStatus("FETCHING...", "bg-yellow-500");
       try {
         const res = await fetch(NPOINT_URL, { method: 'GET', mode: 'cors', headers: { 'Accept': 'application/json' }, cache: 'no-store' });
         if (res.ok) {
@@ -626,23 +731,23 @@
             updateMonthFilter();
             renderOrders(); renderOffers(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
             updateCustomerDropdowns(); updatePrinterDropdowns();
-            setStatus("Cloud bereit", "bg-blue-500");
+            setStatus("SYSTEM ONLINE", "bg-emerald-500");
             return;
           }
         }
-        throw new Error("Cloud-Daten ungültig");
+        throw new Error("Cloud data invalid");
       } catch(e) {
-        setStatus("Fehler", "bg-red-500");
+        setStatus("ERROR", "bg-red-500");
       }
     }
 
     async function pushToCloudManual() {
-      setStatus("Speichere...", "bg-yellow-500");
+      setStatus("UPLOADING...", "bg-yellow-500");
       const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance };
       try {
         const res = await fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (res.ok) { setStatus("Cloud bereit", "bg-blue-500"); alert("✅ Erfolgreich gespeichert!"); }
-      } catch(e) { setStatus("Fehler", "bg-red-500"); }
+        if (res.ok) { setStatus("SYSTEM ONLINE", "bg-emerald-500"); alert("✅ Sync complete!"); }
+      } catch(e) { setStatus("ERROR", "bg-red-500"); }
     }
 
     function saveAllData() {
@@ -688,7 +793,7 @@
         const sel = document.getElementById(id);
         if (sel) {
           const curVal = sel.value;
-          const defaultLabel = (id.includes('template') || id.includes('thankYou')) ? '👤 Kunden wählen...' : '📋 Bestehenden Kunden laden...';
+          const defaultLabel = (id.includes('template') || id.includes('thankYou')) ? '👤 Select Target Entity...' : '📋 Auto-Fill Customer...';
           sel.innerHTML = `<option value="">${defaultLabel}</option>`;
           customerMap.forEach((addr, custName) => {
             sel.innerHTML += `<option value="${custName}" ${custName === curVal ? 'selected' : ''}>${custName}</option>`;
@@ -800,8 +905,8 @@
       const container = document.getElementById('offerItemRows');
       if (!container) return;
       const div = document.createElement('div');
-      div.className = "flex gap-2 items-center offer-article-row";
-      div.innerHTML = `<input type="number" placeholder="Stk." value="${qty}" min="1" class="offer-art-qty px-3 py-2 text-xs w-20" oninput="calculateOfferTotal()"><input type="text" placeholder="Artikelbezeichnung" value="${name}" class="offer-art-name px-3 py-2 text-xs flex-1"><input type="text" placeholder="Größe / Maße" value="${size}" class="offer-art-size px-3 py-2 text-xs w-40"><input type="number" step="0.01" placeholder="Preis (€)" value="${price}" class="offer-art-price px-3 py-2 text-xs w-28" oninput="calculateOfferTotal()"><button type="button" onclick="this.parentElement.remove(); calculateOfferTotal();" class="text-red-400 px-2 py-1 rounded hover:bg-red-500/20 transition"><i class="fa-solid fa-xmark"></i></button>`;
+      div.className = "flex gap-3 items-center offer-article-row";
+      div.innerHTML = `<input type="number" placeholder="QTY" value="${qty}" min="1" class="offer-art-qty px-3 py-2.5 text-xs w-24 text-center font-bold" oninput="calculateOfferTotal()"><input type="text" placeholder="Item Description" value="${name}" class="offer-art-name px-3 py-2.5 text-xs flex-1"><input type="text" placeholder="Specs / Size" value="${size}" class="offer-art-size px-3 py-2.5 text-xs w-48"><div class="relative w-32"><span class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs font-bold">€</span><input type="number" step="0.01" placeholder="Price" value="${price}" class="offer-art-price w-full pl-3 pr-7 py-2.5 text-xs font-bold" oninput="calculateOfferTotal()"></div><button type="button" onclick="this.parentElement.remove(); calculateOfferTotal();" class="text-red-500 px-3 py-2 rounded hover:bg-red-500/20 transition"><i class="fa-solid fa-xmark"></i></button>`;
       container.appendChild(div);
       calculateOfferTotal();
     }
@@ -811,10 +916,10 @@
       const query = (document.getElementById('offerArticleSearch')?.value || '').toLowerCase();
       if (!container) return;
       container.innerHTML = '';
-      if (!query) { container.innerHTML = '<span class="text-[10px] text-slate-500 italic">Suchen, um Artikel hinzuzufügen...</span>'; return; }
+      if (!query) { container.innerHTML = '<span class="text-[10px] text-zinc-600 italic">Suchen, um Artikel hinzuzufügen...</span>'; return; }
       products.forEach(p => {
         if (!p.name.toLowerCase().includes(query)) return;
-        container.innerHTML += `<button type="button" onclick="addPresetOfferItem('${p.name.replace(/'/g, "\\'")}', '${p.size || ''}', ${p.price})" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-[10px] px-2.5 py-1.5 rounded-lg border border-slate-600/50 cursor-pointer transition hover:scale-105">+ ${p.name} <span class="text-slate-400">(${p.size})</span> <span class="text-amber-400 font-bold ml-1">${p.price.toFixed(2)}€</span></button>`;
+        container.innerHTML += `<button type="button" onclick="addPresetOfferItem('${p.name.replace(/'/g, "\\'")}', '${p.size || ''}', ${p.price})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[10px] px-3 py-1.5 rounded-lg border border-zinc-600 cursor-pointer transition hover:scale-105">+ ${p.name} <span class="text-amber-500 font-bold ml-2">${p.price.toFixed(2)}€</span></button>`;
       });
     }
 
@@ -854,11 +959,14 @@
       document.getElementById('offerDiscountPercent').value = "0";
       toggleOfferCompanyField();
       document.getElementById('offerItemRows').innerHTML = `
-        <div class="flex gap-2 items-center offer-article-row">
-          <input type="number" placeholder="Stk." value="1" min="1" class="offer-art-qty px-3 py-2 text-xs w-20" oninput="calculateOfferTotal()">
-          <input type="text" placeholder="Artikelbezeichnung" class="offer-art-name px-3 py-2 text-xs flex-1">
-          <input type="text" placeholder="Größe / Maße (z.B. 100x50)" class="offer-art-size px-3 py-2 text-xs w-40">
-          <input type="number" step="0.01" placeholder="Preis (€)" class="offer-art-price px-3 py-2 text-xs w-28" oninput="calculateOfferTotal()">
+        <div class="flex gap-3 items-center offer-article-row">
+          <input type="number" placeholder="QTY" value="1" min="1" class="offer-art-qty px-3 py-2.5 text-xs w-24 text-center font-bold" oninput="calculateOfferTotal()">
+          <input type="text" placeholder="Item Description" class="offer-art-name px-3 py-2.5 text-xs flex-1">
+          <input type="text" placeholder="Specs / Size" class="offer-art-size px-3 py-2.5 text-xs w-48">
+          <div class="relative w-32">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs font-bold">€</span>
+            <input type="number" step="0.01" placeholder="Price" class="offer-art-price w-full pl-3 pr-7 py-2.5 text-xs font-bold" oninput="calculateOfferTotal()">
+          </div>
         </div>`;
     }
 
@@ -893,8 +1001,8 @@
       const container = document.getElementById(`editOfferArticleRows-${idx}`);
       if (!container) return;
       const div = document.createElement('div');
-      div.className = "flex gap-1.5 items-center bg-slate-900/50 p-2 rounded-xl border border-slate-700/50";
-      div.innerHTML = `<input type="number" value="${qty}" min="1" class="edit-offer-art-qty-${idx} px-2 py-1 text-[11px] w-14" oninput="calculateEditOfferTotal(${idx})"><input type="text" value="${name}" placeholder="Artikel" class="edit-offer-art-name-${idx} px-2 py-1 text-[11px] flex-1"><input type="text" value="${size}" placeholder="Maße" class="edit-offer-art-size-${idx} px-2 py-1 text-[11px] w-24"><input type="number" step="0.01" value="${price}" placeholder="€" class="edit-offer-art-price-${idx} px-2 py-1 text-[11px] w-16" oninput="calculateEditOfferTotal(${idx})"><button type="button" onclick="this.parentElement.remove(); calculateEditOfferTotal(${idx});" class="text-red-400 px-2 py-1 rounded hover:bg-red-500/20 transition"><i class="fa-solid fa-xmark"></i></button>`;
+      div.className = "flex gap-2 items-center bg-zinc-900 p-2 rounded-xl border border-zinc-700";
+      div.innerHTML = `<input type="number" value="${qty}" min="1" class="edit-offer-art-qty-${idx} px-2 py-1.5 text-xs w-16 text-center font-bold" oninput="calculateEditOfferTotal(${idx})"><input type="text" value="${name}" placeholder="Item" class="edit-offer-art-name-${idx} px-2 py-1.5 text-xs flex-1"><input type="text" value="${size}" placeholder="Specs" class="edit-offer-art-size-${idx} px-2 py-1.5 text-xs w-32"><input type="number" step="0.01" value="${price}" placeholder="€" class="edit-offer-art-price-${idx} px-2 py-1.5 text-xs w-20 font-bold text-amber-500" oninput="calculateEditOfferTotal(${idx})"><button type="button" onclick="this.parentElement.remove(); calculateEditOfferTotal(${idx});" class="text-red-500 px-2 py-1 rounded hover:bg-red-500/20 transition"><i class="fa-solid fa-xmark"></i></button>`;
       container.appendChild(div);
       calculateEditOfferTotal(idx);
     }
@@ -1065,74 +1173,74 @@
           let editItemsHtml = `<div id="editOfferArticleRows-${idx}" class="space-y-2 my-2">`;
           if (off.items && off.items.length > 0) {
             off.items.forEach(i => {
-              editItemsHtml += `<div class="flex gap-1.5 items-center bg-slate-900/50 p-2 rounded-xl border border-slate-700/50"><input type="number" value="${i.qty || 1}" min="1" class="edit-offer-art-qty-${idx} px-2 py-1 text-[11px] w-14" oninput="calculateEditOfferTotal(${idx})"><input type="text" value="${i.name}" placeholder="Artikel" class="edit-offer-art-name-${idx} px-2 py-1 text-[11px] flex-1"><input type="text" value="${i.size || ''}" placeholder="Maße" class="edit-offer-art-size-${idx} px-2 py-1 text-[11px] w-24"><input type="number" step="0.01" value="${i.price || ''}" placeholder="€" class="edit-offer-art-price-${idx} px-2 py-1 text-[11px] w-16" oninput="calculateEditOfferTotal(${idx})"><button type="button" onclick="this.parentElement.remove(); calculateEditOfferTotal(${idx});" class="text-red-400 px-2 py-1 rounded hover:bg-red-500/20 transition"><i class="fa-solid fa-xmark"></i></button></div>`;
+              editItemsHtml += `<div class="flex gap-2 items-center bg-zinc-900 p-2 rounded-xl border border-zinc-700"><input type="number" value="${i.qty || 1}" min="1" class="edit-offer-art-qty-${idx} px-2 py-1.5 text-xs w-16 text-center font-bold" oninput="calculateEditOfferTotal(${idx})"><input type="text" value="${i.name}" placeholder="Item" class="edit-offer-art-name-${idx} px-2 py-1.5 text-xs flex-1"><input type="text" value="${i.size || ''}" placeholder="Specs" class="edit-offer-art-size-${idx} px-2 py-1.5 text-xs w-32"><input type="number" step="0.01" value="${i.price || ''}" placeholder="€" class="edit-offer-art-price-${idx} px-2 py-1.5 text-xs w-20 font-bold text-amber-500" oninput="calculateEditOfferTotal(${idx})"><button type="button" onclick="this.parentElement.remove(); calculateEditOfferTotal(${idx});" class="text-red-500 px-2 py-1 rounded hover:bg-red-500/20 transition"><i class="fa-solid fa-xmark"></i></button></div>`;
             });
           }
-          editItemsHtml += `</div><button type="button" onclick="addEditOfferArticleRow(${idx})" class="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-bold px-2.5 py-1 rounded-lg hover:bg-amber-500/20 transition">+ Zeile hinzufügen</button>`;
+          editItemsHtml += `</div><button type="button" onclick="addEditOfferArticleRow(${idx})" class="bg-amber-500/10 text-amber-500 border border-amber-500/30 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-amber-500/20 transition">+ Add Row</button>`;
 
-          tbody.innerHTML += `<tr class="bg-slate-900/60 border-b border-slate-700">
-            <td class="p-3 font-mono text-amber-400 font-bold">${off.offerNumber}<input type="date" id="edit-offer-date-${idx}" value="${off.date || todayStr}" class="px-2 py-1 text-[10px] w-full mt-2"></td>
-            <td class="p-3 space-y-2">
-              <div class="flex gap-1.5">
-                <select id="edit-offer-sal-${idx}" class="px-2 py-1 text-[10px]"><option value="Herr" ${off.salutation==='Herr'?'selected':''}>Herr</option><option value="Frau" ${off.salutation==='Frau'?'selected':''}>Frau</option><option value="Firma" ${off.salutation==='Firma'?'selected':''}>Firma</option></select>
-                <input type="text" id="edit-offer-cust-${idx}" value="${off.customer}" class="px-2 py-1 text-[11px] flex-1">
+          tbody.innerHTML += `<tr class="bg-zinc-900/60 border-b border-zinc-800">
+            <td class="p-4 font-mono text-amber-500 font-bold">${off.offerNumber}<input type="date" id="edit-offer-date-${idx}" value="${off.date || todayStr}" class="px-2 py-1.5 text-xs w-full mt-2 font-bold"></td>
+            <td class="p-4 space-y-2">
+              <div class="flex gap-2">
+                <select id="edit-offer-sal-${idx}" class="px-2 py-1.5 text-xs w-20 font-bold"><option value="Herr" ${off.salutation==='Herr'?'selected':''}>Herr</option><option value="Frau" ${off.salutation==='Frau'?'selected':''}>Frau</option><option value="Firma" ${off.salutation==='Firma'?'selected':''}>Firma</option></select>
+                <input type="text" id="edit-offer-cust-${idx}" value="${off.customer}" class="px-2 py-1.5 text-xs flex-1">
               </div>
-              <input type="text" id="edit-offer-contact-${idx}" value="${off.contactPerson || ''}" placeholder="Ansprechpartner" class="px-2 py-1 text-[10px] w-full">
-              <input type="text" id="edit-offer-addr-${idx}" value="${off.address || ''}" placeholder="Anschrift" class="px-2 py-1 text-[10px] w-full">
+              <input type="text" id="edit-offer-contact-${idx}" value="${off.contactPerson || ''}" placeholder="Contact" class="px-2 py-1.5 text-xs w-full">
+              <input type="text" id="edit-offer-addr-${idx}" value="${off.address || ''}" placeholder="Address" class="px-2 py-1.5 text-xs w-full">
             </td>
-            <td class="p-3">${editItemsHtml}</td>
-            <td class="p-3 space-y-2">
-              <div class="flex items-center justify-between"><span class="text-[10px] text-slate-400">Summe:</span> <input type="number" step="0.01" id="edit-offer-price-${idx}" value="${off.price}" class="px-2 py-1 text-[11px] text-amber-400 font-bold w-16 text-right !border-amber-500/50"></div>
-              <div class="flex items-center justify-between"><span class="text-[10px] text-slate-400">Rabatt %:</span> <input type="number" step="0.01" id="edit-offer-discperc-${idx}" value="${off.discountPercent || 0}" oninput="calculateEditOfferTotal(${idx})" class="px-2 py-1 text-[11px] text-amber-300 w-16 text-right"></div>
+            <td class="p-4">${editItemsHtml}</td>
+            <td class="p-4 space-y-3">
+              <div class="flex items-center justify-between"><span class="text-[10px] font-extrabold text-zinc-500 uppercase">Total:</span> <input type="number" step="0.01" id="edit-offer-price-${idx}" value="${off.price}" class="px-2 py-1.5 text-xs text-amber-500 font-black w-24 text-right !border-amber-500/50"></div>
+              <div class="flex items-center justify-between"><span class="text-[10px] font-extrabold text-zinc-500 uppercase">Disc %:</span> <input type="number" step="0.01" id="edit-offer-discperc-${idx}" value="${off.discountPercent || 0}" oninput="calculateEditOfferTotal(${idx})" class="px-2 py-1.5 text-xs text-amber-400 font-bold w-20 text-right"></div>
             </td>
-            <td class="p-3">
-              <select id="edit-offer-stat-${idx}" class="px-2 py-1 text-[11px] text-amber-300">
-                <option value="Offen" ${off.status==='Offen'?'selected':''}>⏳ Offen</option>
-                <option value="Angenommen" ${off.status==='Angenommen'?'selected':''}>✅ Angenommen</option>
-                <option value="Abgelehnt" ${off.status==='Abgelehnt'?'selected':''}>❌ Abgelehnt</option>
+            <td class="p-4">
+              <select id="edit-offer-stat-${idx}" class="px-3 py-2 text-xs font-bold text-amber-400">
+                <option value="Offen" ${off.status==='Offen'?'selected':''}>⏳ Pending</option>
+                <option value="Angenommen" ${off.status==='Angenommen'?'selected':''}>✅ Accepted</option>
+                <option value="Abgelehnt" ${off.status==='Abgelehnt'?'selected':''}>❌ Rejected</option>
               </select>
             </td>
-            <td class="p-3 text-right space-x-1 whitespace-nowrap">
-              <button onclick="saveEditOffer(${idx})" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] shadow-lg transition">Speichern</button>
-              <button onclick="cancelEditOffer()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] transition">Abbrechen</button>
+            <td class="p-4 text-right space-y-2 whitespace-nowrap">
+              <button onclick="saveEditOffer(${idx})" class="bg-amber-600 hover:bg-amber-500 text-black font-black px-4 py-2 rounded-lg text-xs shadow-lg transition w-full uppercase tracking-wider">Save</button>
+              <button onclick="cancelEditOffer()" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-4 py-2 rounded-lg text-xs transition w-full uppercase tracking-wider">Cancel</button>
             </td>
           </tr>`;
         } else {
-          let itemsHtml = '<div class="space-y-1">';
+          let itemsHtml = '<div class="space-y-1.5">';
           if (off.items && off.items.length > 0) {
             off.items.forEach(i => {
               let itemPriceText = i.price ? ` - ${i.price.toFixed(2).replace('.', ',')}€` : '';
-              itemsHtml += `<div class="text-[11px] text-slate-200"><span class="text-slate-400 font-bold mr-1">${i.qty || 1}x</span> ${i.name} <span class="text-amber-300/80 text-[10px]">(${i.size || 'Standard'}${itemPriceText})</span></div>`;
+              itemsHtml += `<div class="text-xs text-zinc-200"><span class="text-zinc-500 font-black mr-2">${i.qty || 1}x</span> <span class="font-bold">${i.name}</span> <span class="text-amber-500/80 text-[10px] font-bold">(${i.size || 'STD'}${itemPriceText})</span></div>`;
             });
           } else {
-            itemsHtml += `<div class="text-[11px] text-slate-300">${off.description || '-'}</div>`;
+            itemsHtml += `<div class="text-xs text-zinc-400 font-medium">${off.description || '-'}</div>`;
           }
           itemsHtml += '</div>';
 
-          let discountText = (off.discountPercent && off.discountPercent > 0) ? `<div class="text-[10px] text-amber-400 font-medium mt-1">-${off.discountPercent}% Rabatt</div>` : '';
+          let discountText = (off.discountPercent && off.discountPercent > 0) ? `<div class="text-[10px] text-amber-500 font-bold mt-1">-${off.discountPercent}% OFF</div>` : '';
           const formattedCust = formatCustomerName(off.customer, off.salutation, off.contactPerson);
 
-          let statusBadgeClass = 'bg-slate-800 text-amber-300';
-          if(off.status === 'Angenommen') statusBadgeClass = 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
-          if(off.status === 'Abgelehnt') statusBadgeClass = 'bg-red-500/20 text-red-400 border border-red-500/30';
+          let statusBadgeClass = 'bg-zinc-900 text-amber-500 border border-zinc-700';
+          if(off.status === 'Angenommen') statusBadgeClass = 'bg-emerald-900/30 text-emerald-400 border border-emerald-500/50';
+          if(off.status === 'Abgelehnt') statusBadgeClass = 'bg-red-900/30 text-red-500 border border-red-500/50';
 
           tbody.innerHTML += `<tr>
-            <td class="p-3 font-mono text-amber-400 font-bold">${off.offerNumber}<div class="text-[10px] text-slate-400 font-normal mt-0.5">${off.date}</div></td>
-            <td class="p-3 font-bold text-white tracking-wide">${formattedCust}<div class="text-[10px] text-slate-400 font-normal mt-0.5">${off.address || ''}</div></td>
-            <td class="p-3">${itemsHtml}</td>
-            <td class="p-3 font-bold text-amber-400 text-sm glow-text">${off.price.toFixed(2).replace('.', ',')} €${discountText}</td>
-            <td class="p-3">
-              <select onchange="updateOfferStatus(${off.id}, this.value)" class="px-2 py-1 text-[10px] font-bold rounded ${statusBadgeClass} !border-transparent hover:!border-slate-500">
-                <option value="Offen" ${off.status==='Offen'?'selected':''}>⏳ Offen</option>
-                <option value="Angenommen" ${off.status==='Angenommen'?'selected':''}>✅ Angenommen</option>
-                <option value="Abgelehnt" ${off.status==='Abgelehnt'?'selected':''}>❌ Abgelehnt</option>
+            <td class="p-4 font-mono text-amber-500 font-bold text-xs">${off.offerNumber}<div class="text-[10px] text-zinc-500 font-medium mt-1">${off.date}</div></td>
+            <td class="p-4 font-black text-white text-sm tracking-wide">${formattedCust}<div class="text-[10px] text-zinc-500 font-bold mt-1 uppercase">${off.address || ''}</div></td>
+            <td class="p-4">${itemsHtml}</td>
+            <td class="p-4 font-black text-amber-500 text-base glow-orange">${off.price.toFixed(2).replace('.', ',')} €${discountText}</td>
+            <td class="p-4">
+              <select onchange="updateOfferStatus(${off.id}, this.value)" class="px-3 py-1.5 text-xs font-black rounded-lg ${statusBadgeClass} hover:border-zinc-400 transition-colors uppercase tracking-widest">
+                <option value="Offen" ${off.status==='Offen'?'selected':''}>⏳ PENDING</option>
+                <option value="Angenommen" ${off.status==='Angenommen'?'selected':''}>✅ ACCEPTED</option>
+                <option value="Abgelehnt" ${off.status==='Abgelehnt'?'selected':''}>❌ REJECTED</option>
               </select>
             </td>
-            <td class="p-3 text-right space-x-1.5 whitespace-nowrap">
-              <button onclick="downloadOfferPDF(${idx})" class="text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-2 py-1.5 rounded-lg text-[10px] font-bold transition hover:scale-105" title="PDF">📄 PDF</button>
-              <button onclick="startEditOffer(${idx})" class="text-slate-300 bg-slate-700/50 hover:bg-slate-600 border border-slate-600/50 px-2 py-1.5 rounded-lg text-[10px] font-bold transition hover:scale-105" title="Bearbeiten">✏</button>
-              <button onclick="convertOfferToOrder(${off.id})" class="text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 px-2 py-1.5 rounded-lg text-[10px] font-bold transition hover:scale-105" title="In Auftrag umwandeln">🚀 Auftrag</button>
-              <button onclick="deleteOffer(${off.id})" class="text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 px-2 py-1.5 rounded-lg text-[10px] font-bold transition hover:scale-105">❌</button>
+            <td class="p-4 text-right space-x-2 whitespace-nowrap">
+              <button onclick="downloadOfferPDF(${idx})" class="text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3 py-2 rounded-lg text-xs font-bold transition hover:scale-105" title="PDF">📄</button>
+              <button onclick="startEditOffer(${idx})" class="text-zinc-300 bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 px-3 py-2 rounded-lg text-xs font-bold transition hover:scale-105" title="Edit">✏</button>
+              <button onclick="convertOfferToOrder(${off.id})" class="text-[#00f0ff] bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 border border-[#00f0ff]/30 px-3 py-2 rounded-lg text-xs font-black transition hover:scale-105 tracking-wide" title="Convert to Order">EXECUTE</button>
+              <button onclick="deleteOffer(${off.id})" class="text-red-500 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 px-3 py-2 rounded-lg text-xs font-bold transition hover:scale-105">❌</button>
             </td>
           </tr>`;
         }
@@ -1378,7 +1486,7 @@
         list.innerHTML = '';
         products.forEach(p => {
           if (searchQuery && !p.name.toLowerCase().includes(searchQuery)) return;
-          list.innerHTML += `<div class="bg-slate-900/50 border border-slate-700/50 px-3 py-2.5 rounded-xl flex items-center justify-between gap-3 text-xs"><div><span class="text-white font-bold tracking-wide">${p.name}</span><span class="text-slate-400 text-[10px] ml-2 bg-slate-950 px-2 py-0.5 rounded border border-slate-700/50">${p.size} (${p.time || 0}h)</span></div><div class="flex items-center gap-2"><span class="text-amber-400 font-bold glow-text">${p.price.toFixed(2).replace('.', ',')} €</span><button type="button" onclick="deleteProduct(${p.id})" class="text-red-400 hover:text-red-300 hover:bg-red-500/20 p-1.5 rounded transition ml-1"><i class="fa-solid fa-xmark"></i></button></div></div>`;
+          list.innerHTML += `<div class="bg-black/50 border border-zinc-800 px-4 py-3 rounded-xl flex items-center justify-between gap-3 text-xs hover:border-[#00f0ff]/30 transition-colors"><div><span class="text-white font-black tracking-widest uppercase">${p.name}</span><span class="text-zinc-500 text-[10px] ml-2 font-bold bg-zinc-900 px-2 py-1 rounded-md border border-zinc-800">${p.size} (${p.time || 0}h)</span></div><div class="flex items-center gap-2"><span class="text-[#00f0ff] font-black glow-neon text-sm">${p.price.toFixed(2).replace('.', ',')} €</span><button type="button" onclick="deleteProduct(${p.id})" class="text-red-500 hover:text-white hover:bg-red-500/50 p-2 rounded transition ml-2"><i class="fa-solid fa-xmark"></i></button></div></div>`;
         });
       }
       renderQuickAddButtons();
@@ -1389,10 +1497,10 @@
       const quickAdds = document.getElementById('quickAddButtons'); const orderSearch = (document.getElementById('orderArticleSearch')?.value || '').toLowerCase();
       if (quickAdds) {
         quickAdds.innerHTML = '';
-        if (!orderSearch) { quickAdds.innerHTML = '<span class="text-[10px] text-slate-500 italic">Suchen, um Artikel hinzuzufügen...</span>'; return; }
+        if (!orderSearch) { quickAdds.innerHTML = '<span class="text-[10px] text-zinc-600 italic font-bold">Search DB...</span>'; return; }
         products.forEach(p => {
           if (!p.name.toLowerCase().includes(orderSearch)) return;
-          quickAdds.innerHTML += `<button type="button" onclick="addPresetArticle('${p.name.replace(/'/g, "\\'")}', ${p.price}, ${p.time || 0})" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-[10px] px-2.5 py-1.5 rounded-lg border border-slate-600/50 cursor-pointer transition hover:scale-105">+ ${p.name} <span class="text-slate-400 text-[9px]">(${p.time || 0}h)</span> <span class="text-amber-400 font-bold ml-1">${p.price.toFixed(2).replace('.',',')}€</span></button>`;
+          quickAdds.innerHTML += `<button type="button" onclick="addPresetArticle('${p.name.replace(/'/g, "\\'")}', ${p.price}, ${p.time || 0})" class="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-[10px] px-3 py-2 rounded-lg border border-zinc-700 cursor-pointer transition hover:scale-105 font-bold">+ ${p.name} <span class="text-zinc-500 ml-1">(${p.time || 0}h)</span> <span class="text-[#00f0ff] font-black ml-2">${p.price.toFixed(2).replace('.',',')}€</span></button>`;
         });
       }
     }
@@ -1406,10 +1514,10 @@
     function renderEditQuickAddButtons(idx) {
       const container = document.getElementById(`editQuickAddButtons-${idx}`); const query = (document.getElementById(`editArticleSearch-${idx}`)?.value || '').toLowerCase();
       if (!container) return; container.innerHTML = '';
-      if (!query) { container.innerHTML = '<span class="text-[10px] text-slate-500 italic">Katalog durchsuchen...</span>'; return; }
+      if (!query) { container.innerHTML = '<span class="text-[10px] text-zinc-600 italic">Katalog...</span>'; return; }
       products.forEach(p => {
         if (!p.name.toLowerCase().includes(query)) return;
-        container.innerHTML += `<button type="button" onclick="addPresetArticleToEdit(${idx}, '${p.name.replace(/'/g, "\\'")}', ${p.price}, ${p.time || 0})" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-[10px] px-2 py-1 rounded-lg border border-slate-600/50 cursor-pointer">+ ${p.name} <span class="text-amber-400 ml-1">${p.price.toFixed(2).replace('.',',')}€</span></button>`;
+        container.innerHTML += `<button type="button" onclick="addPresetArticleToEdit(${idx}, '${p.name.replace(/'/g, "\\'")}', ${p.price}, ${p.time || 0})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[10px] px-3 py-1.5 rounded-lg border border-zinc-600 cursor-pointer font-bold">+ ${p.name} <span class="text-[#00f0ff] ml-2">${p.price.toFixed(2).replace('.',',')}€</span></button>`;
       });
     }
 
@@ -1421,22 +1529,22 @@
     }
 
     function addPrinterPrompt() {
-      const name = prompt("Drucker-Name (z.B. Bambu Lab X1C):"); if (!name) return;
-      printers.push({ name: name.trim(), desc: prompt("Beschreibung:", "Standard") || "Standard", status: "Frei" }); saveAllData();
+      const name = prompt("Node Name (z.B. Bambu Lab X1C):"); if (!name) return;
+      printers.push({ name: name.trim(), desc: prompt("Specs:", "Standard") || "Standard", status: "Frei" }); saveAllData();
     }
     
     function editPrinter(idx) {
       const p = printers[idx];
-      const newName = prompt("Drucker-Name bearbeiten:", p.name);
+      const newName = prompt("Node Name edit:", p.name);
       if (newName === null) return;
-      const newDesc = prompt("Beschreibung bearbeiten:", p.desc);
+      const newDesc = prompt("Specs edit:", p.desc);
       if (newDesc === null) return;
       p.name = newName.trim();
       p.desc = newDesc.trim();
       saveAllData();
     }
 
-    function deletePrinter(idx) { if (printers.length > 1 && confirm("Drucker löschen?")) { printers.splice(idx, 1); saveAllData(); } }
+    function deletePrinter(idx) { if (printers.length > 1 && confirm("Node löschen?")) { printers.splice(idx, 1); saveAllData(); } }
     
     function updatePrinterDropdowns() {
       const selects = document.querySelectorAll('#printer, [id^="edit-print-"]');
@@ -1449,19 +1557,19 @@
         const activeOrder = orders.find(o => !o.archived && o.printer === p.name && (o.status === 'In Druck' || o.status === 'Wartet auf Druck'));
         const isBusy = Boolean(activeOrder);
         grid.innerHTML += `
-          <div class="card p-4 flex flex-col justify-between space-y-3 border ${isBusy ? 'border-amber-500/50 bg-amber-950/10' : 'border-slate-700/50'}">
+          <div class="card p-5 flex flex-col justify-between space-y-4 border ${isBusy ? 'printer-printing' : 'border-zinc-800'}">
             <div class="flex justify-between items-start">
               <div>
-                <h3 class="font-bold text-white text-[13px] flex items-center gap-2"><i class="fa-solid fa-print text-blue-400 text-sm"></i> ${p.name}</h3>
-                <p class="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wide">${p.desc}</p>
+                <h3 class="font-black text-white text-sm flex items-center gap-2 uppercase tracking-widest"><i class="fa-solid fa-microchip ${isBusy ? 'text-amber-500' : 'text-[#00f0ff]'}"></i> ${p.name}</h3>
+                <p class="text-[10px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${p.desc}</p>
               </div>
-              <div class="flex items-center gap-1.5">
-                <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${isBusy ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-[0_0_10px_rgba(245,158,11,0.2)]' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.2)]'}">${isBusy ? '🖨 Druckt' : '🟢 Frei'}</span>
-                <button onclick="editPrinter(${idx})" class="text-slate-400 hover:text-amber-300 bg-slate-900/50 hover:bg-slate-800 p-1.5 rounded border border-slate-700/50 transition" title="Drucker bearbeiten">✏</button>
-                <button onclick="deletePrinter(${idx})" class="text-slate-400 hover:text-red-400 bg-slate-900/50 hover:bg-slate-800 p-1.5 rounded border border-slate-700/50 transition" title="Drucker löschen">❌</button>
+              <div class="flex items-center gap-2">
+                <span class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest ${isBusy ? 'bg-amber-500/20 text-amber-500 border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.3)]' : 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]'}">${isBusy ? 'ACTIVE' : 'IDLE'}</span>
+                <button onclick="editPrinter(${idx})" class="text-zinc-500 hover:text-white bg-black p-2 rounded-lg border border-zinc-800 transition" title="Edit">✏</button>
+                <button onclick="deletePrinter(${idx})" class="text-zinc-500 hover:text-red-500 bg-black p-2 rounded-lg border border-zinc-800 transition" title="Delete">❌</button>
               </div>
             </div>
-            ${activeOrder ? `<div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 text-[11px] space-y-1.5 shadow-inner"><div class="flex justify-between text-slate-200 font-bold"><span>Aktiv: <span class="text-blue-400">${activeOrder.customer}</span></span><span class="text-amber-400">${activeOrder.status}</span></div><div class="text-[10px] text-slate-400 italic line-clamp-1">${(activeOrder.items || []).map(i => `${i.qty || 1}x ${i.name}`).join(', ')}</div></div>` : '<div class="text-[11px] text-slate-500 italic py-2 font-medium">Bereit für neue Druckaufträge...</div>'}
+            ${activeOrder ? `<div class="bg-black/60 p-4 rounded-xl border border-zinc-800 text-xs space-y-2 shadow-inner"><div class="flex justify-between text-zinc-300 font-bold"><span>JOB: <span class="text-white">${activeOrder.customer}</span></span><span class="text-amber-500 glow-orange">${activeOrder.status}</span></div><div class="text-[10px] text-zinc-500 font-medium line-clamp-1 uppercase">${(activeOrder.items || []).map(i => `${i.qty || 1}x ${i.name}`).join(' | ')}</div></div>` : '<div class="text-[10px] text-zinc-600 font-bold py-3 uppercase tracking-widest">Awaiting Command...</div>'}
           </div>
         `;
       });
@@ -1478,7 +1586,7 @@
       if (!tbody) return; tbody.innerHTML = '';
       expenses.forEach(ex => {
         if (selectedMonth !== 'all' && (!ex.date || !ex.date.startsWith(selectedMonth))) return;
-        tbody.innerHTML += `<tr><td class="p-3 text-[11px] text-slate-300">${ex.date || '-'}</td><td class="p-3 text-[11px]"><span class="bg-purple-500/10 border border-purple-500/30 px-2 py-1 rounded-lg text-purple-300 font-bold">${ex.category}</span></td><td class="p-3 text-[11px] text-white font-medium">${ex.description}</td><td class="p-3 text-[11px] text-red-400 font-bold">-${ex.amount.toFixed(2).replace('.', ',')} €</td><td class="p-3 text-right"><button onclick="deleteExpense('${ex.id}')" class="text-red-400 hover:bg-red-500/20 px-2 py-1.5 rounded transition"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+        tbody.innerHTML += `<tr><td class="p-4 text-xs font-bold text-zinc-400">${ex.date || '-'}</td><td class="p-4 text-xs"><span class="bg-zinc-800 border border-zinc-700 px-3 py-1.5 rounded-lg text-zinc-300 font-black uppercase tracking-wider text-[10px]">${ex.category}</span></td><td class="p-4 text-xs text-white font-bold">${ex.description}</td><td class="p-4 text-xs text-red-500 font-black glow-orange">-${ex.amount.toFixed(2).replace('.', ',')} €</td><td class="p-4 text-right"><button onclick="deleteExpense('${ex.id}')" class="text-red-500 hover:bg-red-500/20 px-3 py-2 rounded-lg transition"><i class="fa-solid fa-trash"></i></button></td></tr>`;
       });
       updateStats();
     }
@@ -1508,37 +1616,37 @@
       spools.forEach((s, idx) => {
         const isLow = s.remainingGrams < 250;
         if (isLow) hasWarning = true;
-        container.innerHTML += `<div class="px-3 py-2.5 rounded-xl border text-[11px] flex justify-between items-center ${isLow ? 'bg-red-950/40 border-red-500/60 pulse-low-spool' : 'bg-slate-900/50 border-slate-700/50'}"><span class="font-bold text-white tracking-wide">${s.name}</span><div class="flex items-center space-x-2"><span onclick="editSpoolGrams(${idx})" class="${isLow ? 'text-red-400 font-bold glow-text' : 'text-slate-300 font-bold'} cursor-pointer bg-slate-950 px-2 py-0.5 rounded border border-slate-700/50">${s.remainingGrams}g</span><button onclick="deleteSpool(${idx})" class="text-slate-400 hover:text-red-400 hover:bg-red-500/20 px-1.5 py-0.5 rounded transition">❌</button></div></div>`;
+        container.innerHTML += `<div class="px-4 py-3 rounded-xl border text-xs flex justify-between items-center ${isLow ? 'bg-red-950/40 border-red-500/60 pulse-low-spool' : 'bg-black/50 border-zinc-800 hover:border-zinc-600'} transition-colors"><span class="font-black text-white tracking-widest uppercase">${s.name}</span><div class="flex items-center space-x-3"><span onclick="editSpoolGrams(${idx})" class="${isLow ? 'text-red-500 glow-orange' : 'text-zinc-300'} font-black cursor-pointer bg-zinc-900 px-3 py-1 rounded-lg border border-zinc-700">${s.remainingGrams}g</span><button onclick="deleteSpool(${idx})" class="text-zinc-500 hover:text-red-500 hover:bg-red-500/20 px-2 py-1 rounded transition">❌</button></div></div>`;
       });
       const warnBanner = document.getElementById('spoolWarningBanner');
       if (warnBanner) {
-        if (hasWarning) { warnBanner.classList.remove('hidden'); warnBanner.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-400 mt-0.5 text-sm"></i><span><strong>Achtung:</strong> Mindestens eine Filament-Spule hat weniger als 250g Bestand! Nachbestellen nicht vergessen.</span>'; }
+        if (hasWarning) { warnBanner.classList.remove('hidden'); warnBanner.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-500 mt-0.5 text-sm"></i><span class="tracking-wide text-xs"><strong>WARNING:</strong> Spool inventory critical (< 250g). Restock required.</span>'; }
         else { warnBanner.classList.add('hidden'); }
       }
       document.querySelectorAll('.art-color, .edit-art-color').forEach(sel => {
-        const cur = sel.value; sel.innerHTML = '<option value="">-- Farbe --</option>';
+        const cur = sel.value; sel.innerHTML = '<option value="">-- Material --</option>';
         spools.forEach(s => sel.innerHTML += `<option value="${s.name}" ${s.name === cur ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`);
       });
     }
-    function addSpoolPrompt() { const n = prompt("Farbe:"); if(n) { spools.push({ id: Date.now(), name: n, remainingGrams: parseInt(prompt("Gramm:", "1000")) || 1000 }); saveAllData(); } }
+    function addSpoolPrompt() { const n = prompt("Material/Farbe:"); if(n) { spools.push({ id: Date.now(), name: n, remainingGrams: parseInt(prompt("Gramm:", "1000")) || 1000 }); saveAllData(); } }
     function editSpoolGrams(idx) { const n = prompt("Gramm:", spools[idx].remainingGrams); if (n) { spools[idx].remainingGrams = parseInt(n); saveAllData(); } }
     function deleteSpool(idx) { if (confirm("Spule löschen?")) { spools.splice(idx, 1); saveAllData(); } }
 
     function addArticleInputRow(qtyVal = 1, nameVal = '', colorVal = '', weightVal = '', timeVal = '') {
       const container = document.getElementById('articleInputRows');
       if (!container) return;
-      const div = document.createElement('div'); div.className = "flex gap-2 items-center article-row";
-      let optionsHtml = '<option value="">-- Farbe --</option>'; spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === colorVal ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
-      div.innerHTML = `<input type="number" placeholder="Stk." value="${qtyVal}" min="1" class="art-qty px-3 py-2 text-xs w-20"><input type="text" placeholder="Artikelbezeichnung" value="${nameVal}" class="art-name px-3 py-2 text-xs flex-1"><select class="art-color px-3 py-2 text-xs w-40">${optionsHtml}</select><input type="number" placeholder="Gramm" value="${weightVal}" class="art-weight px-3 py-2 text-xs w-24"><input type="number" step="0.1" placeholder="Zeit (h)" value="${timeVal}" class="art-time px-3 py-2 text-xs w-24" title="Druckzeit in Stunden"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2 py-1.5 rounded hover:bg-red-500/20 transition"><i class="fa-solid fa-xmark"></i></button>`;
+      const div = document.createElement('div'); div.className = "flex gap-3 items-center article-row";
+      let optionsHtml = '<option value="">-- Material --</option>'; spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === colorVal ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
+      div.innerHTML = `<input type="number" placeholder="QTY" value="${qtyVal}" min="1" class="art-qty px-3 py-2.5 text-xs w-20 text-center font-bold"><input type="text" placeholder="Designation" value="${nameVal}" class="art-name px-3 py-2.5 text-xs flex-1"><select class="art-color px-3 py-2.5 text-xs w-48 font-bold">${optionsHtml}</select><div class="relative w-28"><input type="number" placeholder="0" value="${weightVal}" class="art-weight w-full pl-3 pr-7 py-2.5 text-xs"><span class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-[10px] font-bold">g</span></div><div class="relative w-28"><input type="number" step="0.1" placeholder="0.0" value="${timeVal}" class="art-time w-full pl-3 pr-7 py-2.5 text-xs" title="Druckzeit in Stunden"><span class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-[10px] font-bold">h</span></div><button type="button" onclick="this.parentElement.remove()" class="text-red-500 px-3 py-2 rounded hover:bg-red-500/20 transition"><i class="fa-solid fa-xmark"></i></button>`;
       container.appendChild(div);
     }
 
     function addEditArticleRow(idx, qtyVal = 1, nameVal = '', colorVal = '', weightVal = '', timeVal = '') {
       const container = document.getElementById(`editArticleRows-${idx}`);
       if (!container) return;
-      const div = document.createElement('div'); div.className = "flex gap-1.5 items-center bg-slate-900/50 p-2 rounded-xl border border-slate-700/50";
-      let optionsHtml = '<option value="">-- Farbe --</option>'; spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === colorVal ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
-      div.innerHTML = `<input type="number" value="${qtyVal}" min="1" class="edit-art-qty-${idx} px-2 py-1 text-[11px] w-14"><input type="text" value="${nameVal}" placeholder="Artikel" class="edit-art-name-${idx} px-2 py-1 text-[11px] flex-1"><select class="edit-art-color-${idx} px-2 py-1 text-[11px] w-32">${optionsHtml}</select><input type="number" value="${weightVal}" placeholder="g" class="edit-art-weight-${idx} px-2 py-1 text-[11px] w-16"><input type="number" step="0.1" value="${timeVal}" placeholder="h" class="edit-art-time-${idx} px-2 py-1 text-[11px] w-16"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2 py-1 rounded hover:bg-red-500/20 transition"><i class="fa-solid fa-xmark"></i></button>`;
+      const div = document.createElement('div'); div.className = "flex gap-2 items-center bg-black p-2 rounded-xl border border-zinc-800";
+      let optionsHtml = '<option value="">-- Material --</option>'; spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === colorVal ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
+      div.innerHTML = `<input type="number" value="${qtyVal}" min="1" class="edit-art-qty-${idx} px-2 py-1.5 text-xs w-16 text-center font-bold"><input type="text" value="${nameVal}" placeholder="Designation" class="edit-art-name-${idx} px-2 py-1.5 text-xs flex-1"><select class="edit-art-color-${idx} px-2 py-1.5 text-xs w-32 font-bold">${optionsHtml}</select><div class="relative w-20"><input type="number" value="${weightVal}" placeholder="0" class="edit-art-weight-${idx} w-full pl-2 pr-5 py-1.5 text-xs"><span class="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 text-[9px] font-bold">g</span></div><div class="relative w-20"><input type="number" step="0.1" value="${timeVal}" placeholder="0" class="edit-art-time-${idx} w-full pl-2 pr-5 py-1.5 text-xs"><span class="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 text-[9px] font-bold">h</span></div><button type="button" onclick="this.parentElement.remove()" class="text-red-500 px-2 py-1 rounded hover:bg-red-500/20 transition"><i class="fa-solid fa-xmark"></i></button>`;
       container.appendChild(div);
     }
 
@@ -1667,12 +1775,18 @@
       togglePickupMode();
 
       document.getElementById('articleInputRows').innerHTML = `
-        <div class="flex gap-2 items-center article-row">
-          <input type="number" placeholder="Stk." value="1" min="1" class="art-qty px-3 py-2 text-xs w-20">
-          <input type="text" placeholder="Artikelbezeichnung" class="art-name px-3 py-2 text-xs flex-1">
-          <select class="art-color px-3 py-2 text-xs w-40"><option value="">-- Farbe --</option></select>
-          <input type="number" placeholder="Gramm" class="art-weight px-3 py-2 text-xs w-24">
-          <input type="number" step="0.1" placeholder="Zeit (h)" class="art-time px-3 py-2 text-xs w-24" title="Druckzeit in Stunden">
+        <div class="flex gap-3 items-center article-row">
+          <input type="number" placeholder="QTY" value="1" min="1" class="art-qty px-3 py-2.5 text-xs w-20 text-center font-bold">
+          <input type="text" placeholder="Designation" class="art-name px-3 py-2.5 text-xs flex-1">
+          <select class="art-color px-3 py-2.5 text-xs w-48 font-bold"><option value="">-- Material --</option></select>
+          <div class="relative w-28">
+            <input type="number" placeholder="0" class="art-weight w-full pl-3 pr-7 py-2.5 text-xs">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-[10px] font-bold">g</span>
+          </div>
+          <div class="relative w-28">
+            <input type="number" step="0.1" placeholder="0.0" class="art-time w-full pl-3 pr-7 py-2.5 text-xs" title="Druckzeit in Stunden">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-[10px] font-bold">h</span>
+          </div>
         </div>`;
       renderSpools();
     }
@@ -1738,8 +1852,8 @@
       const searchQuery = (document.getElementById('searchInput')?.value || '').toLowerCase();
       const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
 
-      if (tableTitle) tableTitle.innerHTML = showingArchive ? '<i class="fa-solid fa-box-archive mr-1.5 text-purple-400"></i> Archivierte Bestellungen' : '<i class="fa-solid fa-list-check mr-1.5 text-blue-400"></i> Bestellungen (Aktiv)';
-      if (headerBtn) headerBtn.innerHTML = showingArchive ? '<i class="fa-solid fa-list-check mr-1.5"></i> Aktive' : '<i class="fa-solid fa-box-archive mr-1.5"></i> Archiv';
+      if (tableTitle) tableTitle.innerHTML = showingArchive ? '<i class="fa-solid fa-box-archive mr-2 text-purple-500 glow-neon"></i> Archive Database' : '<i class="fa-solid fa-list-check mr-2 text-[#00f0ff] glow-neon"></i> Active Operations';
+      if (headerBtn) headerBtn.innerHTML = showingArchive ? '<i class="fa-solid fa-list-check mr-2"></i> ACTIVE' : '<i class="fa-solid fa-box-archive mr-2"></i> ARCHIVE';
 
       if (!tbody) return; tbody.innerHTML = '';
 
@@ -1764,64 +1878,64 @@
           let editItemsHtml = `<div id="editArticleRows-${realIdx}" class="space-y-2 my-2">`;
           if (o.items) {
             o.items.forEach(i => {
-              let optionsHtml = '<option value="">-- Farbe --</option>';
+              let optionsHtml = '<option value="">-- Mat --</option>';
               spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === i.color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
-              editItemsHtml += `<div class="flex gap-1.5 items-center bg-slate-900/50 p-2 rounded-xl border border-slate-700/50"><input type="number" value="${i.qty || 1}" min="1" class="edit-art-qty-${realIdx} px-2 py-1 text-[11px] w-14"><input type="text" value="${i.name}" placeholder="Artikel" class="edit-art-name-${realIdx} px-2 py-1 text-[11px] flex-1"><select class="edit-art-color-${realIdx} px-2 py-1 text-[11px] w-32">${optionsHtml}</select><input type="number" value="${i.weight || 0}" placeholder="g" class="edit-art-weight-${realIdx} px-2 py-1 text-[11px] w-16"><input type="number" step="0.1" value="${i.time || 0}" placeholder="h" class="edit-art-time-${realIdx} px-2 py-1 text-[11px] w-16"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-2 py-1 rounded hover:bg-red-500/20 transition"><i class="fa-solid fa-xmark"></i></button></div>`;
+              editItemsHtml += `<div class="flex gap-2 items-center bg-black p-2 rounded-xl border border-zinc-800"><input type="number" value="${i.qty || 1}" min="1" class="edit-art-qty-${realIdx} px-2 py-1.5 text-xs w-16 text-center font-bold"><input type="text" value="${i.name}" placeholder="Designation" class="edit-art-name-${realIdx} px-2 py-1.5 text-xs flex-1"><select class="edit-art-color-${realIdx} px-2 py-1.5 text-xs w-32 font-bold">${optionsHtml}</select><div class="relative w-20"><input type="number" value="${i.weight || 0}" placeholder="0" class="edit-art-weight-${realIdx} w-full pl-2 pr-5 py-1.5 text-xs"><span class="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 text-[9px] font-bold">g</span></div><div class="relative w-20"><input type="number" step="0.1" value="${i.time || 0}" placeholder="0.0" class="edit-art-time-${realIdx} w-full pl-2 pr-5 py-1.5 text-xs"><span class="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 text-[9px] font-bold">h</span></div><button type="button" onclick="this.parentElement.remove()" class="text-red-500 px-2 py-1 rounded hover:bg-red-500/20 transition"><i class="fa-solid fa-xmark"></i></button></div>`;
             });
           }
-          editItemsHtml += `</div><div class="flex items-center gap-2 mt-2"><input type="text" id="editArticleSearch-${realIdx}" oninput="renderEditQuickAddButtons(${realIdx})" placeholder="🔍 Katalog..." class="px-2 py-1.5 text-[10px] w-40"><button type="button" onclick="addEditArticleRow(${realIdx})" class="bg-blue-500/10 text-blue-400 border border-blue-500/30 text-[10px] font-bold px-2.5 py-1.5 rounded-lg hover:bg-blue-500/20 transition">+ Zeile</button></div><div id="editQuickAddButtons-${realIdx}" class="flex flex-wrap gap-2 mt-2"></div>`;
+          editItemsHtml += `</div><div class="flex items-center gap-3 mt-3"><div class="relative w-48"><i class="fa-solid fa-search absolute left-2 top-1/2 -translate-y-1/2 text-zinc-500 text-[10px]"></i><input type="text" id="editArticleSearch-${realIdx}" oninput="renderEditQuickAddButtons(${realIdx})" placeholder="Search DB..." class="w-full pl-7 pr-2 py-2 text-xs"></div><button type="button" onclick="addEditArticleRow(${realIdx})" class="bg-zinc-800 text-zinc-300 border border-zinc-600 text-xs font-bold px-4 py-2 rounded-lg hover:bg-zinc-700 transition">+ Add Row</button></div><div id="editQuickAddButtons-${realIdx}" class="flex flex-wrap gap-2 mt-2"></div>`;
 
-          tbody.innerHTML += `<tr class="bg-slate-900/60 border-b border-slate-700">
-            <td class="p-3 space-y-2">
-              <div class="flex gap-1.5">
-                <select id="edit-sal-${realIdx}" class="px-2 py-1 text-[10px] w-20"><option value="Herr" ${o.salutation==='Herr'?'selected':''}>Herr</option><option value="Frau" ${o.salutation==='Frau'?'selected':''}>Frau</option><option value="Firma" ${o.salutation==='Firma'?'selected':''}>Firma</option></select>
-                <input type="text" id="edit-cust-${realIdx}" value="${o.customer}" class="px-2 py-1 text-[11px] flex-1">
+          tbody.innerHTML += `<tr class="bg-zinc-900/80 border-b border-zinc-700">
+            <td class="p-4 space-y-3">
+              <div class="flex gap-2">
+                <select id="edit-sal-${realIdx}" class="px-2 py-2 text-xs w-20 font-bold"><option value="Herr" ${o.salutation==='Herr'?'selected':''}>Herr</option><option value="Frau" ${o.salutation==='Frau'?'selected':''}>Frau</option><option value="Firma" ${o.salutation==='Firma'?'selected':''}>Firma</option></select>
+                <input type="text" id="edit-cust-${realIdx}" value="${o.customer}" class="px-3 py-2 text-xs flex-1 font-bold">
               </div>
-              <input type="text" id="edit-contact-${realIdx}" value="${o.contactPerson || ''}" placeholder="Ansprechpartner" class="px-2 py-1 text-[10px] w-full">
-              <input type="text" id="edit-addr-${realIdx}" value="${o.address || ''}" placeholder="Adresse" class="px-2 py-1 text-[10px] w-full">
-              <select id="edit-plat-${realIdx}" class="px-2 py-1 text-[10px] w-full"><option value="Kleinanzeigen" ${o.platform==='Kleinanzeigen'?'selected':''}>🛒 Kleinanzeigen</option><option value="eBay" ${o.platform==='eBay'?'selected':''}>🛍 eBay</option></select>
+              <input type="text" id="edit-contact-${realIdx}" value="${o.contactPerson || ''}" placeholder="Contact" class="px-3 py-2 text-xs w-full">
+              <input type="text" id="edit-addr-${realIdx}" value="${o.address || ''}" placeholder="Address" class="px-3 py-2 text-xs w-full">
+              <select id="edit-plat-${realIdx}" class="px-3 py-2 text-xs w-full font-bold"><option value="Kleinanzeigen" ${o.platform==='Kleinanzeigen'?'selected':''}>🛒 Kleinanz.</option><option value="eBay" ${o.platform==='eBay'?'selected':''}>🛍 eBay</option></select>
             </td>
-            <td class="p-3 font-mono text-blue-400 font-bold">${invNum}<input type="date" id="edit-date-${realIdx}" value="${o.orderDate || todayStr}" class="px-2 py-1 text-[10px] w-full mt-2"></td>
-            <td class="p-3">${editItemsHtml}</td>
-            <td class="p-3"><select id="edit-print-${realIdx}" class="px-2 py-1 text-[10px] w-full"></select></td>
-            <td class="p-3 space-y-2">
-              <select id="edit-paid-${realIdx}" class="px-2 py-1 text-[10px] w-full"><option value="✅ Ja" ${o.isPaid==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.isPaid==='❌ Nein'?'selected':''}>❌ Nein</option></select>
-              <select id="edit-paymeth-${realIdx}" class="px-2 py-1 text-[10px] w-full"><option value="eBay" ${o.paymentMethod==='eBay'?'selected':''}>💳 eBay</option><option value="PayPal" ${o.paymentMethod==='PayPal'?'selected':''}>🅿 PayPal</option><option value="Überweisung" ${o.paymentMethod==='Überweisung'?'selected':''}>🏦 Bank</option><option value="Bar" ${o.paymentMethod==='Bar'?'selected':''}>Bar</option></select>
+            <td class="p-4 font-mono text-[#00f0ff] font-bold text-xs">${invNum}<input type="date" id="edit-date-${realIdx}" value="${o.orderDate || todayStr}" class="px-3 py-2 text-xs w-full mt-3 font-bold"></td>
+            <td class="p-4">${editItemsHtml}</td>
+            <td class="p-4"><select id="edit-print-${realIdx}" class="px-3 py-2 text-xs w-full font-bold"></select></td>
+            <td class="p-4 space-y-3">
+              <select id="edit-paid-${realIdx}" class="px-3 py-2 text-xs w-full font-bold text-white"><option value="✅ Ja" ${o.isPaid==='✅ Ja'?'selected':''}>✅ YES</option><option value="❌ Nein" ${o.isPaid==='❌ Nein'?'selected':''}>❌ NO</option></select>
+              <select id="edit-paymeth-${realIdx}" class="px-3 py-2 text-xs w-full font-bold"><option value="eBay" ${o.paymentMethod==='eBay'?'selected':''}>💳 eBay</option><option value="PayPal" ${o.paymentMethod==='PayPal'?'selected':''}>🅿 PayPal</option><option value="Überweisung" ${o.paymentMethod==='Überweisung'?'selected':''}>🏦 SEPA</option><option value="Bar" ${o.paymentMethod==='Bar'?'selected':''}>Bar</option></select>
             </td>
-            <td class="p-3"><select id="edit-ebaybal-${realIdx}" class="px-2 py-1 text-[10px] w-full"><option value="⏳ Bei eBay" ${o.ebayBalancePaid==='⏳ Bei eBay'?'selected':''}>⏳ Bei eBay</option><option value="✅ Ausgezahlt" ${o.ebayBalancePaid==='✅ Ausgezahlt'?'selected':''}>✅ Ausgezahlt</option></select></td>
-            <td class="p-3"><select id="edit-stat-${realIdx}" class="px-2 py-1 text-[10px] text-amber-300 w-full"><option value="Wartet auf Druck" ${o.status==='Wartet auf Druck'?'selected':''}>⏳ Wartet auf Druck</option><option value="In Druck" ${o.status==='In Druck'?'selected':''}>🖨 In Druck</option><option value="Druck abgeschlossen" ${o.status==='Druck abgeschlossen'?'selected':''}>✅ Druck abgeschlossen</option><option value="Wartet auf Abholung" ${o.status==='Wartet auf Abholung'?'selected':''}>🏠 Wartet auf Abholung</option><option value="Versendet" ${o.status==='Versendet'?'selected':''}>📦 Versendet</option></select></td>
-            <td class="p-3 space-y-2">
-              <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400">Preis:</span> <input type="number" step="0.01" id="edit-price-${realIdx}" value="${o.price}" class="px-2 py-1 text-[10px] w-16 text-right"></div>
-              <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400">Versand:</span> <input type="number" step="0.01" id="edit-ship-${realIdx}" value="${o.shippingFee||0}" class="px-2 py-1 text-[10px] w-16 text-right"></div>
-              <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400">Porto:</span> <input type="number" step="0.01" id="edit-lblcost-${realIdx}" value="${o.labelCost||0}" class="px-2 py-1 text-[10px] w-16 text-right"></div>
-              <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400">Rabatt %:</span> <input type="number" step="0.01" id="edit-discperc-${realIdx}" value="${o.discountPercent||0}" class="px-2 py-1 text-[10px] w-16 text-right"></div>
+            <td class="p-4"><select id="edit-ebaybal-${realIdx}" class="px-3 py-2 text-xs w-full font-bold text-purple-400"><option value="⏳ Bei eBay" ${o.ebayBalancePaid==='⏳ Bei eBay'?'selected':''}>⏳ Pending</option><option value="✅ Ausgezahlt" ${o.ebayBalancePaid==='✅ Ausgezahlt'?'selected':''}>✅ Payout</option></select></td>
+            <td class="p-4"><select id="edit-stat-${realIdx}" class="px-3 py-2 text-xs font-black text-amber-500 w-full uppercase tracking-widest"><option value="Wartet auf Druck" ${o.status==='Wartet auf Druck'?'selected':''}>⏳ WAIT</option><option value="In Druck" ${o.status==='In Druck'?'selected':''}>🖨 PRINT</option><option value="Druck abgeschlossen" ${o.status==='Druck abgeschlossen'?'selected':''}>✅ DONE</option><option value="Wartet auf Abholung" ${o.status==='Wartet auf Abholung'?'selected':''}>🏠 PICKUP</option><option value="Versendet" ${o.status==='Versendet'?'selected':''}>📦 SHIPPED</option></select></td>
+            <td class="p-4 space-y-3">
+              <div class="flex justify-between items-center"><span class="text-[10px] text-zinc-500 font-extrabold uppercase">Rev:</span> <input type="number" step="0.01" id="edit-price-${realIdx}" value="${o.price}" class="px-2 py-1.5 text-xs w-20 text-right font-black text-[#00f0ff]"></div>
+              <div class="flex justify-between items-center"><span class="text-[10px] text-zinc-500 font-extrabold uppercase">Ship:</span> <input type="number" step="0.01" id="edit-ship-${realIdx}" value="${o.shippingFee||0}" class="px-2 py-1.5 text-xs w-20 text-right font-bold"></div>
+              <div class="flex justify-between items-center"><span class="text-[10px] text-zinc-500 font-extrabold uppercase">Lbl:</span> <input type="number" step="0.01" id="edit-lblcost-${realIdx}" value="${o.labelCost||0}" class="px-2 py-1.5 text-xs w-20 text-right font-bold"></div>
+              <div class="flex justify-between items-center"><span class="text-[10px] text-zinc-500 font-extrabold uppercase">Disc %:</span> <input type="number" step="0.01" id="edit-discperc-${realIdx}" value="${o.discountPercent||0}" class="px-2 py-1.5 text-xs w-20 text-right font-bold text-amber-500"></div>
             </td>
-            <td class="p-3 space-y-2">
-              <div><span class="text-[10px] text-slate-400 block mb-1">Label:</span><select id="edit-lbl-${realIdx}" class="px-2 py-1 text-[10px] w-full"><option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>❌ Nein</option></select></div>
-              <div><span class="text-[10px] text-slate-400 block mb-1">Verpackt:</span><select id="edit-pack-${realIdx}" class="px-2 py-1 text-[10px] w-full"><option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>❌ Nein</option></select></div>
+            <td class="p-4 space-y-3">
+              <div><span class="text-[10px] text-zinc-500 font-extrabold block mb-1 uppercase">Label:</span><select id="edit-lbl-${realIdx}" class="px-3 py-1.5 text-xs w-full font-bold"><option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>✅ YES</option><option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>❌ NO</option></select></div>
+              <div><span class="text-[10px] text-zinc-500 font-extrabold block mb-1 uppercase">Packed:</span><select id="edit-pack-${realIdx}" class="px-3 py-1.5 text-xs w-full font-bold"><option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>✅ YES</option><option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>❌ NO</option></select></div>
             </td>
-            <td class="p-3 space-y-2">
-              <input type="text" id="edit-track-${realIdx}" value="${o.tracking||''}" placeholder="Tracking" class="px-2 py-1 text-[10px] w-full">
-              <input type="text" id="edit-notes-${realIdx}" value="${o.notes||''}" placeholder="Notizen" class="px-2 py-1 text-[10px] w-full">
+            <td class="p-4 space-y-3">
+              <input type="text" id="edit-track-${realIdx}" value="${o.tracking||''}" placeholder="Tracking ID" class="px-3 py-2 text-xs w-full font-mono">
+              <input type="text" id="edit-notes-${realIdx}" value="${o.notes||''}" placeholder="Notes" class="px-3 py-2 text-xs w-full">
             </td>
-            <td class="p-3 text-right space-y-2 whitespace-nowrap">
-              <button onclick="saveEditOrder(${realIdx})" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] shadow-lg w-full transition">Speichern</button>
-              <button onclick="cancelEditOrder()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] w-full transition">Abbrechen</button>
+            <td class="p-4 text-right space-y-3 whitespace-nowrap">
+              <button onclick="saveEditOrder(${realIdx})" class="!bg-gradient-to-r !from-blue-600 !to-[#00f0ff] text-black font-black px-4 py-2.5 rounded-xl text-xs shadow-[0_0_20px_rgba(0,240,255,0.3)] w-full transition uppercase tracking-widest">SAVE</button>
+              <button onclick="cancelEditOrder()" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs w-full transition uppercase tracking-widest">CANCEL</button>
             </td>
           </tr>`;
           setTimeout(() => updatePrinterDropdowns(), 50);
         } else {
-          let itemsText = '<div class="space-y-1">';
+          let itemsText = '<div class="space-y-1.5">';
           let totalWeight = 0, totalTime = 0;
           if (o.items && o.items.length > 0) {
             o.items.forEach(i => {
               let weightVal = (parseInt(i.weight) || 0) * (i.qty || 1);
               let timeVal = (parseFloat(i.time) || 0) * (i.qty || 1);
               totalWeight += weightVal; totalTime += timeVal;
-              itemsText += `<div class="text-[11px] text-slate-200"><span class="text-slate-400 font-bold mr-1">${i.qty || 1}x</span> ${i.name} <span class="text-cyan-300/80 text-[10px]">(${i.color || 'Standard'}, ${weightVal}g, ${timeVal}h)</span></div>`;
+              itemsText += `<div class="text-xs text-zinc-200"><span class="text-zinc-500 font-black mr-2">${i.qty || 1}x</span> <span class="font-bold">${i.name}</span> <span class="text-[#00f0ff]/70 text-[10px] font-bold tracking-wide">(${i.color || 'STD'}, ${weightVal}g, ${timeVal}h)</span></div>`;
             });
-          } else { itemsText += '<div class="text-[11px] text-slate-400">-</div>'; }
-          itemsText += `</div><div class="text-[10px] text-slate-400 font-medium mt-1">Total: ${totalWeight}g | ${totalTime.toFixed(1)}h</div>`;
+          } else { itemsText += '<div class="text-xs text-zinc-500">-</div>'; }
+          itemsText += `</div><div class="text-[10px] text-zinc-500 font-extrabold mt-2 uppercase tracking-widest border-t border-zinc-800/50 pt-1">SUM: ${totalWeight}g | ${totalTime.toFixed(1)}h</div>`;
 
           let isDelayed = false;
           if (!o.archived && o.orderDate) {
@@ -1829,122 +1943,26 @@
             if (diffDays >= 3) isDelayed = true;
           }
 
-          let discountBadge = (o.discountPercent && o.discountPercent > 0) ? `<span class="text-[10px] text-amber-400 ml-1 font-medium">(-${o.discountPercent}%)</span>` : '';
+          let discountBadge = (o.discountPercent && o.discountPercent > 0) ? `<span class="text-[10px] text-amber-500 ml-1 font-black">(-${o.discountPercent}%)</span>` : '';
 
-          let statBadgeClass = 'bg-slate-800 text-amber-300 border-transparent';
-          if(o.status === 'In Druck') statBadgeClass = 'bg-blue-500/20 text-blue-400 border-blue-500/30 border';
-          if(o.status === 'Druck abgeschlossen') statBadgeClass = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 border';
-          if(o.status === 'Versendet') statBadgeClass = 'bg-purple-500/20 text-purple-400 border-purple-500/30 border';
-          if(o.status === 'Wartet auf Abholung') statBadgeClass = 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30 border';
+          let statBadgeClass = 'bg-zinc-900 text-zinc-400 border-zinc-700 border';
+          if(o.status === 'In Druck') statBadgeClass = 'bg-[#00f0ff]/10 text-[#00f0ff] border-[#00f0ff]/40 border';
+          if(o.status === 'Druck abgeschlossen') statBadgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/40 border';
+          if(o.status === 'Versendet') statBadgeClass = 'bg-purple-500/10 text-purple-400 border-purple-500/40 border';
+          if(o.status === 'Wartet auf Abholung') statBadgeClass = 'bg-amber-500/10 text-amber-400 border-amber-500/40 border';
 
           tbody.innerHTML += `<tr class="${isDelayed ? 'pulse-delayed-order' : ''}">
-            <td class="p-3">
-              <div class="font-bold flex items-center gap-1.5 text-[12px] tracking-wide text-white">${formattedCust} ${isDelayed ? '<span class="text-red-400 text-[10px] animate-pulse" title="Älter als 3 Tage!"><i class="fa-solid fa-clock"></i></span>' : ''}</div>
-              <div class="text-[10px] text-slate-400 mt-0.5">${o.address || ''}</div>
-              <span class="text-[9px] bg-slate-900 border border-slate-700/50 px-2 py-0.5 rounded-lg text-slate-300 mt-1.5 inline-block">${o.platform}</span>
+            <td class="p-4">
+              <div class="font-black flex items-center gap-2 text-[13px] tracking-wide text-white uppercase">${formattedCust} ${isDelayed ? '<span class="text-red-500 text-xs animate-pulse glow-orange" title="OVERDUE!"><i class="fa-solid fa-triangle-exclamation"></i></span>' : ''}</div>
+              <div class="text-[10px] text-zinc-500 mt-1 font-bold uppercase tracking-wide">${o.address || ''}</div>
+              <span class="text-[9px] bg-black border border-zinc-800 px-2.5 py-1 rounded-md text-zinc-400 mt-2 inline-block font-black uppercase tracking-widest">${o.platform}</span>
             </td>
-            <td class="p-3 font-mono text-blue-400 font-bold">${invNum}<div class="text-[10px] text-slate-400 font-normal mt-0.5">${o.orderDate || '-'}</div></td>
-            <td class="p-3">${itemsText}</td>
-            <td class="p-3"><span class="bg-slate-900 border border-slate-700/50 text-slate-300 font-bold px-2.5 py-1 rounded-lg text-[10px]">${o.printer || '-'}</span></td>
-            <td class="p-3 space-y-1.5">
-              <div><select onchange="updateField(${o.id}, 'isPaid', this.value)" class="px-2 py-1 text-[10px] font-bold !border-transparent hover:!border-slate-500"><option value="✅ Ja" ${o.isPaid==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.isPaid==='❌ Nein'?'selected':''}>❌ Nein</option></select></div>
-              <span class="text-[9px] bg-slate-900 border border-slate-700/50 px-2 py-0.5 rounded-lg text-purple-300 inline-block">${o.paymentMethod}</span>
+            <td class="p-4 font-mono text-[#00f0ff] font-bold text-xs">${invNum}<div class="text-[10px] text-zinc-500 font-medium mt-1">${o.orderDate || '-'}</div></td>
+            <td class="p-4">${itemsText}</td>
+            <td class="p-4"><span class="bg-black border border-zinc-800 text-zinc-300 font-black px-3 py-1.5 rounded-lg text-[10px] uppercase tracking-wider">${o.printer || '-'}</span></td>
+            <td class="p-4 space-y-2">
+              <div><select onchange="updateField(${o.id}, 'isPaid', this.value)" class="px-2 py-1 text-[11px] font-black uppercase tracking-widest !border-transparent hover:!border-zinc-500 bg-transparent cursor-pointer ${o.isPaid === '✅ Ja' ? 'text-emerald-400' : 'text-red-400'}"><option value="✅ Ja" ${o.isPaid==='✅ Ja'?'selected':''}>✅ YES</option><option value="❌ Nein" ${o.isPaid==='❌ Nein'?'selected':''}>❌ NO</option></select></div>
+              <span class="text-[9px] bg-black border border-zinc-800 px-2.5 py-1 rounded-md text-purple-400 inline-block font-black uppercase tracking-widest">${o.paymentMethod}</span>
             </td>
-            <td class="p-3">
-              ${o.platform === 'eBay' ? `<select onchange="updateField(${o.id}, 'ebayBalancePaid', this.value)" class="px-2 py-1 text-[10px] font-bold text-cyan-400 !border-transparent hover:!border-slate-500"><option value="⏳ Bei eBay" ${o.ebayBalancePaid==='⏳ Bei eBay'?'selected':''}>⏳ Bei eBay</option><option value="✅ Ausgezahlt" ${o.ebayBalancePaid==='✅ Ausgezahlt'?'selected':''}>✅ Ausgezahlt</option></select>` : '<span class="text-slate-500 text-[10px]">-</span>'}
-            </td>
-            <td class="p-3">
-              <select onchange="updateField(${o.id}, 'status', this.value)" class="px-2 py-1 text-[10px] font-bold rounded ${statBadgeClass} hover:border-slate-400 transition-colors">
-                <option value="Wartet auf Druck" ${o.status==='Wartet auf Druck'?'selected':''}>⏳ Wartet auf Druck</option>
-                <option value="In Druck" ${o.status==='In Druck'?'selected':''}>🖨 In Druck</option>
-                <option value="Druck abgeschlossen" ${o.status==='Druck abgeschlossen'?'selected':''}>✅ Druck abgeschlossen</option>
-                <option value="Wartet auf Abholung" ${o.status==='Wartet auf Abholung'?'selected':''}>🏠 Wartet auf Abholung</option>
-                <option value="Versendet" ${o.status==='Versendet'?'selected':''}>📦 Versendet</option>
-              </select>
-            </td>
-            <td class="p-3">
-              <div class="font-bold text-emerald-400 text-sm glow-text">${o.price.toFixed(2).replace('.', ',')} €${discountBadge}</div>
-              <div class="text-[10px] text-slate-400 mt-1 font-medium">VSD: ${(o.shippingFee||0).toFixed(2)}€ | Porto: ${(o.labelCost||0).toFixed(2)}€</div>
-            </td>
-            <td class="p-3 space-y-1.5">
-              <div class="flex items-center justify-between"><span class="text-[10px] text-slate-400 mr-2">Label:</span> <select onchange="updateField(${o.id}, 'label', this.value)" class="px-2 py-0.5 text-[10px] font-bold !border-transparent"><option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>❌ Nein</option></select></div>
-              <div class="flex items-center justify-between"><span class="text-[10px] text-slate-400 mr-2">Verpackt:</span> <select onchange="updateField(${o.id}, 'packed', this.value)" class="px-2 py-0.5 text-[10px] font-bold !border-transparent"><option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>❌ Nein</option></select></div>
-            </td>
-            <td class="p-3">
-              <div class="font-mono text-[10px] text-slate-300 font-bold bg-slate-900/50 p-1.5 rounded border border-slate-700/50">${o.tracking || '-'}</div>
-              ${o.notes ? `<div class="text-[10px] text-slate-400 italic mt-1">${o.notes}</div>` : ''}
-            </td>
-            <td class="p-3 text-right space-x-1.5 whitespace-nowrap">
-              <button onclick="printInvoice(${realIdx})" class="text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 px-2 py-1.5 rounded-lg text-[10px] font-bold transition hover:scale-105" title="Rechnung drucken">🖨</button>
-              <button onclick="printPackzettel(${realIdx})" class="text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 px-2 py-1.5 rounded-lg text-[10px] font-bold transition hover:scale-105" title="Packzettel / Lieferschein drucken">📦</button>
-              <button onclick="startEditOrder(${realIdx})" class="text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-2 py-1.5 rounded-lg text-[10px] font-bold transition hover:scale-105" title="Bearbeiten">✏</button>
-              <button onclick="toggleArchiveOrder(${o.id})" class="text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 px-2 py-1.5 rounded-lg text-[10px] font-bold transition hover:scale-105" title="${o.archived ? 'Wieder aktivieren' : 'Archivieren'}">${o.archived ? '📂' : '📥'}</button>
-              <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 px-2 py-1.5 rounded-lg text-[10px] font-bold transition hover:scale-105">❌</button>
-            </td>
-          </tr>`;
-        }
-      });
-
-      updateStats();
-    }
-
-    // --- CSV EXPORT & IMPORT ---
-    function exportAccountingCSV() {
-      if (orders.length === 0 && expenses.length === 0) return alert("Keine Daten zum Exportieren vorhanden!");
-      let csv = "Typ;Datum;Nummer / ID;Name / Beschreibung;Einnahme (EUR);Ausgabe (EUR);Zahlungsart / Kategorie;Status\n";
-
-      orders.forEach(o => {
-        let invNum = generateInvoiceNumberForExisting(o);
-        let disc = (o.price * (parseFloat(o.discountPercent) || 0)) / 100;
-        let finalRev = Math.max(0, o.price - disc);
-        let formattedCust = formatCustomerName(o.customer, o.salutation, o.contactPerson);
-        csv += `Einnahme;${o.orderDate || ''};${invNum};"${formattedCust.replace(/"/g, '""')}";${finalRev.toFixed(2).replace('.', ',')};0,00;${o.paymentMethod || ''};${o.isPaid || ''}\n`;
-      });
-
-      expenses.forEach(ex => {
-        csv += `Ausgabe;${ex.date || ''};EXP-${ex.id};"${(ex.description || '').replace(/"/g, '""')}";0,00;${ex.amount.toFixed(2).replace('.', ',')};${ex.category || ''};Bezahlt\n`;
-      });
-
-      const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.setAttribute("download", `Sefas3DShop_Buchhaltung_${todayStr}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    function importAccountingCSV(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const text = e.target.result;
-        const lines = text.split('\n');
-        let importedCount = 0;
-        for (let i = 1; i < lines.length; i++) {
-          const line = lines[i].trim();
-          if (!line) continue;
-          const parts = line.split(';');
-          if (parts.length >= 6) {
-            const typ = parts[0].trim();
-            const date = parts[1].trim();
-            const desc = parts[3].replace(/^"|"$/g, '').trim();
-            const amountStr = parts.length > 5 ? parts[5].trim().replace(',', '.') : '0';
-            const amount = parseFloat(amountStr) || 0;
-            const category = parts.length > 6 ? parts[6].trim() || 'Sonstiges' : 'Sonstiges';
-
-            if (typ === 'Ausgabe' && amount > 0 && !parts[2].includes('-LABEL')) {
-              expenses.push({ id: Date.now() + i, description: desc, category: category, amount: amount, date: date || todayStr });
-              importedCount++;
-            }
-          }
-        }
-        if (importedCount > 0) { saveAllData(); alert(`✅ ${importedCount} Ausgaben erfolgreich importiert!`); }
-        else { alert("Keine neuen Ausgaben zum Importieren gefunden."); }
-      };
-      reader.readAsText(file);
-    }
-  </script>
-</body>
-</html>
+            <td class="p-4">
+              ${o.platform === 'eBay' ? `<select onchange="updateField(${o.id}, 'ebayBalancePaid', this.value)" class="px-2 py-1 text-
