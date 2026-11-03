@@ -143,7 +143,7 @@
         </div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Umsatz</p><h3 id="statRevenue" class="text-xl font-bold text-blue-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex items-center justify-between"><div><p class="text-[11px] text-slate-400">Ausgaben</p><h3 id="statExpenses" class="text-xl font-bold text-red-400">0,00 €</h3></div></div>
-        <div class="card p-3 rounded-xl flex items-center justify-between border border-emerald-500/30 bg-emerald-950/10"><div><p class="text-[11px] text-emerald-400 font-semibold">Reingewinn</p><h3 id="statProfit" class="text-xl font-bold text-emerald-400">99,59 €</h3></div></div>
+        <div class="card p-3 rounded-xl flex items-center justify-between border border-emerald-500/30 bg-emerald-950/10"><div><p class="text-[11px] text-emerald-400 font-semibold">Reingewinn</p><h3 id="statProfit" class="text-xl font-bold text-emerald-400">0,00 €</h3></div></div>
         <div class="card p-3 rounded-xl flex flex-col justify-between border border-cyan-500/30 bg-cyan-950/20"><div><p class="text-[11px] text-cyan-300 font-medium">🛍 eBay (Offen)</p><h3 id="statEbayBalance" class="text-lg font-bold text-cyan-400 mt-0.5">0,00 €</h3></div><button onclick="payoutAllEbayBalance()" class="mt-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 px-2 rounded transition cursor-pointer"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Alles ausgezahlt</button></div>
         <div class="card p-3 rounded-xl flex items-center justify-between border border-orange-500/30 bg-orange-950/20"><div><p class="text-[11px] text-orange-300 font-semibold">⚡ Strom (Offen)</p><h3 id="statElectricity" class="text-xl font-bold text-orange-400">66,12 €</h3></div></div>
       </div>
@@ -511,9 +511,6 @@
       }
     }
 
-    // ==========================================
-    // NEU: ROBUSTER CLOUD-LADE-MECHANISMUS
-    // ==========================================
     async function loadCloudData() {
       setStatus("Lade von Cloud...", "bg-yellow-500");
       let dataLoaded = false;
@@ -534,7 +531,6 @@
             currentRevolutBalance = json.revolutBalance || 0;
             
             dataLoaded = true;
-            // Daten sicher lokal hinterlegen
             localStorage.setItem('sefas3d_backup', JSON.stringify(json));
             setStatus("Mit Cloud verbunden", "bg-blue-500");
           }
@@ -543,7 +539,6 @@
         console.warn("Cloud-Fehler (npoint.io):", e);
       }
 
-      // FALLBACK: Wenn die Cloud leer ist oder hakt, lade lokales Backup
       if (!dataLoaded) {
         setStatus("Lokales Backup aktiv", "bg-orange-500");
         const localText = localStorage.getItem('sefas3d_backup');
@@ -570,7 +565,7 @@
     async function pushToCloudManual() {
       setStatus("Speichere in Cloud...", "bg-yellow-500");
       const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance };
-      localStorage.setItem('sefas3d_backup', JSON.stringify(payload)); // IMMER auch lokal speichern
+      localStorage.setItem('sefas3d_backup', JSON.stringify(payload));
       try {
         const res = await fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (res.ok) { 
@@ -591,16 +586,12 @@
       updateCustomerDropdowns(); updatePrinterDropdowns();
       
       const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance };
-      
-      // IMMER Backup lokal anlegen
       localStorage.setItem('sefas3d_backup', JSON.stringify(payload));
       
       fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
         .then(res => { if(res.ok) setStatus("Mit Cloud verbunden", "bg-blue-500"); else setStatus("Nur lokal gesichert", "bg-orange-500"); })
         .catch(e => { console.log(e); setStatus("Nur lokal gesichert", "bg-orange-500"); });
     }
-
-    // ==========================================
 
     function autofillCustomerData(custName) {
       if (!custName) return;
@@ -1835,24 +1826,43 @@
     // --- CSV EXPORT & IMPORT ---
     function exportAccountingCSV() {
       if (orders.length === 0 && expenses.length === 0) return alert("Keine Daten zum Exportieren vorhanden!");
-      let csv = "Typ;Datum;Nummer / ID;Name / Beschreibung;Einnahme (EUR);Ausgabe (EUR);Zahlungsart / Kategorie;Status\n";
+      
+      // Lexware-kompatibler Header
+      let csv = "Belegdatum;Belegnummer;Kunde/Lieferant;Buchungstext;Betrag;Währung;Steuersatz\n";
 
+      // 1. Einnahmen (Aufträge) exportieren
       orders.forEach(o => {
         let invNum = generateInvoiceNumberForExisting(o);
         let disc = (o.price * (parseFloat(o.discountPercent) || 0)) / 100;
         let finalRev = Math.max(0, o.price - disc);
-        let formattedCust = formatCustomerName(o.customer, o.salutation, o.contactPerson);
-        csv += `Einnahme;${o.orderDate || ''};${invNum};"${formattedCust.replace(/"/g, '""')}";${finalRev.toFixed(2).replace('.', ',')};0,00;${o.paymentMethod || ''};${o.isPaid || ''}\n`;
+        
+        // Datum für Lexware in TT.MM.JJJJ umwandeln
+        let dateArr = (o.orderDate || todayStr).split('-');
+        let lexDate = `${dateArr[2]}.${dateArr[1]}.${dateArr[0]}`;
+        
+        let formattedCust = o.customer;
+        if (o.salutation === 'Firma' && o.contactPerson) {
+          formattedCust = `${o.customer} (${o.contactPerson})`;
+        }
+        
+        // Positiver Betrag für Einnahmen, Steuersatz 0 (Kleinunternehmer)
+        csv += `"${lexDate}";"${invNum}";"${formattedCust.replace(/"/g, '""')}";"Verkauf 3D-Druck / ${o.platform}";"${finalRev.toFixed(2).replace('.', ',')}";"EUR";"0"\n`;
       });
 
+      // 2. Ausgaben exportieren
       expenses.forEach(ex => {
-        csv += `Ausgabe;${ex.date || ''};EXP-${ex.id};"${(ex.description || '').replace(/"/g, '""')}";0,00;${ex.amount.toFixed(2).replace('.', ',')};${ex.category || ''};Bezahlt\n`;
+        let dateArr = (ex.date || todayStr).split('-');
+        let lexDate = `${dateArr[2]}.${dateArr[1]}.${dateArr[0]}`;
+        
+        // Negativer Betrag für Ausgaben, damit Lexware es als Belastung erkennt
+        csv += `"${lexDate}";"EXP-${ex.id}";"${(ex.category || 'Lieferant').replace(/"/g, '""')}";"${(ex.description || 'Betriebsausgabe').replace(/"/g, '""')}";"-${ex.amount.toFixed(2).replace('.', ',')}";"EUR";"0"\n`;
       });
 
+      // UTF-8 BOM hinzufügen, damit Lexware Umlaute richtig erkennt
       const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.setAttribute("download", `Sefas3DShop_Buchhaltung_${todayStr}.csv`);
+      link.setAttribute("download", `Lexware_Export_${todayStr}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
