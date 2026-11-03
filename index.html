@@ -511,51 +511,96 @@
       }
     }
 
+    // ==========================================
+    // NEU: ROBUSTER CLOUD-LADE-MECHANISMUS
+    // ==========================================
     async function loadCloudData() {
       setStatus("Lade von Cloud...", "bg-yellow-500");
+      let dataLoaded = false;
       try {
         const res = await fetch(NPOINT_URL, { method: 'GET', mode: 'cors', headers: { 'Accept': 'application/json' }, cache: 'no-store' });
         if (res.ok) {
-          const json = await res.json();
+          const text = await res.text();
+          let json = null;
+          try { json = JSON.parse(text); } catch(e) {}
+          
           if (json && Array.isArray(json.orders)) {
             orders = json.orders;
             offers = Array.isArray(json.offers) ? json.offers : [];
             expenses = Array.isArray(json.expenses) ? json.expenses : [];
             printers = (Array.isArray(json.printers) && json.printers.length > 0) ? json.printers : [...BACKUP_PRINTERS];
-            products = (Array.isArray(json.products) && json.products.length >= BACKUP_PRODUCTS.length) ? json.products : [...BACKUP_PRODUCTS];
+            products = (Array.isArray(json.products) && json.products.length > 0) ? json.products : [...BACKUP_PRODUCTS];
             spools = (Array.isArray(json.spools) && json.spools.length > 0) ? json.spools : [...BACKUP_SPOOLS];
             currentRevolutBalance = json.revolutBalance || 0;
             
-            document.getElementById('revolutInput').value = currentRevolutBalance.toFixed(2);
-            updateMonthFilter();
-            renderOrders(); renderOffers(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
-            updateCustomerDropdowns(); updatePrinterDropdowns();
+            dataLoaded = true;
+            // Daten sicher lokal hinterlegen
+            localStorage.setItem('sefas3d_backup', JSON.stringify(json));
             setStatus("Mit Cloud verbunden", "bg-blue-500");
-            return;
           }
         }
-        throw new Error("Cloud-Daten ungültig");
       } catch(e) {
-        setStatus("Verbindungsfehler", "bg-red-500");
+        console.warn("Cloud-Fehler (npoint.io):", e);
       }
+
+      // FALLBACK: Wenn die Cloud leer ist oder hakt, lade lokales Backup
+      if (!dataLoaded) {
+        setStatus("Lokales Backup aktiv", "bg-orange-500");
+        const localText = localStorage.getItem('sefas3d_backup');
+        if (localText) {
+          try {
+            const local = JSON.parse(localText);
+            orders = Array.isArray(local.orders) ? local.orders : [];
+            offers = Array.isArray(local.offers) ? local.offers : [];
+            expenses = Array.isArray(local.expenses) ? local.expenses : [];
+            printers = (Array.isArray(local.printers) && local.printers.length > 0) ? local.printers : [...BACKUP_PRINTERS];
+            products = (Array.isArray(local.products) && local.products.length > 0) ? local.products : [...BACKUP_PRODUCTS];
+            spools = (Array.isArray(local.spools) && local.spools.length > 0) ? local.spools : [...BACKUP_SPOOLS];
+            currentRevolutBalance = local.revolutBalance || 0;
+          } catch(e) {}
+        }
+      }
+
+      document.getElementById('revolutInput').value = currentRevolutBalance.toFixed(2);
+      updateMonthFilter();
+      renderOrders(); renderOffers(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
+      updateCustomerDropdowns(); updatePrinterDropdowns();
     }
 
     async function pushToCloudManual() {
       setStatus("Speichere in Cloud...", "bg-yellow-500");
       const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance };
+      localStorage.setItem('sefas3d_backup', JSON.stringify(payload)); // IMMER auch lokal speichern
       try {
         const res = await fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (res.ok) { setStatus("Mit Cloud verbunden", "bg-blue-500"); alert("✅ Erfolgreich gespeichert!"); }
-      } catch(e) { setStatus("Fehler", "bg-red-500"); }
+        if (res.ok) { 
+          setStatus("Mit Cloud verbunden", "bg-blue-500"); 
+          alert("✅ Erfolgreich gespeichert!"); 
+        } else {
+          throw new Error("HTTP Fehler");
+        }
+      } catch(e) { 
+        setStatus("Nur lokal gesichert", "bg-orange-500"); 
+        alert("⚠️ Cloud aktuell nicht erreichbar. Daten wurden aber sicher lokal in deinem Browser gespeichert! Du kannst weiterarbeiten.");
+      }
     }
 
     function saveAllData() {
       updateMonthFilter();
       renderOrders(); renderOffers(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
       updateCustomerDropdowns(); updatePrinterDropdowns();
+      
       const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance };
-      fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(e => console.log(e));
+      
+      // IMMER Backup lokal anlegen
+      localStorage.setItem('sefas3d_backup', JSON.stringify(payload));
+      
+      fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        .then(res => { if(res.ok) setStatus("Mit Cloud verbunden", "bg-blue-500"); else setStatus("Nur lokal gesichert", "bg-orange-500"); })
+        .catch(e => { console.log(e); setStatus("Nur lokal gesichert", "bg-orange-500"); });
     }
+
+    // ==========================================
 
     function autofillCustomerData(custName) {
       if (!custName) return;
