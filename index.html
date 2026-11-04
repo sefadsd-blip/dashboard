@@ -123,9 +123,10 @@
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-1.5">
-        <button onclick="createDhlBatchExpense()" class="bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer" title="Erstellt eine DHL-Sammeldatei (CSV) für den gewählten Monat"><i class="fa-solid fa-boxes-stacked mr-1"></i> 📦 DHL Sammel (CSV)</button>
-        <button onclick="createKleinanzeigenBatchExpense()" class="bg-orange-600 hover:bg-orange-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer" title="Kleinanzeigen Pro / Gebühren als Sammelausgabe eintragen"><i class="fa-solid fa-store mr-1"></i> 🛒 Kleinanzeigen Sammel</button>
-        <button onclick="document.getElementById('csvFileInput').click()" class="bg-slate-700 hover:bg-slate-600 text-emerald-400 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer" title="Stelle verlorene Daten aus deiner exportierten CSV wieder her!"><i class="fa-solid fa-file-import mr-1"></i> 📥 CSV Import / Restore</button>
+        <button onclick="createDhlBatchExpense()" class="bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer" title="DHL-Sammeldatei (CSV) für den gewählten Monat"><i class="fa-solid fa-boxes-stacked mr-1"></i> 📦 DHL Sammel</button>
+        <button onclick="createKleinanzeigenBatchFile()" class="bg-orange-600 hover:bg-orange-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer" title="Kleinanzeigen-Ausgaben (Pro/Gebühren) als CSV für den gewählten Monat"><i class="fa-solid fa-store mr-1"></i> 🛒 Kleinanzeigen Sammel</button>
+        <button onclick="createFilamentBatchFile()" class="bg-purple-600 hover:bg-purple-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer" title="Filament-Ausgaben als CSV für den gewählten Monat"><i class="fa-solid fa-layer-group mr-1"></i> 🧵 Filament Sammel</button>
+        <button onclick="document.getElementById('csvFileInput').click()" class="bg-slate-700 hover:bg-slate-600 text-emerald-400 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer" title="Stelle verlorene Daten aus deiner exportierten CSV wieder her!"><i class="fa-solid fa-file-import mr-1"></i> 📥 CSV Import</button>
         <button onclick="exportAccountingCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer"><i class="fa-solid fa-file-excel mr-1"></i> 📊 CSV Export</button>
         <button onclick="downloadAllInvoicesBatch()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer"><i class="fa-solid fa-download mr-1"></i> 🖨 Rechnungen</button>
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv</button>
@@ -553,24 +554,81 @@
       alert(`✅ DHL-Sammeldatei erfolgreich heruntergeladen!\n\n${count} Sendungen im Gesamtwert von ${totalDhlAmount.toFixed(2).replace('.', ',')} € wurden exportiert.`);
     }
 
-    function createKleinanzeigenBatchExpense() {
-      const amountStr = prompt("Bitte gib den Betrag für die Kleinanzeigen Pro / Gebühren Rechnung ein (z.B. 49.00):", "49.00");
-      if (!amountStr) return;
-      const amount = parseFloat(amountStr.replace(',', '.')) || 0;
-      if (amount <= 0) return alert("Ungültiger Betrag!");
-
+    function createKleinanzeigenBatchFile() {
       const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
-      const monthLabel = selectedMonth === 'all' ? todayStr.slice(0, 7) : selectedMonth;
-      const desc = `Kleinanzeigen Pro / Gebühren Rechnung (${monthLabel})`;
-      const expId = `KA-BATCH-${Date.now()}`;
+      let totalAmount = 0; let count = 0;
+      let items = [];
 
-      expenses.unshift({
-        id: expId, description: desc, category: 'Sonstiges / eBay Gebühren',
-        amount: amount, date: selectedMonth === 'all' ? todayStr : `${selectedMonth}-15`
+      expenses.forEach(ex => {
+        const targetDate = ex.date || todayStr;
+        if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
+          const desc = (ex.description || '').toLowerCase();
+          const cat = (ex.category || '').toLowerCase();
+          if (desc.includes('kleinanzeigen') || cat.includes('kleinanzeigen') || desc.includes('ebay gebühren')) {
+            totalAmount += ex.amount;
+            count++;
+            items.push({ date: targetDate, desc: ex.description, amount: ex.amount });
+          }
+        }
       });
 
-      saveAllData();
-      alert(`✅ Kleinanzeigen Sammelausgabe über ${amount.toFixed(2).replace('.', ',')} € erfolgreich eingetragen!`);
+      if (count === 0 || totalAmount === 0) return alert("Keine Kleinanzeigen-Ausgaben für den gewählten Zeitraum gefunden!");
+
+      let csv = "Datum;Beschreibung;Betrag\n";
+      items.forEach(item => {
+        let dateArr = item.date.split('-');
+        let lexDate = `${dateArr[2]}.${dateArr[1]}.${dateArr[0]}`;
+        csv += `"${lexDate}";"${item.desc.replace(/"/g, '""')}";"${item.amount.toFixed(2).replace('.', ',')}"\n`;
+      });
+      csv += `\n"GESAMT";"";"${totalAmount.toFixed(2).replace('.', ',')}"\n`;
+
+      const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute("download", `Kleinanzeigen_Sammeldatei_${selectedMonth}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      alert(`✅ Kleinanzeigen-Sammeldatei erfolgreich heruntergeladen!\n\n${count} Positionen im Gesamtwert von ${totalAmount.toFixed(2).replace('.', ',')} € wurden exportiert.`);
+    }
+
+    function createFilamentBatchFile() {
+      const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
+      let totalAmount = 0; let count = 0;
+      let items = [];
+
+      expenses.forEach(ex => {
+        const targetDate = ex.date || todayStr;
+        if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
+          const cat = (ex.category || '').toLowerCase();
+          if (cat.includes('filament')) {
+            totalAmount += ex.amount;
+            count++;
+            items.push({ date: targetDate, desc: ex.description, amount: ex.amount });
+          }
+        }
+      });
+
+      if (count === 0 || totalAmount === 0) return alert("Keine Filament-Ausgaben für den gewählten Zeitraum gefunden!");
+
+      let csv = "Datum;Beschreibung;Betrag\n";
+      items.forEach(item => {
+        let dateArr = item.date.split('-');
+        let lexDate = `${dateArr[2]}.${dateArr[1]}.${dateArr[0]}`;
+        csv += `"${lexDate}";"${item.desc.replace(/"/g, '""')}";"${item.amount.toFixed(2).replace('.', ',')}"\n`;
+      });
+      csv += `\n"GESAMT";"";"${totalAmount.toFixed(2).replace('.', ',')}"\n`;
+
+      const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute("download", `Filament_Sammeldatei_${selectedMonth}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      alert(`✅ Filament-Sammeldatei erfolgreich heruntergeladen!\n\n${count} Spulen/Käufe im Gesamtwert von ${totalAmount.toFixed(2).replace('.', ',')} € wurden exportiert.`);
     }
 
     function syncLabelExpense(order) {
