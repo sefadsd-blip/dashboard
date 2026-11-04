@@ -21,7 +21,6 @@
 <body class="p-3 md:p-5 min-h-screen text-xs">
 
   <input type="file" id="csvFileInput" accept=".csv" onchange="importAccountingCSV(event)" class="hidden">
-  <input type="file" id="jsonImportInput" accept=".json" onchange="importJSONBackup(event)" class="hidden">
 
   <!-- SUBPAGE OVERLAY (TOOLS & KATALOG) -->
   <div id="subPageOverlay" class="hidden fixed inset-0 bg-slate-950/95 z-50 overflow-y-auto p-3 md:p-6">
@@ -33,7 +32,7 @@
           </div>
           <div>
             <h2 class="text-base font-bold text-white">Sefas3DShop - Tools & Katalog</h2>
-            <p class="text-slate-400 text-[11px]">Kostenrechner & Backups</p>
+            <p class="text-slate-400 text-[11px]">Kostenrechner & Cloud-Verwaltung</p>
           </div>
         </div>
         <button onclick="closeSubPage()" class="bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
@@ -80,16 +79,6 @@
         </form>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 max-h-[350px] overflow-y-auto pr-1" id="productsList"></div>
       </section>
-
-      <!-- 100% BACKUP BEREICH -->
-      <section class="card p-4 rounded-xl space-y-2 border border-emerald-500/30 bg-emerald-950/10">
-        <h2 class="text-xs font-semibold text-emerald-400"><i class="fa-solid fa-floppy-disk mr-1.5"></i> Daten-Backup (Lokale Sicherung)</h2>
-        <p class="text-[11px] text-slate-400 mb-2">Sichere dein komplettes Board als JSON-Datei oder stelle es aus einer Sicherung wieder her (falls die Cloud ausfällt).</p>
-        <div class="flex gap-2">
-          <button onclick="document.getElementById('jsonImportInput').click()" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/50 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"><i class="fa-solid fa-file-import"></i> Backup laden</button>
-          <button onclick="exportJSONBackup()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-lg"><i class="fa-solid fa-download"></i> Backup speichern</button>
-        </div>
-      </section>
     </div>
   </div>
 
@@ -125,8 +114,8 @@
       <div class="flex flex-wrap items-center gap-1.5">
         <button onclick="createDhlBatchExpense()" class="bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer" title="Fasst alle einzelnen Porto-Ausgaben zu einer Sammelausgabe zusammen"><i class="fa-solid fa-boxes-stacked mr-1"></i> 📦 DHL Sammel</button>
         <button onclick="createKleinanzeigenBatchExpense()" class="bg-orange-600 hover:bg-orange-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer" title="Kleinanzeigen Pro / Gebühren als Sammelausgabe eintragen"><i class="fa-solid fa-store mr-1"></i> 🛒 Kleinanzeigen Sammel</button>
-        <button onclick="document.getElementById('csvFileInput').click()" class="bg-slate-700 hover:bg-slate-600 text-emerald-400 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer" title="Stelle verlorene Daten aus deiner exportierten CSV wieder her!"><i class="fa-solid fa-file-import mr-1"></i> 📥 CSV Import / Restore</button>
-        <button onclick="exportAccountingCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer"><i class="fa-solid fa-file-excel mr-1"></i> 📊 CSV Export</button>
+        <button onclick="document.getElementById('csvFileInput').click()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer"><i class="fa-solid fa-file-import mr-1"></i> 📥 CSV</button>
+        <button onclick="exportAccountingCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer"><i class="fa-solid fa-file-excel mr-1"></i> 📊 Export</button>
         <button onclick="downloadAllInvoicesBatch()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg cursor-pointer"><i class="fa-solid fa-download mr-1"></i> 🖨 Rechnungen</button>
         <button onclick="toggleArchiveView()" id="headerArchiveBtn" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-box-archive mr-1"></i> 📂 Archiv</button>
         <button onclick="loadCloudData()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer"><i class="fa-solid fa-rotate mr-1"></i> 🔄 Laden</button>
@@ -538,6 +527,7 @@
       alert(`✅ Erfolgreich eingetragen!\n\n${count} DHL-Sendungen im Wert von ${totalDhlAmount.toFixed(2).replace('.', ',')} € wurden als Sammelausgabe hinzugefügt.`);
     }
 
+    // NEUE FUNKTION: KLEINANZEIGEN PRO / GEBÜHREN SAMMELAUSGABE
     function createKleinanzeigenBatchExpense() {
       const amountStr = prompt("Bitte gib den Betrag für die Kleinanzeigen Pro / Gebühren Rechnung ein (z.B. 49.00):", "49.00");
       if (!amountStr) return;
@@ -626,24 +616,17 @@
     }
 
     async function pushToCloudManual() {
-      setStatus("Speichere in Cloud...", "bg-yellow-500");
-      const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance };
-      localStorage.setItem('sefas3d_backup', JSON.stringify(payload));
-      try {
-        const res = await fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (res.ok) { 
-          setStatus("Mit Cloud verbunden", "bg-blue-500"); 
-          alert("✅ Erfolgreich gespeichert!"); 
-        } else {
-          throw new Error("HTTP Fehler");
-        }
-      } catch(e) { 
-        setStatus("Nur lokal gesichert", "bg-orange-500"); 
-        alert("⚠️ Cloud aktuell nicht erreichbar. Daten wurden aber sicher lokal in deinem Browser gespeichert! Du kannst weiterarbeiten.");
-      }
+      saveAllData(true);
     }
 
-    function saveAllData() {
+    // SICHERHEITS-CHECK INTEGRIERT
+    function saveAllData(manualPush = false) {
+      if (orders.length === 0 && expenses.length === 0 && products.length === 0) {
+        if (!confirm("⚠️ WARNUNG: Das Dashboard ist aktuell komplett leer! Möchtest du wirklich eine LEERE Datenbank in die Cloud speichern und alles überschreiben?")) {
+          return;
+        }
+      }
+
       updateMonthFilter();
       renderOrders(); renderOffers(); renderSpools(); renderExpenses(); renderPrinters(); renderProducts();
       updateCustomerDropdowns(); updatePrinterDropdowns();
@@ -652,31 +635,20 @@
       localStorage.setItem('sefas3d_backup', JSON.stringify(payload));
       
       fetch(NPOINT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-        .then(res => { if(res.ok) setStatus("Mit Cloud verbunden", "bg-blue-500"); else setStatus("Nur lokal gesichert", "bg-orange-500"); })
-        .catch(e => { console.log(e); setStatus("Nur lokal gesichert", "bg-orange-500"); });
-    }
-    
-    function exportJSONBackup() {
-      const payload = { orders, offers, spools, expenses, printers, products, revolutBalance: currentRevolutBalance };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-      const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Sefas3DShop_Backup_${todayStr}.json`;
-      link.click();
-    }
-    
-    function importJSONBackup(event) {
-      const file = event.target.files[0]; if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const json = JSON.parse(e.target.result);
-          if (json.orders) {
-            orders = json.orders; offers = json.offers || []; expenses = json.expenses || []; spools = json.spools || BACKUP_SPOOLS; printers = json.printers || BACKUP_PRINTERS; products = json.products || BACKUP_PRODUCTS; currentRevolutBalance = json.revolutBalance || 0;
-            saveAllData(); alert("✅ Backup erfolgreich geladen!");
+        .then(res => { 
+          if(res.ok) {
+            setStatus("Mit Cloud verbunden", "bg-blue-500"); 
+            if(manualPush) alert("✅ Erfolgreich in der Cloud gespeichert!");
+          } else {
+            setStatus("Nur lokal gesichert", "bg-orange-500"); 
+            if(manualPush) alert("⚠️ Fehler beim Cloud-Speichern.");
           }
-        } catch(err) { alert("Fehler beim Laden der Datei!"); }
-        event.target.value = '';
-      };
-      reader.readAsText(file);
+        })
+        .catch(e => { 
+          console.log(e); 
+          setStatus("Nur lokal gesichert", "bg-orange-500"); 
+          if(manualPush) alert("⚠️ Keine Internetverbindung zur Cloud.");
+        });
     }
 
     function autofillCustomerData(custName) {
@@ -759,7 +731,7 @@
     
     <div class="highlight">
       ✨ Zufrieden mit deinem Produkt?<br>
-      Über eine kurze Bewertung auf Kleinanzeigen / Etsy würde ich mich riesig freuen!
+      Über eine kurze Bewertung auf Kleinanzeigen / eBay würde ich mich riesig freuen!
     </div>
 
     <p>Sollte etwas nicht zu deiner Zufriedenheit sein oder hast du Fragen zu deinem gedruckten Teil, melde dich bitte jederzeit direkt bei mir – wir finden schnell eine Lösung!</p>
@@ -1818,229 +1790,4 @@
         return matchesArchive && matchesMonth && matchesSearch;
       });
 
-      filtered.forEach((o, filteredIdx) => {
-        const realIdx = orders.indexOf(o);
-        const invNum = generateInvoiceNumberForExisting(o);
-        const formattedCust = formatCustomerName(o.customer, o.salutation, o.contactPerson);
-
-        if (editingIndex === realIdx) {
-          let editItemsHtml = `<div id="editArticleRows-${realIdx}" class="space-y-1.5 my-1.5">`;
-          if (o.items) {
-            o.items.forEach(i => {
-              let optionsHtml = '<option value="">-- Farbe --</option>';
-              spools.forEach(s => { optionsHtml += `<option value="${s.name}" ${s.name === i.color ? 'selected' : ''}>${s.name} (${s.remainingGrams}g)</option>`; });
-              editItemsHtml += `<div class="flex gap-1.5 items-center bg-slate-950 p-1.5 rounded-lg border border-slate-800"><input type="number" value="${i.qty || 1}" min="1" class="edit-art-qty-${realIdx} bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white w-14"><input type="text" value="${i.name}" placeholder="Artikel" class="edit-art-name-${realIdx} bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-white flex-1"><select class="edit-art-color-${realIdx} bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-white w-28">${optionsHtml}</select><input type="number" value="${i.weight || 0}" placeholder="g" class="edit-art-weight-${realIdx} bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-white w-16"><input type="number" step="0.1" value="${i.time || 0}" placeholder="h" class="edit-art-time-${realIdx} bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-white w-16"><button type="button" onclick="this.parentElement.remove()" class="text-red-400 px-1"><i class="fa-solid fa-xmark"></i></button></div>`;
-            });
-          }
-          editItemsHtml += `</div><div class="flex items-center gap-2 mt-1"><input type="text" id="editArticleSearch-${realIdx}" oninput="renderEditQuickAddButtons(${realIdx})" placeholder="🔍 Katalog..." class="bg-slate-950 border border-slate-700 rounded px-2 py-0.5 text-[10px] text-white w-36"><button type="button" onclick="addEditArticleRow(${realIdx})" class="bg-slate-800 text-blue-400 text-[10px] px-2 py-0.5 rounded">+ Zeile</button></div><div id="editQuickAddButtons-${realIdx}" class="flex flex-wrap gap-1 mt-1"></div>`;
-
-          tbody.innerHTML += `<tr class="border-b border-slate-800 bg-slate-900/90">
-            <td class="p-2 space-y-1">
-              <div class="flex gap-1">
-                <select id="edit-sal-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[10px] text-white">
-                  <option value="Herr" ${o.salutation==='Herr'?'selected':''}>Herr</option>
-                  <option value="Frau" ${o.salutation==='Frau'?'selected':''}>Frau</option>
-                  <option value="Firma" ${o.salutation==='Firma'?'selected':''}>Firma</option>
-                </select>
-                <input type="text" id="edit-cust-${realIdx}" value="${o.customer}" class="bg-slate-950 border border-blue-500 rounded px-2 py-0.5 text-[11px] text-white flex-1">
-              </div>
-              <input type="text" id="edit-contact-${realIdx}" value="${o.contactPerson || ''}" placeholder="Ansprechpartner" class="bg-slate-950 border border-blue-500 rounded px-2 py-0.5 text-[10px] text-white w-full">
-              <input type="text" id="edit-addr-${realIdx}" value="${o.address || ''}" placeholder="Adresse" class="bg-slate-950 border border-blue-500 rounded px-2 py-0.5 text-[10px] text-white w-full">
-              <select id="edit-plat-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white w-full"><option value="Kleinanzeigen" ${o.platform==='Kleinanzeigen'?'selected':''}>🛒 Kleinanzeigen</option><option value="eBay" ${o.platform==='eBay'?'selected':''}>🛍 eBay</option></select>
-            </td>
-            <td class="p-2 font-mono text-blue-400 font-bold">${invNum}<input type="date" id="edit-date-${realIdx}" value="${o.orderDate || todayStr}" class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[10px] text-white w-full mt-1"></td>
-            <td class="p-2">${editItemsHtml}</td>
-            <td class="p-2"><select id="edit-print-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white"></select></td>
-            <td class="p-2 space-y-1">
-              <select id="edit-paid-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white"><option value="✅ Ja" ${o.isPaid==='✅ Ja'?'selected':''}>Bezahlt: ✅ Ja</option><option value="❌ Nein" ${o.isPaid==='❌ Nein'?'selected':''}>Bezahlt: ❌ Nein</option></select>
-              <select id="edit-paymeth-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white"><option value="eBay" ${o.paymentMethod==='eBay'?'selected':''}>💳 eBay</option><option value="PayPal" ${o.paymentMethod==='PayPal'?'selected':''}>🅿 PayPal</option><option value="Überweisung" ${o.paymentMethod==='Überweisung'?'selected':''}>🏦 Überweisung</option><option value="Bar" ${o.paymentMethod==='Bar'?'selected':''}>Bar</option></select>
-            </td>
-            <td class="p-2"><select id="edit-ebaybal-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white"><option value="⏳ Bei eBay" ${o.ebayBalancePaid==='⏳ Bei eBay'?'selected':''}>⏳ Bei eBay</option><option value="✅ Ausgezahlt" ${o.ebayBalancePaid==='✅ Ausgezahlt'?'selected':''}>✅ Ausgezahlt</option></select></td>
-            <td class="p-2"><select id="edit-stat-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white"><option value="Wartet auf Druck" ${o.status==='Wartet auf Druck'?'selected':''}>⏳ Wartet auf Druck</option><option value="In Druck" ${o.status==='In Druck'?'selected':''}>🖨 In Druck</option><option value="Druck abgeschlossen" ${o.status==='Druck abgeschlossen'?'selected':''}>✅ Druck abgeschlossen</option><option value="Wartet auf Abholung" ${o.status==='Wartet auf Abholung'?'selected':''}>🏠 Wartet auf Abholung</option><option value="Versendet" ${o.status==='Versendet'?'selected':''}>📦 Versendet</option></select></td>
-            <td class="p-2 space-y-1">
-              <div>Preis: <input type="number" step="0.01" id="edit-price-${realIdx}" value="${o.price}" class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[10px] text-white w-14"></div>
-              <div>Versand: <input type="number" step="0.01" id="edit-ship-${realIdx}" value="${o.shippingFee||0}" class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[10px] text-white w-14"></div>
-              <div>Porto: <input type="number" step="0.01" id="edit-lblcost-${realIdx}" value="${o.labelCost||0}" class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[10px] text-white w-14"></div>
-              <div>Rabatt (%): <input type="number" step="0.01" id="edit-discperc-${realIdx}" value="${o.discountPercent||0}" class="bg-slate-950 border border-blue-500 rounded px-1 py-0.5 text-[10px] text-white w-14"></div>
-            </td>
-            <td class="p-2 space-y-1">
-              <select id="edit-lbl-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white"><option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>Label: ✅ Ja</option><option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>Label: ❌ Nein</option></select>
-              <select id="edit-pack-${realIdx}" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white"><option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>Verpackt: ✅ Ja</option><option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>Verpackt: ❌ Nein</option></select>
-            </td>
-            <td class="p-2 space-y-1">
-              <input type="text" id="edit-track-${realIdx}" value="${o.tracking||''}" placeholder="Tracking" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white w-full">
-              <input type="text" id="edit-notes-${realIdx}" value="${o.notes||''}" placeholder="Notizen" class="bg-slate-950 border border-blue-500 rounded px-1.5 py-0.5 text-[10px] text-white w-full">
-            </td>
-            <td class="p-2 text-right space-x-1 whitespace-nowrap">
-              <button onclick="saveEditOrder(${realIdx})" class="bg-blue-600 text-white px-2 py-0.5 rounded text-[10px] cursor-pointer">✔</button>
-              <button onclick="cancelEditOrder()" class="bg-slate-700 text-white px-2 py-0.5 rounded text-[10px] cursor-pointer">✖</button>
-            </td>
-          </tr>`;
-          setTimeout(() => updatePrinterDropdowns(), 50);
-        } else {
-          let itemsText = '<div class="space-y-0.5">';
-          let totalWeight = 0, totalTime = 0;
-          if (o.items && o.items.length > 0) {
-            o.items.forEach(i => {
-              let weightVal = (parseInt(i.weight) || 0) * (i.qty || 1);
-              let timeVal = (parseFloat(i.time) || 0) * (i.qty || 1);
-              totalWeight += weightVal; totalTime += timeVal;
-              itemsText += `<div class="text-[11px] text-white">• ${i.qty || 1}x ${i.name} <span class="text-blue-300">(${i.color || 'Standard'}, ${weightVal}g, ${timeVal}h)</span></div>`;
-            });
-          } else { itemsText += '<div class="text-[11px] text-slate-400">-</div>'; }
-          itemsText += `</div><div class="text-[9px] text-slate-400 mt-0.5">Summe: ${totalWeight}g | ${totalTime.toFixed(1)}h</div>`;
-
-          let isDelayed = false;
-          if (!o.archived && o.orderDate) {
-            const diffDays = Math.floor((new Date() - new Date(o.orderDate)) / (1000 * 60 * 60 * 24));
-            if (diffDays >= 3) isDelayed = true;
-          }
-
-          let discountBadge = (o.discountPercent && o.discountPercent > 0) ? `<span class="text-[9px] text-amber-300 ml-1">(-${o.discountPercent}%)</span>` : '';
-
-          tbody.innerHTML += `<tr class="border-b border-slate-800 ${isDelayed ? 'pulse-delayed-order' : ''}">
-            <td class="p-2 font-medium text-white">
-              <div class="font-bold flex items-center gap-1">${formattedCust} ${isDelayed ? '<span class="text-red-400 text-[10px]" title="Älter als 3 Tage!"><i class="fa-solid fa-clock"></i></span>' : ''}</div>
-              <div class="text-[9px] text-slate-400">${o.address || ''}</div>
-              <span class="text-[9px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-300">${o.platform}</span>
-            </td>
-            <td class="p-2 font-mono text-blue-400 font-bold">${invNum}<div class="text-[9px] text-slate-400 font-normal">${o.orderDate || '-'}</div></td>
-            <td class="p-2">${itemsText}</td>
-            <td class="p-2"><span class="bg-slate-800 text-slate-200 px-2 py-0.5 rounded text-[10px]">${o.printer || '-'}</span></td>
-            <td class="p-2 space-y-1">
-              <div><select onchange="updateField(${o.id}, 'isPaid', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[10px] text-slate-200"><option value="✅ Ja" ${o.isPaid==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.isPaid==='❌ Nein'?'selected':''}>❌ Nein</option></select></div>
-              <span class="text-[9px] bg-slate-800 px-1.5 py-0.5 rounded text-purple-300">${o.paymentMethod}</span>
-            </td>
-            <td class="p-2">
-              ${o.platform === 'eBay' ? `<select onchange="updateField(${o.id}, 'ebayBalancePaid', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[10px] text-cyan-300"><option value="⏳ Bei eBay" ${o.ebayBalancePaid==='⏳ Bei eBay'?'selected':''}>⏳ Bei eBay</option><option value="✅ Ausgezahlt" ${o.ebayBalancePaid==='✅ Ausgezahlt'?'selected':''}>✅ Ausgezahlt</option></select>` : '<span class="text-slate-500 text-[10px]">-</span>'}
-            </td>
-            <td class="p-2">
-              <select onchange="updateField(${o.id}, 'status', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[10px] text-amber-300">
-                <option value="Wartet auf Druck" ${o.status==='Wartet auf Druck'?'selected':''}>⏳ Wartet auf Druck</option>
-                <option value="In Druck" ${o.status==='In Druck'?'selected':''}>🖨 In Druck</option>
-                <option value="Druck abgeschlossen" ${o.status==='Druck abgeschlossen'?'selected':''}>✅ Druck abgeschlossen</option>
-                <option value="Wartet auf Abholung" ${o.status==='Wartet auf Abholung'?'selected':''}>🏠 Wartet auf Abholung</option>
-                <option value="Versendet" ${o.status==='Versendet'?'selected':''}>📦 Versendet</option>
-              </select>
-            </td>
-            <td class="p-2 font-bold text-emerald-400">
-              ${o.price.toFixed(2).replace('.', ',')} €${discountBadge}
-              <div class="text-[9px] text-slate-400 font-normal">Kunde VSD: ${(o.shippingFee||0).toFixed(2)}€ | Porto: ${(o.labelCost||0).toFixed(2)}€</div>
-            </td>
-            <td class="p-2 space-y-1">
-              <div>Label: <select onchange="updateField(${o.id}, 'label', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[9px] text-slate-200"><option value="✅ Ja" ${o.label==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.label==='❌ Nein'?'selected':''}>❌ Nein</option></select></div>
-              <div>Verpackt: <select onchange="updateField(${o.id}, 'packed', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[9px] text-slate-200"><option value="✅ Ja" ${o.packed==='✅ Ja'?'selected':''}>✅ Ja</option><option value="❌ Nein" ${o.packed==='❌ Nein'?'selected':''}>❌ Nein</option></select></div>
-            </td>
-            <td class="p-2 font-mono text-[10px] text-slate-300">${o.tracking || '-'}<div class="text-[9px] text-slate-400 font-sans italic">${o.notes || ''}</div></td>
-            <td class="p-2 text-right space-x-1 whitespace-nowrap">
-              <button onclick="printInvoice(${realIdx})" class="text-blue-300 bg-blue-500/10 border border-blue-500/30 px-1.5 py-1 rounded text-[10px] cursor-pointer" title="Rechnung drucken">🖨</button>
-              <button onclick="printPackzettel(${realIdx})" class="text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-1 rounded text-[10px] cursor-pointer" title="Packzettel / Lieferschein drucken">📦 Packzettel</button>
-              <button onclick="startEditOrder(${realIdx})" class="text-amber-400 bg-amber-500/10 px-1.5 py-1 rounded text-[10px] cursor-pointer" title="Bearbeiten">✏</button>
-              <button onclick="toggleArchiveOrder(${o.id})" class="text-purple-300 bg-purple-500/10 px-1.5 py-1 rounded text-[10px] cursor-pointer" title="${o.archived ? 'Wieder aktivieren' : 'Archivieren'}">${o.archived ? '📂' : '📥'}</button>
-              <button onclick="deleteOrder(${o.id})" class="text-red-400 bg-red-500/10 px-1.5 py-1 rounded text-[10px] cursor-pointer">❌</button>
-            </td>
-          </tr>`;
-        }
-      });
-
-      updateStats();
-    }
-
-    function exportAccountingCSV() {
-      if (orders.length === 0 && expenses.length === 0) return alert("Keine Daten zum Exportieren vorhanden!");
-      
-      let csv = "Belegdatum;Belegnummer;Kunde/Lieferant;Buchungstext;Betrag;Währung;Steuersatz\n";
-
-      orders.forEach(o => {
-        let invNum = generateInvoiceNumberForExisting(o);
-        let disc = (o.price * (parseFloat(o.discountPercent) || 0)) / 100;
-        let finalRev = Math.max(0, o.price - disc);
-        
-        let dateArr = (o.orderDate || todayStr).split('-');
-        let lexDate = `${dateArr[2]}.${dateArr[1]}.${dateArr[0]}`;
-        
-        let formattedCust = o.customer;
-        if (o.salutation === 'Firma' && o.contactPerson) {
-          formattedCust = `${o.customer} (${o.contactPerson})`;
-        }
-        
-        csv += `"${lexDate}";"${invNum}";"${formattedCust.replace(/"/g, '""')}";"Verkauf 3D-Druck / ${o.platform}";"${finalRev.toFixed(2).replace('.', ',')}";"EUR";"0"\n`;
-      });
-
-      expenses.forEach(ex => {
-        let dateArr = (ex.date || todayStr).split('-');
-        let lexDate = `${dateArr[2]}.${dateArr[1]}.${dateArr[0]}`;
-        
-        csv += `"${lexDate}";"EXP-${ex.id}";"${(ex.category || 'Lieferant').replace(/"/g, '""')}";"${(ex.description || 'Betriebsausgabe').replace(/"/g, '""')}";"-${ex.amount.toFixed(2).replace('.', ',')}";"EUR";"0"\n`;
-      });
-
-      const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.setAttribute("download", `Lexware_Export_${todayStr}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    function importAccountingCSV(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const text = e.target.result;
-        const lines = text.split('\n');
-        let importedExp = 0, importedOrd = 0;
-        
-        for (let i = 1; i < lines.length; i++) {
-          const line = lines[i].trim();
-          if (!line) continue;
-          
-          const rawParts = line.split(';');
-          const parts = rawParts.map(p => p.replace(/^"|"$/g, '').trim());
-          if (parts.length >= 5) {
-            const dateStr = parts[0]; 
-            let isoDate = todayStr;
-            if (dateStr && dateStr.includes('.')) {
-              const dParts = dateStr.split('.');
-              if(dParts.length === 3) isoDate = `${dParts[2]}-${dParts[1]}-${dParts[0]}`;
-            }
-            const belegNum = parts[1];
-            const kunde = parts[2];
-            const textDesc = parts[3];
-            const amount = parseFloat(parts[4].replace(',', '.')) || 0;
-            
-            if (amount < 0 || belegNum.startsWith('EXP-') || belegNum.startsWith('DHL-') || belegNum.startsWith('KA-')) {
-               const absAmount = Math.abs(amount);
-               if (!expenses.find(ex => ex.id === belegNum.replace('EXP-', '') || (ex.description === textDesc && ex.amount === absAmount && ex.date === isoDate))) {
-                 expenses.push({ id: belegNum.replace('EXP-', '') || (Date.now() + i), description: textDesc, category: kunde || 'Sonstiges', amount: absAmount, date: isoDate });
-                 importedExp++;
-               }
-            } else if (amount > 0 && (belegNum.startsWith('RE-') || textDesc.includes('Verkauf'))) {
-               if (!orders.find(o => o.invoiceNumber === belegNum)) {
-                 let platform = textDesc.includes('eBay') ? 'eBay' : 'Kleinanzeigen';
-                 orders.push({
-                   id: Date.now() + i, invoiceNumber: belegNum, customer: kunde, salutation: 'Herr', contactPerson: '', platform: platform,
-                   paymentMethod: 'Überweisung', isPaid: '✅ Ja', printer: 'Wiederhergestellt', price: amount, shippingFee: 0, labelCost: 0,
-                   discountPercent: 0, orderDate: isoDate, label: '✅ Ja', packed: '✅ Ja', tracking: '-', address: '', notes: 'Aus CSV wiederhergestellt',
-                   items: [{ qty: 1, name: '3D-Druck (Wiederhergestellt)', color: 'PLA Schwarz', weight: 0, time: 0 }],
-                   status: 'Versendet', ebayBalancePaid: '✅ Ausgezahlt', archived: true
-                 });
-                 importedOrd++;
-               }
-            }
-          }
-        }
-        if (importedExp > 0 || importedOrd > 0) { 
-           saveAllData(); 
-           alert(`✅ Wiederherstellung erfolgreich!\n${importedOrd} Aufträge und ${importedExp} Ausgaben wurden aus der CSV-Datei wieder in das Board geladen.`); 
-        } else { 
-           alert("Keine neuen Daten gefunden oder die Datei wurde bereits importiert."); 
-        }
-        event.target.value = '';
-      };
-      reader.readAsText(file);
-    }
-  </script>
-</body>
-</html>
+      filtered.forEach((
