@@ -512,16 +512,12 @@
 
     function createDhlBatchExpense() {
       const selectedMonth = document.getElementById('statsMonthFilter')?.value || 'all';
-      if (selectedMonth === 'all') {
-        return alert("Bitte wähle oben im Statistik-Filter einen spezifischen Monat aus (z.B. Oktober 2026), für den du die DHL-Sammeldatei herunterladen möchtest!");
-      }
-
       let totalDhlAmount = 0; let count = 0;
       let dhlItems = [];
 
       orders.forEach(o => {
         const targetDate = o.orderDate || todayStr;
-        if (targetDate.startsWith(selectedMonth)) {
+        if (selectedMonth === 'all' || targetDate.startsWith(selectedMonth)) {
           const lCost = parseFloat(o.labelCost) || 0;
           if (lCost > 0) { 
             totalDhlAmount += lCost; 
@@ -536,7 +532,7 @@
         }
       });
 
-      if (count === 0 || totalDhlAmount === 0) return alert(`Keine DHL-Label/Porto-Kosten für den Monat ${selectedMonth} gefunden!`);
+      if (count === 0 || totalDhlAmount === 0) return alert("Keine DHL-Label/Porto-Kosten für den gewählten Zeitraum gefunden!");
 
       let csv = "Datum;Kunde;Tracking / Sendungsnummer;Porto-Betrag\n";
       dhlItems.forEach(item => {
@@ -554,7 +550,7 @@
       link.click();
       document.body.removeChild(link);
 
-      alert(`✅ DHL-Sammeldatei für ${selectedMonth} erfolgreich heruntergeladen!\n\n${count} Sendungen im Gesamtwert von ${totalDhlAmount.toFixed(2).replace('.', ',')} € wurden exportiert.`);
+      alert(`✅ DHL-Sammeldatei erfolgreich heruntergeladen!\n\n${count} Sendungen im Gesamtwert von ${totalDhlAmount.toFixed(2).replace('.', ',')} € wurden exportiert.`);
     }
 
     function createKleinanzeigenBatchExpense() {
@@ -1904,7 +1900,7 @@
               let weightVal = (parseInt(i.weight) || 0) * (i.qty || 1);
               let timeVal = (parseFloat(i.time) || 0) * (i.qty || 1);
               totalWeight += weightVal; totalTime += timeVal;
-              itemsText += `<div class="text-[11px] text-white">• ${i.qty || 1}x ${i.name} <span class="text-blue-300">(${i.color || 'Standard'}, ${weightVal}g, ${timeVal.toFixed(1)}h)</span></div>`;
+              itemsText += `<div class="text-[11px] text-white">• ${i.qty || 1}x ${i.name} <span class="text-blue-300">(${i.color || 'Standard'}, ${weightVal}g, ${timeVal}h)</span></div>`;
             });
           } else { itemsText += '<div class="text-[11px] text-slate-400">-</div>'; }
           itemsText += `</div><div class="text-[9px] text-slate-400 mt-0.5">Summe: ${totalWeight}g | ${totalTime.toFixed(1)}h</div>`;
@@ -1980,4 +1976,86 @@
         
         let formattedCust = o.customer;
         if (o.salutation === 'Firma' && o.contactPerson) {
-          formattedCust = `${
+          formattedCust = `${o.customer} (${o.contactPerson})`;
+        }
+        
+        csv += `"${lexDate}";"${invNum}";"${formattedCust.replace(/"/g, '""')}";"Verkauf 3D-Druck / ${o.platform}";"${finalRev.toFixed(2).replace('.', ',')}";"EUR";"0"\n`;
+      });
+
+      expenses.forEach(ex => {
+        let dateArr = (ex.date || todayStr).split('-');
+        let lexDate = `${dateArr[2]}.${dateArr[1]}.${dateArr[0]}`;
+        
+        csv += `"${lexDate}";"EXP-${ex.id}";"${(ex.category || 'Lieferant').replace(/"/g, '""')}";"${(ex.description || 'Betriebsausgabe').replace(/"/g, '""')}";"-${ex.amount.toFixed(2).replace('.', ',')}";"EUR";"0"\n`;
+      });
+
+      const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute("download", `Lexware_Export_${todayStr}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function importAccountingCSV(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const lines = text.split('\n');
+        let importedExp = 0, importedOrd = 0;
+        
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          
+          const rawParts = line.split(';');
+          const parts = rawParts.map(p => p.replace(/^"|"$/g, '').trim());
+          if (parts.length >= 5) {
+            const dateStr = parts[0]; 
+            let isoDate = todayStr;
+            if (dateStr && dateStr.includes('.')) {
+              const dParts = dateStr.split('.');
+              if(dParts.length === 3) isoDate = `${dParts[2]}-${dParts[1]}-${dParts[0]}`;
+            }
+            const belegNum = parts[1];
+            const kunde = parts[2];
+            const textDesc = parts[3];
+            const amount = parseFloat(parts[4].replace(',', '.')) || 0;
+            
+            if (amount < 0 || belegNum.startsWith('EXP-') || belegNum.startsWith('DHL-') || belegNum.startsWith('KA-')) {
+               const absAmount = Math.abs(amount);
+               if (!expenses.find(ex => ex.id === belegNum.replace('EXP-', '') || (ex.description === textDesc && ex.amount === absAmount && ex.date === isoDate))) {
+                 expenses.push({ id: belegNum.replace('EXP-', '') || (Date.now() + i), description: textDesc, category: kunde || 'Sonstiges', amount: absAmount, date: isoDate });
+                 importedExp++;
+               }
+            } else if (amount > 0 && (belegNum.startsWith('RE-') || textDesc.includes('Verkauf'))) {
+               if (!orders.find(o => o.invoiceNumber === belegNum)) {
+                 let platform = textDesc.includes('eBay') ? 'eBay' : 'Kleinanzeigen';
+                 orders.push({
+                   id: Date.now() + i, invoiceNumber: belegNum, customer: kunde, salutation: 'Herr', contactPerson: '', platform: platform,
+                   paymentMethod: 'Überweisung', isPaid: '✅ Ja', printer: 'Wiederhergestellt', price: amount, shippingFee: 0, labelCost: 0,
+                   discountPercent: 0, orderDate: isoDate, label: '✅ Ja', packed: '✅ Ja', tracking: '-', address: '', notes: 'Aus CSV wiederhergestellt',
+                   items: [{ qty: 1, name: '3D-Druck (Wiederhergestellt)', color: 'PLA Schwarz', weight: 0, time: 0 }],
+                   status: 'Versendet', ebayBalancePaid: '✅ Ausgezahlt', archived: true
+                 });
+                 importedOrd++;
+               }
+            }
+          }
+        }
+        if (importedExp > 0 || importedOrd > 0) { 
+           saveAllData(); 
+           alert(`✅ Wiederherstellung erfolgreich!\n${importedOrd} Aufträge und ${importedExp} Ausgaben wurden aus der CSV-Datei wieder in das Board geladen.`); 
+        } else { 
+           alert("Keine neuen Daten gefunden oder die Datei wurde bereits importiert."); 
+        }
+        event.target.value = '';
+      };
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+</html>
